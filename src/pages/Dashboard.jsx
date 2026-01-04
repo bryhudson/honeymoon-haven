@@ -10,6 +10,7 @@ import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
+import { CABIN_OWNERS } from '../lib/shareholders';
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
