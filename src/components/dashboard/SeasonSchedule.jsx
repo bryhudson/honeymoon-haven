@@ -70,6 +70,9 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status }) {
                                         } else if (entry.status === 'ACTIVE') {
                                             cellBg = "bg-blue-100 text-blue-900 font-bold ring-2 ring-blue-500 ring-inset";
                                             badge = "Active Now";
+                                        } else if (entry.status === 'GRACE_PERIOD') {
+                                            cellBg = "bg-amber-50 text-amber-900 font-bold ring-2 ring-amber-500 ring-inset";
+                                            badge = "Grace Period";
                                         } else if (entry.status === 'SKIPPED') {
                                             cellBg = "bg-red-50 text-red-400";
                                             badge = "Skipped";

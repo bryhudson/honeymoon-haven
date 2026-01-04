@@ -202,6 +202,7 @@ export function mapOrderToSchedule(shareholders, bookings = []) {
     shareholders.forEach(s => userTurnCounts[s] = 0);
 
     let currentWindowStart = new Date(DRAFT_START);
+    let hasFoundActive = false;
 
     for (let i = 0; i < fullTurnOrder.length; i++) {
         const name = fullTurnOrder[i];
@@ -225,33 +226,22 @@ export function mapOrderToSchedule(shareholders, bookings = []) {
 
         if (isCompleted) {
             status = action.type === 'pass' ? 'PASSED' : 'COMPLETED';
-            // Window ends actually at action time
             let actionTime = action.createdAt || action.from;
             if (!actionTime) actionTime = windowStart;
-
-            // For display, the "Window" was technically available until timeout, 
-            // but effectively they used it from Start -> ActionTime.
             windowEnd = actionTime instanceof Date ? actionTime : new Date(actionTime);
-
-            // Next person starts after courtesy adjustment
             currentWindowStart = adjustForCourtesy(windowEnd);
-
         } else {
-            // No completion. 
-            // If we are "here" in the loop, check if this is the ACTIVE window or PAST/FUTURE
-            const now = new Date();
-            const projectedLimit = new Date(windowStart.getTime() + PICK_DURATION_MS);
-
+            // Not completed. Check if this is the ACTIVE window or GRACE PERIOD
             if (now > projectedLimit && windowStart < now) {
                 // Past / Timed Out
                 status = 'SKIPPED';
                 windowEnd = projectedLimit;
                 currentWindowStart = getOfficialStart(projectedLimit);
-            } else if (now >= windowStart && now <= projectedLimit) {
-                // Active Now
-                status = 'ACTIVE';
+            } else if (!hasFoundActive) {
+                // This is the first person who isn't done.
+                hasFoundActive = true;
+                status = (now < windowStart) ? 'GRACE_PERIOD' : 'ACTIVE';
                 windowEnd = projectedLimit;
-                // Next start is projected max
                 currentWindowStart = getOfficialStart(projectedLimit);
             } else {
                 // Future
