@@ -25,7 +25,7 @@
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
   }
- 
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -48,12 +48,46 @@
     --ring: 212.7 26.8% 83.9%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+
+  /* DayPicker Customization */
+  .rdp {
+    --rdp-cell-size: 50px !important;
+    /* Bigger cells */
+    --rdp-accent-color: hsl(var(--primary));
+    --rdp-background-color: hsl(var(--accent));
+    margin: 1em !important;
+  }
+
+  .rdp-day_selected:not([disabled]) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .rdp-day_range_middle {
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Scale up for larger screens */
+  .rdp-caption_label {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+  }
+
+  .rdp-head_cell {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
   }
 }

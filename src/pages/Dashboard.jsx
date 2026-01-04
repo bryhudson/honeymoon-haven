@@ -1,0 +1,942 @@
+import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import emailjs from '@emailjs/browser';
+import { BookingSection } from '../components/BookingSection';
+import {
+    getShareholderOrder,
+    CABIN_OWNERS,
+    calculateDraftSchedule,
+    mapOrderToSchedule,
+    DRAFT_CONFIG
+} from '../lib/shareholders';
+import { db } from '../lib/firebase';
+import { collection, addDoc, updateDoc, deleteDoc, getDocs, doc, onSnapshot, query, orderBy, writeBatch } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+// Basic Error Boundary
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.error("ErrorBoundary caught an error", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-8 text-center">
+                    <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong.</h1>
+                    <p className="font-mono text-sm bg-gray-100 p-4 rounded text-left overflow-auto">
+                        {this.state.error && this.state.error.toString()}
+                    </p>
+                    <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded">
+                        Reload Page
+                    </button>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
+function Countdown({ targetDate }) {
+    const [timeLeft, setTimeLeft] = useState("");
+
+    useEffect(() => {
+        const updateTimer = () => {
+            const now = new Date();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                setTimeLeft("Time's Up");
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            setTimeLeft(`${d}d ${h}h ${m}m ${s} s`);
+        };
+
+        updateTimer(); // Run immediately
+        const timer = setInterval(updateTimer, 1000);
+        return () => clearInterval(timer);
+    }, [targetDate]);
+
+    return <span className="font-mono text-lg font-bold text-primary">{timeLeft}</span>;
+}
+
+import { ConfirmationModal } from '../components/ConfirmationModal';
+
+export function Dashboard() {
+    const { currentUser, logout } = useAuth();
+    const navigate = useNavigate();
+
+    // Resolve logged in share holder name from email
+    // Handle multiple emails in one string (comma separated)
+    const loggedInShareholder = React.useMemo(() => {
+        if (!currentUser?.email) return null;
+        const owner = CABIN_OWNERS.find(o => o.email && o.email.includes(currentUser.email));
+        return owner ? owner.name : null;
+    }, [currentUser]);
+
+    const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
+
+    const [allDraftRecords, setAllDraftRecords] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isBooking, setIsBooking] = useState(false);
+    const [isPassing, setIsPassing] = useState(false);
+    const [showPreDraftModal, setShowPreDraftModal] = useState(false);
+    const [passData, setPassData] = useState({ name: '' });
+
+    // Quick Book State
+    const [quickStart, setQuickStart] = useState('');
+    const [quickEnd, setQuickEnd] = useState('');
+    const [editingBooking, setEditingBooking] = useState(null);
+
+    // SYSTEM SAFETY: Build v2.30
+    // Force Regular Users to Production Mode always
+    useEffect(() => {
+        if (!loading && currentUser && !isSuperAdmin) {
+            const currentMode = localStorage.getItem('DRAFT_MODE');
+            if (currentMode === 'TEST') {
+                console.log("Security: Forcing Production Mode for non-admin");
+                localStorage.removeItem('DRAFT_MODE');
+                window.location.reload();
+            }
+        }
+    }, [currentUser, isSuperAdmin, loading]);
+
+    // Global Confirmation State
+    const [confirmation, setConfirmation] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: () => { },
+        isDanger: false,
+        confirmText: "Confirm",
+        showCancel: true
+    });
+
+    const triggerConfirm = (title, message, onConfirm, isDanger = false, confirmText = "Confirm") => {
+        setConfirmation({
+            isOpen: true,
+            title,
+            message,
+            onConfirm,
+            isDanger,
+            confirmText,
+            showCancel: true
+        });
+    };
+
+    const triggerAlert = (title, message) => {
+        setConfirmation({
+            isOpen: true,
+            title,
+            message,
+            onConfirm: () => { }, // No-op
+            isDanger: false,
+            confirmText: "OK",
+            showCancel: false
+        });
+    };
+
+    const handleDiscard = async (bookingId) => {
+        triggerConfirm(
+            "Cancel Booking?",
+            "Are you sure you want to delete this draft? This cannot be undone.",
+            async () => {
+                // Send Cancellation Email
+                try {
+                    const bookingData = allDraftRecords.find(b => b.id === bookingId);
+                    if (bookingData) {
+                        await emailjs.send(
+                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                            {
+                                to_name: "Admin",
+                                to_email: "bryan.m.hudson@gmail.com", // OVERRIDE
+                                shareholder: bookingData.shareholderName || "Unknown",
+                                dates: `${format(bookingData.from, 'MMM d')} - ${format(bookingData.to, 'MMM d')}`,
+                                cabin: bookingData.cabinNumber || "?",
+                                price: "0",
+                                message: `Booking CANCELLED by user.`
+                            },
+                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                        );
+                    }
+                } catch (e) {
+                    console.error("Cancellation email failed", e);
+                }
+
+                await deleteDoc(doc(db, "bookings", bookingId));
+                setEditingBooking(null);
+                setIsBooking(false);
+            },
+            true, // Danger
+            "Delete Draft"
+        );
+    };
+
+    // Calculate status using ALL records (bookings + passes)
+    const status = calculateDraftSchedule(getShareholderOrder(2026), allDraftRecords);
+
+    // Debug Logging
+    useEffect(() => {
+        console.log("Booking Status Updated:", status);
+    }, [status.activePicker, status.windowEnds]);
+
+    // Filter for table display (exclude passes)
+    const bookingsForTable = allDraftRecords.filter(r => r.type !== 'pass');
+
+    const handleFinalize = async (bookingId, name) => {
+        triggerConfirm(
+            "Finalize Booking",
+            `Are you sure you want to finalize the turn for ${name}?\n\nThis will lock your turn and immediately open the booking window for the next shareholder.`,
+            async () => {
+                try {
+                    await updateDoc(doc(db, "bookings", bookingId), {
+                        isFinalized: true,
+                        createdAt: new Date() // Reset clock to now
+                    });
+
+                    // 1. Notify CURRENT user (Confirmation)
+                    try {
+                        const owner = CABIN_OWNERS.find(o => o.name === name);
+                        await emailjs.send(
+                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                            {
+                                to_name: name,
+                                to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: owner.email
+                                shareholder: name,
+                                dates: "Target Dates Locked",
+                                cabin: owner ? owner.cabin : "?",
+                                price: "CONFIRMED",
+                                message: `You have successfully finalized your booking. See you at the lake!`
+                            },
+                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                        );
+                    } catch (e) {
+                        console.error("Confirmation email failed", e);
+                    }
+
+                    // Notify NEXT shareholder
+                    if (status.nextPicker) {
+                        const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
+                        if (nextOwner && nextOwner.email) {
+                            try {
+                                await emailjs.send(
+                                    import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                                    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                                    {
+                                        to_name: nextOwner.name,
+                                        to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: nextOwner.email,
+                                        shareholder: nextOwner.name,
+                                        dates: "YOUR TURN NOW",
+                                        cabin: nextOwner.cabin,
+                                        price: "0",
+                                        message: `ACTION REQUIRED: ${name} has finalized their booking. The booking window is now OPEN for you. You have 48 hours to book.\n\nLog in here: ${window.location.origin}/login`
+                                    },
+                                    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                                );
+                                console.log("Notification sent to", nextOwner.name);
+                            } catch (e) {
+                                console.error("Next user email failed", e);
+                            }
+                        }
+                    }
+
+                    triggerAlert("Success", "Turn finalized! Next shareholder is now active.");
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Error finalizing turn: " + err.message);
+                }
+            },
+            false,
+            "Finalize Turn"
+        );
+    };
+
+    const handlePassSubmit = async (e) => {
+        e.preventDefault();
+        if (!passData.name) return triggerAlert("Selection Missing", "Please select your name.");
+
+        // triggerConfirm handled in the Modal, we just execute here? 
+        // No, the "Pass Turn" button in the modal submits the form.
+        // We should trigger the confirm step here.
+
+        // Actually, let's keep the Confirm Modal step just to be safe/consistent?
+        // Or is the "Pass Turn" modal itself essentially a confirm?
+        // "Confirm Pass" button is there.
+        // User asked for "standard overlay for all confirmation".
+        // Let's add one final "Are you sure?" check on top of the form, OR just treat the form submit as the trigger.
+        // The implementation_plan said "Remove the double-check confirm()".
+        // But wait, "Replace all native browser confirms".
+        // The "Pass Your Turn" screen IS a form. The "Confirm Pass" button is the submission.
+        // To be consistent with "Global Confirm Modals", maybe the "Pass Turn" screen simply IS the modal?
+        // Yes. So when they click "Confirm Pass" in the modal, it just goes.
+        // But checking the logic: "if (!confirm(...)) return;" was there.
+        // Let's REMOVE that check and just execute. The user already clicked "Confirm Pass" in a dedicated modal.
+
+        try {
+            // Check for existing draft to delete (replacing Draft with Pass)
+            const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
+            if (draft) {
+                await deleteDoc(doc(db, "bookings", draft.id));
+            }
+
+            await addDoc(collection(db, "bookings"), {
+                shareholderName: passData.name,
+                type: 'pass',
+                createdAt: new Date(),
+                from: new Date(),
+                to: new Date()
+            });
+
+            // 1. Notify CURRENT user (Pass Confirmation)
+            try {
+                const owner = CABIN_OWNERS.find(o => o.name === passData.name);
+                await emailjs.send(
+                    import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                    {
+                        to_name: passData.name,
+                        to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: owner.email
+                        shareholder: passData.name,
+                        dates: "N/A",
+                        cabin: "N/A",
+                        price: "PASSED",
+                        message: `You have successfully PASSED your turn.`
+                    },
+                    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                );
+            } catch (e) {
+                console.error("Pass email failed", e);
+            }
+
+            // Notify NEXT shareholder
+            if (status.nextPicker) {
+                const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
+                if (nextOwner && nextOwner.email) {
+                    try {
+                        await emailjs.send(
+                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                            {
+                                to_name: nextOwner.name,
+                                to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: nextOwner.email,
+                                shareholder: nextOwner.name,
+                                dates: "YOUR TURN NOW",
+                                cabin: nextOwner.cabin,
+                                price: "0",
+                                message: `ACTION REQUIRED: ${passData.name} has passed their turn. The booking window is now OPEN for you. You have 48 hours to book.\n\nLog in here: ${window.location.origin}/login`
+                            },
+                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                        );
+                        console.log("Notification sent to", nextOwner.name);
+                    } catch (e) {
+                        console.error("Next user email failed", e);
+                    }
+                }
+            }
+
+            triggerAlert("Turn Passed", "You have successfully passed your turn.");
+            setIsPassing(false);
+            setPassData({ name: '' });
+        } catch (err) {
+            console.error(err);
+            triggerAlert("Error", "Error passing turn: " + err.message);
+        }
+    };
+
+    const handleQuickBook = async () => {
+        if (!quickStart || !quickEnd) return triggerAlert("Dates Missing", "Please select start and end dates.");
+
+        const start = new Date(quickStart);
+        const end = new Date(quickEnd);
+
+        // Basic Validation
+        if (end <= start) return triggerAlert("Invalid Dates", "End date must be after start date.");
+
+        // Duration Check (7 days max)
+        const days = (end - start) / (1000 * 60 * 60 * 24);
+        if (days > 7) return triggerAlert("Too Long", "Maximum booking is 7 days.");
+
+        // Overlap Check
+        const isOverlap = allDraftRecords.some(b => {
+            // Skip cancelled/passes? (Passes have length? no, usually from=to). 
+            // Logic from BookingSection:
+            if (b.type === 'pass') return false;
+            const bStart = b.from?.toDate ? b.from.toDate() : new Date(b.from);
+            const bEnd = b.to?.toDate ? b.to.toDate() : new Date(b.to);
+            return (start < bEnd && end > bStart);
+        });
+
+        if (isOverlap) return triggerAlert("Unavailable", "Selected dates conflict with an existing booking.");
+
+        triggerConfirm(
+            "Confirm Quick Booking",
+            `Book ${format(start, 'MMM d')} - ${format(end, 'MMM d')} for ${status.activePicker}?\n\nThis will create a draft booking.`,
+            async () => {
+                try {
+                    const owner = CABIN_OWNERS.find(o => o.name === status.activePicker);
+                    await addDoc(collection(db, "bookings"), {
+                        shareholderName: status.activePicker,
+                        cabinNumber: owner ? owner.cabin : "?",
+                        from: start,
+                        to: end,
+                        guests: 1, // Default
+                        email: owner ? owner.email : "",
+                        partyName: status.activePicker,
+                        createdAt: new Date(),
+                        isFinalized: false // Creating as Draft
+                    });
+
+                    // Email Notification (Confirmation)
+                    try {
+                        const templateParams = {
+                            email: "bryan.m.hudson@gmail.com", // OVERRIDE
+                            name: status.activePicker,
+                            title: `Cabin ${owner?.cabin} Booking: ${format(start, 'MMM d')} - ${format(end, 'MMM d')} `,
+                            message: "Draft saved from Dashboard Quick Book."
+                        };
+                        emailjs.send(
+                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                            templateParams,
+                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                        );
+                    } catch (e) {
+                        console.error("Email failed", e);
+                    }
+
+                    triggerAlert("Draft Created", "Draft saved! Please FINALIZE below to confirm.");
+                    setQuickStart('');
+                    setQuickEnd('');
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Error creating booking: " + err.message);
+                }
+            },
+            false,
+            "Create Draft"
+        );
+    };
+
+
+    useEffect(() => {
+        const q = query(collection(db, "bookings"), orderBy("from"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const records = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    from: data.from?.toDate ? data.from.toDate() : (data.from ? new Date(data.from) : null),
+                    to: data.to?.toDate ? data.to.toDate() : (data.to ? new Date(data.to) : null),
+                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                };
+            });
+            setAllDraftRecords(records);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching bookings:", error);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const currentOrder = getShareholderOrder(2026);
+
+    // Auto-populate Pass Form
+    useEffect(() => {
+        if (isPassing && status.activePicker) {
+            const owner = CABIN_OWNERS.find(o => o.name === status.activePicker);
+            setPassData({
+                name: status.activePicker
+            });
+        }
+    }, [isPassing, status.activePicker]);
+
+
+
+
+
+
+
+
+
+    const activeUserDraft = allDraftRecords.find(b => b.shareholderName === status.activePicker && b.isFinalized === false);
+
+    return (
+        <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4">
+            <div className="flex justify-between items-center mb-2">
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
+            </div>
+
+            {/* Draft Status Card */}
+            <div className="bg-card p-4 md:p-6 rounded-xl shadow-md border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex-1">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        📅 Current Booking Status
+                    </h2>
+
+                    <div className="mt-4 mb-6">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide font-bold mb-1">Current Turn</p>
+                        <p className="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">{status.activePicker || "None"}</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                            Phase: <span className="font-medium text-foreground">{status.phase === 'PRE_DRAFT' ? 'Pending Start' : status.phase.replace('_', ' ')}</span>
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
+                        {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
+                            <div className="text-sm text-muted-foreground italic py-2">
+                                {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
+                            </div>
+                        ) : activeUserDraft ? (
+                            <>
+                                <button
+                                    onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
+                                >
+                                    Finalize Booking
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setEditingBooking(activeUserDraft);
+                                        setIsBooking(true);
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Edit Booking
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {/* "Book Turn" button is hidden as per instruction, replaced by Quick Book section */}
+                                {/* <button
+                                    onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsBooking(true)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Book Turn
+                                </button> */}
+                                <button
+                                    onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Pass Turn
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-8 bg-muted/30 p-4 rounded-lg">
+                    {/* Active Picker moved to left side */}
+                    {(() => {
+                        const isPreDraft = status.phase === 'PRE_DRAFT';
+                        const targetDate = isPreDraft ? status.draftStart : status.windowEnds;
+                        const label = isPreDraft ? "Draft Starts" : "Time Remaining";
+
+                        if (!targetDate || isNaN(new Date(targetDate))) return null;
+
+                        return (
+                            <div className="text-center border-t md:border-t-0 pt-4 md:pt-0 md:border-l md:pl-8">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
+                                <p className="text-sm font-medium text-foreground mb-1">
+                                    {format(targetDate, 'MMM d, h:mm a')}
+                                </p>
+                                <Countdown targetDate={targetDate} key={targetDate instanceof Date ? targetDate.getTime() : targetDate} />
+                            </div>
+                        );
+                    })()}
+                </div>
+            </div >
+
+            {/* Quick Booking Section (for Active Picker) */}
+            {status.activePicker &&
+                (loggedInShareholder === status.activePicker || isSuperAdmin) &&  // CRITICAL CHECK
+                !activeUserDraft &&
+                (status.phase === 'ROUND_1' || status.phase === 'ROUND_2') && (
+                    <div className="bg-card border rounded-lg p-4 md:p-6 mb-8 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 className="text-2xl font-bold">It's Your Turn!</h2>
+                                <p className="text-muted-foreground">Please select your dates for {status.phase === 'ROUND_1' ? 'Round 1' : 'Round 2'}.</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setPassData({ name: status.activePicker });
+                                    setIsPassing(true); // Use setIsPassing to show the pass modal
+                                }}
+                                className="text-sm text-muted-foreground underline hover:text-primary"
+                            >
+                                Skip/Pass this turn
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-4 items-end">
+                            <div className="grid gap-1.5 flex-1">
+                                <label className="text-sm font-medium uppercase text-muted-foreground">Start Date</label>
+                                <input
+                                    type="date"
+                                    className="flex h-12 md:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
+                                    value={quickStart}
+                                    min="2026-03-01"
+                                    onChange={(e) => setQuickStart(e.target.value)}
+                                    onClick={(e) => e.target.showPicker?.()}
+                                />
+                            </div>
+                            <div className="grid gap-1.5 flex-1">
+                                <label className="text-sm font-medium uppercase text-muted-foreground">End Date</label>
+                                <input
+                                    type="date"
+                                    className="flex h-12 md:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
+                                    value={quickEnd}
+                                    min={quickStart || "2026-03-01"}
+                                    onChange={(e) => setQuickEnd(e.target.value)}
+                                    onClick={(e) => e.target.showPicker?.()}
+                                />
+                            </div>
+                            <button
+                                onClick={handleQuickBook}
+                                className="h-12 md:h-10 px-8 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-medium"
+                            >
+                                Confirm Booking
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+            <div className="flex flex-col gap-4">
+                <h2 className="text-2xl font-bold tracking-tight">Recent Bookings</h2>
+                <div className="bg-card border rounded-lg shadow-sm overflow-hidden mb-8">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                                <tr>
+                                    <th scope="col" className="px-3 md:px-6 py-4">Cabin #</th>
+                                    <th scope="col" className="px-3 md:px-6 py-4">Shareholder</th>
+                                    <th scope="col" className="px-3 md:px-6 py-4">Dates</th>
+                                    <th scope="col" className="px-3 md:px-6 py-4">Guests</th>
+                                    <th scope="col" className="px-3 md:px-6 py-4">Status</th>
+                                    <th scope="col" className="px-3 md:px-6 py-4">Duty</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {bookingsForTable.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-12 text-center text-muted-foreground">
+                                            No bookings found.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    bookingsForTable.map((booking, index) => {
+                                        // Calculate total bookings for this shareholder
+                                        const shareholderBookings = bookingsForTable.filter(b => b.shareholderName === booking.shareholderName).length;
+                                        const needsWinterization = shareholderBookings > 3;
+
+                                        return (
+                                            <tr key={index} className="hover:bg-muted/10 transition-colors">
+                                                <td className="px-3 md:px-6 py-4 font-bold">{booking.cabinNumber || "-"}</td>
+                                                <td className="px-3 md:px-6 py-4 font-medium">{booking.shareholderName || booking.partyName || "-"}</td>
+                                                <td className="px-3 md:px-6 py-4 text-sm">
+                                                    {(booking.from && booking.to) ? (
+                                                        <>
+                                                            {format(booking.from, 'MMM d')} - {format(booking.to, 'MMM d, yyyy')}
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-destructive">Invalid Date</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 md:px-6 py-4">{booking.guests || "-"}</td>
+                                                <td className="px-3 md:px-6 py-4">
+                                                    {booking.isFinalized ? (
+                                                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                            Confirmed
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                                            In Progress
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 md:px-6 py-4">
+                                                    {needsWinterization && (
+                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20" title="More than 3 bookings">
+                                                            ❄️ Duty
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div className="">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold tracking-tight">2026 Season Booking Schedule</h2>
+                </div>
+
+                <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
+                    <div className="p-4 bg-muted/20 border-b">
+                        <p className="text-muted-foreground text-sm">
+                            <strong>How it works:</strong> The booking order rotates by one spot annually.
+                            <br />
+                            <strong>Round 1:</strong> 2 Days per person (Forward order).
+                            <br />
+                            <strong>Round 2:</strong> 2 Days per person (Reverse "Snake" order).
+                            <br />
+                            <strong>Open Season:</strong> Starts after Round 2. First come, first serve (48h cooldown).
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                                <tr>
+                                    <th className="px-6 py-4">Order</th>
+                                    <th className="px-6 py-4">Cabin #</th>
+                                    <th className="px-6 py-4">Shareholder</th>
+                                    <th className="px-6 py-4">First Pass (Forward)</th>
+                                    <th className="px-6 py-4">Second Pass (Snake Back)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {(() => {
+                                    // Pre-calculate full schedule history/projection
+                                    const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords);
+
+                                    return currentOrder.map((name, index) => {
+                                        const owner = CABIN_OWNERS.find(o => o.name === name);
+                                        const cabinNumber = owner ? owner.cabin : "-";
+
+                                        // Find R1 and R2 entries for this person
+                                        // Note: mapOrderToSchedule returns 24 items in order
+                                        // Round 1 is indices 0-11. Round 2 is 12-23 (reversed order).
+
+                                        // R1 entry is simply at index `index`
+                                        const r1Entry = fullSchedule[index];
+
+                                        // R2 entry is at index `12 + (11 - index)` because of snake reverse? 
+                                        // Let's verify: mapOrderToSchedule builds: [...R1Order, ...R1Order.reverse()]
+                                        // So R2 part starts at 12.
+                                        // 1st person in List (index 0) is Last in R2.
+                                        // So for index 0 (Mike), his R2 slot is the VERY LAST item (index 23).
+                                        // For index 11 (Dom), his R2 slot is the FIRST of R2 (index 12).
+                                        const r2Entry = fullSchedule[12 + (11 - index)];
+
+                                        const isActive = name === status.activePicker;
+
+                                        // Helper to render cell
+                                        const renderCell = (entry, label) => {
+                                            if (!entry) return <span className="text-gray-300">-</span>;
+
+                                            let cellBg = "";
+                                            let badge = null;
+
+                                            if (entry.status === 'COMPLETED') {
+                                                cellBg = "bg-green-50 text-green-700";
+                                                badge = "✓ Done";
+                                            } else if (entry.status === 'PASSED') {
+                                                cellBg = "bg-gray-100 text-gray-500 line-through";
+                                                badge = "Passed";
+                                            } else if (entry.status === 'ACTIVE') {
+                                                cellBg = "bg-blue-100 text-blue-900 font-bold ring-2 ring-blue-500 ring-inset";
+                                                badge = "Active Now";
+                                            } else if (entry.status === 'SKIPPED') {
+                                                cellBg = "bg-red-50 text-red-400";
+                                                badge = "Skipped";
+                                            } else {
+                                                // Future
+                                                cellBg = "text-muted-foreground";
+                                            }
+
+                                            return (
+                                                <div className={`px-3 py-2 rounded md:w-fit ${cellBg} `}>
+                                                    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5 opacity-70">
+                                                        {badge || label}
+                                                    </div>
+                                                    <div>
+                                                        {format(entry.start, 'MMM d, h:mm a')}
+                                                    </div>
+                                                </div>
+                                            );
+                                        };
+
+
+                                        return (
+                                            <tr key={name} className={`transition-colors border-l-4 ${isActive ? "bg-blue-50/50 border-l-blue-600 shadow-sm" : "hover:bg-muted/10 border-l-transparent"} `}>
+                                                <td className="px-6 py-4 font-mono text-muted-foreground">
+                                                    #{index + 1}
+                                                </td>
+                                                <td className="px-6 py-4 font-bold">{cabinNumber}</td>
+                                                <td className="px-6 py-4 font-medium text-lg">
+                                                    {name}
+                                                    {/* Show simplified status badge next to name if needed */}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {renderCell(r1Entry, "Round 1")}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {renderCell(r2Entry, "Round 2")}
+                                                </td>
+                                            </tr>
+                                        );
+                                    });
+                                })()}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {/* Edit / Booking Modal Overlay */}
+            {isBooking && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-4 pb-4 md:pt-10 md:pb-10">
+                    <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
+                        <div className="p-4 border-b flex justify-between items-center bg-muted/20">
+                            <h2 className="text-lg font-semibold">
+                                {editingBooking ? "Edit Booking" : "New Booking"}
+                            </h2>
+                            <button
+                                onClick={() => { setIsBooking(false); setEditingBooking(null); }}
+                                className="text-muted-foreground hover:text-foreground p-2"
+                            >
+                                ✕ Close
+                            </button>
+                        </div>
+                        <div className="p-4 md:p-6 max-h-[85vh] overflow-y-auto">
+                            <BookingSection
+                                onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
+                                initialBooking={editingBooking}
+                                activePicker={status.activePicker}
+                                onPass={() => { setIsBooking(false); setIsPassing(true); }}
+                                onDiscard={handleDiscard}
+                                onShowAlert={triggerAlert}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Pass Turn Modal Overlay */}
+            {isPassing && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
+                        <h2 className="text-2xl font-bold mb-2 text-destructive">Pass Your Turn</h2>
+                        <p className="text-sm text-muted-foreground mb-6">
+                            Are you sure? Passing skips your turn for this round.
+                            <br />
+                            The booking window will <strong>immediately unlock</strong> for the next shareholder.
+                        </p>
+
+                        <form onSubmit={handlePassSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Shareholder Passing Turn</label>
+                                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold text-foreground items-center">
+                                    {passData.name || "Loading..."}
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPassing(false)}
+                                    className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium transition-colors"
+                                >
+                                    Confirm Pass
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Global Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmation.isOpen}
+                onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmation.onConfirm}
+                title={confirmation.title}
+                message={confirmation.message}
+                isDanger={confirmation.isDanger}
+                confirmText={confirmation.confirmText}
+                showCancel={confirmation.showCancel}
+            />
+
+            {/* Pre-Draft Modal */}
+            {showPreDraftModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+                        <div className="flex items-center gap-3 text-amber-600">
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <h3 className="font-bold text-lg">Booking Not Started</h3>
+                        </div>
+                        <p className="text-muted-foreground">
+                            Booking and passing actions are disabled until the schedule officially begins.
+                        </p>
+                        <div className="bg-muted p-3 rounded-md text-sm font-medium text-center">
+                            Opens: {format(status.draftStart, 'PPP p')}
+                        </div>
+                        <button
+                            onClick={() => setShowPreDraftModal(false)}
+                            className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+                        >
+                            Understood
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <div className="mt-12 pt-8 border-t text-center space-y-2">
+                <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.43 - Login Secured</p>
+
+                {isSuperAdmin && (
+                    <div className="mt-4 text-xs">
+                        <a href="#/admin" className="text-muted-foreground hover:text-primary underline">Admin Dashboard</a>
+                    </div>
+                )}
+            </div>
+        </div >
+    );
+}
+
+export default function DashboardWrapper() {
+    return (
+        <ErrorBoundary>
+            <Dashboard />
+        </ErrorBoundary>
+    );
+}
+

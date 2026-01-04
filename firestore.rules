@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Verify data structure
+    function isValidBooking() {
+      let data = request.resource.data;
+      return 
+        // Must have a shareholder Name
+        data.shareholderName is string && data.shareholderName.size() > 0 &&
+        
+        // Must have Dates
+        data.from is timestamp &&
+        data.to is timestamp &&
+        data.createdAt is timestamp &&
+        
+        // Type must be booking or pass
+        (data.type == 'booking' || data.type == 'pass') &&
+        
+        // Basic Logic
+        data.to > data.from;
+    }
+
+    match /bookings/{bookingId} {
+      // READ: Publicly readable (required for Dashboard)
+      allow read: if true;
+
+      // WRITE: Allow if validates schema
+      // Note: Since we have no Login, we cannot restrict WHO writes, only WHAT is written.
+      allow create: if isValidBooking();
+      allow update: if isValidBooking();
+      
+      // DELETE: functionality required for "Reset Simulation" and "Edit Booking"
+      allow delete: if true;
+    }
+  }
+}

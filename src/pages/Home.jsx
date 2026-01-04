@@ -2,34 +2,29 @@ import React from 'react';
 import { Wifi, MapPin, Users, Waves } from 'lucide-react';
 import { BookingSection } from '../components/BookingSection';
 
+
 export function Home() {
     return (
-        <div className="flex flex-col gap-16 pb-10">
-            {/* Hero Section */}
-            <section className="relative h-[600px] w-full overflow-hidden">
-                <img
-                    src="/hero.png"
-                    alt="Sunny Lake Cowichan"
-                    className="h-full w-full object-cover brightness-75"
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 drop-shadow-lg">
-                        Escape to the Lake
-                    </h1>
-                    <p className="text-lg md:text-xl max-w-2xl drop-shadow-md mb-8">
-                        Experience tranquility in our cozy lakeside trailer. Perfect for family getaways and peaceful retreats.
-                    </p>
-                    <a
-                        href="#book"
-                        className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-lg font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-                    >
-                        Book Your Stay
-                    </a>
-                </div>
+        <div className="flex flex-col gap-16 py-10">
+            {/* Intro / Header */}
+            <section className="text-center space-y-4 pt-4">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
+                    HHR Trailer Booking
+                </h1>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                    Your peaceful lakeside escape.
+                </p>
             </section>
 
-            {/* Details Section */}
+            {/* Booking Section */}
+            <BookingSection />
+
+            {/* What's Included */}
             <section id="details" className="container mx-auto px-4">
+                <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold tracking-tight mb-2">What's Included</h2>
+                    <p className="text-muted-foreground">Everything you need for a comfortable stay.</p>
+                </div>
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
                     <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
                         <div className="p-3 rounded-full bg-primary/10 mb-4">
@@ -88,7 +83,27 @@ export function Home() {
                 </div>
             </section>
 
-            <BookingSection />
+            {/* Guest Guide / Rules */}
+            <section className="container mx-auto px-4 bg-muted/20 py-12 rounded-2xl">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold tracking-tight mb-4">Guest Guide</h2>
+                    <p className="text-muted-foreground">Everything you need to know for a smooth stay.</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-8">
+                    <div className="bg-card p-6 rounded-lg border shadow-sm text-center">
+                        <h3 className="font-semibold text-xl mb-2">How to Book</h3>
+                        <p className="text-muted-foreground text-sm">Select your dates above. We'll email you to arrange payment via <strong>E-Transfer</strong>. Booking is confirmed once payment is received.</p>
+                    </div>
+                    <div className="bg-card p-6 rounded-lg border shadow-sm text-center">
+                        <h3 className="font-semibold text-xl mb-2">Check-In</h3>
+                        <p className="text-muted-foreground text-sm">Check-in is at <strong>3:00 PM</strong>. We will email you the door code and arrival instructions 24 hours before your stay.</p>
+                    </div>
+                    <div className="bg-card p-6 rounded-lg border shadow-sm text-center">
+                        <h3 className="font-semibold text-xl mb-2">Check-Out</h3>
+                        <p className="text-muted-foreground text-sm">Check-out is at <strong>11:00 AM</strong>. Please review the cleaning checklist provided in the trailer before you leave.</p>
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }
