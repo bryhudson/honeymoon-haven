@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import emailjs from '@emailjs/browser';
-import { BookingSection } from '../components/BookingSection';
-import {
-    getShareholderOrder,
-    CABIN_OWNERS,
-    calculateDraftSchedule,
-    mapOrderToSchedule,
-    DRAFT_CONFIG
-} from '../lib/shareholders';
 import { db } from '../lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, getDocs, doc, onSnapshot, query, orderBy, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ConfirmationModal } from '../components/ConfirmationModal';
+import { useBookingRealtime } from '../hooks/useBookingRealtime';
+import { StatusCard } from '../components/dashboard/StatusCard';
+import { RecentBookings } from '../components/dashboard/RecentBookings';
+import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
@@ -48,36 +45,10 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function Countdown({ targetDate }) {
-    const [timeLeft, setTimeLeft] = useState("");
+// Status Cards and Countdowns moved to components
 
-    useEffect(() => {
-        const updateTimer = () => {
-            const now = new Date();
-            const diff = targetDate - now;
 
-            if (diff <= 0) {
-                setTimeLeft("Time's Up");
-                return;
-            }
 
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-            setTimeLeft(`${d}d ${h}h ${m}m ${s} s`);
-        };
-
-        updateTimer(); // Run immediately
-        const timer = setInterval(updateTimer, 1000);
-        return () => clearInterval(timer);
-    }, [targetDate]);
-
-    return <span className="font-mono text-lg font-bold text-primary">{timeLeft}</span>;
-}
-
-import { ConfirmationModal } from '../components/ConfirmationModal';
 
 export function Dashboard() {
     const { currentUser, logout } = useAuth();
@@ -93,8 +64,9 @@ export function Dashboard() {
 
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
-    const [allDraftRecords, setAllDraftRecords] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // Using Custom Hook for Realtime Data
+    const { allDraftRecords, loading, status, currentOrder } = useBookingRealtime();
+
     const [isBooking, setIsBooking] = useState(false);
     const [isPassing, setIsPassing] = useState(false);
     const [showPreDraftModal, setShowPreDraftModal] = useState(false);
@@ -190,16 +162,10 @@ export function Dashboard() {
         );
     };
 
-    // Calculate status using ALL records (bookings + passes)
-    const status = calculateDraftSchedule(getShareholderOrder(2026), allDraftRecords);
-
     // Debug Logging
     useEffect(() => {
         console.log("Booking Status Updated:", status);
     }, [status.activePicker, status.windowEnds]);
-
-    // Filter for table display (exclude passes)
-    const bookingsForTable = allDraftRecords.filter(r => r.type !== 'pass');
 
     const handleFinalize = async (bookingId, name) => {
         triggerConfirm(
@@ -437,30 +403,6 @@ export function Dashboard() {
     };
 
 
-    useEffect(() => {
-        const q = query(collection(db, "bookings"), orderBy("from"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const records = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    ...data,
-                    from: data.from?.toDate ? data.from.toDate() : (data.from ? new Date(data.from) : null),
-                    to: data.to?.toDate ? data.to.toDate() : (data.to ? new Date(data.to) : null),
-                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-                };
-            });
-            setAllDraftRecords(records);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching bookings:", error);
-            setLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    const currentOrder = getShareholderOrder(2026);
-
     // Auto-populate Pass Form
     useEffect(() => {
         if (isPassing && status.activePicker) {
@@ -471,14 +413,6 @@ export function Dashboard() {
         }
     }, [isPassing, status.activePicker]);
 
-
-
-
-
-
-
-
-
     const activeUserDraft = allDraftRecords.find(b => b.shareholderName === status.activePicker && b.isFinalized === false);
 
     return (
@@ -487,85 +421,42 @@ export function Dashboard() {
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
             </div>
 
-            {/* Draft Status Card */}
-            <div className="bg-card p-4 md:p-6 rounded-xl shadow-md border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex-1">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        📅 Current Booking Status
-                    </h2>
-
-                    <div className="mt-4 mb-6">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide font-bold mb-1">Current Turn</p>
-                        <p className="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">{status.activePicker || "None"}</p>
-                        <p className="text-sm text-muted-foreground mt-2">
-                            Phase: <span className="font-medium text-foreground">{status.phase === 'PRE_DRAFT' ? 'Pending Start' : status.phase.replace('_', ' ')}</span>
-                        </p>
+            {/* Draft Status Card using Component */}
+            <StatusCard status={status}>
+                {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
+                {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
+                    <div className="text-sm text-muted-foreground italic py-2">
+                        {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
                     </div>
-                    <div className="flex gap-3">
-                        {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
-                        {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
-                            <div className="text-sm text-muted-foreground italic py-2">
-                                {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
-                            </div>
-                        ) : activeUserDraft ? (
-                            <>
-                                <button
-                                    onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
-                                >
-                                    Finalize Booking
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setEditingBooking(activeUserDraft);
-                                        setIsBooking(true);
-                                    }}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                >
-                                    Edit Booking
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* "Book Turn" button is hidden as per instruction, replaced by Quick Book section */}
-                                {/* <button
-                                    onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsBooking(true)}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 py-2 shadow-sm transition-all"
-                                >
-                                    Book Turn
-                                </button> */}
-                                <button
-                                    onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                >
-                                    Pass Turn
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-8 bg-muted/30 p-4 rounded-lg">
-                    {/* Active Picker moved to left side */}
-                    {(() => {
-                        const isPreDraft = status.phase === 'PRE_DRAFT';
-                        const targetDate = isPreDraft ? status.draftStart : status.windowEnds;
-                        const label = isPreDraft ? "Draft Starts" : "Time Remaining";
-
-                        if (!targetDate || isNaN(new Date(targetDate))) return null;
-
-                        return (
-                            <div className="text-center border-t md:border-t-0 pt-4 md:pt-0 md:border-l md:pl-8">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
-                                <p className="text-sm font-medium text-foreground mb-1">
-                                    {format(targetDate, 'MMM d, h:mm a')}
-                                </p>
-                                <Countdown targetDate={targetDate} key={targetDate instanceof Date ? targetDate.getTime() : targetDate} />
-                            </div>
-                        );
-                    })()}
-                </div>
-            </div >
+                ) : activeUserDraft ? (
+                    <>
+                        <button
+                            onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
+                            className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
+                        >
+                            Finalize Booking
+                        </button>
+                        <button
+                            onClick={() => {
+                                setEditingBooking(activeUserDraft);
+                                setIsBooking(true);
+                            }}
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                        >
+                            Edit Booking
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                        >
+                            Pass Turn
+                        </button>
+                    </>
+                )}
+            </StatusCard>
 
             {/* Quick Booking Section (for Active Picker) */}
             {status.activePicker &&
@@ -622,195 +513,11 @@ export function Dashboard() {
                     </div>
                 )}
 
-            <div className="flex flex-col gap-4">
-                <h2 className="text-2xl font-bold tracking-tight">Recent Bookings</h2>
-                <div className="bg-card border rounded-lg shadow-sm overflow-hidden mb-8">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
-                                <tr>
-                                    <th scope="col" className="px-3 md:px-6 py-4">Cabin #</th>
-                                    <th scope="col" className="px-3 md:px-6 py-4">Shareholder</th>
-                                    <th scope="col" className="px-3 md:px-6 py-4">Dates</th>
-                                    <th scope="col" className="px-3 md:px-6 py-4">Guests</th>
-                                    <th scope="col" className="px-3 md:px-6 py-4">Status</th>
-                                    <th scope="col" className="px-3 md:px-6 py-4">Duty</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y">
-                                {bookingsForTable.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-muted-foreground">
-                                            No bookings found.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    bookingsForTable.map((booking, index) => {
-                                        // Calculate total bookings for this shareholder
-                                        const shareholderBookings = bookingsForTable.filter(b => b.shareholderName === booking.shareholderName).length;
-                                        const needsWinterization = shareholderBookings > 3;
-
-                                        return (
-                                            <tr key={index} className="hover:bg-muted/10 transition-colors">
-                                                <td className="px-3 md:px-6 py-4 font-bold">{booking.cabinNumber || "-"}</td>
-                                                <td className="px-3 md:px-6 py-4 font-medium">{booking.shareholderName || booking.partyName || "-"}</td>
-                                                <td className="px-3 md:px-6 py-4 text-sm">
-                                                    {(booking.from && booking.to) ? (
-                                                        <>
-                                                            {format(booking.from, 'MMM d')} - {format(booking.to, 'MMM d, yyyy')}
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-destructive">Invalid Date</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-3 md:px-6 py-4">{booking.guests || "-"}</td>
-                                                <td className="px-3 md:px-6 py-4">
-                                                    {booking.isFinalized ? (
-                                                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                            Confirmed
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                                                            In Progress
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-3 md:px-6 py-4">
-                                                    {needsWinterization && (
-                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20" title="More than 3 bookings">
-                                                            ❄️ Duty
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <RecentBookings bookings={allDraftRecords} />
 
 
 
-            <div className="">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold tracking-tight">2026 Season Booking Schedule</h2>
-                </div>
-
-                <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
-                    <div className="p-4 bg-muted/20 border-b">
-                        <p className="text-muted-foreground text-sm">
-                            <strong>How it works:</strong> The booking order rotates by one spot annually.
-                            <br />
-                            <strong>Round 1:</strong> 2 Days per person (Forward order).
-                            <br />
-                            <strong>Round 2:</strong> 2 Days per person (Reverse "Snake" order).
-                            <br />
-                            <strong>Open Season:</strong> Starts after Round 2. First come, first serve (48h cooldown).
-                        </p>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
-                                <tr>
-                                    <th className="px-6 py-4">Order</th>
-                                    <th className="px-6 py-4">Cabin #</th>
-                                    <th className="px-6 py-4">Shareholder</th>
-                                    <th className="px-6 py-4">First Pass (Forward)</th>
-                                    <th className="px-6 py-4">Second Pass (Snake Back)</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y">
-                                {(() => {
-                                    // Pre-calculate full schedule history/projection
-                                    const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords);
-
-                                    return currentOrder.map((name, index) => {
-                                        const owner = CABIN_OWNERS.find(o => o.name === name);
-                                        const cabinNumber = owner ? owner.cabin : "-";
-
-                                        // Find R1 and R2 entries for this person
-                                        // Note: mapOrderToSchedule returns 24 items in order
-                                        // Round 1 is indices 0-11. Round 2 is 12-23 (reversed order).
-
-                                        // R1 entry is simply at index `index`
-                                        const r1Entry = fullSchedule[index];
-
-                                        // R2 entry is at index `12 + (11 - index)` because of snake reverse? 
-                                        // Let's verify: mapOrderToSchedule builds: [...R1Order, ...R1Order.reverse()]
-                                        // So R2 part starts at 12.
-                                        // 1st person in List (index 0) is Last in R2.
-                                        // So for index 0 (Mike), his R2 slot is the VERY LAST item (index 23).
-                                        // For index 11 (Dom), his R2 slot is the FIRST of R2 (index 12).
-                                        const r2Entry = fullSchedule[12 + (11 - index)];
-
-                                        const isActive = name === status.activePicker;
-
-                                        // Helper to render cell
-                                        const renderCell = (entry, label) => {
-                                            if (!entry) return <span className="text-gray-300">-</span>;
-
-                                            let cellBg = "";
-                                            let badge = null;
-
-                                            if (entry.status === 'COMPLETED') {
-                                                cellBg = "bg-green-50 text-green-700";
-                                                badge = "✓ Done";
-                                            } else if (entry.status === 'PASSED') {
-                                                cellBg = "bg-gray-100 text-gray-500 line-through";
-                                                badge = "Passed";
-                                            } else if (entry.status === 'ACTIVE') {
-                                                cellBg = "bg-blue-100 text-blue-900 font-bold ring-2 ring-blue-500 ring-inset";
-                                                badge = "Active Now";
-                                            } else if (entry.status === 'SKIPPED') {
-                                                cellBg = "bg-red-50 text-red-400";
-                                                badge = "Skipped";
-                                            } else {
-                                                // Future
-                                                cellBg = "text-muted-foreground";
-                                            }
-
-                                            return (
-                                                <div className={`px-3 py-2 rounded md:w-fit ${cellBg} `}>
-                                                    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5 opacity-70">
-                                                        {badge || label}
-                                                    </div>
-                                                    <div>
-                                                        {format(entry.start, 'MMM d, h:mm a')}
-                                                    </div>
-                                                </div>
-                                            );
-                                        };
-
-
-                                        return (
-                                            <tr key={name} className={`transition-colors border-l-4 ${isActive ? "bg-blue-50/50 border-l-blue-600 shadow-sm" : "hover:bg-muted/10 border-l-transparent"} `}>
-                                                <td className="px-6 py-4 font-mono text-muted-foreground">
-                                                    #{index + 1}
-                                                </td>
-                                                <td className="px-6 py-4 font-bold">{cabinNumber}</td>
-                                                <td className="px-6 py-4 font-medium text-lg">
-                                                    {name}
-                                                    {/* Show simplified status badge next to name if needed */}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {renderCell(r1Entry, "Round 1")}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {renderCell(r2Entry, "Round 2")}
-                                                </td>
-                                            </tr>
-                                        );
-                                    });
-                                })()}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} />
 
             {/* Edit / Booking Modal Overlay */}
             {isBooking && (
