@@ -62,6 +62,28 @@ export const DRAFT_CONFIG = {
     IS_TEST_MODE: isTestMode // Exported for UI
 };
 
+/**
+ * STRICT RULE: Every turn officially starts at 10:00 AM.
+ * If finished before 10 AM, starts at 10 AM today.
+ * If finished after 10 AM, starts at 10 AM tomorrow.
+ */
+export function getOfficialStart(finishTime) {
+    if (!finishTime) return null;
+    const date = new Date(finishTime);
+    const tenAM = new Date(date);
+    tenAM.setHours(10, 0, 0, 0);
+
+    // If we finished at or before 10:00:00 AM, start at 10 AM today
+    if (date.getTime() <= tenAM.getTime()) {
+        return tenAM;
+    } else {
+        // Start at 10 AM tomorrow
+        const nextDay = new Date(tenAM);
+        nextDay.setDate(nextDay.getDate() + 1);
+        return nextDay;
+    }
+}
+
 export function calculateDraftSchedule(shareholders, bookings = [], now = new Date()) {
     const DRAFT_START = DRAFT_CONFIG.START_DATE;
     const PICK_DURATION_MS = DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000;
@@ -76,6 +98,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     let nextPicker = null;
     let activeWindowEnd = null;
     let phase = 'PRE_DRAFT';
+    let isGracePeriod = false;
 
     // Track how many turns each user has taken to match with bookings
     const userTurnCounts = {};
@@ -89,7 +112,6 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         userTurnCounts[shareholderName]++; // Increment for next time we see them
 
         // Find if they have a booking/pass for this slot
-        // Get all actions for this user, sorted by time
         const userActions = bookings
             .filter(b => b.shareholderName === shareholderName)
             .sort((a, b) => a.createdAt - b.createdAt);
@@ -98,35 +120,30 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
         if (action) {
             // Check if this action completes the turn (Pass or Finalized Booking)
-            // Legacy bookings (undefined isFinalized) count as finalized
             const isCompleted = action.type === 'pass' || action.isFinalized !== false;
 
             if (isCompleted) {
-                // Turn is done. Next window starts at action time.
+                // Turn is done. Next window starts at official 10 AM anchor.
                 let actionTime = action.createdAt || action.from;
                 if (!actionTime) actionTime = currentWindowStart;
 
                 const pTime = actionTime instanceof Date ? actionTime : new Date(actionTime);
                 if (!isNaN(pTime.getTime())) {
-                    // STRICT RULE: Next window starts at 10:00 AM the FOLLOWING day
-                    let nextStart = new Date(pTime);
-                    nextStart.setDate(nextStart.getDate() + 1);
-                    nextStart.setHours(10, 0, 0, 0);
-                    currentWindowStart = nextStart;
+                    currentWindowStart = getOfficialStart(pTime);
                 }
             } else {
                 // Booking exists but is NOT finalized (Draft Mode).
-                // They are holding the slot. Check if they timed out.
                 const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);
 
                 if (now > windowLimit) {
-                    // TIMEOUT implies Finalization (Force Advance)
-                    currentWindowStart = windowLimit;
+                    // TIMEOUT implies Finalization and move to next 10 AM
+                    currentWindowStart = getOfficialStart(windowLimit);
                 } else {
                     // Still active and within window
                     activePicker = shareholderName;
                     nextPicker = fullTurnOrder[i + 1] || null;
                     activeWindowEnd = windowLimit;
+                    isGracePeriod = now < currentWindowStart;
                     phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                     break;
                 }
@@ -137,14 +154,13 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
             if (now > windowLimit) {
                 // TIMEOUT / IMPLICIT PASS
-                // The window effectively ended at limit.
-                currentWindowStart = windowLimit;
-                // Continue loop to next person
+                currentWindowStart = getOfficialStart(windowLimit);
             } else {
                 // THEY ARE ACTIVE
                 activePicker = shareholderName;
                 nextPicker = fullTurnOrder[i + 1] || null;
                 activeWindowEnd = windowLimit;
+                isGracePeriod = now < currentWindowStart;
                 phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                 break;
             }
@@ -164,15 +180,14 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         nextPicker,
         windowEnds: activeWindowEnd,
         draftStart: DRAFT_START,
+        isGracePeriod,
+        officialStart: currentWindowStart,
         debugPhase: phase // Helper for debugging
     };
 }
 
 export function adjustForCourtesy(date) {
-    const nextStart = new Date(date);
-    nextStart.setDate(nextStart.getDate() + 1);
-    nextStart.setHours(10, 0, 0, 0);
-    return nextStart;
+    return getOfficialStart(date);
 }
 
 export function mapOrderToSchedule(shareholders, bookings = []) {
@@ -231,18 +246,18 @@ export function mapOrderToSchedule(shareholders, bookings = []) {
                 // Past / Timed Out
                 status = 'SKIPPED';
                 windowEnd = projectedLimit;
-                currentWindowStart = projectedLimit; // No courtesy on timeout usually, or should we? Assumed standard flow.
+                currentWindowStart = getOfficialStart(projectedLimit);
             } else if (now >= windowStart && now <= projectedLimit) {
                 // Active Now
                 status = 'ACTIVE';
                 windowEnd = projectedLimit;
                 // Next start is projected max
-                currentWindowStart = projectedLimit;
+                currentWindowStart = getOfficialStart(projectedLimit);
             } else {
                 // Future
                 status = 'FUTURE';
                 windowEnd = projectedLimit;
-                currentWindowStart = projectedLimit;
+                currentWindowStart = getOfficialStart(projectedLimit);
             }
         }
 

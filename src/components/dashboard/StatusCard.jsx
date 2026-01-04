@@ -13,9 +13,16 @@ export function StatusCard({ status, children }) {
                 <div className="mt-4 mb-6">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide font-bold mb-1">Current Turn</p>
                     <p className="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">{status.activePicker || "None"}</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                        Phase: <span className="font-medium text-foreground">{status.phase === 'PRE_DRAFT' ? 'Pending Start' : status.phase?.replace('_', ' ')}</span>
-                    </p>
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                        <p className="text-sm text-muted-foreground">
+                            Phase: <span className="font-medium text-foreground">{status.phase === 'PRE_DRAFT' ? 'Pending Start' : status.phase?.replace('_', ' ')}</span>
+                        </p>
+                        {status.isGracePeriod && status.officialStart && (
+                            <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 ring-1 ring-inset ring-amber-600/20 uppercase tracking-tighter">
+                                ✨ Grace Period (Starts {format(status.officialStart, 'MMM d, h:mm A')})
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Action Buttons Zone */}
