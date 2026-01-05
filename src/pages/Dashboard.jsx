@@ -11,6 +11,7 @@ import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { CABIN_OWNERS } from '../lib/shareholders';
+import { OnboardingTour } from '../components/OnboardingTour';
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
@@ -418,53 +419,58 @@ export function Dashboard() {
 
     return (
         <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4">
+            <OnboardingTour />
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
             </div>
 
             {/* Draft Status Card using Component */}
-            <StatusCard status={status}>
-                {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
-                {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
-                    <div className="text-sm text-muted-foreground italic py-2">
-                        {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
+            <div id="tour-status">
+                <StatusCard status={status}>
+                    {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
+                    <div id="tour-actions">
+                        {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
+                            <div className="text-sm text-muted-foreground italic py-2">
+                                {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
+                            </div>
+                        ) : activeUserDraft ? (
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
+                                >
+                                    Finalize Booking
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setEditingBooking(activeUserDraft);
+                                        setIsBooking(true);
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Edit Booking
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Pass Turn
+                                </button>
+                            </div>
+                        )}
                     </div>
-                ) : activeUserDraft ? (
-                    <>
-                        <button
-                            onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
-                        >
-                            Finalize Booking
-                        </button>
-                        <button
-                            onClick={() => {
-                                setEditingBooking(activeUserDraft);
-                                setIsBooking(true);
-                            }}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                        >
-                            Edit Booking
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <button
-                            onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                        >
-                            Pass Turn
-                        </button>
-                    </>
-                )}
-            </StatusCard>
+                </StatusCard>
+            </div>
 
             {/* Quick Booking Section (for Active Picker) */}
             {status.activePicker &&
                 (loggedInShareholder === status.activePicker || isSuperAdmin) &&  // CRITICAL CHECK
                 !activeUserDraft &&
                 (status.phase === 'ROUND_1' || status.phase === 'ROUND_2') && (
-                    <div className="bg-card border rounded-lg p-4 md:p-6 mb-8 shadow-sm">
+                    <div id="tour-booking" className="bg-card border rounded-lg p-4 md:p-6 mb-8 shadow-sm">
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h2 className="text-2xl font-bold">It's Your Turn!</h2>
@@ -514,11 +520,13 @@ export function Dashboard() {
                     </div>
                 )}
 
-            <RecentBookings bookings={allDraftRecords} />
+            <div id="tour-recent">
+                <RecentBookings bookings={allDraftRecords} />
+            </div>
 
-
-
-            <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} />
+            <div id="tour-schedule">
+                <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} />
+            </div>
 
             {/* Edit / Booking Modal Overlay */}
             {isBooking && (
