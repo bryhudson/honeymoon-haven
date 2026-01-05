@@ -18,12 +18,12 @@ export function OnboardingTour() {
     const steps = [
         {
             target: '#tour-status',
-            content: 'This is the Current Booking Status. You can see whose turn it is and how much time they have left.',
+            content: 'This is the Current Booking Status. Each shareholder has a 48-hour window to make their selection. To keep the draft moving, the system will automatically advance to the next person if no action is taken by the deadline.',
             disableBeacon: true,
         },
         {
             target: '#tour-actions',
-            content: 'When it is your turn, you will see buttons here to Book or Pass your turn.',
+            content: "When it is your turn, use these buttons to Book or Pass. You will receive an automated email when your turn begins, and a reminder if it's nearing expiration.",
         },
         {
             target: '#tour-recent',
