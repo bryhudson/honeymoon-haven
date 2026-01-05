@@ -12,6 +12,7 @@ import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { CABIN_OWNERS } from '../lib/shareholders';
 import { OnboardingTour } from '../components/OnboardingTour';
+import { BookingSection } from '../components/BookingSection';
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
