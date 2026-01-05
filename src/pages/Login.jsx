@@ -60,7 +60,7 @@ export function Login() {
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold tracking-tight text-foreground">Sign In</h2>
                         <p className="text-muted-foreground mt-2 text-sm">
-                            Access the Honeymoon Haven booking system
+                            Access the Honeymoon Haven web app
                         </p>
                     </div>
 
