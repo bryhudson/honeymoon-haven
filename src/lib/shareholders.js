@@ -232,6 +232,8 @@ export function mapOrderToSchedule(shareholders, bookings = []) {
             currentWindowStart = adjustForCourtesy(windowEnd);
         } else {
             // Not completed. Check if this is the ACTIVE window or GRACE PERIOD
+            const now = new Date();
+            const projectedLimit = new Date(windowStart.getTime() + PICK_DURATION_MS);
             if (now > projectedLimit && windowStart < now) {
                 // Past / Timed Out
                 status = 'SKIPPED';
