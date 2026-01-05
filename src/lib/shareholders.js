@@ -1,9 +1,9 @@
 
 export const SHAREHOLDERS_2025 = [
     "Mike & Janelle",
-    "Julia, Mandy & Bryan",
-    "Brian & Monique",
     "Brian & Sam",
+    "Brian & Monique",
+    "Julia, Mandy & Bryan",
     "Jeff & Lori",
     "David & Gayla",
     "Barb",
