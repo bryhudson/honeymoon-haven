@@ -264,10 +264,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
             // 1. Save to Firebase
             try {
-                const bookingId = initialBooking?.id || localBookingId;
+                let effectiveId = initialBooking?.id || localBookingId;
 
-                if (bookingId) {
-                    await updateDoc(doc(db, "bookings", bookingId), {
+                if (effectiveId) {
+                    await updateDoc(doc(db, "bookings", effectiveId), {
                         ...newBooking,
                         createdAt: initialBooking?.createdAt || new Date(), // Keep original time if possible
                         email: formData.email
@@ -279,6 +279,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         email: formData.email,
                         isFinalized: finalize
                     });
+                    effectiveId = docRef.id;
                     setLocalBookingId(docRef.id); // Track this new booking as "Active" for editing
                 }
 
@@ -286,7 +287,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     // Logic from Dashboard.handleFinalize needs to be handled here or passed in
                     // For now, let's just trigger the callback
                     setIsFinalSuccess(true);
-                    await onFinalize(initialBooking?.id || localBookingId, formData.shareholderName);
+                    await onFinalize(effectiveId, formData.shareholderName);
                 }
 
                 // 2. Send Email using EmailJS
