@@ -18,7 +18,6 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                                 <th scope="col" className="px-3 md:px-6 py-4">Dates</th>
                                 <th scope="col" className="px-3 md:px-6 py-4">Guests</th>
                                 <th scope="col" className="px-3 md:px-6 py-4">Status</th>
-                                <th scope="col" className="px-3 md:px-6 py-4">Duty</th>
                                 <th scope="col" className="px-3 md:px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -31,10 +30,6 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                                 </tr>
                             ) : (
                                 bookingsForTable.map((booking, index) => {
-                                    // Calculate total bookings for this shareholder
-                                    const shareholderBookings = bookingsForTable.filter(b => b.shareholderName === booking.shareholderName).length;
-                                    const needsWinterization = shareholderBookings > 3;
-
                                     return (
                                         <tr key={index} className="hover:bg-muted/10 transition-colors">
                                             <td className="px-3 md:px-6 py-4 font-bold">{booking.cabinNumber || "-"}</td>
@@ -57,13 +52,6 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                                                 ) : (
                                                     <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
                                                         In Progress
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-3 md:px-6 py-4 text-sm">
-                                                {needsWinterization && (
-                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20" title="More than 3 bookings">
-                                                        ❄️ Duty
                                                     </span>
                                                 )}
                                             </td>

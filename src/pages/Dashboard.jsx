@@ -635,7 +635,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.51 - Admin Fixes</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.52 - Cleanup</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs">
