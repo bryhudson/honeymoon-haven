@@ -54,7 +54,7 @@ const isTestMode = typeof window !== 'undefined' && localStorage.getItem('DRAFT_
 
 export const DRAFT_CONFIG = {
     // If TEST mode, start 1 hour ago (Active Now). Else March 1, 2026.
-    START_DATE: isTestMode ? new Date(Date.now() - 3600000) : new Date(2026, 2, 1, 8, 0, 0),
+    START_DATE: isTestMode ? new Date(Date.now() - 3600000) : new Date(2026, 0, 5, 10, 0, 0),
 
     PICK_DURATION_DAYS: 2,
     SEASON_START: new Date(2026, 3, 3), // April 3
