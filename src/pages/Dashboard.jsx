@@ -60,6 +60,7 @@ export function Dashboard() {
     // Handle multiple emails in one string (comma separated)
     const loggedInShareholder = React.useMemo(() => {
         if (!currentUser?.email) return null;
+        if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
         const owner = CABIN_OWNERS.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
     }, [currentUser]);
@@ -459,14 +460,12 @@ export function Dashboard() {
                             </div>
                         ) : (
                             <div className="flex gap-3 mt-4">
-                                {!showBookingForm && (
-                                    <button
-                                        onClick={() => setShowBookingForm(true)}
-                                        className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                    >
-                                        Choose Your Dates
-                                    </button>
-                                )}
+                                <button
+                                    onClick={() => setIsBooking(true)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Choose Your Dates
+                                </button>
                                 <button
                                     onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
@@ -479,61 +478,7 @@ export function Dashboard() {
                 </StatusCard>
             </div>
 
-            {/* Quick Booking Section (for Active Picker) */}
-            {status.activePicker &&
-                (loggedInShareholder === status.activePicker || isSuperAdmin) &&  // CRITICAL CHECK
-                !activeUserDraft &&
-                showBookingForm &&
-                (status.phase === 'ROUND_1' || status.phase === 'ROUND_2') && (
-                    <div id="tour-booking" className="bg-card border rounded-lg p-4 md:p-6 mb-8 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h2 className="text-2xl font-bold">It's Your Turn!</h2>
-                                <p className="text-muted-foreground">Please select your dates for {status.phase === 'ROUND_1' ? 'Round 1' : 'Round 2'}.</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setPassData({ name: status.activePicker });
-                                    setIsPassing(true); // Use setIsPassing to show the pass modal
-                                }}
-                                className="text-sm text-muted-foreground underline hover:text-primary"
-                            >
-                                Skip/Pass this turn
-                            </button>
-                        </div>
 
-                        <div className="flex flex-col md:flex-row gap-4 items-end">
-                            <div className="grid gap-1.5 flex-1">
-                                <label className="text-sm font-medium uppercase text-muted-foreground">Start Date</label>
-                                <input
-                                    type="date"
-                                    className="flex h-12 md:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
-                                    value={quickStart}
-                                    min="2026-03-01"
-                                    onChange={(e) => setQuickStart(e.target.value)}
-                                    onClick={(e) => e.target.showPicker?.()}
-                                />
-                            </div>
-                            <div className="grid gap-1.5 flex-1">
-                                <label className="text-sm font-medium uppercase text-muted-foreground">End Date</label>
-                                <input
-                                    type="date"
-                                    className="flex h-12 md:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
-                                    value={quickEnd}
-                                    min={quickStart || "2026-03-01"}
-                                    onChange={(e) => setQuickEnd(e.target.value)}
-                                    onClick={(e) => e.target.showPicker?.()}
-                                />
-                            </div>
-                            <button
-                                onClick={handleQuickBook}
-                                className="h-12 md:h-10 px-8 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-medium"
-                            >
-                                Confirm Booking
-                            </button>
-                        </div>
-                    </div>
-                )}
 
             <div id="tour-recent">
                 <RecentBookings bookings={allDraftRecords} />
