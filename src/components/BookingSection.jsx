@@ -16,9 +16,11 @@ const safeAlert = (handler, title, msg) => {
     else alert(`${title}\n\n${msg}`);
 };
 
-export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert }) {
+export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize }) {
     const [selectedRange, setSelectedRange] = useState();
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFinalSuccess, setIsFinalSuccess] = useState(false);
 
     // Initialize bookedDates from localStorage
     const [allDraftRecords, setAllDraftRecords] = useState([]);
@@ -235,7 +237,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         setSelectedRange(range);
     };
 
-    const handleBook = async () => {
+    const handleBook = async (finalize = false) => {
         if (selectedRange?.from && selectedRange?.to) {
             if (isTooLong || isOverlap || !bookingStatus.canBook) {
                 return;
@@ -252,9 +254,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 return;
             }
 
+            setIsSubmitting(true);
             const newBooking = {
                 ...selectedRange,
                 ...formData,
+                isFinalized: finalize,
                 createdAt: new Date() // Track when it was booked
             };
 
@@ -273,9 +277,16 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         ...newBooking,
                         createdAt: new Date(),
                         email: formData.email,
-                        isFinalized: false  // Draft mode
+                        isFinalized: finalize
                     });
                     setLocalBookingId(docRef.id); // Track this new booking as "Active" for editing
+                }
+
+                if (finalize && onFinalize) {
+                    // Logic from Dashboard.handleFinalize needs to be handled here or passed in
+                    // For now, let's just trigger the callback
+                    setIsFinalSuccess(true);
+                    await onFinalize(initialBooking?.id || localBookingId, formData.shareholderName);
                 }
 
                 // 2. Send Email using EmailJS
@@ -292,27 +303,26 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     check_out: format(selectedRange.to, 'PPP'),
                     guests: formData.guests,
                     total_price: totalPrice,
-                    message: "Thank you for booking with Honeymoon Haven Resort!"
+                    message: finalize
+                        ? "Your booking has been finalized. See you at the lake!"
+                        : "Your draft has been saved. Please finalize it on the dashboard to lock in your dates."
                 };
 
                 emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
                     .then((response) => {
                         console.log('EMAIL SUCCESS!', response.status, response.text);
-                        // Only confirm booking if email sends successfully (optional, or do both)
                     }, (err) => {
                         console.log('EMAIL FAILED...', err);
-                        safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email. You can still finalize your turn on the dashboard.");
+                        safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email.");
                     });
 
                 // SUCCESS HANDLER
                 setIsSuccess(true);
-                // Do NOT clear form data or selection, so user can "Edit Booking" immediately
-                // setSelectedRange(undefined); 
-                // setFormData({...});
-
             } catch (error) {
                 console.error("Error saving booking: ", error);
                 safeAlert(onShowAlert, "Save Error", "We encountered an error while saving your booking. Please check your connection and try again.");
+            } finally {
+                setIsSubmitting(false);
             }
         }
     };
@@ -393,42 +403,74 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             </h3>
 
                             {isSuccess ? (
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center animate-in fade-in slide-in-from-top-2">
-                                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
-                                        <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-lg font-medium text-green-900">Draft Saved!</h3>
-                                    <p className="mt-2 text-sm text-green-700">
-                                        Your booking is saved as a <strong>Draft</strong>.
-                                    </p>
-                                    <div className="mt-4 p-4 bg-white/60 rounded text-sm text-green-800 text-left border border-green-200 shadow-sm">
-                                        <p className="font-bold mb-2 flex items-center gap-1">
-                                            ℹ️ Next Steps:
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="bg-green-50/50 border border-green-100 rounded-xl p-8 text-center">
+                                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 mb-4 border-4 border-green-50">
+                                            <svg className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-2xl font-black text-green-900 mb-1">
+                                            {isFinalSuccess ? "Booking Confirmed! 🎉" : "Draft Saved!"}
+                                        </h3>
+                                        <p className="text-green-700/80 font-medium text-sm">
+                                            {isFinalSuccess
+                                                ? "Your turn is complete. See you at the lake!"
+                                                : "Dates are held. Finalize on the dashboard when ready."}
                                         </p>
-                                        <div className="space-y-3">
-                                            <p>
-                                                You have <strong>48 hours</strong> to think about it. No one else can take these dates while you decide.
+                                    </div>
+
+                                    {/* Step 3: Payment */}
+                                    <div className="p-6 bg-card rounded-xl shadow-lg border border-blue-100 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                            <svg className="h-24 w-24" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+
+                                        <div className="border-b pb-4 mb-6">
+                                            <h3 className="text-lg font-bold text-blue-600 flex items-center gap-2">
+                                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs">3</span>
+                                                Payment Required
+                                            </h3>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <p className="text-sm text-slate-600 font-medium">
+                                                To lock in your cabin, please send an e-transfer within <span className="text-blue-600 font-bold">24 hours</span>:
                                             </p>
-                                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-900 text-xs">
-                                                <p className="font-bold mb-1 text-sm">💸 Payment Required:</p>
-                                                <p>To complete your booking, please send an e-transfer to:</p>
-                                                <p className="font-mono font-bold select-all mt-1 bg-white p-1 rounded border border-blue-100">honeymoonhavenresort.lc@gmail.com</p>
-                                                <p className="mt-2 text-[10px] uppercase tracking-wider opacity-80">Deadline: Within 24 hours of confirmation.</p>
+
+                                            <div className="flex items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                <code className="text-sm md:text-base font-mono font-bold select-all flex-1 text-blue-700">honeymoonhavenresort.lc@gmail.com</code>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
+                                                    }}
+                                                    className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 text-slate-400 hover:text-blue-600 transition-all shadow-sm"
+                                                    title="Copy Email"
+                                                >
+                                                    📋
+                                                </button>
                                             </div>
-                                            <ol className="list-decimal list-inside space-y-2 font-medium">
-                                                <li>Close this window when ready.</li>
-                                                <li>When you are ready to lock in these dates, click the green <strong>Finalize Booking</strong> button on the dashboard.</li>
-                                            </ol>
+
+                                            <div className="flex flex-col gap-3 pt-6">
+                                                <button
+                                                    onClick={onCancel}
+                                                    className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md transform hover:scale-[1.01]"
+                                                >
+                                                    {isFinalSuccess ? "Return to Dashboard" : "Close & Finish Later"}
+                                                </button>
+                                                {!isFinalSuccess && (
+                                                    <button
+                                                        onClick={() => setIsSuccess(false)}
+                                                        className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+                                                    >
+                                                        Edit Booking Details
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => setIsSuccess(false)}
-                                        className="mt-6 text-sm font-semibold text-green-600 hover:text-green-500 underline"
-                                    >
-                                        Edit Booking Details
-                                    </button>
                                 </div>
                             ) : selectedRange?.from && selectedRange?.to ? (
                                 <div className="space-y-4">
@@ -541,16 +583,30 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={handleBook}
-                                        disabled={isTooLong || isOverlap || !bookingStatus.canBook}
-                                        className={`w-full py-6 mt-6 rounded-md font-bold text-lg shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${!bookingStatus.canBook
-                                            ? "bg-slate-300 text-slate-500"
-                                            : "bg-primary text-primary-foreground hover:bg-primary/90"
-                                            }`}
-                                    >
-                                        {!bookingStatus.canBook ? "Waiting for priority..." : ((initialBooking?.id || localBookingId) ? "Update Booking" : "Confirm Booking")}
-                                    </button>
+                                    <div className="flex flex-col gap-4 mt-6">
+                                        <button
+                                            onClick={() => handleBook(true)}
+                                            disabled={isTooLong || isOverlap || !bookingStatus.canBook || isSubmitting}
+                                            className={`w-full py-5 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${!bookingStatus.canBook
+                                                ? "bg-slate-300 text-slate-500"
+                                                : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                }`}
+                                        >
+                                            {isSubmitting
+                                                ? "Processing..."
+                                                : !bookingStatus.canBook
+                                                    ? "Waiting for priority..."
+                                                    : "Confirm & Finish Turn"}
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleBook(false)}
+                                            disabled={isTooLong || isOverlap || !bookingStatus.canBook || isSubmitting}
+                                            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline decoration-dotted underline-offset-4"
+                                        >
+                                            I'm not sure yet, just save as Draft
+                                        </button>
+                                    </div>
 
                                     {initialBooking?.id && (
                                         <div className="flex gap-3 mt-4">

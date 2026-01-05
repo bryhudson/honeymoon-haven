@@ -4,25 +4,41 @@ import { Countdown } from './Countdown';
 
 export function StatusCard({ status, children }) {
     return (
-        <div className="bg-card p-4 md:p-6 rounded-xl shadow-md border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex-1 w-full">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                    📅 Current Booking Status
-                </h2>
+        <div className={`bg-card p-4 md:p-6 rounded-xl shadow-md border-l-4 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-500 ${status.isGracePeriod ? 'border-l-amber-400 bg-amber-50/10' : 'border-l-primary'}`}>
+            <div className="flex-1 w-full relative">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        📅 Current Booking Status
+                    </h2>
+                    {status.activePicker && (
+                        <span className="flex h-3 w-3 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                        </span>
+                    )}
+                </div>
 
-                <div className="mt-4 mb-6">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide font-bold mb-1">Current Turn</p>
-                    <p className="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">{status.activePicker || "None"}</p>
-                    <div className="flex flex-wrap items-center gap-3 mt-2">
-                        <p className="text-sm text-muted-foreground">
-                            Phase: <span className="font-medium text-foreground">{status.phase === 'PRE_DRAFT' ? 'Pending Start' : status.phase?.replace('_', ' ')}</span>
-                        </p>
+                <div className="mt-4 mb-6 relative">
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-70">Current Turn</p>
+                    <p className="text-3xl md:text-5xl font-black text-primary tracking-tighter drop-shadow-sm">{status.activePicker || "None"}</p>
+
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 uppercase tracking-wide border border-slate-200">
+                            Phase: {status.phase === 'PRE_DRAFT' ? 'Pending' : status.phase?.replace('_', ' ')}
+                        </span>
+
                         {status.isGracePeriod && status.officialStart && (
-                            <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 ring-1 ring-inset ring-amber-600/20 uppercase tracking-tighter">
-                                ✨ Early Access (Official window starts {format(status.officialStart, 'MMM d, h:mm a')})
+                            <span className="inline-flex items-center rounded-md bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700 border border-amber-200 uppercase tracking-wide animate-in fade-in zoom-in duration-500">
+                                ✨ Early Access
                             </span>
                         )}
                     </div>
+
+                    {status.isGracePeriod && status.officialStart && (
+                        <p className="text-[11px] text-amber-700 font-bold mt-2 flex items-center gap-1.5 bg-amber-50/50 p-2 rounded-lg border border-amber-100/50 w-fit">
+                            <span>🕒</span> Official 48-hour window starts <strong>{format(status.officialStart, 'MMM d, h:mm a')}</strong>
+                        </p>
+                    )}
                 </div>
 
                 {/* Action Buttons Zone */}

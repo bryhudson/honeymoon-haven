@@ -74,6 +74,7 @@ export function Dashboard() {
     const [isBooking, setIsBooking] = useState(false);
     const [isPassing, setIsPassing] = useState(false);
     const [showPreDraftModal, setShowPreDraftModal] = useState(false);
+    const [showPaymentSticky, setShowPaymentSticky] = useState(false);
     const [passData, setPassData] = useState({ name: '' });
 
     // Quick Book State
@@ -177,73 +178,86 @@ export function Dashboard() {
         console.log("Booking Status Updated:", status);
     }, [status.activePicker, status.windowEnds]);
 
-    const handleFinalize = async (bookingId, name) => {
-        triggerConfirm(
-            "Finalize Booking",
-            `Click 'Confirm' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.\n\nNote: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`,
-            async () => {
+    const handleFinalize = async (bookingId, name, skipConfirm = false) => {
+        const executeFinalize = async () => {
+            try {
+                await updateDoc(doc(db, "bookings", bookingId), {
+                    isFinalized: true,
+                    createdAt: new Date() // Reset clock to now
+                });
+
+                // 1. Notify CURRENT user (Confirmation)
                 try {
-                    await updateDoc(doc(db, "bookings", bookingId), {
-                        isFinalized: true,
-                        createdAt: new Date() // Reset clock to now
-                    });
+                    const owner = CABIN_OWNERS.find(o => o.name === name);
+                    await emailjs.send(
+                        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                        {
+                            to_name: name,
+                            to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: owner.email
+                            shareholder: name,
+                            dates: "Target Dates Locked",
+                            cabin: owner ? owner.cabin : "?",
+                            price: "CONFIRMED",
+                            message: `You have successfully finalized your booking. See you at the lake!\n\nREMINDER: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`
+                        },
+                        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                    );
+                } catch (e) {
+                    console.error("Confirmation email failed", e);
+                }
 
-                    // 1. Notify CURRENT user (Confirmation)
-                    try {
-                        const owner = CABIN_OWNERS.find(o => o.name === name);
-                        await emailjs.send(
-                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                            {
-                                to_name: name,
-                                to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: owner.email
-                                shareholder: name,
-                                dates: "Target Dates Locked",
-                                cabin: owner ? owner.cabin : "?",
-                                price: "CONFIRMED",
-                                message: `You have successfully finalized your booking. See you at the lake!\n\nREMINDER: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`
-                            },
-                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                        );
-                    } catch (e) {
-                        console.error("Confirmation email failed", e);
-                    }
-
-                    // Notify NEXT shareholder
-                    if (status.nextPicker) {
-                        const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
-                        if (nextOwner && nextOwner.email) {
-                            try {
-                                await emailjs.send(
-                                    import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                                    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                                    {
-                                        to_name: nextOwner.name,
-                                        to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: nextOwner.email,
-                                        shareholder: nextOwner.name,
-                                        dates: "YOUR TURN NOW",
-                                        cabin: nextOwner.cabin,
-                                        price: "0",
-                                        message: `ACTION REQUIRED: ${name} has finalized their booking. The booking window is now OPEN for you. You have 48 hours to book.\n\nLog in here: ${window.location.origin}/login`
-                                    },
-                                    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                                );
-                                console.log("Notification sent to", nextOwner.name);
-                            } catch (e) {
-                                console.error("Next user email failed", e);
-                            }
+                // Notify NEXT shareholder
+                if (status.nextPicker) {
+                    const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
+                    if (nextOwner && nextOwner.email) {
+                        try {
+                            await emailjs.send(
+                                import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                                import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+                                {
+                                    to_name: nextOwner.name,
+                                    to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: nextOwner.email,
+                                    shareholder: nextOwner.name,
+                                    dates: "YOUR TURN NOW",
+                                    cabin: nextOwner.cabin,
+                                    price: "0",
+                                    message: `ACTION REQUIRED: ${name} has finalized their booking. The booking window is now OPEN for you. You have 48 hours to book.\n\nLog in here: ${window.location.origin}/login`
+                                },
+                                import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                            );
+                            console.log("Notification sent to", nextOwner.name);
+                        } catch (e) {
+                            console.error("Next user email failed", e);
                         }
                     }
-
-                    triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
-                } catch (err) {
-                    console.error(err);
-                    triggerAlert("Error", "Error finalizing turn: " + err.message);
                 }
-            },
-            false,
-            "Finalize Booking"
-        );
+
+                setShowPaymentSticky(true);
+                if (!skipConfirm) {
+                    triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
+                }
+            } catch (err) {
+                console.error(err);
+                if (!skipConfirm) {
+                    triggerAlert("Error", "Error finalizing turn: " + err.message);
+                } else {
+                    throw err; // Re-throw for BookingSection to handle if needed
+                }
+            }
+        };
+
+        if (skipConfirm) {
+            await executeFinalize();
+        } else {
+            triggerConfirm(
+                "Finalize Booking",
+                `Click 'Confirm' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.\n\nNote: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`,
+                executeFinalize,
+                false,
+                "Finalize Booking"
+            );
+        }
     };
 
     const handlePassSubmit = async (e) => {
@@ -426,8 +440,51 @@ export function Dashboard() {
     const activeUserDraft = allDraftRecords.find(b => b.shareholderName === status.activePicker && b.isFinalized === false);
 
     return (
-        <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4">
+        <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
             <OnboardingTour />
+            {showPaymentSticky && (
+                <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500">
+                    <div className="bg-white border-2 border-blue-500 rounded-2xl shadow-2xl p-5 max-w-sm relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+                        <button
+                            onClick={() => setShowPaymentSticky(false)}
+                            className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="flex items-start gap-4">
+                            <div className="bg-blue-100 p-3 rounded-xl text-blue-600">
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 leading-tight">Booking Finalized!</h4>
+                                <p className="text-xs text-slate-500 mt-1 mb-3">To lock in your cabin, please send payment within 24 hours:</p>
+
+                                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200 mb-2">
+                                    <code className="text-[11px] font-mono font-bold select-all flex-1 text-blue-700">honeymoonhavenresort.lc@gmail.com</code>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
+                                        }}
+                                        className="p-1 hover:bg-white rounded border border-transparent hover:border-slate-200 text-slate-400 transition-all"
+                                        title="Copy Email"
+                                    >
+                                        📋
+                                    </button>
+                                </div>
+                                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    Final Payment Required
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
             </div>
@@ -512,6 +569,9 @@ export function Dashboard() {
                                 onPass={() => { setIsBooking(false); setIsPassing(true); }}
                                 onDiscard={handleDiscard}
                                 onShowAlert={triggerAlert}
+                                onFinalize={async (id, name) => {
+                                    await handleFinalize(id, name, true);
+                                }}
                             />
                         </div>
                     </div>
