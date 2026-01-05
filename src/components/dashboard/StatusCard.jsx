@@ -19,7 +19,7 @@ export function StatusCard({ status, children }) {
                         </p>
                         {status.isGracePeriod && status.officialStart && (
                             <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 ring-1 ring-inset ring-amber-600/20 uppercase tracking-tighter">
-                                ✨ Early Access (Starts {format(status.officialStart, 'MMM d, h:mm a')})
+                                ✨ Early Access (Official window starts {format(status.officialStart, 'MMM d, h:mm a')})
                             </span>
                         )}
                     </div>
