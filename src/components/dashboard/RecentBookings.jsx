@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 
-export function RecentBookings({ bookings }) {
+export function RecentBookings({ bookings, onViewDetails }) {
     // Filter for table display (exclude passes)
     const bookingsForTable = bookings.filter(r => r.type !== 'pass');
 
@@ -19,6 +19,7 @@ export function RecentBookings({ bookings }) {
                                 <th scope="col" className="px-3 md:px-6 py-4">Guests</th>
                                 <th scope="col" className="px-3 md:px-6 py-4">Status</th>
                                 <th scope="col" className="px-3 md:px-6 py-4">Duty</th>
+                                <th scope="col" className="px-3 md:px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -59,12 +60,20 @@ export function RecentBookings({ bookings }) {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-3 md:px-6 py-4">
+                                            <td className="px-3 md:px-6 py-4 text-sm">
                                                 {needsWinterization && (
                                                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20" title="More than 3 bookings">
                                                         ❄️ Duty
                                                     </span>
                                                 )}
+                                            </td>
+                                            <td className="px-3 md:px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => onViewDetails(booking)}
+                                                    className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+                                                >
+                                                    View Details
+                                                </button>
                                             </td>
                                         </tr>
                                     );

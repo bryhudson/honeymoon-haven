@@ -10,6 +10,7 @@ import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
+import { BookingDetailsModal } from '../components/dashboard/BookingDetailsModal';
 import { CABIN_OWNERS } from '../lib/shareholders';
 import { OnboardingTour } from '../components/OnboardingTour';
 import { BookingSection } from '../components/BookingSection';
@@ -81,6 +82,7 @@ export function Dashboard() {
     const [quickStart, setQuickStart] = useState('');
     const [quickEnd, setQuickEnd] = useState('');
     const [editingBooking, setEditingBooking] = useState(null);
+    const [viewingBooking, setViewingBooking] = useState(null);
     const [showBookingForm, setShowBookingForm] = useState(false);
 
     // SYSTEM SAFETY: Build v2.30
@@ -539,7 +541,10 @@ export function Dashboard() {
 
 
             <div id="tour-recent">
-                <RecentBookings bookings={allDraftRecords} />
+                <RecentBookings
+                    bookings={allDraftRecords}
+                    onViewDetails={(booking) => setViewingBooking(booking)}
+                />
             </div>
 
             <div id="tour-schedule">
@@ -615,6 +620,14 @@ export function Dashboard() {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* Booking Details Modal Overlay */}
+            {viewingBooking && (
+                <BookingDetailsModal
+                    booking={viewingBooking}
+                    onClose={() => setViewingBooking(null)}
+                />
             )}
 
             {/* Global Confirmation Modal */}
