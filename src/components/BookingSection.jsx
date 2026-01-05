@@ -346,7 +346,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         Select your check-in and check-out dates.
                     </p>
                 </div>
-
+                <div className="flex flex-col md:flex-row gap-8 justify-center items-start">
+                    {/* Calendar Column */}
                     <div className="p-4 bg-card rounded-xl shadow-md border flex flex-col items-center">
                         <div className="w-full border-b pb-3 mb-3">
                             <h3 className="text-base font-bold text-primary flex items-center gap-2">
@@ -445,7 +446,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                             <div className="flex flex-col gap-3 pt-6">
                                                 <button
-                                                    onClick={onCancel}
+                                                    onClick={() => onCancel()}
                                                     className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md transform hover:scale-[1.01]"
                                                 >
                                                     {isFinalSuccess ? "Return to Dashboard" : "Close & Finish Later"}
@@ -615,8 +616,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         </div>
                                     )}
 
-
-
                                     <p className="text-center text-xs text-muted-foreground mt-2">v2.26 - Success Msg Clarified</p>
 
                                     {!bookingStatus.canBook && formData.shareholderName && (
@@ -632,8 +631,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             )}
                         </div>
                     </div>
-                </div >
-            </div >
+                </div>
+            </div>
 
             <ConfirmationModal
                 isOpen={showConfirmation}
