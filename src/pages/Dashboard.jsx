@@ -75,7 +75,6 @@ export function Dashboard() {
     const [isBooking, setIsBooking] = useState(false);
     const [isPassing, setIsPassing] = useState(false);
     const [showPreDraftModal, setShowPreDraftModal] = useState(false);
-    const [showPaymentSticky, setShowPaymentSticky] = useState(false);
     const [passData, setPassData] = useState({ name: '' });
 
     // Quick Book State
@@ -235,7 +234,6 @@ export function Dashboard() {
                     }
                 }
 
-                setShowPaymentSticky(true);
                 if (!skipConfirm) {
                     triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
                 }
@@ -444,54 +442,11 @@ export function Dashboard() {
     return (
         <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
             <OnboardingTour />
-            {showPaymentSticky && (
-                <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500">
-                    <div className="bg-white border-2 border-blue-500 rounded-2xl shadow-2xl p-5 max-w-sm relative overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
-                        <button
-                            onClick={() => setShowPaymentSticky(false)}
-                            className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
-                        >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
 
-                        <div className="flex items-start gap-4">
-                            <div className="bg-blue-100 p-3 rounded-xl text-blue-600">
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-900 leading-tight">Booking Finalized!</h4>
-                                <p className="text-xs text-slate-500 mt-1 mb-3">To lock in your cabin, please send payment within 24 hours:</p>
-
-                                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200 mb-2">
-                                    <code className="text-[11px] font-mono font-bold select-all flex-1 text-blue-700">honeymoonhavenresort.lc@gmail.com</code>
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
-                                        }}
-                                        className="p-1 hover:bg-white rounded border border-transparent hover:border-slate-200 text-slate-400 transition-all"
-                                        title="Copy Email"
-                                    >
-                                        📋
-                                    </button>
-                                </div>
-                                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                    Final Payment Required
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
             </div>
 
-            {/* Draft Status Card using Component */}
             <div id="tour-status">
                 <StatusCard status={status}>
                     {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
@@ -554,83 +509,89 @@ export function Dashboard() {
             </div>
 
             {/* Edit / Booking Modal Overlay */}
-            {isBooking && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-4 pb-4 md:pt-10 md:pb-10">
-                    <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
-                        <div className="p-4 border-b flex justify-between items-center bg-muted/20">
-                            <h2 className="text-lg font-semibold">
-                                {editingBooking ? "Edit Booking" : "New Booking"}
-                            </h2>
-                            <button
-                                onClick={() => { setIsBooking(false); setEditingBooking(null); }}
-                                className="text-muted-foreground hover:text-foreground p-2"
-                            >
-                                ✕ Close
-                            </button>
-                        </div>
-                        <div className="p-4 md:p-6 max-h-[85vh] overflow-y-auto">
-                            <BookingSection
-                                onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
-                                initialBooking={editingBooking}
-                                activePicker={status.activePicker}
-                                onPass={() => { setIsBooking(false); setIsPassing(true); }}
-                                onDiscard={handleDiscard}
-                                onShowAlert={triggerAlert}
-                                onFinalize={async (id, name) => {
-                                    await handleFinalize(id, name, true);
-                                }}
-                            />
+            {
+                isBooking && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-4 pb-4 md:pt-10 md:pb-10">
+                        <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
+                            <div className="p-4 border-b flex justify-between items-center bg-muted/20">
+                                <h2 className="text-lg font-semibold">
+                                    {editingBooking ? "Edit Booking" : "New Booking"}
+                                </h2>
+                                <button
+                                    onClick={() => { setIsBooking(false); setEditingBooking(null); }}
+                                    className="text-muted-foreground hover:text-foreground p-2"
+                                >
+                                    ✕ Close
+                                </button>
+                            </div>
+                            <div className="p-4 md:p-6 max-h-[85vh] overflow-y-auto">
+                                <BookingSection
+                                    onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
+                                    initialBooking={editingBooking}
+                                    activePicker={status.activePicker}
+                                    onPass={() => { setIsBooking(false); setIsPassing(true); }}
+                                    onDiscard={handleDiscard}
+                                    onShowAlert={triggerAlert}
+                                    onFinalize={async (id, name) => {
+                                        await handleFinalize(id, name, true);
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Pass Turn Modal Overlay */}
-            {isPassing && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
-                        <h2 className="text-2xl font-bold mb-2 text-destructive">Pass Your Turn</h2>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            Are you sure you want to skip your turn in this round?
-                            <br />
-                            This will <strong>immediately</strong> open the booking window for the next shareholder.
-                        </p>
+            {
+                isPassing && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
+                            <h2 className="text-2xl font-bold mb-2 text-destructive">Pass Your Turn</h2>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                Are you sure you want to skip your turn in this round?
+                                <br />
+                                This will <strong>immediately</strong> open the booking window for the next shareholder.
+                            </p>
 
-                        <form onSubmit={handlePassSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Shareholder Passing Turn</label>
-                                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold text-foreground items-center">
-                                    {passData.name || "Loading..."}
+                            <form onSubmit={handlePassSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Shareholder Passing Turn</label>
+                                    <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold text-foreground items-center">
+                                        {passData.name || "Loading..."}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="pt-4 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsPassing(false)}
-                                    className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium transition-colors"
-                                >
-                                    Confirm Pass
-                                </button>
-                            </div>
-                        </form>
+                                <div className="pt-4 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPassing(false)}
+                                        className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium transition-colors"
+                                    >
+                                        Confirm Pass
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Booking Details Modal Overlay */}
-            {viewingBooking && (
-                <BookingDetailsModal
-                    booking={viewingBooking}
-                    onClose={() => setViewingBooking(null)}
-                />
-            )}
+            {
+                viewingBooking && (
+                    <BookingDetailsModal
+                        booking={viewingBooking}
+                        onClose={() => setViewingBooking(null)}
+                    />
+                )
+            }
 
             {/* Global Confirmation Modal */}
             <ConfirmationModal
@@ -645,34 +606,36 @@ export function Dashboard() {
             />
 
             {/* Pre-Draft Modal */}
-            {showPreDraftModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-                        <div className="flex items-center gap-3 text-amber-600">
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <h3 className="font-bold text-lg">Booking Not Started</h3>
+            {
+                showPreDraftModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+                            <div className="flex items-center gap-3 text-amber-600">
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <h3 className="font-bold text-lg">Booking Not Started</h3>
+                            </div>
+                            <p className="text-muted-foreground">
+                                Booking and passing actions are disabled until the schedule officially begins.
+                            </p>
+                            <div className="bg-muted p-3 rounded-md text-sm font-medium text-center">
+                                Opens: {format(status.draftStart, 'PPP p')}
+                            </div>
+                            <button
+                                onClick={() => setShowPreDraftModal(false)}
+                                className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+                            >
+                                Understood
+                            </button>
                         </div>
-                        <p className="text-muted-foreground">
-                            Booking and passing actions are disabled until the schedule officially begins.
-                        </p>
-                        <div className="bg-muted p-3 rounded-md text-sm font-medium text-center">
-                            Opens: {format(status.draftStart, 'PPP p')}
-                        </div>
-                        <button
-                            onClick={() => setShowPreDraftModal(false)}
-                            className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90"
-                        >
-                            Understood
-                        </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.48 - Critical Fixes</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.49 - Payment Sticky Removed</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs">
