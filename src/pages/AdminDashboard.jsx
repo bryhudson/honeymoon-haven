@@ -30,14 +30,28 @@ export function AdminDashboard() {
         setConfirmation({ isOpen: true, title, message, onConfirm: () => { }, isDanger: false, confirmText: "OK", showCancel: false });
     };
 
+    // Helper for safely converting Firestore timestamps/strings to Dates
+    const safeDate = (val) => {
+        if (!val) return null;
+        if (val.toDate) return val.toDate(); // Firestore Timestamp
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+    };
+
     // Fetch all bookings
     useEffect(() => {
         const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const bookings = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            const bookings = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    from: safeDate(data.from),
+                    to: safeDate(data.to),
+                    createdAt: safeDate(data.createdAt)
+                };
+            });
             setAllBookings(bookings);
             setLoading(false);
         });
@@ -219,12 +233,12 @@ export function AdminDashboard() {
                                             <div className="flex flex-col">
                                                 <span className="font-medium">
                                                     {booking.from && booking.to
-                                                        ? `${format(new Date(booking.from), 'MMM d')} - ${format(new Date(booking.to), 'MMM d, yyyy')}`
+                                                        ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
                                                         : 'Invalid Dates'
                                                     }
                                                 </span>
                                                 <span className="text-[10px] text-muted-foreground">
-                                                    Created: {booking.createdAt ? format(new Date(booking.createdAt), 'MMM d, HH:mm') : 'N/A'}
+                                                    Created: {booking.createdAt ? format(booking.createdAt, 'MMM d, HH:mm') : 'N/A'}
                                                 </span>
                                             </div>
                                         </td>
