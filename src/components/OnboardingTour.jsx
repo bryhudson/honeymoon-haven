@@ -19,7 +19,7 @@ export function OnboardingTour() {
         {
             target: '#tour-status',
             title: '🗓️ Booking Status',
-            content: 'This is the Current Booking Status. Each shareholder has a 48-hour window to make their selection. To keep the draft moving, the system will automatically advance to the next person if no action is taken by the deadline.',
+            content: "Each shareholder gets a 48-hour window. If the previous person finishes early, you get 'Early Access' immediately, but your official 48-hour clock doesn't start until 10:00 AM the following day. This ensures no one is rushed if a turn changes late at night!",
             disableBeacon: true,
         },
         {
