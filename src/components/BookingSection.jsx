@@ -238,14 +238,14 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 return;
             }
             if (!formData.shareholderName || !formData.email) {
-                safeAlert(onShowAlert, "Missing Info", "Please select a Shareholder and fill in Email.");
+                safeAlert(onShowAlert, "Missing Information", "Please ensure you have selected a shareholder and provided an email address.");
                 return;
             }
 
             // Basic email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(formData.email)) {
-                safeAlert(onShowAlert, "Invalid Email", "Please enter a valid email address.");
+                safeAlert(onShowAlert, "Invalid Email", "The email address provided appears to be invalid. Please check it and try again.");
                 return;
             }
 
@@ -299,7 +299,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         // Only confirm booking if email sends successfully (optional, or do both)
                     }, (err) => {
                         console.log('EMAIL FAILED...', err);
-                        safeAlert(onShowAlert, "Email Error", "Note: Confirmation email failed to send, but your booking is saved locally.");
+                        safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email. You can still finalize your turn on the dashboard.");
                     });
 
                 // SUCCESS HANDLER
@@ -310,7 +310,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
             } catch (error) {
                 console.error("Error saving booking: ", error);
-                safeAlert(onShowAlert, "Save Failed", "Failed to save booking. Please try again.");
+                safeAlert(onShowAlert, "Save Error", "We encountered an error while saving your booking. Please check your connection and try again.");
             }
         }
     };
@@ -410,7 +410,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         </p>
                                         <ol className="list-decimal list-inside space-y-2 font-medium">
                                             <li>Close this window when ready.</li>
-                                            <li>When you are 100% sure, go to the Dashboard and click <strong>FINALIZE BOOKING</strong>.</li>
+                                            <li>When you are ready to lock in these dates, close this window and click the green <strong>Finalize Booking</strong> button on the dashboard.</li>
                                         </ol>
                                     </div>
                                     <button

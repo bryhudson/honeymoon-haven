@@ -130,7 +130,7 @@ export function Dashboard() {
     const handleDiscard = async (bookingId) => {
         triggerConfirm(
             "Cancel Booking?",
-            "Are you sure you want to delete this draft? This cannot be undone.",
+            "Are you sure you want to delete this draft? This action cannot be undone and you will need to re-select your dates if you change your mind.",
             async () => {
                 // Send Cancellation Email
                 try {
@@ -172,7 +172,7 @@ export function Dashboard() {
     const handleFinalize = async (bookingId, name) => {
         triggerConfirm(
             "Finalize Booking",
-            `Are you sure you want to finalize the turn for ${name}?\n\nThis will lock your turn and immediately open the booking window for the next shareholder.`,
+            `Click 'Confirm' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.`,
             async () => {
                 try {
                     await updateDoc(doc(db, "bookings", bookingId), {
@@ -227,14 +227,14 @@ export function Dashboard() {
                         }
                     }
 
-                    triggerAlert("Success", "Turn finalized! Next shareholder is now active.");
+                    triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
                 } catch (err) {
                     console.error(err);
                     triggerAlert("Error", "Error finalizing turn: " + err.message);
                 }
             },
             false,
-            "Finalize Turn"
+            "Finalize Booking"
         );
     };
 
@@ -321,7 +321,7 @@ export function Dashboard() {
                 }
             }
 
-            triggerAlert("Turn Passed", "You have successfully passed your turn.");
+            triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
             setIsPassing(false);
             setPassData({ name: '' });
         } catch (err) {
@@ -331,17 +331,17 @@ export function Dashboard() {
     };
 
     const handleQuickBook = async () => {
-        if (!quickStart || !quickEnd) return triggerAlert("Dates Missing", "Please select start and end dates.");
+        if (!quickStart || !quickEnd) return triggerAlert("Missing Information", "Please select both a start date and an end date for your booking.");
 
         const start = new Date(quickStart);
         const end = new Date(quickEnd);
 
         // Basic Validation
-        if (end <= start) return triggerAlert("Invalid Dates", "End date must be after start date.");
+        if (end <= start) return triggerAlert("Date Range Issue", "The end date must be after the start date. Please check your selection.");
 
         // Duration Check (7 days max)
         const days = (end - start) / (1000 * 60 * 60 * 24);
-        if (days > 7) return triggerAlert("Too Long", "Maximum booking is 7 days.");
+        if (days > 7) return triggerAlert("Booking Limit Exceeded", "To ensure everyone has a fair chance, bookings are limited to a maximum of 7 days during the draft.");
 
         // Overlap Check
         const isOverlap = allDraftRecords.some(b => {
@@ -353,11 +353,11 @@ export function Dashboard() {
             return (start < bEnd && end > bStart);
         });
 
-        if (isOverlap) return triggerAlert("Unavailable", "Selected dates conflict with an existing booking.");
+        if (isOverlap) return triggerAlert("Date Conflict", "The dates you've selected overlap with an existing booking. Please choose a different range.");
 
         triggerConfirm(
-            "Confirm Quick Booking",
-            `Book ${format(start, 'MMM d')} - ${format(end, 'MMM d')} for ${status.activePicker}?\n\nThis will create a draft booking.`,
+            "Confirm Selection",
+            `Create draft for ${format(start, 'MMM d')} - ${format(end, 'MMM d')}?\n\nYou will be able to review and finalize this selection on the next screen.`,
             async () => {
                 try {
                     const owner = CABIN_OWNERS.find(o => o.name === status.activePicker);
@@ -391,7 +391,7 @@ export function Dashboard() {
                         console.error("Email failed", e);
                     }
 
-                    triggerAlert("Draft Created", "Draft saved! Please FINALIZE below to confirm.");
+                    triggerAlert("Draft Saved", "Your selection has been saved as a draft. To complete your turn, please click the green 'Finalize Booking' button on the dashboard.");
                     setQuickStart('');
                     setQuickEnd('');
                 } catch (err) {
@@ -563,9 +563,9 @@ export function Dashboard() {
                     <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
                         <h2 className="text-2xl font-bold mb-2 text-destructive">Pass Your Turn</h2>
                         <p className="text-sm text-muted-foreground mb-6">
-                            Are you sure? Passing skips your turn for this round.
+                            Are you sure you want to skip your turn in this round?
                             <br />
-                            The booking window will <strong>immediately unlock</strong> for the next shareholder.
+                            This will <strong>immediately</strong> open the booking window for the next shareholder.
                         </p>
 
                         <form onSubmit={handlePassSubmit} className="space-y-4">
