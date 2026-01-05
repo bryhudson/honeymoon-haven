@@ -511,20 +511,20 @@ export function Dashboard() {
             {/* Edit / Booking Modal Overlay */}
             {
                 isBooking && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-4 pb-4 md:pt-10 md:pb-10">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-6 md:pb-6">
                         <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
-                            <div className="p-4 border-b flex justify-between items-center bg-muted/20">
-                                <h2 className="text-lg font-semibold">
+                            <div className="p-3 border-b flex justify-between items-center bg-muted/20">
+                                <h2 className="text-base font-semibold">
                                     {editingBooking ? "Edit Booking" : "New Booking"}
                                 </h2>
                                 <button
                                     onClick={() => { setIsBooking(false); setEditingBooking(null); }}
-                                    className="text-muted-foreground hover:text-foreground p-2"
+                                    className="text-muted-foreground hover:text-foreground p-2 text-sm"
                                 >
                                     ✕ Close
                                 </button>
                             </div>
-                            <div className="p-4 md:p-6 max-h-[85vh] overflow-y-auto">
+                            <div className="p-2 md:p-4 max-h-[90vh] overflow-y-auto">
                                 <BookingSection
                                     onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
                                     initialBooking={editingBooking}
@@ -635,7 +635,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.52 - Cleanup</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.53 - Modal Refined</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs">

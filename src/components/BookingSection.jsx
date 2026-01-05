@@ -334,34 +334,23 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     };
 
     return (
-        <section id="book" className="py-20 bg-muted/30 relative">
+        <section id="book" className="py-6 relative">
             <div className="container mx-auto px-4">
-                {onCancel && (
-                    <button
-                        onClick={onCancel}
-                        className="mb-6 flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        ← Back to Dashboard
-                    </button>
-                )}
 
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold tracking-tight mb-4">
+                <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold tracking-tight mb-2">
                         Book Your Stay {formData.shareholderName && <span className="text-primary">for {formData.shareholderName}</span>}
                     </h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
                         Season: <strong>March 1st - October 31st</strong>. <br />
                         Select your check-in and check-out dates.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-12 justify-center items-start">
-                    {/* Calendar Column */}
-
-                    <div className="p-6 bg-card rounded-xl shadow-lg border flex flex-col items-center">
-                        <div className="w-full border-b pb-4 mb-4">
-                            <h3 className="text-lg font-bold text-primary flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs">1</span>
+                    <div className="p-4 bg-card rounded-xl shadow-md border flex flex-col items-center">
+                        <div className="w-full border-b pb-3 mb-3">
+                            <h3 className="text-base font-bold text-primary flex items-center gap-2">
+                                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px]">1</span>
                                 Select Dates
                             </h3>
                         </div>
@@ -385,11 +374,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         />
                     </div>
 
-                    <div className="w-full max-w-3xl space-y-6">
-                        <div className="p-6 bg-card rounded-xl shadow-lg border">
-                            <div className="border-b pb-4 mb-6">
-                                <h3 className="text-lg font-bold text-primary flex items-center gap-2">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs">2</span>
+                    <div className="w-full max-w-3xl space-y-4">
+                        <div className="p-5 bg-card rounded-xl shadow-md border">
+                            <div className="border-b pb-3 mb-4">
+                                <h3 className="text-base font-bold text-primary flex items-center gap-2">
+                                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px]">2</span>
                                     Guest Details
                                 </h3>
                             </div>
@@ -557,28 +546,28 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         </div>
                                     </div>
 
-                                    <div className="border-t pt-6 space-y-4">
-                                        <div className="border-b pb-4">
-                                            <h3 className="text-lg font-bold text-primary flex items-center gap-2">
-                                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs">3</span>
+                                    <div className="border-t pt-4 space-y-3">
+                                        <div className="border-b pb-3">
+                                            <h3 className="text-base font-bold text-primary flex items-center gap-2">
+                                                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px]">3</span>
                                                 Review & Confirm
                                             </h3>
                                         </div>
-                                        <div className="flex justify-between py-1">
+                                        <div className="flex justify-between py-0.5 text-sm">
                                             <span className="text-muted-foreground">Dates</span>
-                                            <span className="font-medium text-sm">
+                                            <span className="font-medium">
                                                 {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d, yyyy')}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between py-1">
+                                        <div className="flex justify-between py-0.5 text-sm">
                                             <span className="text-muted-foreground">Rate</span>
                                             <span className="font-medium">$125.00 / night</span>
                                         </div>
-                                        <div className="flex justify-between py-1">
+                                        <div className="flex justify-between py-0.5 text-sm">
                                             <span className="text-muted-foreground">Duration</span>
                                             <span className="font-medium">{nights} Nights</span>
                                         </div>
-                                        <div className="flex justify-between py-2 text-lg font-bold border-t mt-2">
+                                        <div className="flex justify-between py-2 text-base font-bold border-t mt-1">
                                             <span>Total Maintenance Fee</span>
                                             <span>${totalPrice.toLocaleString()}</span>
                                         </div>
