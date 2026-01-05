@@ -407,13 +407,21 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         <p className="font-bold mb-2 flex items-center gap-1">
                                             ℹ️ Next Steps:
                                         </p>
-                                        <p className="mb-2">
-                                            You have <strong>48 hours</strong> to think about it. No one else can take these dates while you decide.
-                                        </p>
-                                        <ol className="list-decimal list-inside space-y-2 font-medium">
-                                            <li>Close this window when ready.</li>
-                                            <li>When you are ready to lock in these dates, close this window and click the green <strong>Finalize Booking</strong> button on the dashboard.</li>
-                                        </ol>
+                                        <div className="space-y-3">
+                                            <p>
+                                                You have <strong>48 hours</strong> to think about it. No one else can take these dates while you decide.
+                                            </p>
+                                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-900 text-xs">
+                                                <p className="font-bold mb-1 text-sm">💸 Payment Required:</p>
+                                                <p>To complete your booking, please send an e-transfer to:</p>
+                                                <p className="font-mono font-bold select-all mt-1 bg-white p-1 rounded border border-blue-100">honeymoonhavenresort.lc@gmail.com</p>
+                                                <p className="mt-2 text-[10px] uppercase tracking-wider opacity-80">Deadline: Within 24 hours of confirmation.</p>
+                                            </div>
+                                            <ol className="list-decimal list-inside space-y-2 font-medium">
+                                                <li>Close this window when ready.</li>
+                                                <li>When you are ready to lock in these dates, click the green <strong>Finalize Booking</strong> button on the dashboard.</li>
+                                            </ol>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => setIsSuccess(false)}

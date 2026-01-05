@@ -180,7 +180,7 @@ export function Dashboard() {
     const handleFinalize = async (bookingId, name) => {
         triggerConfirm(
             "Finalize Booking",
-            `Click 'Confirm' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.`,
+            `Click 'Confirm' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.\n\nNote: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`,
             async () => {
                 try {
                     await updateDoc(doc(db, "bookings", bookingId), {
@@ -201,7 +201,7 @@ export function Dashboard() {
                                 dates: "Target Dates Locked",
                                 cabin: owner ? owner.cabin : "?",
                                 price: "CONFIRMED",
-                                message: `You have successfully finalized your booking. See you at the lake!`
+                                message: `You have successfully finalized your booking. See you at the lake!\n\nREMINDER: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`
                             },
                             import.meta.env.VITE_EMAILJS_PUBLIC_KEY
                         );
