@@ -7,7 +7,7 @@ import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG
 import { db } from '../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 
-// ... (previous imports)
+import { ConfirmationModal } from './ConfirmationModal';
 
 
 // Helper for safely showing alerts
@@ -586,7 +586,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                     <div className="flex flex-col gap-4 mt-6">
                                         <button
-                                            onClick={() => handleBook(true)}
+                                            onClick={() => setShowConfirmation(true)}
                                             disabled={isTooLong || isOverlap || !bookingStatus.canBook || isSubmitting}
                                             className={`w-full py-5 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${!bookingStatus.canBook
                                                 ? "bg-slate-300 text-slate-500"
@@ -646,6 +646,17 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 </div >
             </div >
 
+            <ConfirmationModal
+                isOpen={showConfirmation}
+                onClose={() => setShowConfirmation(false)}
+                onConfirm={() => {
+                    setShowConfirmation(false);
+                    handleBook(true);
+                }}
+                title="Finalize Booking?"
+                message={`Are you sure you want to lock in these dates? This will officially finish your turn and notify the next shareholder.\n\nDates: ${format(selectedRange.from, 'MMM d')} - ${format(selectedRange.to, 'MMM d, yyyy')}`}
+                confirmText="Yes, Finalize Booking"
+            />
         </section >
     );
 }
