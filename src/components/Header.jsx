@@ -11,6 +11,7 @@ export function Header() {
     // Resolve logged in share holder name from email
     const loggedInShareholder = React.useMemo(() => {
         if (!currentUser?.email) return null;
+        if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
         const owner = CABIN_OWNERS.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
     }, [currentUser]);
