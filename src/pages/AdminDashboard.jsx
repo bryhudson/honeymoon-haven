@@ -76,6 +76,11 @@ export function AdminDashboard() {
         window.location.reload();
     };
 
+    const resetOnboarding = () => {
+        localStorage.removeItem('hhr_tour_seen');
+        triggerAlert("Tour Reset", "The onboarding tour has been reset for your browser. It will appear the next time you visit the dashboard.");
+    };
+
     // --- UI ---
 
     return (
@@ -128,6 +133,21 @@ export function AdminDashboard() {
                                 className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-md hover:bg-red-700 shadow-sm"
                             >
                                 Wipe Database
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                            <div>
+                                <h3 className="font-semibold text-blue-900">Onboarding Tour</h3>
+                                <p className="text-xs text-blue-700">
+                                    Show the guided tour again for testing.
+                                </p>
+                            </div>
+                            <button
+                                onClick={resetOnboarding}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 shadow-sm"
+                            >
+                                Reset Tour
                             </button>
                         </div>
                     </div>
