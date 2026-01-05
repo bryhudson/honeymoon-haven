@@ -544,6 +544,8 @@ export function Dashboard() {
                 <RecentBookings
                     bookings={allDraftRecords}
                     onViewDetails={(booking) => setViewingBooking(booking)}
+                    currentShareholder={loggedInShareholder}
+                    isAdmin={isSuperAdmin}
                 />
             </div>
 

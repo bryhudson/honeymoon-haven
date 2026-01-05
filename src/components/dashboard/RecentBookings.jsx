@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 
-export function RecentBookings({ bookings, onViewDetails }) {
+export function RecentBookings({ bookings, onViewDetails, currentShareholder, isAdmin }) {
     // Filter for table display (exclude passes)
     const bookingsForTable = bookings.filter(r => r.type !== 'pass');
 
@@ -68,12 +68,14 @@ export function RecentBookings({ bookings, onViewDetails }) {
                                                 )}
                                             </td>
                                             <td className="px-3 md:px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => onViewDetails(booking)}
-                                                    className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
-                                                >
-                                                    View Details
-                                                </button>
+                                                {(isAdmin || booking.shareholderName === currentShareholder) && (
+                                                    <button
+                                                        onClick={() => onViewDetails(booking)}
+                                                        className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     );
