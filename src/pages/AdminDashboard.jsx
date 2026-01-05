@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CABIN_OWNERS, DRAFT_CONFIG } from '../lib/shareholders';
 import { db } from '../lib/firebase';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { format } from 'date-fns';
 
 export function AdminDashboard() {
     const [actionLog, setActionLog] = useState("");
+    const [allBookings, setAllBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     // Modal State
     const [confirmation, setConfirmation] = useState({
@@ -26,6 +29,20 @@ export function AdminDashboard() {
     const triggerAlert = (title, message) => {
         setConfirmation({ isOpen: true, title, message, onConfirm: () => { }, isDanger: false, confirmText: "OK", showCancel: false });
     };
+
+    // Fetch all bookings
+    useEffect(() => {
+        const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const bookings = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setAllBookings(bookings);
+            setLoading(false);
+        });
+        return unsubscribe;
+    }, []);
 
 
     // --- SYSTEM CONTROLS ---
@@ -69,11 +86,32 @@ export function AdminDashboard() {
         );
     };
 
-    const toggleTestMode = () => {
-        const current = localStorage.getItem('DRAFT_MODE');
-        const newMode = current === 'TEST' ? 'PROD' : 'TEST';
-        localStorage.setItem('DRAFT_MODE', newMode);
-        window.location.reload();
+    const handleDeleteBooking = (bookingId, details) => {
+        triggerConfirm(
+            "Delete Booking?",
+            `Are you sure you want to delete the booking for ${details}? This cannot be undone.`,
+            async () => {
+                try {
+                    await deleteDoc(doc(db, "bookings", bookingId));
+                    triggerAlert("Success", "Booking deleted successfully.");
+                } catch (err) {
+                    triggerAlert("Error", err.message);
+                }
+            },
+            true,
+            "Delete"
+        );
+    };
+
+    const handleToggleFinalized = async (bookingId, currentStatus) => {
+        try {
+            await updateDoc(doc(db, "bookings", bookingId), {
+                isFinalized: !currentStatus
+            });
+            triggerAlert("Success", `Booking ${!currentStatus ? 'finalized' : 'reverted to draft'}.`);
+        } catch (err) {
+            triggerAlert("Error", err.message);
+        }
     };
 
     const resetOnboarding = () => {
@@ -103,23 +141,6 @@ export function AdminDashboard() {
                     </h2>
 
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                            <div>
-                                <h3 className="font-semibold">Draft Environment</h3>
-                                <p className="text-xs text-muted-foreground">
-                                    Current: <span className="font-mono font-bold">{DRAFT_CONFIG.IS_TEST_MODE ? 'STAGING (Test)' : 'PRODUCTION'}</span>
-                                </p>
-                            </div>
-                            <button
-                                onClick={toggleTestMode}
-                                className={`px-4 py-2 rounded-md text-sm font-bold shadow-sm transition-colors ${DRAFT_CONFIG.IS_TEST_MODE
-                                    ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                                    : 'bg-slate-800 text-white hover:bg-slate-700'
-                                    }`}
-                            >
-                                {DRAFT_CONFIG.IS_TEST_MODE ? 'Switch to Production' : 'Switch to Staging'}
-                            </button>
-                        </div>
 
                         <div className="flex items-center justify-between p-4 bg-red-50 border border-red-100 rounded-lg">
                             <div>
@@ -158,6 +179,90 @@ export function AdminDashboard() {
             </div>
 
 
+
+            {/* All Bookings (Selective Updates) */}
+            <div className="bg-card border rounded-xl shadow-sm overflow-hidden mb-12">
+                <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                    <h2 className="text-xl font-bold">Manage All Bookings</h2>
+                    <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">Live Database</span>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                            <tr>
+                                <th className="px-6 py-4">Shareholder</th>
+                                <th className="px-6 py-4">Cabin</th>
+                                <th className="px-6 py-4">Dates</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-10 text-center text-muted-foreground italic">
+                                        Loading bookings...
+                                    </td>
+                                </tr>
+                            ) : allBookings.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-10 text-center text-muted-foreground italic">
+                                        No bookings found in database.
+                                    </td>
+                                </tr>
+                            ) : (
+                                allBookings.map((booking) => (
+                                    <tr key={booking.id} className="hover:bg-muted/10 transition-colors">
+                                        <td className="px-6 py-4 font-semibold text-slate-900">{booking.shareholderName}</td>
+                                        <td className="px-6 py-4 text-muted-foreground">#{booking.cabinNumber}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">
+                                                    {booking.from && booking.to
+                                                        ? `${format(new Date(booking.from), 'MMM d')} - ${format(new Date(booking.to), 'MMM d, yyyy')}`
+                                                        : 'Invalid Dates'
+                                                    }
+                                                </span>
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    Created: {booking.createdAt ? format(new Date(booking.createdAt), 'MMM d, HH:mm') : 'N/A'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {booking.isFinalized ? (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                    Finalized
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                    Draft
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-right space-x-2">
+                                            <button
+                                                onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                className={`text-xs font-bold px-3 py-1 rounded transition-colors ${booking.isFinalized
+                                                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                    }`}
+                                            >
+                                                {booking.isFinalized ? 'Revert to Draft' : 'Finalize'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteBooking(booking.id, `${booking.shareholderName} (#${booking.cabinNumber})`)}
+                                                className="text-xs font-bold px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             {/* Shareholder List */}
             <div className="bg-card border rounded-xl shadow-sm overflow-hidden">

@@ -50,16 +50,14 @@ export const CABIN_OWNERS = [
 ];
 
 // --- DRAFT CONFIGURATION ---
-const isTestMode = typeof window !== 'undefined' && localStorage.getItem('DRAFT_MODE') === 'TEST';
-
 export const DRAFT_CONFIG = {
-    // If TEST mode, start 1 hour ago (Active Now). Else March 1, 2026.
-    START_DATE: isTestMode ? new Date(Date.now() - 3600000) : new Date(2026, 0, 5, 10, 0, 0),
+    // Current Production Start: March 1, 2026. (Updated to Jan 5 for live draft)
+    START_DATE: new Date(2026, 0, 5, 10, 0, 0),
 
     PICK_DURATION_DAYS: 2,
     SEASON_START: new Date(2026, 3, 3), // April 3
     SEASON_END: new Date(2026, 9, 12),   // Oct 12
-    IS_TEST_MODE: isTestMode // Exported for UI
+    IS_TEST_MODE: false // System always in production
 };
 
 /**
