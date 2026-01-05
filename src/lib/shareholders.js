@@ -170,7 +170,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     // If loop finishes without activePicker, draft is done
     if (!activePicker && now >= DRAFT_START) {
         phase = 'OPEN_SEASON';
-    } else if (now < DRAFT_START && bookings.length === 0) {
+    } else if (now < DRAFT_START && bookings.length === 0 && !activePicker) {
         phase = 'PRE_DRAFT';
     }
 

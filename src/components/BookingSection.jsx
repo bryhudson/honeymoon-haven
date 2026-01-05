@@ -64,7 +64,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     const [formData, setFormData] = useState({
         shareholderName: activePicker || '', // Use activePicker as initial default
         cabinNumber: '',
-        partyName: '', // Focusing on "Guest Name" or "Group Name"
         guests: 1,
         email: ''
     });
@@ -76,7 +75,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             setFormData({
                 shareholderName: initialBooking.shareholderName || activePicker || '',
                 cabinNumber: initialBooking.cabinNumber || '',
-                partyName: initialBooking.partyName || '',
                 guests: initialBooking.guests || 1,
                 email: initialBooking.email || ''
             });
@@ -119,7 +117,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             setFormData(prev => ({
                 ...prev,
                 shareholderName: value,
-                cabinNumber: owner ? owner.cabin : '' // Auto-fill cabin if found, otherwise clear
+                cabinNumber: owner ? owner.cabin : '', // Auto-fill cabin if found, otherwise clear
+                email: owner ? owner.email : prev.email // Auto-fill email
             }));
         } else {
             setFormData(prev => ({
@@ -206,17 +205,21 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                 setFormData(prev => {
                     const newCabin = owner ? owner.cabin : '';
-                    if (prev.shareholderName === schedule.activePicker && prev.cabinNumber === newCabin) return prev;
+                    const newEmail = owner ? owner.email : '';
+                    if (prev.shareholderName === schedule.activePicker && prev.cabinNumber === newCabin && prev.email === newEmail) return prev;
                     return {
                         ...prev,
                         shareholderName: schedule.activePicker,
-                        cabinNumber: newCabin
+                        cabinNumber: newCabin,
+                        email: newEmail
                     };
                 });
 
                 setBookingStatus({
                     canBook: true,
-                    message: `Draft Round Active: Locked to ${schedule.activePicker}`
+                    message: schedule.isGracePeriod
+                        ? `✨ Early Access: Locked to ${schedule.activePicker}`
+                        : `Draft Round Active: Locked to ${schedule.activePicker}`
                 });
                 setIsDraftActive(true);
             } else {
@@ -284,7 +287,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                     // Extra data
                     shareholder_name: formData.shareholderName,
-                    party_name: formData.partyName || "Same as Shareholder",
                     cabin_number: formData.cabinNumber || "Not specified",
                     check_in: format(selectedRange.from, 'PPP'),
                     check_out: format(selectedRange.to, 'PPP'),
@@ -472,19 +474,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium leading-none">Party / Guest Name</label>
-                                                <input
-                                                    type="text"
-                                                    name="partyName"
-                                                    value={formData.partyName}
-                                                    onChange={handleInputChange}
-                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                                    placeholder="Who is staying?"
-                                                    disabled={isTooLong || isOverlap}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-2 col-span-2">
                                                 <label className="text-sm font-medium leading-none">Details</label>
                                                 <div className="flex gap-2">
                                                     <input
@@ -497,7 +487,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                         className="flex h-10 w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
                                                         disabled={isTooLong || isOverlap}
                                                     />
-                                                    <span className="flex items-center text-sm text-muted-foreground">Guests</span>
+                                                    <span className="flex items-center text-sm text-muted-foreground">Number of Guests</span>
                                                 </div>
                                             </div>
                                         </div>
