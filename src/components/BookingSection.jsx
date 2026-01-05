@@ -654,7 +654,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     handleBook(true);
                 }}
                 title="Finalize Booking?"
-                message={`Are you sure you want to lock in these dates? This will officially finish your turn and notify the next shareholder.\n\nDates: ${format(selectedRange.from, 'MMM d')} - ${format(selectedRange.to, 'MMM d, yyyy')}`}
+                message={`Are you sure you want to lock in these dates? This will officially finish your turn and notify the next shareholder.${(selectedRange?.from && selectedRange?.to) ? `\n\nDates: ${format(selectedRange.from, 'MMM d')} - ${format(selectedRange.to, 'MMM d, yyyy')}` : ''}`}
                 confirmText="Yes, Finalize Booking"
             />
         </section >
