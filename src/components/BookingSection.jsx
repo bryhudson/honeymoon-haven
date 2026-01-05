@@ -247,12 +247,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 return;
             }
 
-            // Basic email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email)) {
-                safeAlert(onShowAlert, "Invalid Email", "The email address provided appears to be invalid. Please check it and try again.");
-                return;
-            }
+            // Email is now optional or handled via login context, removing manual validation
 
             setIsSubmitting(true);
             const newBooking = {
@@ -269,18 +264,15 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 if (effectiveId) {
                     await updateDoc(doc(db, "bookings", effectiveId), {
                         ...newBooking,
-                        createdAt: initialBooking?.createdAt || new Date(), // Keep original time if possible
-                        email: formData.email
+                        createdAt: initialBooking?.createdAt || new Date()
                     });
                 } else {
                     const docRef = await addDoc(collection(db, "bookings"), {
                         ...newBooking,
-                        createdAt: new Date(),
-                        email: formData.email,
-                        isFinalized: finalize
+                        createdAt: new Date()
                     });
                     effectiveId = docRef.id;
-                    setLocalBookingId(docRef.id); // Track this new booking as "Active" for editing
+                    setLocalBookingId(docRef.id);
                 }
 
                 if (finalize && onFinalize) {
@@ -481,69 +473,37 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         </div>
                                     )}
 
-                                    <div className="grid gap-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium leading-none">Shareholder Name</label>
-                                                <select
-                                                    name="shareholderName"
-                                                    value={formData.shareholderName}
-                                                    onChange={handleInputChange}
-                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    disabled={isTooLong || isOverlap || isDraftActive}
-                                                >
-                                                    <option value="">Select Owner...</option>
-                                                    {CABIN_OWNERS.map((owner) => (
-                                                        <option key={owner.name} value={owner.name}>
-                                                            {owner.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium leading-none">Cabin Number</label>
-                                                <input
-                                                    type="text"
-                                                    name="cabinNumber"
-                                                    value={formData.cabinNumber}
-                                                    onChange={handleInputChange}
-                                                    className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold"
-                                                    placeholder="Auto-fills"
-                                                    readOnly
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2 col-span-2">
-                                                <label className="text-sm font-medium leading-none">Details</label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="number"
-                                                        name="guests"
-                                                        min="1"
-                                                        max="6"
-                                                        value={formData.guests}
-                                                        onChange={handleInputChange}
-                                                        className="flex h-10 w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                                        disabled={isTooLong || isOverlap}
-                                                    />
-                                                    <span className="flex items-center text-sm text-muted-foreground">Number of Guests</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium leading-none">Shareholder Email</label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleInputChange}
-                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                                placeholder="For confirmation"
-                                                disabled={isTooLong || isOverlap}
-                                            />
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Shareholder</label>
+                                            <div className="h-10 flex items-center px-1 font-bold text-lg text-foreground">
+                                                {formData.shareholderName || "Guest"}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Cabin</label>
+                                            <div className="h-10 flex items-center px-1 font-bold text-lg text-foreground">
+                                                {formData.cabinNumber || "?"}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Number of Guests</label>
+                                            <div className="flex gap-3 items-center">
+                                                <input
+                                                    type="number"
+                                                    name="guests"
+                                                    min="1"
+                                                    max="6"
+                                                    value={formData.guests}
+                                                    onChange={handleInputChange}
+                                                    className="flex h-11 w-24 rounded-xl border border-input bg-background px-3 py-2 text-lg font-bold shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                                    disabled={isTooLong || isOverlap}
+                                                />
+                                                <span className="text-sm font-medium text-muted-foreground">Adults & Children</span>
+                                            </div>
                                         </div>
                                     </div>
 
