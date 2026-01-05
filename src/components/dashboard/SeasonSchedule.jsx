@@ -72,7 +72,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status }) {
                                             badge = "Active Now";
                                         } else if (entry.status === 'GRACE_PERIOD') {
                                             cellBg = "bg-amber-50 text-amber-900 font-bold ring-2 ring-amber-500 ring-inset";
-                                            badge = "Grace Period";
+                                            badge = "Early Access";
                                         } else if (entry.status === 'SKIPPED') {
                                             cellBg = "bg-red-50 text-red-400";
                                             badge = "Skipped";
