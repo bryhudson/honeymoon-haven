@@ -25,7 +25,12 @@ export function OnboardingTour() {
         {
             target: '#tour-actions',
             title: '⚡ Take Action',
-            content: "When it is your turn, use these buttons to Book or Pass. Note: Finalized bookings require an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours of confirmation.",
+            content: "When it is your turn, use these buttons to Book or Pass. You will receive an automated email when your turn begins.",
+        },
+        {
+            target: '#tour-actions',
+            title: '💸 Payment Required',
+            content: "To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours of confirmation. This ensures your dates are officially locked in!",
         },
         {
             target: '#tour-recent',
