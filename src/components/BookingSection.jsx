@@ -367,7 +367,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         />
                     </div>
 
-                    <div className="p-5 bg-card rounded-xl shadow-md border">
+                    <div className="p-5 bg-card rounded-xl shadow-md border w-full md:w-[440px]">
                         <div className="border-b pb-3 mb-4 flex justify-between items-center">
                             <h3 className="text-lg font-bold text-primary flex items-center gap-3">
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm">2</span>
