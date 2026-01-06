@@ -524,9 +524,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         <span className="text-muted-foreground">Duration</span>
                                         <span className="font-medium">{nights} Nights</span>
                                     </div>
-                                    <div className="flex justify-between py-2 text-base font-bold border-t mt-1">
+                                    <div className="flex justify-between py-2 text-xl font-black border-t mt-1">
                                         <span>Total Maintenance Fee</span>
-                                        <span>${totalPrice.toLocaleString()}</span>
+                                        <span className="text-primary">${totalPrice.toLocaleString()}</span>
                                     </div>
                                 </div>
 
