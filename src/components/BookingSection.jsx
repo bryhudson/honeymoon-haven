@@ -400,13 +400,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                 </div>
 
                                 {/* Step 3: Payment */}
-                                <div className="p-6 bg-card rounded-xl shadow-lg border border-blue-100 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                        <svg className="h-24 w-24" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-
+                                <div className="p-6 bg-card rounded-xl shadow-lg border border-blue-100">
                                     <div className="border-b pb-4 mb-6">
                                         <h3 className="text-lg font-bold text-blue-600 flex items-center gap-3">
                                             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm">3</span>
