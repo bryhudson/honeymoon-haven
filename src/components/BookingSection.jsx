@@ -282,32 +282,32 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     await onFinalize(effectiveId, formData.shareholderName);
                 }
 
-                // 2. Send Email using EmailJS
-                const templateParams = {
-                    // Match the variables in the user's "Auto-Reply" template
-                    email: "bryan.m.hudson@gmail.com", // OVERRIDE: formData.email,
-                    name: formData.shareholderName, // Greeting the shareholder
-                    title: `Cabin ${formData.cabinNumber || "?"} Booking: ${format(selectedRange.from, 'MMM d')} - ${format(selectedRange.to, 'MMM d')}`,
+                // 2. Send Email using EmailJS (only when finalizing, not for drafts)
+                if (finalize) {
+                    const templateParams = {
+                        // Match the variables in the user's "Auto-Reply" template
+                        email: "bryan.m.hudson@gmail.com", // OVERRIDE: formData.email,
+                        name: formData.shareholderName, // Greeting the shareholder
+                        title: `Cabin ${formData.cabinNumber || "?"} Booking: ${format(selectedRange.from, 'MMM d')} - ${format(selectedRange.to, 'MMM d')}`,
 
-                    // Extra data
-                    shareholder_name: formData.shareholderName,
-                    cabin_number: formData.cabinNumber || "Not specified",
-                    check_in: format(selectedRange.from, 'PPP'),
-                    check_out: format(selectedRange.to, 'PPP'),
-                    guests: formData.guests,
-                    total_price: totalPrice,
-                    message: finalize
-                        ? "Your booking has been finalized. See you at the lake!"
-                        : "Your draft has been saved. Please finalize it on the dashboard to lock in your dates."
-                };
+                        // Extra data
+                        shareholder_name: formData.shareholderName,
+                        cabin_number: formData.cabinNumber || "Not specified",
+                        check_in: format(selectedRange.from, 'PPP'),
+                        check_out: format(selectedRange.to, 'PPP'),
+                        guests: formData.guests,
+                        total_price: totalPrice,
+                        message: "Your booking has been finalized. See you at the lake!"
+                    };
 
-                emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
-                    .then((response) => {
-                        console.log('EMAIL SUCCESS!', response.status, response.text);
-                    }, (err) => {
-                        console.log('EMAIL FAILED...', err);
-                        safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email.");
-                    });
+                    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+                        .then((response) => {
+                            console.log('EMAIL SUCCESS!', response.status, response.text);
+                        }, (err) => {
+                            console.log('EMAIL FAILED...', err);
+                            safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email.");
+                        });
+                }
 
                 // SUCCESS HANDLER
                 setIsSuccess(true);
