@@ -399,51 +399,63 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                     </p>
                                 </div>
 
-                                {/* Step 3: Payment */}
-                                <div className="p-6 bg-card rounded-xl shadow-lg border border-blue-100">
-                                    <div className="border-b pb-4 mb-6">
-                                        <h3 className="text-lg font-bold text-blue-600 flex items-center gap-3">
-                                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm">3</span>
-                                            Payment Required
-                                        </h3>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <p className="text-sm text-slate-600 font-medium">
-                                            To lock in your cabin, please send an e-transfer within <span className="text-blue-600 font-bold">24 hours</span>:
-                                        </p>
-
-                                        <div className="flex items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                            <code className="text-sm md:text-base font-mono font-bold select-all flex-1 text-blue-700">honeymoonhavenresort.lc@gmail.com</code>
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
-                                                }}
-                                                className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 text-slate-400 hover:text-blue-600 transition-all shadow-sm"
-                                                title="Copy Email"
-                                            >
-                                                📋
-                                            </button>
+                                {/* Step 3: Payment - Only show when booking is finalized */}
+                                {isFinalSuccess && (
+                                    <div className="p-6 bg-card rounded-xl shadow-lg border border-blue-100">
+                                        <div className="border-b pb-4 mb-6">
+                                            <h3 className="text-lg font-bold text-blue-600 flex items-center gap-3">
+                                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm">3</span>
+                                                Payment Required
+                                            </h3>
                                         </div>
 
-                                        <div className="flex flex-col gap-3 pt-6">
-                                            <button
-                                                onClick={() => onCancel()}
-                                                className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md transform hover:scale-[1.01]"
-                                            >
-                                                {isFinalSuccess ? "Return to Dashboard" : "Close & Finish Later"}
-                                            </button>
-                                            {!isFinalSuccess && (
+                                        <div className="space-y-4">
+                                            <p className="text-sm text-slate-600 font-medium">
+                                                To lock in your cabin, please send an e-transfer within <span className="text-blue-600 font-bold">24 hours</span>:
+                                            </p>
+
+                                            <div className="flex items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                <code className="text-sm md:text-base font-mono font-bold select-all flex-1 text-blue-700">honeymoonhavenresort.lc@gmail.com</code>
                                                 <button
-                                                    onClick={() => setIsSuccess(false)}
-                                                    className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
+                                                    }}
+                                                    className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 text-slate-400 hover:text-blue-600 transition-all shadow-sm"
+                                                    title="Copy Email"
                                                 >
-                                                    Edit Booking Details
+                                                    📋
                                                 </button>
-                                            )}
+                                            </div>
+
+                                            <div className="flex flex-col gap-3 pt-6">
+                                                <button
+                                                    onClick={() => onCancel()}
+                                                    className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md transform hover:scale-[1.01]"
+                                                >
+                                                    Return to Dashboard
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
+
+                                {/* Draft actions - Only show when NOT finalized */}
+                                {!isFinalSuccess && (
+                                    <div className="flex flex-col gap-3 pt-4">
+                                        <button
+                                            onClick={() => onCancel()}
+                                            className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md transform hover:scale-[1.01]"
+                                        >
+                                            Close & Finish Later
+                                        </button>
+                                        <button
+                                            onClick={() => setIsSuccess(false)}
+                                            className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+                                        >
+                                            Edit Booking Details
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ) : selectedRange?.from && selectedRange?.to ? (
                             <div className="space-y-4">
