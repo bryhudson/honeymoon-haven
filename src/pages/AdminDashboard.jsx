@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CABIN_OWNERS, DRAFT_CONFIG } from '../lib/shareholders';
+import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
+import { emailService } from '../services/emailService';
 import { db } from '../lib/firebase';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
@@ -133,6 +134,136 @@ export function AdminDashboard() {
         triggerAlert("Tour Reset", "The onboarding tour has been reset for your browser. It will appear the next time you visit the dashboard.");
     };
 
+    const handleRunReminders = async () => {
+        const currentOrder = getShareholderOrder(2026);
+        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+        const activeTurn = schedule.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD');
+
+        if (!activeTurn) {
+            triggerAlert("Status", "No active turn found to remind.");
+            return;
+        }
+
+        const now = new Date();
+        const hoursRemaining = (activeTurn.end - now) / (1000 * 60 * 60);
+
+        triggerConfirm(
+            "Send Reminder?",
+            `Active User: ${activeTurn.name}\nTime Remaining: ${Math.round(hoursRemaining)} hours\n\nDo you want to send a reminder email to ${activeTurn.name}?`,
+            async () => {
+                try {
+                    const owner = CABIN_OWNERS.find(o => o.name === activeTurn.name);
+                    if (owner) {
+                        const emailData = {
+                            name: activeTurn.name,
+                            email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                        };
+                        const contextData = {
+                            name: activeTurn.name,
+                            hours_remaining: Math.round(hoursRemaining),
+                            deadline_date: format(activeTurn.end, 'PPP'),
+                            deadline_time: format(activeTurn.end, 'p'),
+                            check_in: "TBD", // Draft data could be fetched if we look up active booking
+                            check_out: "TBD",
+                            has_draft: false, // Could be improved by checking drafts
+                            booking_url: window.location.origin,
+                            dashboard_url: window.location.origin
+                        };
+
+                        if (hoursRemaining < 6) {
+                            await emailService.sendFinalWarning(emailData, contextData);
+                            triggerAlert("Sent", "Final Warning email sent.");
+                        } else {
+                            const type = now.getHours() < 12 ? 'morning' : 'evening';
+                            await emailService.sendDailyReminder(emailData, { ...contextData, type });
+                            triggerAlert("Sent", `${type === 'morning' ? "Morning" : "Evening"} reminder sent.`);
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Failed to send reminder.");
+                }
+            },
+            false,
+            "Send Email"
+        );
+    };
+
+    const handleProcessExpired = async () => {
+        setActionLog("Checking for expired turns...");
+        const currentOrder = getShareholderOrder(2026); // Hardcoded year for now
+        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+
+        // Find skipped turns (implicit passes)
+        const expired = schedule.filter(s => s.status === 'SKIPPED');
+
+        if (expired.length === 0) {
+            setActionLog("No expired turns found.");
+            triggerAlert("Status", "All turns are up to date.");
+            return;
+        }
+
+        triggerConfirm(
+            "Process Expired Turns",
+            `Found ${expired.length} expired turns (Shareholders: ${expired.map(e => e.name).join(", ")}).\n\nDo you want to auto-pass them and send notification emails?`,
+            async () => {
+                let processedCount = 0;
+
+                for (const item of expired) {
+                    try {
+                        // 1. Create Auto-Pass Record
+                        await addDoc(collection(db, "bookings"), {
+                            shareholderName: item.name,
+                            type: 'auto-pass',
+                            createdAt: new Date(), // This will timestamp it NOW, which effectively ends their turn
+                            from: item.start, // Preserve original window for record
+                            to: item.start
+                        });
+
+                        // 2. Email the person who missed their turn
+                        const owner = CABIN_OWNERS.find(o => o.name === item.name);
+                        if (owner && owner.email) {
+                            await emailService.sendAutoPassCurrent({
+                                name: item.name,
+                                email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                            }, {
+                                name: item.name,
+                                deadline_date: format(item.end, 'PPP'),
+                                deadline_time: format(item.end, 'p'),
+                                next_shareholder: "Next Shareholder", // Generic or calculate?
+                                dashboard_url: window.location.origin
+                            });
+                        }
+
+                        // 3. Email the NEXT person? 
+                        // The loop will eventually process them if they are also expired, 
+                        // or if they are now active, we might want to notify them.
+                        // However, strictly speaking, just creating the 'auto-pass' record 
+                        // will cause the UI to update and show the NEXT person as active.
+                        // We should probably rely on the 'Turn Started' logic or a separate 'Notify Active' check.
+                        // But for now, let's just process the expiration.
+
+                        // Actually, if we just auto-passed User A, User B is now ON THE CLOCK.
+                        // We should notify User B. 
+                        // Finding User B is tricky inside this loop without recalculating.
+                        // Simplification: Just notify User A that they missed it. 
+                        // User B will see it's their turn if they log in. 
+                        // (Ideally we notify User B too, but let's stick to the core requirement first).
+
+                        processedCount++;
+                    } catch (err) {
+                        console.error("Error processing item:", item, err);
+                    }
+                }
+
+                setActionLog(`Processed ${processedCount} expired turns.`);
+                triggerAlert("Complete", `Successfully processed ${processedCount} expired turns.`);
+            },
+            false,
+            "Process ALL"
+        );
+    };
+
     // --- UI ---
 
     return (
@@ -183,6 +314,36 @@ export function AdminDashboard() {
                                 className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 shadow-sm"
                             >
                                 Reset Tour
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-100 rounded-lg">
+                            <div>
+                                <h3 className="font-semibold text-amber-900">Process Expired Turns</h3>
+                                <p className="text-xs text-amber-700">
+                                    Check for missed deadlines and auto-pass.
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleProcessExpired}
+                                className="px-4 py-2 bg-amber-600 text-white text-sm font-bold rounded-md hover:bg-amber-700 shadow-sm"
+                            >
+                                Run Checks
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-100 rounded-lg">
+                            <div>
+                                <h3 className="font-semibold text-purple-900">Active Turn Reminders</h3>
+                                <p className="text-xs text-purple-700">
+                                    Send daily reminder or final warning to active user.
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleRunReminders}
+                                className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-md hover:bg-purple-700 shadow-sm"
+                            >
+                                Send Reminders
                             </button>
                         </div>
                     </div>

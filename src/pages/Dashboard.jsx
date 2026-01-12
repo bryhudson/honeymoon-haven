@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import emailjs from '@emailjs/browser';
+// import emailjs from '@emailjs/browser'; // REMOVED
+import { emailService } from '../services/emailService';
+import { addHours } from 'date-fns';
 import { db } from '../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
@@ -137,6 +139,7 @@ export function Dashboard() {
         });
     };
 
+
     const handleDiscard = async (bookingId) => {
         triggerConfirm(
             "Cancel Booking?",
@@ -146,20 +149,22 @@ export function Dashboard() {
                 try {
                     const bookingData = allDraftRecords.find(b => b.id === bookingId);
                     if (bookingData) {
-                        await emailjs.send(
-                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                            {
-                                to_name: "Admin",
-                                to_email: "bryan.m.hudson@gmail.com", // OVERRIDE
-                                shareholder: bookingData.shareholderName || "Unknown",
-                                dates: `${format(bookingData.from, 'MMM d')} - ${format(bookingData.to, 'MMM d')}`,
-                                cabin: bookingData.cabinNumber || "?",
-                                price: "0",
-                                message: `Booking CANCELLED by user.`
-                            },
-                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                        );
+                        const shareholderName = bookingData.shareholderName || "Unknown";
+                        // Notify Admin? Or User? The original code notified Admin (to_name: Admin). 
+                        // The user requirements say "Booking Cancelled Notification (Current)".
+                        // We will notify the USER.
+                        await emailService.sendBookingCancelled({
+                            name: shareholderName,
+                            email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                        }, {
+                            name: shareholderName,
+                            check_in: format(bookingData.from, 'MMM d'),
+                            check_out: format(bookingData.to, 'MMM d'),
+                            cabin_number: bookingData.cabinNumber || "?",
+                            cancelled_date: format(new Date(), 'PPP'),
+                            within_turn_window: false, // Assuming draft discard is manual
+                            dashboard_url: window.location.origin
+                        });
                     }
                 } catch (e) {
                     console.error("Cancellation email failed", e);
@@ -174,10 +179,7 @@ export function Dashboard() {
         );
     };
 
-    // Debug Logging
-    useEffect(() => {
-        console.log("Booking Status Updated:", status);
-    }, [status.activePicker, status.windowEnds]);
+    // ...
 
     const handleFinalize = async (bookingId, name, skipConfirm = false) => {
         const executeFinalize = async () => {
@@ -187,46 +189,26 @@ export function Dashboard() {
                     createdAt: new Date() // Reset clock to now
                 });
 
-                // 1. Notify CURRENT user (Confirmation)
-                try {
-                    const owner = CABIN_OWNERS.find(o => o.name === name);
-                    await emailjs.send(
-                        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                        {
-                            to_name: name,
-                            to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: owner.email
-                            shareholder: name,
-                            dates: "Target Dates Locked",
-                            cabin: owner ? owner.cabin : "?",
-                            price: "CONFIRMED",
-                            message: `You have successfully finalized your booking. See you at the lake!\n\nREMINDER: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`
-                        },
-                        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                    );
-                } catch (e) {
-                    console.error("Confirmation email failed", e);
-                }
+                // 1. Notify CURRENT user (Confirmation) - HANDLED IN BookingSection.jsx NOW.
+                // Removing duplicate email call.
 
                 // Notify NEXT shareholder
                 if (status.nextPicker) {
                     const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
                     if (nextOwner && nextOwner.email) {
                         try {
-                            await emailjs.send(
-                                import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                                import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                                {
-                                    to_name: nextOwner.name,
-                                    to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: nextOwner.email,
-                                    shareholder: nextOwner.name,
-                                    dates: "YOUR TURN NOW",
-                                    cabin: nextOwner.cabin,
-                                    price: "0",
-                                    message: `ACTION REQUIRED: ${name} has finalized their booking. The booking window is now OPEN for you. You have 48 hours to book.\n\nLog in here: ${window.location.origin}/login`
-                                },
-                                import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                            );
+                            const deadline = addHours(new Date(), 48);
+                            await emailService.sendTurnStarted({
+                                name: nextOwner.name,
+                                email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                            }, {
+                                name: nextOwner.name,
+                                deadline_date: format(deadline, 'PPP'),
+                                deadline_time: format(deadline, 'p'),
+                                booking_url: window.location.origin,
+                                dashboard_url: window.location.origin,
+                                pass_turn_url: window.location.origin
+                            });
                             console.log("Notification sent to", nextOwner.name);
                         } catch (e) {
                             console.error("Next user email failed", e);
@@ -264,23 +246,6 @@ export function Dashboard() {
         e.preventDefault();
         if (!passData.name) return triggerAlert("Selection Missing", "Please select your name.");
 
-        // triggerConfirm handled in the Modal, we just execute here? 
-        // No, the "Pass Turn" button in the modal submits the form.
-        // We should trigger the confirm step here.
-
-        // Actually, let's keep the Confirm Modal step just to be safe/consistent?
-        // Or is the "Pass Turn" modal itself essentially a confirm?
-        // "Confirm Pass" button is there.
-        // User asked for "standard overlay for all confirmation".
-        // Let's add one final "Are you sure?" check on top of the form, OR just treat the form submit as the trigger.
-        // The implementation_plan said "Remove the double-check confirm()".
-        // But wait, "Replace all native browser confirms".
-        // The "Pass Your Turn" screen IS a form. The "Confirm Pass" button is the submission.
-        // To be consistent with "Global Confirm Modals", maybe the "Pass Turn" screen simply IS the modal?
-        // Yes. So when they click "Confirm Pass" in the modal, it just goes.
-        // But checking the logic: "if (!confirm(...)) return;" was there.
-        // Let's REMOVE that check and just execute. The user already clicked "Confirm Pass" in a dedicated modal.
-
         try {
             // Check for existing draft to delete (replacing Draft with Pass)
             const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
@@ -290,7 +255,7 @@ export function Dashboard() {
 
             await addDoc(collection(db, "bookings"), {
                 shareholderName: passData.name,
-                type: 'pass',
+                type: 'pass', // This is important
                 createdAt: new Date(),
                 from: new Date(),
                 to: new Date()
@@ -299,20 +264,13 @@ export function Dashboard() {
             // 1. Notify CURRENT user (Pass Confirmation)
             try {
                 const owner = CABIN_OWNERS.find(o => o.name === passData.name);
-                await emailjs.send(
-                    import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                    {
-                        to_name: passData.name,
-                        to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: owner.email
-                        shareholder: passData.name,
-                        dates: "N/A",
-                        cabin: "N/A",
-                        price: "PASSED",
-                        message: `You have successfully PASSED your turn.`
-                    },
-                    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                );
+                await emailService.sendTurnPassedCurrent({
+                    name: passData.name,
+                    email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                }, {
+                    name: passData.name,
+                    dashboard_url: window.location.origin
+                });
             } catch (e) {
                 console.error("Pass email failed", e);
             }
@@ -322,20 +280,18 @@ export function Dashboard() {
                 const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
                 if (nextOwner && nextOwner.email) {
                     try {
-                        await emailjs.send(
-                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                            {
-                                to_name: nextOwner.name,
-                                to_email: "bryan.m.hudson@gmail.com", // OVERRIDE: nextOwner.email,
-                                shareholder: nextOwner.name,
-                                dates: "YOUR TURN NOW",
-                                cabin: nextOwner.cabin,
-                                price: "0",
-                                message: `ACTION REQUIRED: ${passData.name} has passed their turn. The booking window is now OPEN for you. You have 48 hours to book.\n\nLog in here: ${window.location.origin}/login`
-                            },
-                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                        );
+                        const deadline = addHours(new Date(), 48);
+                        await emailService.sendTurnPassedNext({
+                            name: nextOwner.name,
+                            email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                        }, {
+                            name: nextOwner.name,
+                            previous_shareholder: passData.name,
+                            deadline_date: format(deadline, 'PPP'),
+                            deadline_time: format(deadline, 'p'),
+                            booking_url: window.location.origin,
+                            dashboard_url: window.location.origin
+                        });
                         console.log("Notification sent to", nextOwner.name);
                     } catch (e) {
                         console.error("Next user email failed", e);
@@ -367,8 +323,6 @@ export function Dashboard() {
 
         // Overlap Check
         const isOverlap = allDraftRecords.some(b => {
-            // Skip cancelled/passes? (Passes have length? no, usually from=to). 
-            // Logic from BookingSection:
             if (b.type === 'pass') return false;
             const bStart = b.from?.toDate ? b.from.toDate() : new Date(b.from);
             const bEnd = b.to?.toDate ? b.to.toDate() : new Date(b.to);
@@ -395,23 +349,7 @@ export function Dashboard() {
                         isFinalized: false // Creating as Draft
                     });
 
-                    // Email Notification (Confirmation)
-                    try {
-                        const templateParams = {
-                            email: "bryan.m.hudson@gmail.com", // OVERRIDE
-                            name: status.activePicker,
-                            title: `Cabin ${owner?.cabin} Booking: ${format(start, 'MMM d')} - ${format(end, 'MMM d')} `,
-                            message: "Draft saved from Dashboard Quick Book."
-                        };
-                        emailjs.send(
-                            import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                            templateParams,
-                            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-                        );
-                    } catch (e) {
-                        console.error("Email failed", e);
-                    }
+                    // Email Removed for Quick Draft
 
                     triggerAlert("Draft Saved", "Your selection has been saved as a draft. To complete your turn, please click the green 'Finalize Booking' button on the dashboard.");
                     setQuickStart('');
@@ -635,7 +573,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.56 - UI Polished</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.58 - Secure Backend</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs">

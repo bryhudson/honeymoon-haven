@@ -1,4 +1,4 @@
-import emailjs from '@emailjs/browser';
+import { emailService } from '../services/emailService';
 import React, { useState, useEffect } from 'react'; // Assuming React and useEffect are needed for the change
 import { format, addWeeks, addDays, differenceInCalendarDays, eachDayOfInterval, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
@@ -86,11 +86,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     const [isDraftActive, setIsDraftActive] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false); // New Success State
 
-    // REPLACE WITH YOUR EMAILJS KEYS
-    // REPLACE WITH YOUR EMAILJS KEYS
-    const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-    const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-    const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+    // Email service initialized in services/emailService.js
 
     // --- CONFIGURATION ---
     const SEASON_START = new Date(2026, 2, 1); // March 1, 2026
@@ -282,31 +278,26 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     await onFinalize(effectiveId, formData.shareholderName);
                 }
 
-                // 2. Send Email using EmailJS (only when finalizing, not for drafts)
                 if (finalize) {
-                    const templateParams = {
-                        // Match the variables in the user's "Auto-Reply" template
-                        email: "bryan.m.hudson@gmail.com", // OVERRIDE: formData.email,
-                        name: formData.shareholderName, // Greeting the shareholder
-                        title: `Cabin ${formData.cabinNumber || "?"} Booking: ${format(selectedRange.from, 'MMM d')} - ${format(selectedRange.to, 'MMM d')}`,
-
-                        // Extra data
-                        shareholder_name: formData.shareholderName,
-                        cabin_number: formData.cabinNumber || "Not specified",
-                        check_in: format(selectedRange.from, 'PPP'),
-                        check_out: format(selectedRange.to, 'PPP'),
-                        guests: formData.guests,
-                        total_price: totalPrice,
-                        message: "Your booking has been finalized. See you at the lake!"
-                    };
-
-                    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
-                        .then((response) => {
-                            console.log('EMAIL SUCCESS!', response.status, response.text);
-                        }, (err) => {
-                            console.log('EMAIL FAILED...', err);
-                            safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email.");
+                    try {
+                        await emailService.sendBookingConfirmed({
+                            name: formData.shareholderName,
+                            email: "bryan.m.hudson@gmail.com" // OVERRIDE for safety/testing as per previous code
+                        }, {
+                            name: formData.shareholderName,
+                            check_in: format(selectedRange.from, 'PPP'),
+                            check_out: format(selectedRange.to, 'PPP'),
+                            cabin_number: formData.cabinNumber || "Not specified",
+                            guests: formData.guests,
+                            nights: nights,
+                            total_price: totalPrice,
+                            dashboard_url: window.location.origin
                         });
+                        console.log('Confirmation email sent successfully');
+                    } catch (error) {
+                        console.error('Failed to send confirmation email:', error);
+                        safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email.");
+                    }
                 }
 
                 // SUCCESS HANDLER

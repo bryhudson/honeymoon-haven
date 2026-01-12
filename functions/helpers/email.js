@@ -1,0 +1,67 @@
+const { defineSecret } = require("firebase-functions/params");
+const logger = require("firebase-functions/logger");
+const nodemailer = require("nodemailer");
+
+// Define access to Gmail secrets
+// Note: You must set these using `firebase functions:secrets:set GMAIL_EMAIL` etc.
+const gmailEmail = defineSecret("GMAIL_EMAIL");
+const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
+
+/**
+ * Sends an email via Gmail SMTP using Nodemailer.
+ * 
+ * @param {object} data
+ * @param {object} data.to - { name: string, email: string }
+ * @param {string} data.subject - Subject line
+ * @param {string} data.htmlContent - HTML body
+ * @returns {Promise<{success: boolean, messageId: string}>}
+ */
+async function sendGmail({ to, subject, htmlContent }) {
+    const user = gmailEmail.value();
+    const pass = gmailAppPassword.value();
+
+    if (!user || !pass) {
+        logger.error("Gmail secrets are missing.");
+        throw new Error('Email service configuration error: Missing Credentials');
+    }
+
+    // Create Transporter
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: user,
+            pass: pass,
+        },
+    });
+
+    // Sender Info
+    // Note: Gmail always overwrites the "From" address with the authenticated user,
+    // but we can set a custom name.
+    const from = `"Honeymoon Haven" <${user}>`;
+
+    // Safely override recipient for testing if needed
+    // const recipient = "bryan.m.hudson@gmail.com"; // Safety override
+    const recipient = to.email; // Real recipient
+
+    const mailOptions = {
+        from: from,
+        to: recipient, // Nodemailer accepts "Name <email>" or just "email"
+        subject: subject,
+        html: htmlContent,
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        logger.info("Email sent successfully", { messageId: info.messageId });
+        return { success: true, messageId: info.messageId };
+
+    } catch (error) {
+        logger.error("Gmail send failed", error);
+        throw error;
+    }
+}
+
+module.exports = {
+    sendGmail,
+    gmailSecrets: [gmailEmail, gmailAppPassword] // Export secrets for consumers
+};
