@@ -258,7 +258,7 @@ export function Dashboard() {
         } else {
             triggerConfirm(
                 "Finalize Booking",
-                `Click 'Finalize Booking' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.\n\nNote: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours.`,
+                `Click 'Finalize Booking' to finalize your booking. This will lock in your dates and officially move the turn to the next shareholder.\n\nNote: To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 48 hours.`,
                 executeFinalize,
                 false,
                 "Finalize Booking"
@@ -603,7 +603,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.60.5 - Gmail Integrated</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.60.6 - Gmail Integrated</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs flex flex-col gap-2 items-center">

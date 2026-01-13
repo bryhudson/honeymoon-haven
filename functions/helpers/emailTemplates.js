@@ -201,13 +201,13 @@ const emailTemplates = {
 
       <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fcd34d;">
         <h3 style="margin-top: 0; color: #92400e;">💰 PAYMENT REQUIRED</h3>
-        <p>To lock in your cabin, please send an e-transfer within 24 hours:</p>
+        <p>To lock in your cabin, please send an e-transfer within 48 hours:</p>
         <p>
           📧 Email: <strong>honeymoonhavenresort.lc@gmail.com</strong><br>
           💵 Amount: <strong>$${data.total_price}</strong><br>
           📝 Message: "${data.name} - Cabin ${data.cabin_number} - ${data.check_in}"
         </p>
-        <p style="font-size: 0.9em; color: #b45309;">⚠️ Important: Your booking may be cancelled if payment is not received within 24 hours.</p>
+        <p style="font-size: 0.9em; color: #b45309;">⚠️ Important: Your booking may be cancelled if payment is not received within 48 hours.</p>
       </div>
 
       <h3>🏡 CHECK-IN INFORMATION</h3>
@@ -218,7 +218,6 @@ const emailTemplates = {
       </ul>
 
       <div style="margin: 25px 0;">
-        <a href="mailto:honeymoonhavenresort.lc@gmail.com?subject=Payment for ${data.cabin_number} - ${data.check_in}&body=Sending e-transfer for $${data.total_price}" style="${CTA_BUTTON_STYLES}">Send E-Transfer</a>
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Booking</a>
       </div>
     `;

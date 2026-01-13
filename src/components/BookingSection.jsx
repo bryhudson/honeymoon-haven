@@ -294,7 +294,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             guests: formData.guests,
                             nights: nights,
                             total_price: totalPrice,
-                            dashboard_url: window.location.origin
+                            dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
                         });
                         console.log('Confirmation email sent successfully');
                     } catch (error) {
@@ -405,7 +405,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                         <div className="space-y-4">
                                             <p className="text-sm text-slate-600 font-medium">
-                                                To lock in your cabin, please send an e-transfer within <span className="text-blue-600 font-bold">24 hours</span>:
+                                                To lock in your cabin, please send an e-transfer within <span className="text-blue-600 font-bold">48 hours</span>:
                                             </p>
 
                                             <div className="flex items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
