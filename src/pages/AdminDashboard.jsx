@@ -81,6 +81,29 @@ export function AdminDashboard() {
         };
     }, []);
 
+    const performWipe = async () => {
+        setActionLog("Reseting database...");
+        const querySnapshot = await getDocs(collection(db, "bookings"));
+        const count = querySnapshot.size;
+
+        if (count === 0) {
+            setActionLog("Database is already empty.");
+            return 0;
+        }
+
+        const batch = writeBatch(db);
+        querySnapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+
+        // Hard Clean
+        localStorage.clear();
+        sessionStorage.clear();
+        return count;
+    };
+
     const handleUpdateStartDate = async () => {
         if (!simStartDate) return triggerAlert("Error", "Please select a date.");
         try {
@@ -142,27 +165,7 @@ export function AdminDashboard() {
             "Are you sure you want to delete ALL bookings? This cannot be undone.",
             async () => {
                 try {
-                    setActionLog("Reseting database...");
-                    const querySnapshot = await getDocs(collection(db, "bookings"));
-                    const count = querySnapshot.size;
-
-                    if (count === 0) {
-                        triggerAlert("Database Empty", "Database is already empty.");
-                        setActionLog("Database is already empty.");
-                        return;
-                    }
-
-                    const batch = writeBatch(db);
-                    querySnapshot.docs.forEach((doc) => {
-                        batch.delete(doc.ref);
-                    });
-
-                    await batch.commit();
-
-                    // Hard Clean
-                    localStorage.clear();
-                    sessionStorage.clear();
-
+                    const count = await performWipe();
                     triggerAlert("Reset Complete", `✅ Reset Complete.\n\nDeleted ${count} records. Reloading...`);
                     setTimeout(() => window.location.reload(), 2000);
                 } catch (err) {

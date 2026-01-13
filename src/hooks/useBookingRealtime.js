@@ -22,6 +22,7 @@ export function useBookingRealtime() {
         });
 
         // Fetch Bookings
+        const q = query(collection(db, "bookings"), orderBy("from"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const records = snapshot.docs.map(doc => {
                 const data = doc.data();
