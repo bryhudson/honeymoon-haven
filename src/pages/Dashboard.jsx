@@ -396,15 +396,8 @@ export function Dashboard() {
     };
 
 
-    // Auto-populate Pass Form
-    useEffect(() => {
-        if (isPassing && status.activePicker) {
-            const owner = CABIN_OWNERS.find(o => o.name === status.activePicker);
-            setPassData({
-                name: status.activePicker
-            });
-        }
-    }, [isPassing, status.activePicker]);
+    // Auto-populate Pass Form Removed - Handled in Button Click to prevent glitch
+    // useEffect(() => { ... }, [isPassing, status.activePicker]);
 
     const activeUserDraft = allDraftRecords.find(b => b.shareholderName === status.activePicker && b.isFinalized === false);
 
@@ -451,7 +444,13 @@ export function Dashboard() {
                                     Choose Your Dates
                                 </button>
                                 <button
-                                    onClick={() => status.phase === 'PRE_DRAFT' ? setShowPreDraftModal(true) : setIsPassing(true)}
+                                    onClick={() => status.phase === 'PRE_DRAFT'
+                                        ? setShowPreDraftModal(true)
+                                        : (() => {
+                                            setPassData({ name: status.activePicker });
+                                            setIsPassing(true);
+                                        })()
+                                    }
                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
                                 >
                                     Pass Turn
