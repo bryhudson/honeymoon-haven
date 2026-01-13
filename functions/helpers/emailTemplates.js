@@ -61,7 +61,7 @@ const wrapHtml = (title, bodyContent) => `
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc;">
   <div style="${BASE_STYLES}">
-    <h1 style="${HEADER_STYLES}">Honeymoon Haven Resort</h1>
+    <h1 style="${HEADER_STYLES}">HHR Trailer Booking</h1>
     ${bodyContent}
     <div style="${FOOTER_STYLES}">
       <p>Questions? Reply to this email or contact honeymoonhavenresort.lc@gmail.com</p>
@@ -73,10 +73,10 @@ const wrapHtml = (title, bodyContent) => `
 `;
 
 const emailTemplates = {
-    // 1. Turn Started
-    turnStarted: (data) => {
-        const subject = `🏡 Your Honeymoon Haven Booking Turn Has Started!`;
-        const body = `
+  // 1. Turn Started
+  turnStarted: (data) => {
+    const subject = `🏡 Your Honeymoon Haven Booking Turn Has Started!`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>Great news! Your 48-hour booking window for Honeymoon Haven Resort has officially started.</p>
       
@@ -103,34 +103,34 @@ const emailTemplates = {
       
       <p><small><a href="${data.pass_turn_url}">Pass Turn</a></small></p>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 2. Daily Reminder (Generic logic for Morning/Evening)
-    reminder: (data) => {
-        const isMorning = data.type === 'morning';
-        const subject = isMorning
-            ? `☀️ Morning Reminder: Complete Your Honeymoon Haven Booking`
-            : `🌙 Evening Reminder: Your Honeymoon Haven Booking Awaits`;
+  // 2. Daily Reminder (Generic logic for Morning/Evening)
+  reminder: (data) => {
+    const isMorning = data.type === 'morning';
+    const subject = isMorning
+      ? `☀️ Morning Reminder: Complete Your Honeymoon Haven Booking`
+      : `🌙 Evening Reminder: Your Honeymoon Haven Booking Awaits`;
 
-        let statusSection = '';
-        if (data.has_draft) {
-            statusSection = `
+    let statusSection = '';
+    if (data.has_draft) {
+      statusSection = `
         <div style="background-color: #fff7ed; padding: 15px; border-radius: 6px; border-left: 4px solid #f97316;">
           <strong>📝 Current Status: Draft saved</strong><br>
           Your dates (${data.check_in} - ${data.check_out}) are being held. Don't forget to finalize when you're ready!
         </div>
       `;
-        } else {
-            statusSection = `
+    } else {
+      statusSection = `
         <div style="background-color: #f1f5f9; padding: 15px; border-radius: 6px;">
           <strong>📝 Current Status: No booking yet</strong><br>
           You still have time to select your perfect dates for summer 2026.
         </div>
       `;
-        }
+    }
 
-        const body = `
+    const body = `
       <p>Good ${isMorning ? 'morning' : 'evening'} ${data.name},</p>
       <p>${isMorning ? 'This is a friendly reminder that your booking window is still active.' : 'Just checking in on your booking window for Honeymoon Haven Resort.'}</p>
 
@@ -144,13 +144,13 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 4. Final Warning
-    finalWarning: (data) => {
-        const subject = `⏰ URGENT: 6 Hours Left to Complete Your Booking`;
-        const body = `
+  // 4. Final Warning
+  finalWarning: (data) => {
+    const subject = `⏰ URGENT: 6 Hours Left to Complete Your Booking`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p style="color: #dc2626; font-weight: bold;">⚠️ URGENT REMINDER ⚠️</p>
       <p>Your 48-hour booking window expires in just 6 hours!</p>
@@ -177,13 +177,13 @@ const emailTemplates = {
         <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">FINALIZE NOW</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 5. Booking Finalized
-    bookingConfirmed: (data) => {
-        const subject = `✅ Booking Confirmed! See You at Honeymoon Haven`;
-        const body = `
+  // 5. Booking Finalized
+  bookingConfirmed: (data) => {
+    const subject = `✅ Booking Confirmed! See You at Honeymoon Haven`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>🎉 Congratulations! Your booking is confirmed!</p>
 
@@ -222,15 +222,15 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Booking</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 6. Turn Passed (Current Shareholder)
-    turnPassedCurrent: (data) => {
-        const subject = `Turn Passed - Thank You`;
-        const body = `
+  // 6. Turn Passed (Current Shareholder)
+  turnPassedCurrent: (data) => {
+    const subject = `Turn Passed - Thank You`;
+    const body = `
       <p>Hi ${data.name},</p>
-      <p>Thank you for passing your turn for Honeymoon Haven Resort.</p>
+      <p>Thank you for passing your turn!</p>
       <p>Your turn has been successfully passed to the next shareholder in the rotation.</p>
 
       <h3>📅 OPEN SEASON BOOKING</h3>
@@ -240,13 +240,13 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 7. Turn Passed (Next Shareholder - It's Your Turn)
-    turnPassedNext: (data) => {
-        const subject = `🎉 It's Your Turn! Honeymoon Haven Booking Window Open`;
-        const body = `
+  // 7. Turn Passed (Next Shareholder - It's Your Turn)
+  turnPassedNext: (data) => {
+    const subject = `🎉 It's Your Turn! Honeymoon Haven Booking Window Open`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>Exciting news! It's now your turn to book at Honeymoon Haven Resort!</p>
       <p>The previous shareholder (${data.previous_shareholder}) has passed their turn, which means your 48-hour booking window has started early.</p>
@@ -260,13 +260,13 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 8. Automatic Pass (Deadline Missed - Current)
-    autoPassCurrent: (data) => {
-        const subject = `⏱️ Booking Window Expired - Turn Automatically Passed`;
-        const body = `
+  // 8. Automatic Pass (Deadline Missed - Current)
+  autoPassCurrent: (data) => {
+    const subject = `⏱️ Booking Window Expired - Turn Automatically Passed`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>Your 48-hour booking window for Honeymoon Haven Resort has expired.</p>
       <p>Since no action was taken by the deadline (${data.deadline_date} at ${data.deadline_time}), your turn has automatically passed to the next shareholder (${data.next_shareholder}).</p>
@@ -280,13 +280,13 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 9. Automatic Pass (Next Shareholder)
-    autoPassNext: (data) => {
-        const subject = `🎉 It's Your Turn! Honeymoon Haven Booking Window Open`;
-        const body = `
+  // 9. Automatic Pass (Next Shareholder)
+  autoPassNext: (data) => {
+    const subject = `🎉 It's Your Turn! Honeymoon Haven Booking Window Open`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>Good news! It's now your turn to book at Honeymoon Haven Resort!</p>
       <p>The previous shareholder's booking window has expired, which means your 48-hour window has started.</p>
@@ -300,13 +300,13 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 10. Booking Cancelled (Current)
-    bookingCancelled: (data) => {
-        const subject = `Booking Cancelled - Confirmed`;
-        const body = `
+  // 10. Booking Cancelled (Current)
+  bookingCancelled: (data) => {
+    const subject = `Booking Cancelled - Confirmed`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>Your booking for Honeymoon Haven Resort has been cancelled.</p>
 
@@ -327,13 +327,13 @@ const emailTemplates = {
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    },
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
 
-    // 12. Payment Reminder
-    paymentReminder: (data) => {
-        const subject = `💰 Payment Reminder: E-Transfer Due for Your Booking`;
-        const body = `
+  // 12. Payment Reminder
+  paymentReminder: (data) => {
+    const subject = `💰 Payment Reminder: E-Transfer Due for Your Booking`;
+    const body = `
       <p>Hi ${data.name},</p>
       <p>This is a friendly reminder that your e-transfer payment is due for your Honeymoon Haven booking.</p>
 
@@ -352,8 +352,8 @@ const emailTemplates = {
         <a href="mailto:honeymoonhavenresort.lc@gmail.com" style="${CTA_BUTTON_STYLES}">Send E-Transfer Now</a>
       </div>
     `;
-        return { subject, htmlContent: wrapHtml(subject, body) };
-    }
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  }
 };
 
 module.exports = { emailTemplates };
