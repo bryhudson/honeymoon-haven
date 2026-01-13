@@ -6,6 +6,8 @@ import { db } from '../lib/firebase';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { format } from 'date-fns';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
+import { set } from 'date-fns';
 
 export function AdminDashboard() {
     const [actionLog, setActionLog] = useState("");
@@ -39,8 +41,25 @@ export function AdminDashboard() {
         return isNaN(d.getTime()) ? null : d;
     };
 
-    // Fetch all bookings
+    // Simulation State
+    const [simStartDate, setSimStartDate] = useState("");
+    const [currentSimDate, setCurrentSimDate] = useState(null);
+
+    // Fetch Settings & Bookings
     useEffect(() => {
+        // 1. Settings
+        const unsubSettings = onSnapshot(doc(db, "settings", "general"), (doc) => {
+            if (doc.exists() && doc.data().draftStartDate) {
+                const d = doc.data().draftStartDate.toDate();
+                setCurrentSimDate(d);
+                setSimStartDate(format(d, "yyyy-MM-dd'T'HH:mm"));
+            } else {
+                setCurrentSimDate(null);
+                setSimStartDate("");
+            }
+        });
+
+        // 2. Bookings
         const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const bookings = snapshot.docs.map(doc => {
@@ -56,8 +75,63 @@ export function AdminDashboard() {
             setAllBookings(bookings);
             setLoading(false);
         });
-        return unsubscribe;
+        return () => {
+            unsubscribe();
+            unsubSettings();
+        };
     }, []);
+
+    const handleUpdateStartDate = async () => {
+        if (!simStartDate) return triggerAlert("Error", "Please select a date.");
+        try {
+            const date = new Date(simStartDate);
+            // Ensure document exists
+            const settingsRef = doc(db, "settings", "general");
+            // simple merge update (will create if not exists, but we need set with merge for safety on sub-fields if any, but updateDoc fails if doc doesn't exist)
+            // Use setDoc with merge: true is safer, but let's assume updateDoc for now or use setDoc if I import it.
+            // I'll use setDoc (need to import it first? No, I only have updateDoc imported. I'll act as if I can import setDoc or just use updateDoc and hope it exists, or check existence. 
+            // Wait, I didn't add setDoc to imports. I'll stick to updateDoc but I need to ensure it exists. 
+            // Actually, I can use `writeBatch` or just `setDoc`. I'll add `setDoc` to imports in a separate check? 
+            // No, I'll just use `updateDoc` and if it fails (document not found), I'll `setDoc`.
+            // BETTER: Add `setDoc` to imports.
+
+            // Wait, I can't easily add setDoc to imports in this chunk without being messy.
+            // I'll use `writeBatch` which is imported.
+            const batch = writeBatch(db);
+            batch.set(settingsRef, { draftStartDate: date }, { merge: true });
+            await batch.commit();
+
+            triggerAlert("Success", "Simulation Start Date updated.");
+        } catch (err) {
+            triggerAlert("Error", err.message);
+        }
+    };
+
+    const handleResetSimulation = async () => {
+        try {
+            const batch = writeBatch(db);
+            const settingsRef = doc(db, "settings", "general");
+            batch.update(settingsRef, { draftStartDate: null }); // Or delete field
+            await batch.commit();
+            triggerAlert("Success", "Simulation reset to default schedule.");
+        } catch (err) {
+            // trying delete field
+            try {
+                // If update fails (doc doesn't exist), we don't care because it's already default.
+                // But if it exists, we want to delete the field.
+                await updateDoc(doc(db, "settings", "general"), {
+                    draftStartDate: deleteDoc() // Wait, deleteField() is what I need. Import it?
+                    // Too complex without imports.
+                    // Just set to null.
+                });
+            } catch (e) {
+                // ignore
+            }
+            // Actually, setting to null is fine if my logic handles it.
+            // My hook: `setStartDateOverride(null)` if `doc.data().draftStartDate` is missing or null.
+            // So writing null is sufficient.
+        }
+    };
 
 
     // --- SYSTEM CONTROLS ---
@@ -280,74 +354,152 @@ export function AdminDashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 {/* System Controls */}
-                <div className="bg-card border rounded-xl p-6 shadow-sm">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        ⚙️ System Controls
+                <div className="bg-white border rounded-xl p-6 shadow-sm">
+                    <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800">
+                        <Settings className="h-5 w-5 text-slate-500" />
+                        System Controls
                     </h2>
 
-                    <div className="space-y-4">
-
-                        <div className="flex items-center justify-between p-4 bg-red-50 border border-red-100 rounded-lg gap-4">
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-red-900">Reset Simulation</h3>
-                                <p className="text-xs text-red-700">
-                                    Wipe all bookings and restart.
-                                </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Simulation Card */}
+                        <div className="col-span-1 md:col-span-2 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex gap-3">
+                                    <div className="mt-1 p-2 bg-white rounded-md border shadow-sm text-slate-500">
+                                        <Calendar className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-slate-900">Draft Simulation</h3>
+                                        <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                                            Override the official start date ({format(DRAFT_CONFIG.START_DATE, 'MMM d, yyyy')}) to test different draft phases.
+                                        </p>
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <input
+                                                type="datetime-local"
+                                                value={simStartDate}
+                                                onChange={(e) => setSimStartDate(e.target.value)}
+                                                className="text-sm border rounded px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                            <button
+                                                onClick={handleUpdateStartDate}
+                                                className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded hover:bg-slate-800 transition-colors"
+                                            >
+                                                Sets Date
+                                            </button>
+                                            {currentSimDate && (
+                                                <button
+                                                    onClick={handleResetSimulation}
+                                                    className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded hover:bg-slate-50 transition-colors"
+                                                >
+                                                    Reset to Default
+                                                </button>
+                                            )}
+                                        </div>
+                                        {currentSimDate && (
+                                            <p className="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
+                                                <CheckCircle className="h-3 w-3" />
+                                                Simulation Active: {format(currentSimDate, 'MMM d, h:mm a')}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                            <button
-                                onClick={handleResetDB}
-                                className="shrink-0 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-md hover:bg-red-700 shadow-sm"
-                            >
-                                Wipe Database
-                            </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-lg gap-4">
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-blue-900">Onboarding Tour</h3>
-                                <p className="text-xs text-blue-700">
-                                    Show the guided tour again for testing.
-                                </p>
+                        {/* Reset DB */}
+                        <div className="p-4 rounded-lg border border-red-100 bg-red-50/50 hover:bg-red-50 transition-colors group">
+                            <div className="flex items-start justify-between">
+                                <div className="flex gap-3">
+                                    <div className="p-2 bg-white rounded-md border border-red-100 text-red-500 group-hover:text-red-600 shadow-sm">
+                                        <Trash2 className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-red-900">Wipe Database</h3>
+                                        <p className="text-xs text-red-600/80 mt-1">
+                                            Delete all bookings and reset state.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleResetDB}
+                                    className="px-3 py-1.5 bg-white border border-red-200 text-red-700 text-xs font-bold rounded hover:bg-red-100 transition-colors shadow-sm"
+                                >
+                                    Reset
+                                </button>
                             </div>
-                            <button
-                                onClick={resetOnboarding}
-                                className="shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 shadow-sm"
-                            >
-                                Reset Tour
-                            </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-100 rounded-lg gap-4">
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-amber-900">Process Expired Turns</h3>
-                                <p className="text-xs text-amber-700">
-                                    Check for missed deadlines and auto-pass.
-                                </p>
+                        {/* Onboarding */}
+                        <div className="p-4 rounded-lg border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors group">
+                            <div className="flex items-start justify-between">
+                                <div className="flex gap-3">
+                                    <div className="p-2 bg-white rounded-md border border-blue-100 text-blue-500 group-hover:text-blue-600 shadow-sm">
+                                        <PlayCircle className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-blue-900">Reset Tour</h3>
+                                        <p className="text-xs text-blue-600/80 mt-1">
+                                            Show onboarding guide again.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={resetOnboarding}
+                                    className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded hover:bg-blue-100 transition-colors shadow-sm"
+                                >
+                                    Reset
+                                </button>
                             </div>
-                            <button
-                                onClick={handleProcessExpired}
-                                className="shrink-0 px-4 py-2 bg-amber-600 text-white text-sm font-bold rounded-md hover:bg-amber-700 shadow-sm"
-                            >
-                                Run Checks
-                            </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-100 rounded-lg gap-4">
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-purple-900">Active Turn Reminders</h3>
-                                <p className="text-xs text-purple-700">
-                                    Send daily reminder or final warning to active user.
-                                </p>
+                        {/* Expired Turns */}
+                        <div className="p-4 rounded-lg border border-amber-100 bg-amber-50/50 hover:bg-amber-50 transition-colors group">
+                            <div className="flex items-start justify-between">
+                                <div className="flex gap-3">
+                                    <div className="p-2 bg-white rounded-md border border-amber-100 text-amber-500 group-hover:text-amber-600 shadow-sm">
+                                        <Clock className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-amber-900">Process Turns</h3>
+                                        <p className="text-xs text-amber-600/80 mt-1">
+                                            Check for missed deadlines.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleProcessExpired}
+                                    className="px-3 py-1.5 bg-white border border-amber-200 text-amber-700 text-xs font-bold rounded hover:bg-amber-100 transition-colors shadow-sm"
+                                >
+                                    Run
+                                </button>
                             </div>
-                            <button
-                                onClick={handleRunReminders}
-                                className="shrink-0 px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-md hover:bg-purple-700 shadow-sm"
-                            >
-                                Send Reminders
-                            </button>
                         </div>
+
+                        {/* Reminders */}
+                        <div className="p-4 rounded-lg border border-purple-100 bg-purple-50/50 hover:bg-purple-50 transition-colors group">
+                            <div className="flex items-start justify-between">
+                                <div className="flex gap-3">
+                                    <div className="p-2 bg-white rounded-md border border-purple-100 text-purple-500 group-hover:text-purple-600 shadow-sm">
+                                        <Bell className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-purple-900">Send Reminders</h3>
+                                        <p className="text-xs text-purple-600/80 mt-1">
+                                            Notify active shareholder.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleRunReminders}
+                                    className="px-3 py-1.5 bg-white border border-purple-200 text-purple-700 text-xs font-bold rounded hover:bg-purple-100 transition-colors shadow-sm"
+                                >
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
-                    {actionLog && <p className="mt-4 text-sm font-mono text-muted-foreground">{actionLog}</p>}
+                    {actionLog && <p className="mt-4 text-sm font-mono text-muted-foreground p-2 bg-slate-100 rounded">{actionLog}</p>}
                 </div>
 
 

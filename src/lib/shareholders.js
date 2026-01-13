@@ -82,8 +82,8 @@ export function getOfficialStart(finishTime) {
     }
 }
 
-export function calculateDraftSchedule(shareholders, bookings = [], now = new Date()) {
-    const DRAFT_START = DRAFT_CONFIG.START_DATE;
+export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null) {
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
     const PICK_DURATION_MS = DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
     // Build the full turn order (Round 1 + Round 2 Snake)
@@ -188,8 +188,8 @@ export function adjustForCourtesy(date) {
     return getOfficialStart(date);
 }
 
-export function mapOrderToSchedule(shareholders, bookings = []) {
-    const DRAFT_START = DRAFT_CONFIG.START_DATE;
+export function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null) {
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
     const PICK_DURATION_MS = DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
     const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];

@@ -73,7 +73,7 @@ export function Dashboard() {
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
-    const { allDraftRecords, loading, status, currentOrder } = useBookingRealtime();
+    const { allDraftRecords, loading, status, currentOrder, startDateOverride } = useBookingRealtime();
 
     const [isBooking, setIsBooking] = useState(false);
     const [isPassing, setIsPassing] = useState(false);
@@ -473,7 +473,7 @@ export function Dashboard() {
             </div>
 
             <div id="tour-schedule">
-                <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} />
+                <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} startDateOverride={startDateOverride} />
             </div>
 
             {/* Edit / Booking Modal Overlay */}
@@ -503,6 +503,7 @@ export function Dashboard() {
                                     onFinalize={async (id, name) => {
                                         await handleFinalize(id, name, true);
                                     }}
+                                    startDateOverride={startDateOverride}
                                 />
                             </div>
                         </div>
@@ -603,7 +604,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.60.6 - Gmail Integrated</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.61.0 - Gmail Integrated</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs flex flex-col gap-2 items-center">

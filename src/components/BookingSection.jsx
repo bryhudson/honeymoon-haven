@@ -16,7 +16,7 @@ const safeAlert = (handler, title, msg) => {
     else alert(`${title}\n\n${msg}`);
 };
 
-export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize }) {
+export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, startDateOverride }) {
     const [selectedRange, setSelectedRange] = useState();
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -171,7 +171,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         const currentOrder = savedOrder ? JSON.parse(savedOrder) : getShareholderOrder(targetYear);
 
         // Use Global Calculator
-        const schedule = calculateDraftSchedule(currentOrder, allDraftRecords);
+        const schedule = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), startDateOverride);
 
         if (schedule.phase === 'OPEN_SEASON') {
             // Check Cooldown Logic

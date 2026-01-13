@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.60.6",
+  "version": "2.61.0",
   "type": "module",
   "homepage": "https://bryhudson.github.io/honeymoon-haven",
   "scripts": {

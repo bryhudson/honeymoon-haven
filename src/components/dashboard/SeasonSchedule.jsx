@@ -2,7 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
-export function SeasonSchedule({ currentOrder, allDraftRecords, status }) {
+export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride }) {
     return (
         <div className="">
             <div className="flex justify-between items-center mb-4">
@@ -36,7 +36,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status }) {
                         <tbody className="divide-y">
                             {(() => {
                                 // Pre-calculate full schedule history/projection
-                                const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords);
+                                const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords, startDateOverride);
 
                                 return currentOrder.map((name, index) => {
                                     const owner = CABIN_OWNERS.find(o => o.name === name);
