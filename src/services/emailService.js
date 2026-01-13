@@ -48,8 +48,10 @@ export const emailService = {
                 name: data.name,
                 deadline_date: data.deadline_date,
                 deadline_time: data.deadline_time,
-                cabin_number: data.cabin_number || "?", // Default if not found
-                dashboard_url: data.dashboard_url
+                cabin_number: data.cabin_number || "?",
+                dashboard_url: data.dashboard_url,
+                booking_url: `${data.dashboard_url}#book`,
+                pass_turn_url: `${data.dashboard_url}#pass`
             }
         });
     },
@@ -74,7 +76,8 @@ export const emailService = {
                 status_message: statusMsg,
                 urgency_message: urgencyMsg,
                 cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url
+                dashboard_url: data.dashboard_url,
+                booking_url: `${data.dashboard_url}#book`
             }
         });
     },
@@ -93,7 +96,8 @@ export const emailService = {
                 status_message: data.status_message || "Your turn is ending soon.",
                 next_shareholder: data.next_shareholder || "the next shareholder",
                 cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url
+                dashboard_url: data.dashboard_url,
+                booking_url: `${data.dashboard_url}#book`
             }
         });
     },
@@ -135,7 +139,9 @@ export const emailService = {
                 deadline_date: data.deadline_date,
                 deadline_time: data.deadline_time,
                 cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url
+                dashboard_url: data.dashboard_url,
+                booking_url: `${data.dashboard_url}#book`,
+                pass_turn_url: `${data.dashboard_url}#pass`
             }
         });
     },
@@ -158,7 +164,9 @@ export const emailService = {
                 deadline_date: data.deadline_date,
                 deadline_time: data.deadline_time,
                 cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url
+                dashboard_url: data.dashboard_url,
+                booking_url: `${data.dashboard_url}#book`,
+                pass_turn_url: `${data.dashboard_url}#pass`
             }
         });
     },
