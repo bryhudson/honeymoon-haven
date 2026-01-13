@@ -129,11 +129,18 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     let nights = 0;
     let totalPrice = 0;
     let isTooLong = false;
+    let isTooShort = false; // New validation
     let isOverlap = false;
     let conflictingBooking = null;
 
     if (selectedRange?.from && selectedRange?.to) {
         nights = differenceInCalendarDays(selectedRange.to, selectedRange.from);
+
+        // Prevent 0-night bookings
+        if (nights < 1) {
+            isTooShort = true;
+        }
+
         totalPrice = nights * 125;
 
         // Check for max stay
@@ -361,6 +368,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             selected={selectedRange}
                             onSelect={handleSelectRange}
                             numberOfMonths={1}
+                            min={2} // Suggest to DayPicker to enforce range
                             pagedNavigation
                             disabled={date => isBooked(date) || isOutsideSeason(date)}
                             modifiers={{
@@ -482,6 +490,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         )}
                                     </div>
                                 )}
+                                {isTooShort && (
+                                    <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium">
+                                        Invalid duration. Please ensure check-out is after check-in (minimum 1 night).
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -547,7 +560,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                 <div className="flex flex-col gap-4 mt-6">
                                     <button
                                         onClick={() => setShowConfirmation(true)}
-                                        disabled={isTooLong || isOverlap || !bookingStatus.canBook || isSubmitting}
+                                        disabled={isTooLong || isTooShort || isOverlap || !bookingStatus.canBook || isSubmitting}
                                         className={`w-full py-5 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${!bookingStatus.canBook
                                             ? "bg-slate-300 text-slate-500"
                                             : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -562,7 +575,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                     <button
                                         onClick={() => handleBook(false)}
-                                        disabled={isTooLong || isOverlap || !bookingStatus.canBook || isSubmitting}
+                                        disabled={isTooLong || isTooShort || isOverlap || !bookingStatus.canBook || isSubmitting}
                                         className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline decoration-dotted underline-offset-4"
                                     >
                                         I'm not sure yet, just save as Draft
