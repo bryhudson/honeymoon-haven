@@ -368,7 +368,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             selected={selectedRange}
                             onSelect={handleSelectRange}
                             numberOfMonths={1}
-                            min={2} // Suggest to DayPicker to enforce range
                             pagedNavigation
                             disabled={date => isBooked(date) || isOutsideSeason(date)}
                             modifiers={{
