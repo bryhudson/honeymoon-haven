@@ -21,7 +21,7 @@ const { emailTemplates } = require("./helpers/emailTemplates");
 const { onBookingChangeTrigger, checkDailyReminders } = require("./triggers/emailTriggers");
 
 /**
- * Sends an email via Brevo API.
+ * Sends an email via Gmail SMTP.
  * This function is callable securely from the client.
  */
 exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {

@@ -3,7 +3,8 @@ import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
 import { emailService } from '../services/emailService';
 import { addHours } from 'date-fns';
-import { db } from '../lib/firebase';
+import { db, functions } from '../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { collection, addDoc, updateDoc, deleteDoc, doc, } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -139,6 +140,23 @@ export function Dashboard() {
         });
     };
 
+    const handleTestEmail = async () => {
+        try {
+            triggerAlert("Sending...", "Sending test email...");
+            const sendEmail = httpsCallable(functions, 'sendEmail');
+            await sendEmail({
+                to: { name: "Test User", email: "bryan.m.hudson@gmail.com" },
+                subject: "Test Email from Gmail SMTP",
+                htmlContent: "<p>This is a test email sent from the new Gmail SMTP integration.</p>"
+            });
+            triggerAlert("Success", "Test email sent successfully. Check your inbox.");
+        } catch (error) {
+            console.error("Test email failed", error);
+            triggerAlert("Error", "Failed to send test email: " + error.message);
+        }
+    };
+
+
 
     const handleDiscard = async (bookingId) => {
         triggerConfirm(
@@ -163,7 +181,7 @@ export function Dashboard() {
                             cabin_number: bookingData.cabinNumber || "?",
                             cancelled_date: format(new Date(), 'PPP'),
                             within_turn_window: false, // Assuming draft discard is manual
-                            dashboard_url: window.location.origin
+                            dashboard_url: "https://honeymoon-haven.web.app"
                         });
                     }
                 } catch (e) {
@@ -197,7 +215,13 @@ export function Dashboard() {
                     const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
                     if (nextOwner && nextOwner.email) {
                         try {
-                            const deadline = addHours(new Date(), 48);
+                            // Logic: Next Day 10 AM + 48 Hours
+                            const tomorrow10am = new Date();
+                            tomorrow10am.setDate(tomorrow10am.getDate() + 1);
+                            tomorrow10am.setHours(10, 0, 0, 0);
+
+                            const deadline = addHours(tomorrow10am, 48);
+
                             await emailService.sendTurnStarted({
                                 name: nextOwner.name,
                                 email: "bryan.m.hudson@gmail.com" // OVERRIDE
@@ -205,9 +229,9 @@ export function Dashboard() {
                                 name: nextOwner.name,
                                 deadline_date: format(deadline, 'PPP'),
                                 deadline_time: format(deadline, 'p'),
-                                booking_url: window.location.origin,
-                                dashboard_url: window.location.origin,
-                                pass_turn_url: window.location.origin
+                                booking_url: "https://honeymoon-haven.web.app",
+                                dashboard_url: "https://honeymoon-haven.web.app",
+                                pass_turn_url: "https://honeymoon-haven.web.app"
                             });
                             console.log("Notification sent to", nextOwner.name);
                         } catch (e) {
@@ -269,7 +293,7 @@ export function Dashboard() {
                     email: "bryan.m.hudson@gmail.com" // OVERRIDE
                 }, {
                     name: passData.name,
-                    dashboard_url: window.location.origin
+                    dashboard_url: "https://honeymoon-haven.web.app"
                 });
             } catch (e) {
                 console.error("Pass email failed", e);
@@ -280,7 +304,14 @@ export function Dashboard() {
                 const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
                 if (nextOwner && nextOwner.email) {
                     try {
-                        const deadline = addHours(new Date(), 48);
+                        // Logic: Next Day 10 AM + 48 Hours
+                        // "Account for the 10 next day early access start period"
+                        const tomorrow10am = new Date();
+                        tomorrow10am.setDate(tomorrow10am.getDate() + 1);
+                        tomorrow10am.setHours(10, 0, 0, 0);
+
+                        const deadline = addHours(tomorrow10am, 48);
+
                         await emailService.sendTurnPassedNext({
                             name: nextOwner.name,
                             email: "bryan.m.hudson@gmail.com" // OVERRIDE
@@ -289,8 +320,8 @@ export function Dashboard() {
                             previous_shareholder: passData.name,
                             deadline_date: format(deadline, 'PPP'),
                             deadline_time: format(deadline, 'p'),
-                            booking_url: window.location.origin,
-                            dashboard_url: window.location.origin
+                            booking_url: "https://honeymoon-haven.web.app",
+                            dashboard_url: "https://honeymoon-haven.web.app"
                         });
                         console.log("Notification sent to", nextOwner.name);
                     } catch (e) {
@@ -573,11 +604,17 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.58 - Secure Backend</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.60 - Gmail Integrated</p>
 
                 {isSuperAdmin && (
-                    <div className="mt-4 text-xs">
+                    <div className="mt-4 text-xs flex flex-col gap-2 items-center">
                         <a href="#/admin" className="text-muted-foreground hover:text-primary underline">Admin Dashboard</a>
+                        <button
+                            onClick={handleTestEmail}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-bold shadow-sm transition-colors"
+                        >
+                            Send Test Email
+                        </button>
                     </div>
                 )}
             </div>
