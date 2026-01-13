@@ -181,7 +181,7 @@ export function Dashboard() {
                             cabin_number: bookingData.cabinNumber || "?",
                             cancelled_date: format(new Date(), 'PPP'),
                             within_turn_window: false, // Assuming draft discard is manual
-                            dashboard_url: "https://honeymoon-haven.web.app"
+                            dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
                         });
                     }
                 } catch (e) {
@@ -229,9 +229,9 @@ export function Dashboard() {
                                 name: nextOwner.name,
                                 deadline_date: format(deadline, 'PPP'),
                                 deadline_time: format(deadline, 'p'),
-                                booking_url: "https://honeymoon-haven.web.app",
-                                dashboard_url: "https://honeymoon-haven.web.app",
-                                pass_turn_url: "https://honeymoon-haven.web.app"
+                                booking_url: "https://bryhudson.github.io/honeymoon-haven/",
+                                dashboard_url: "https://bryhudson.github.io/honeymoon-haven/",
+                                pass_turn_url: "https://bryhudson.github.io/honeymoon-haven/"
                             });
                             console.log("Notification sent to", nextOwner.name);
                         } catch (e) {
@@ -293,7 +293,7 @@ export function Dashboard() {
                     email: "bryan.m.hudson@gmail.com" // OVERRIDE
                 }, {
                     name: passData.name,
-                    dashboard_url: "https://honeymoon-haven.web.app"
+                    dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
                 });
             } catch (e) {
                 console.error("Pass email failed", e);
@@ -320,8 +320,8 @@ export function Dashboard() {
                             previous_shareholder: passData.name,
                             deadline_date: format(deadline, 'PPP'),
                             deadline_time: format(deadline, 'p'),
-                            booking_url: "https://honeymoon-haven.web.app",
-                            dashboard_url: "https://honeymoon-haven.web.app"
+                            booking_url: "https://bryhudson.github.io/honeymoon-haven/",
+                            dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
                         });
                         console.log("Notification sent to", nextOwner.name);
                     } catch (e) {
@@ -603,7 +603,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.60.1 - Gmail Integrated</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.60.2 - Gmail Integrated</p>
 
                 {isSuperAdmin && (
                     <div className="mt-4 text-xs flex flex-col gap-2 items-center">
