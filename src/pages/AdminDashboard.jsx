@@ -287,8 +287,8 @@ export function AdminDashboard() {
 
                     <div className="space-y-4">
 
-                        <div className="flex items-center justify-between p-4 bg-red-50 border border-red-100 rounded-lg">
-                            <div>
+                        <div className="flex items-center justify-between p-4 bg-red-50 border border-red-100 rounded-lg gap-4">
+                            <div className="flex-1">
                                 <h3 className="font-semibold text-red-900">Reset Simulation</h3>
                                 <p className="text-xs text-red-700">
                                     Wipe all bookings and restart.
@@ -296,14 +296,14 @@ export function AdminDashboard() {
                             </div>
                             <button
                                 onClick={handleResetDB}
-                                className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-md hover:bg-red-700 shadow-sm"
+                                className="shrink-0 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-md hover:bg-red-700 shadow-sm"
                             >
                                 Wipe Database
                             </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                            <div>
+                        <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-lg gap-4">
+                            <div className="flex-1">
                                 <h3 className="font-semibold text-blue-900">Onboarding Tour</h3>
                                 <p className="text-xs text-blue-700">
                                     Show the guided tour again for testing.
@@ -311,14 +311,14 @@ export function AdminDashboard() {
                             </div>
                             <button
                                 onClick={resetOnboarding}
-                                className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 shadow-sm"
+                                className="shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 shadow-sm"
                             >
                                 Reset Tour
                             </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-100 rounded-lg">
-                            <div>
+                        <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-100 rounded-lg gap-4">
+                            <div className="flex-1">
                                 <h3 className="font-semibold text-amber-900">Process Expired Turns</h3>
                                 <p className="text-xs text-amber-700">
                                     Check for missed deadlines and auto-pass.
@@ -326,14 +326,14 @@ export function AdminDashboard() {
                             </div>
                             <button
                                 onClick={handleProcessExpired}
-                                className="px-4 py-2 bg-amber-600 text-white text-sm font-bold rounded-md hover:bg-amber-700 shadow-sm"
+                                className="shrink-0 px-4 py-2 bg-amber-600 text-white text-sm font-bold rounded-md hover:bg-amber-700 shadow-sm"
                             >
                                 Run Checks
                             </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-100 rounded-lg">
-                            <div>
+                        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-100 rounded-lg gap-4">
+                            <div className="flex-1">
                                 <h3 className="font-semibold text-purple-900">Active Turn Reminders</h3>
                                 <p className="text-xs text-purple-700">
                                     Send daily reminder or final warning to active user.
@@ -341,7 +341,7 @@ export function AdminDashboard() {
                             </div>
                             <button
                                 onClick={handleRunReminders}
-                                className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-md hover:bg-purple-700 shadow-sm"
+                                className="shrink-0 px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-md hover:bg-purple-700 shadow-sm"
                             >
                                 Send Reminders
                             </button>
