@@ -455,7 +455,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         Maximum stay is 7 nights. Please select a shorter range.
                                     </div>
                                 )}
-                                {!isSuccess && isOverlap && (
+                                {!isSuccess && !isSubmitting && isOverlap && (
                                     <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium">
                                         Dates unavailable.
                                         {conflictingBooking && (
