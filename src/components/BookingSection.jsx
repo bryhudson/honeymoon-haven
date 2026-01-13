@@ -201,6 +201,20 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             setBookingStatus({ canBook: false, message: `Booking schedule begins on ${format(schedule.draftStart, 'PPP')}` });
         } else {
             // DRAFT IS ACTIVE (Round 1 or 2)
+
+            // CHECK FOR EXISTING DRAFT (Correction Mode)
+            // If the user has a booking that is NOT finalized, allow them to edit it regardless of turn order
+            const myDraft = allDraftRecords.find(b => b.shareholderName === formData.shareholderName && b.isFinalized === false && b.type !== 'pass');
+
+            if (myDraft) {
+                setBookingStatus({
+                    canBook: true,
+                    message: "Correction Mode: You can update your booking."
+                });
+                setIsDraftActive(true);
+                return;
+            }
+
             if (schedule.activePicker) {
                 const owner = CABIN_OWNERS.find(o => o.name === schedule.activePicker);
 

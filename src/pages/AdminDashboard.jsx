@@ -8,6 +8,7 @@ import { ConfirmationModal } from '../components/ConfirmationModal';
 import { format } from 'date-fns';
 import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
 import { set } from 'date-fns';
+import { EditBookingModal } from '../components/EditBookingModal';
 
 export function AdminDashboard() {
     const [actionLog, setActionLog] = useState("");
@@ -44,6 +45,10 @@ export function AdminDashboard() {
     // Simulation State
     const [simStartDate, setSimStartDate] = useState("");
     const [currentSimDate, setCurrentSimDate] = useState(null);
+
+    // Editing State
+    const [editingBooking, setEditingBooking] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // Fetch Settings & Bookings
     useEffect(() => {
@@ -176,6 +181,28 @@ export function AdminDashboard() {
             true, // Danger
             "Wipe Database"
         );
+    };
+
+    const handleEditClick = (booking) => {
+        setEditingBooking(booking);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveEdit = async (updatedBooking) => {
+        try {
+            await updateDoc(doc(db, "bookings", updatedBooking.id), {
+                shareholderName: updatedBooking.shareholderName,
+                cabinNumber: updatedBooking.cabinNumber,
+                from: updatedBooking.from,
+                to: updatedBooking.to,
+                isFinalized: updatedBooking.isFinalized
+            });
+            setIsEditModalOpen(false);
+            setEditingBooking(null);
+            triggerAlert("Success", "Booking updated successfully.");
+        } catch (err) {
+            triggerAlert("Error", err.message);
+        }
     };
 
     const handleDeleteBooking = (bookingId, details) => {
@@ -577,7 +604,13 @@ export function AdminDashboard() {
                                                     : 'bg-green-100 text-green-700 hover:bg-green-200'
                                                     }`}
                                             >
-                                                {booking.isFinalized ? 'Revert to Draft' : 'Finalize'}
+                                                {booking.isFinalized ? 'Un-Finalize' : 'Finalize'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleEditClick(booking)}
+                                                className="text-xs font-bold px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                                            >
+                                                Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteBooking(booking.id, `${booking.shareholderName} (#${booking.cabinNumber})`)}
@@ -634,6 +667,14 @@ export function AdminDashboard() {
                 isDanger={confirmation.isDanger}
                 confirmText={confirmation.confirmText}
                 showCancel={confirmation.showCancel}
+            />
+
+            {/* Edit Modal */}
+            <EditBookingModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSave={handleSaveEdit}
+                booking={editingBooking}
             />
         </div>
     );
