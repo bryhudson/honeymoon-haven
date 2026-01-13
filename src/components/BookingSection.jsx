@@ -163,6 +163,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     const [bookingStatus, setBookingStatus] = useState({ canBook: true, message: '' });
 
     useEffect(() => {
+        // Prevent auto-switching the user while they are in the middle of a submission or success screen
+        if (isSuccess || isSubmitting) return;
+
         const targetYear = 2026;
         const savedOrder = localStorage.getItem(`shareholderOrder_${targetYear}`);
         const currentOrder = savedOrder ? JSON.parse(savedOrder) : getShareholderOrder(targetYear);
