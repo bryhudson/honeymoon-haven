@@ -782,9 +782,11 @@ export function AdminDashboard() {
                                         <td className="px-6 py-5">
                                             <div className="flex flex-col">
                                                 <span className="font-medium text-slate-900">
-                                                    {booking.from && booking.to
-                                                        ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
-                                                        : 'Invalid Dates'
+                                                    {(booking.type === 'pass' || booking.type === 'auto-pass')
+                                                        ? '—'
+                                                        : (booking.from && booking.to
+                                                            ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
+                                                            : 'Invalid Dates')
                                                     }
                                                 </span>
                                                 <span className="text-[11px] text-muted-foreground mt-0.5">
