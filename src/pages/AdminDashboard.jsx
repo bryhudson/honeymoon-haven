@@ -371,8 +371,8 @@ export function AdminDashboard() {
 
                     await emailService.sendBookingCancelled(emailTo, {
                         name: booking.shareholderName,
-                        check_in: format(booking.from.toDate(), 'MMM d, yyyy'),
-                        check_out: format(booking.to.toDate(), 'MMM d, yyyy'),
+                        check_in: booking.from?.toDate ? format(booking.from.toDate(), 'MMM d, yyyy') : format(new Date(booking.from), 'MMM d, yyyy'),
+                        check_out: booking.to?.toDate ? format(booking.to.toDate(), 'MMM d, yyyy') : format(new Date(booking.to), 'MMM d, yyyy'),
                         cabin_number: booking.cabinNumber,
                         cancelled_date: format(new Date(), 'PPP'),
                         dashboard_url: window.location.origin
@@ -495,19 +495,19 @@ export function AdminDashboard() {
                             });
                         }
 
-                        // 3. Email the NEXT person? 
-                        // The loop will eventually process them if they are also expired, 
+                        // 3. Email the NEXT person?
+                        // The loop will eventually process them if they are also expired,
                         // or if they are now active, we might want to notify them.
-                        // However, strictly speaking, just creating the 'auto-pass' record 
+                        // However, strictly speaking, just creating the 'auto-pass' record
                         // will cause the UI to update and show the NEXT person as active.
                         // We should probably rely on the 'Turn Started' logic or a separate 'Notify Active' check.
                         // But for now, let's just process the expiration.
 
                         // Actually, if we just auto-passed User A, User B is now ON THE CLOCK.
-                        // We should notify User B. 
+                        // We should notify User B.
                         // Finding User B is tricky inside this loop without recalculating.
-                        // Simplification: Just notify User A that they missed it. 
-                        // User B will see it's their turn if they log in. 
+                        // Simplification: Just notify User A that they missed it.
+                        // User B will see it's their turn if they log in.
                         // (Ideally we notify User B too, but let's stick to the core requirement first).
 
                         processedCount++;
@@ -835,13 +835,6 @@ export function AdminDashboard() {
                                                     <Ban className="w-4 h-4" />
                                                 </button>
                                             )}
-                                            <button
-                                                onClick={() => handleDeleteBooking(booking.id, `${booking.shareholderName} (#${booking.cabinNumber})`)}
-                                                className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                                title="Delete Booking"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
                                         </td>
                                     </tr>
                                 ))
