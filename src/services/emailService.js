@@ -40,20 +40,8 @@ export const emailService = {
     // ID 1: "Booking Started" (Notification to NEXT user)
     // Used for: Turn Started, Turn Passed (Next), Auto Pass (Next)
     sendTurnStarted: async (recipient, data) => {
-        return sendEmail({
-            to: recipient,
-            templateId: 1,
-            params: {
-                ...SEASON_CONFIG,
-                name: data.name,
-                deadline_date: data.deadline_date,
-                deadline_time: data.deadline_time,
-                cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url,
-                booking_url: `${data.dashboard_url}#book`,
-                pass_turn_url: `${data.dashboard_url}#pass`
-            }
-        });
+        const { subject, htmlContent } = emailTemplates.turnStarted(data);
+        return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendDailyReminder: async (recipient, data) => {
@@ -129,21 +117,8 @@ export const emailService = {
     },
 
     sendTurnPassedNext: async (recipient, data) => {
-        // Reuse ID 1
-        return sendEmail({
-            to: recipient,
-            templateId: 1,
-            params: {
-                ...SEASON_CONFIG,
-                name: data.name,
-                deadline_date: data.deadline_date,
-                deadline_time: data.deadline_time,
-                cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url,
-                booking_url: `${data.dashboard_url}#book`,
-                pass_turn_url: `${data.dashboard_url}#pass`
-            }
-        });
+        const { subject, htmlContent } = emailTemplates.turnPassedNext(data);
+        return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendAutoPassCurrent: async (recipient, data) => {
@@ -154,21 +129,8 @@ export const emailService = {
     },
 
     sendAutoPassNext: async (recipient, data) => {
-        // Reuse ID 1
-        return sendEmail({
-            to: recipient,
-            templateId: 1,
-            params: {
-                ...SEASON_CONFIG,
-                name: data.name,
-                deadline_date: data.deadline_date,
-                deadline_time: data.deadline_time,
-                cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url,
-                booking_url: `${data.dashboard_url}#book`,
-                pass_turn_url: `${data.dashboard_url}#pass`
-            }
-        });
+        const { subject, htmlContent } = emailTemplates.autoPassNext(data);
+        return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendBookingCancelled: async (recipient, data) => {
