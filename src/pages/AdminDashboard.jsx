@@ -229,13 +229,21 @@ export function AdminDashboard() {
         triggerConfirm(
             "Delete Booking?",
             `Are you sure you want to delete the booking for ${details}? This cannot be undone.`,
-            async () => {
-                try {
-                    await deleteDoc(doc(db, "bookings", bookingId));
-                    triggerAlert("Success", "Booking deleted successfully.");
-                } catch (err) {
-                    triggerAlert("Error", err.message);
-                }
+            () => {
+                setTimeout(() => {
+                    requireAuth(
+                        "Delete Booking",
+                        "Please verify your password to permanently delete this booking.",
+                        async () => {
+                            try {
+                                await deleteDoc(doc(db, "bookings", bookingId));
+                                triggerAlert("Success", "Booking deleted successfully.");
+                            } catch (err) {
+                                triggerAlert("Error", err.message);
+                            }
+                        }
+                    );
+                }, 300);
             },
             true,
             "Delete"
@@ -311,6 +319,37 @@ export function AdminDashboard() {
                 "Confirm & Send"
             );
         }
+    };
+
+    const handleSendPaymentReminder = async (booking) => {
+        triggerConfirm(
+            "Send Payment Reminder?",
+            `Send an email reminder to ${booking.shareholderName} (Cabin #${booking.cabinNumber}) for $${booking.totalPrice}?`,
+            async () => {
+                try {
+                    const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                    const emailTo = "bryan.m.hudson@gmail.com"; // OVERRIDE for safety/demo
+
+                    await emailService.sendPaymentReminder({
+                        name: booking.shareholderName,
+                        email: emailTo
+                    }, {
+                        name: booking.shareholderName,
+                        total_price: booking.totalPrice,
+                        cabin_number: booking.cabinNumber,
+                        check_in: format(booking.from, 'PPP'),
+                        payment_deadline: "within 12 hours",
+                        dashboard_url: window.location.origin
+                    });
+                    triggerAlert("Success", "Payment reminder sent.");
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Failed to send reminder.");
+                }
+            },
+            false,
+            "Send Email"
+        );
     };
 
     const resetOnboarding = () => {
@@ -706,23 +745,34 @@ export function AdminDashboard() {
                                             {(booking.type === 'pass' || booking.type === 'auto-pass') ? (
                                                 <span className="text-xs text-muted-foreground/30 font-medium select-none">—</span>
                                             ) : (
-                                                <button
-                                                    onClick={() => handleTogglePaid(booking)}
-                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
-                                                        ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
-                                                        : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
-                                                        }`}
-                                                    title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
-                                                >
-                                                    {booking.isPaid ? (
-                                                        <>
-                                                            <DollarSign className="w-3 h-3 mr-1" />
-                                                            PAID
-                                                        </>
-                                                    ) : (
-                                                        "UNPAID"
+                                                <>
+                                                    <button
+                                                        onClick={() => handleTogglePaid(booking)}
+                                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
+                                                            ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
+                                                            : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
+                                                            }`}
+                                                        title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
+                                                    >
+                                                        {booking.isPaid ? (
+                                                            <>
+                                                                <DollarSign className="w-3 h-3 mr-1" />
+                                                                PAID
+                                                            </>
+                                                        ) : (
+                                                            "UNPAID"
+                                                        )}
+                                                    </button>
+                                                    {!booking.isPaid && (
+                                                        <button
+                                                            onClick={() => handleSendPaymentReminder(booking)}
+                                                            className="ml-2 p-1.5 align-middle text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                                            title="Send Payment Reminder"
+                                                        >
+                                                            <Bell className="w-3.5 h-3.5" />
+                                                        </button>
                                                     )}
-                                                </button>
+                                                </>
                                             )}
                                         </td>
 
