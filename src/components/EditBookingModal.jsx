@@ -53,7 +53,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
             // In BookingSection, we filter out 'pass'. 'draft' is usually fine to overwrite? 
             // But here "allBookings" typically contains everything. 
             // Let's match BookingSection: filter out 'pass'.
-            if (b.type === 'pass' || b.type === 'auto-pass') return false;
+            if (b.type === 'pass' || b.type === 'auto-pass' || b.type === 'cancelled') return false;
 
             // Date logic
             // b.from and b.to are likely Timestamps or Dates. Convert to Date.

@@ -6,7 +6,7 @@ import { db } from '../lib/firebase';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
 
@@ -349,6 +349,43 @@ export function AdminDashboard() {
             },
             false,
             "Send Email"
+        );
+    };
+
+    const handleCancelBooking = (booking) => {
+        triggerConfirm(
+            "Cancel Booking?",
+            `Are you sure you want to CANCEL the booking for ${booking.shareholderName}? This will free up the dates but keep a record.`,
+            async () => {
+                try {
+                    await updateDoc(doc(db, "bookings", booking.id), {
+                        type: 'cancelled',
+                        cancelledAt: new Date(),
+                        isFinalized: false, // Ensure it doesn't show as finalized
+                        isPaid: false
+                    });
+
+                    // Send "Booking Cancelled" Email
+                    const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                    const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
+
+                    await emailService.sendBookingCancelled(emailTo, {
+                        name: booking.shareholderName,
+                        check_in: format(booking.from.toDate(), 'MMM d, yyyy'),
+                        check_out: format(booking.to.toDate(), 'MMM d, yyyy'),
+                        cabin_number: booking.cabinNumber,
+                        cancelled_date: format(new Date(), 'PPP'),
+                        dashboard_url: window.location.origin
+                    });
+
+                    triggerAlert("Success", "Booking cancelled.");
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Failed to cancel booking.");
+                }
+            },
+            true, // Danger color
+            "Cancel Booking"
         );
     };
 
@@ -716,6 +753,11 @@ export function AdminDashboard() {
                                                     <XCircle className="w-3 h-3 mr-1.5" />
                                                     Passed
                                                 </span>
+                                            ) : booking.type === 'cancelled' ? (
+                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default">
+                                                    <Ban className="w-3 h-3 mr-1.5" />
+                                                    Cancelled
+                                                </span>
                                             ) : (
                                                 <button
                                                     onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
@@ -742,7 +784,7 @@ export function AdminDashboard() {
 
                                         {/* Payment Toggle */}
                                         <td className="px-6 py-5 text-center">
-                                            {(booking.type === 'pass' || booking.type === 'auto-pass') ? (
+                                            {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
                                                 <span className="text-xs text-muted-foreground/30 font-medium select-none">—</span>
                                             ) : (
                                                 <>
@@ -784,6 +826,15 @@ export function AdminDashboard() {
                                             >
                                                 <Pencil className="w-4 h-4" />
                                             </button>
+                                            {booking.type !== 'cancelled' && booking.type !== 'pass' && booking.type !== 'auto-pass' && (
+                                                <button
+                                                    onClick={() => handleCancelBooking(booking)}
+                                                    className="p-2 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors"
+                                                    title="Cancel Booking"
+                                                >
+                                                    <Ban className="w-4 h-4" />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => handleDeleteBooking(booking.id, `${booking.shareholderName} (#${booking.cabinNumber})`)}
                                                 className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"

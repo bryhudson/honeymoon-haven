@@ -44,7 +44,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             });
             setAllDraftRecords(records);
             // Filter out 'pass' records for date blocking logic
-            setBookedDates(records.filter(r => r.type !== 'pass'));
+            setBookedDates(records.filter(r => r.type !== 'pass' && r.type !== 'cancelled'));
             setLoading(false);
         });
 
