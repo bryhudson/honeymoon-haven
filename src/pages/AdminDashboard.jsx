@@ -384,30 +384,49 @@ export function AdminDashboard() {
             `Are you sure you want to CANCEL the booking for ${booking.shareholderName}? This will free up the dates but keep a record.`,
             async () => {
                 try {
+                    // 1. Update Database (Priority)
                     await updateDoc(doc(db, "bookings", booking.id), {
                         type: 'cancelled',
                         cancelledAt: new Date(),
-                        isFinalized: false, // Ensure it doesn't show as finalized
+                        isFinalized: false,
                         isPaid: false
                     });
 
-                    // Send "Booking Cancelled" Email
-                    const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
-                    const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
+                    // 2. Send "Booking Cancelled" Email (Non-Blocking)
+                    try {
+                        const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                        const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
 
-                    await emailService.sendBookingCancelled(emailTo, {
-                        name: booking.shareholderName,
-                        check_in: booking.from?.toDate ? format(booking.from.toDate(), 'MMM d, yyyy') : format(new Date(booking.from), 'MMM d, yyyy'),
-                        check_out: booking.to?.toDate ? format(booking.to.toDate(), 'MMM d, yyyy') : format(new Date(booking.to), 'MMM d, yyyy'),
-                        cabin_number: booking.cabinNumber,
-                        cancelled_date: format(new Date(), 'PPP'),
-                        dashboard_url: window.location.origin
-                    });
+                        // Helper for safe date formatting
+                        const safeFormat = (dateObj) => {
+                            try {
+                                if (!dateObj) return "N/A";
+                                if (dateObj.toDate) return format(dateObj.toDate(), 'MMM d, yyyy');
+                                const d = new Date(dateObj);
+                                return isNaN(d.getTime()) ? "N/A" : format(d, 'MMM d, yyyy');
+                            } catch (e) {
+                                return "N/A";
+                            }
+                        };
 
-                    triggerAlert("Success", "Booking cancelled.");
+                        await emailService.sendBookingCancelled(emailTo, {
+                            name: booking.shareholderName,
+                            check_in: safeFormat(booking.from),
+                            check_out: safeFormat(booking.to),
+                            cabin_number: booking.cabinNumber,
+                            cancelled_date: format(new Date(), 'PPP'),
+                            dashboard_url: window.location.origin
+                        });
+
+                        triggerAlert("Success", "Booking cancelled.");
+                    } catch (emailErr) {
+                        console.error("Email failed:", emailErr);
+                        triggerAlert("Warning", "Booking cancelled, but failed to send email notification.");
+                    }
+
                 } catch (err) {
-                    console.error(err);
-                    triggerAlert("Error", "Failed to cancel booking.");
+                    console.error("Cancellation Critical Error:", err);
+                    triggerAlert("Error", "Failed to cancel booking: " + err.message);
                 }
             },
             true, // Danger color
