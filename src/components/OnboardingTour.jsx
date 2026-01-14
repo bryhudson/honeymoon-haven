@@ -30,7 +30,7 @@ export function OnboardingTour() {
         {
             target: '#tour-actions',
             title: '💸 Payment Required',
-            content: "To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 24 hours of confirmation. This ensures your dates are officially locked in!",
+            content: "To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 48 hours of confirmation. This ensures your dates are officially locked in!",
         },
         {
             target: '#tour-recent',
