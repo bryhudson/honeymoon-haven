@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
 import { emailService } from '../services/emailService';
 import { db } from '../lib/firebase';
-import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { format, differenceInDays } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil } from 'lucide-react';
 import { set } from 'date-fns';
 import { EditBookingModal } from '../components/EditBookingModal';
 
@@ -608,13 +608,13 @@ export function AdminDashboard() {
                         <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
                             <tr>
                                 <th className="px-6 py-4">Shareholder</th>
-                                <th className="px-6 py-4">Cabin</th>
                                 <th className="px-6 py-4">Dates</th>
-                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 text-center">Status</th>
+                                <th className="px-6 py-4 text-center">Payment</th>
                                 <th className="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y">
+                        <tbody className="divide-y text-slate-600">
                             {loading ? (
                                 <tr>
                                     <td colSpan="5" className="px-6 py-10 text-center text-muted-foreground italic">
@@ -630,64 +630,83 @@ export function AdminDashboard() {
                             ) : (
                                 allBookings.map((booking) => (
                                     <tr key={booking.id} className="hover:bg-muted/10 transition-colors">
-                                        <td className="px-6 py-4 font-semibold text-slate-900">{booking.shareholderName}</td>
-                                        <td className="px-6 py-4 text-muted-foreground">#{booking.cabinNumber}</td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-5">
+                                            <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
+                                            <div className="text-xs text-muted-foreground font-mono mt-0.5">Cabin #{booking.cabinNumber}</div>
+                                        </td>
+                                        <td className="px-6 py-5">
                                             <div className="flex flex-col">
-                                                <span className="font-medium">
+                                                <span className="font-medium text-slate-900">
                                                     {booking.from && booking.to
                                                         ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
                                                         : 'Invalid Dates'
                                                     }
                                                 </span>
-                                                <span className="text-[10px] text-muted-foreground">
+                                                <span className="text-[11px] text-muted-foreground mt-0.5">
                                                     Created: {booking.createdAt ? format(booking.createdAt, 'MMM d, HH:mm') : 'N/A'}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            {booking.isFinalized ? (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                    Finalized
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                                                    Draft
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right space-x-2">
+
+                                        {/* Status Toggle */}
+                                        <td className="px-6 py-5 text-center">
                                             <button
                                                 onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                className={`text-xs font-bold px-3 py-1 rounded transition-colors ${booking.isFinalized
-                                                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isFinalized
+                                                        ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                                        : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
                                                     }`}
+                                                title={booking.isFinalized ? "Click to Revert to Draft" : "Click to Finalize"}
                                             >
-                                                {booking.isFinalized ? 'Un-Finalize' : 'Finalize'}
+                                                {booking.isFinalized ? (
+                                                    <>
+                                                        <CheckCircle className="w-3 h-3 mr-1.5" />
+                                                        Finalized
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Clock className="w-3 h-3 mr-1.5" />
+                                                        Draft
+                                                    </>
+                                                )}
                                             </button>
-                                            <button
-                                                onClick={() => handleEditClick(booking)}
-                                                className="text-xs font-bold px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteBooking(booking.id, `${booking.shareholderName} (#${booking.cabinNumber})`)}
-                                                className="text-xs font-bold px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-                                            >
-                                                Delete
-                                            </button>
+                                        </td>
+
+                                        {/* Payment Toggle */}
+                                        <td className="px-6 py-5 text-center">
                                             <button
                                                 onClick={() => handleTogglePaid(booking)}
-                                                className={`text-xs font-bold px-3 py-1 rounded transition-colors flex items-center gap-1 ${booking.isPaid
-                                                    ? 'bg-green-600 text-white hover:bg-green-700'
-                                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
+                                                        ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
+                                                        : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
                                                     }`}
                                                 title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
                                             >
-                                                <DollarSign className="h-3 w-3" />
-                                                {booking.isPaid ? 'Paid' : 'Unpaid'}
+                                                {booking.isPaid ? (
+                                                    <>
+                                                        <DollarSign className="w-3 h-3 mr-1" />
+                                                        PAID
+                                                    </>
+                                                ) : (
+                                                    "UNPAID"
+                                                )}
+                                            </button>
+                                        </td>
+
+                                        <td className="px-6 py-5 text-right space-x-2">
+                                            <button
+                                                onClick={() => handleEditClick(booking)}
+                                                className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                                title="Edit Details"
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteBooking(booking.id, `${booking.shareholderName} (#${booking.cabinNumber})`)}
+                                                className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                                title="Delete Booking"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>
