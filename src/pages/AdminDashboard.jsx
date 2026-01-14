@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
 import { emailService } from '../services/emailService';
-import { db } from '../lib/firebase';
+import { db, functions } from '../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
 
@@ -352,6 +353,31 @@ export function AdminDashboard() {
         );
     };
 
+
+
+    const handleTestEmail = async () => {
+        triggerConfirm(
+            "Send Test Email?",
+            "Send a test email to bryan.m.hudson@gmail.com to verify Gmail SMTP?",
+            async () => {
+                try {
+                    const sendEmail = httpsCallable(functions, 'sendEmail');
+                    await sendEmail({
+                        to: { name: "Test User", email: "bryan.m.hudson@gmail.com" },
+                        subject: "Test Email from Admin Dashboard",
+                        htmlContent: "<p>This is a test email sent from the Admin Dashboard to verify the new Gmail SMTP integration.</p>"
+                    });
+                    triggerAlert("Success", "Test email sent. Check inbox.");
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Failed to send test email: " + err.message);
+                }
+            },
+            false,
+            "Send Test"
+        );
+    };
+
     const handleCancelBooking = (booking) => {
         triggerConfirm(
             "Cancel Booking?",
@@ -684,12 +710,35 @@ export function AdminDashboard() {
                             </div>
                         </div>
 
+                        {/* Test Email */}
+                        <div className="p-4 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors group">
+                            <div className="flex items-start justify-between">
+                                <div className="flex gap-3">
+                                    <div className="p-2 bg-white rounded-md border border-slate-100 text-slate-500 group-hover:text-slate-600 shadow-sm">
+                                        <Mail className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-slate-900">Test Email</h3>
+                                        <p className="text-xs text-slate-600/80 mt-1">
+                                            Verify SMTP connection.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleTestEmail}
+                                    className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded hover:bg-slate-100 transition-colors shadow-sm"
+                                >
+                                    Test
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    {actionLog && <p className="mt-4 text-sm font-mono text-muted-foreground p-2 bg-slate-100 rounded">{actionLog}</p>}
                 </div>
-
-
+                {actionLog && <p className="mt-4 text-sm font-mono text-muted-foreground p-2 bg-slate-100 rounded">{actionLog}</p>}
             </div>
+
+
+
 
 
 

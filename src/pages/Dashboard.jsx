@@ -140,23 +140,6 @@ export function Dashboard() {
         });
     };
 
-    const handleTestEmail = async () => {
-        try {
-            triggerAlert("Sending...", "Sending test email...");
-            const sendEmail = httpsCallable(functions, 'sendEmail');
-            await sendEmail({
-                to: { name: "Test User", email: "bryan.m.hudson@gmail.com" },
-                subject: "Test Email from Gmail SMTP",
-                htmlContent: "<p>This is a test email sent from the new Gmail SMTP integration.</p>"
-            });
-            triggerAlert("Success", "Test email sent successfully. Check your inbox.");
-        } catch (error) {
-            console.error("Test email failed", error);
-            triggerAlert("Error", "Failed to send test email: " + error.message);
-        }
-    };
-
-
 
     const handleDiscard = async (bookingId) => {
         triggerConfirm(
@@ -407,6 +390,11 @@ export function Dashboard() {
 
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
+                {isSuperAdmin && (
+                    <a href="#/admin" className="text-xs md:text-sm font-bold text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md transition-colors">
+                        Admin Dashboard
+                    </a>
+                )}
             </div>
 
             <div id="tour-status">
@@ -604,19 +592,9 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.64.10 - Cancel Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.64.11 - Admin UX</p>
 
-                {isSuperAdmin && (
-                    <div className="mt-4 text-xs flex flex-col gap-2 items-center">
-                        <a href="#/admin" className="text-muted-foreground hover:text-primary underline">Admin Dashboard</a>
-                        <button
-                            onClick={handleTestEmail}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-bold shadow-sm transition-colors"
-                        >
-                            Send Test Email
-                        </button>
-                    </div>
-                )}
+
             </div>
         </div >
     );
