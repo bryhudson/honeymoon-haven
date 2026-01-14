@@ -1,13 +1,18 @@
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
 
-export function BookingDetailsModal({ booking, onClose }) {
+export function BookingDetailsModal({ booking, onClose, onCancel, currentUser, isAdmin }) {
     if (!booking) return null;
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
     const end = booking.to?.toDate ? booking.to.toDate() : new Date(booking.to);
     const nights = differenceInDays(end, start);
     const totalCost = nights * 125;
+
+    // Permissions: Admin OR (Owner AND Future Booking)
+    const isOwner = booking.shareholderName === currentUser;
+    const isFuture = start > new Date();
+    const canCancel = onCancel && (isAdmin || (isOwner && isFuture));
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
@@ -95,7 +100,18 @@ export function BookingDetailsModal({ booking, onClose }) {
                     )}
                 </div>
 
-                <div className="p-4 bg-muted/10 border-t flex justify-end">
+                <div className="p-4 bg-muted/10 border-t flex justify-between items-center">
+                    {canCancel ? (
+                        <button
+                            onClick={onCancel}
+                            className="px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-bold hover:bg-red-50 transition-colors"
+                        >
+                            Cancel Booking
+                        </button>
+                    ) : (
+                        <div></div> // Spacer
+                    )}
+
                     <button
                         onClick={onClose}
                         className="px-6 py-2 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
