@@ -5,9 +5,8 @@ import { emailService } from '../services/emailService';
 import { db } from '../lib/firebase';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { format, differenceInDays } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil } from 'lucide-react';
-import { set } from 'date-fns';
+import { format, differenceInDays, set } from 'date-fns';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 
 export function AdminDashboard() {
@@ -648,49 +647,62 @@ export function AdminDashboard() {
                                             </div>
                                         </td>
 
+
+
                                         {/* Status Toggle */}
                                         <td className="px-6 py-5 text-center">
-                                            <button
-                                                onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isFinalized
+                                            {booking.type === 'pass' || booking.type === 'auto-pass' ? (
+                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default">
+                                                    <XCircle className="w-3 h-3 mr-1.5" />
+                                                    Passed
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isFinalized
                                                         ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
                                                         : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                                                    }`}
-                                                title={booking.isFinalized ? "Click to Revert to Draft" : "Click to Finalize"}
-                                            >
-                                                {booking.isFinalized ? (
-                                                    <>
-                                                        <CheckCircle className="w-3 h-3 mr-1.5" />
-                                                        Finalized
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Clock className="w-3 h-3 mr-1.5" />
-                                                        Draft
-                                                    </>
-                                                )}
-                                            </button>
+                                                        }`}
+                                                    title={booking.isFinalized ? "Click to Revert to Draft" : "Click to Finalize"}
+                                                >
+                                                    {booking.isFinalized ? (
+                                                        <>
+                                                            <CheckCircle className="w-3 h-3 mr-1.5" />
+                                                            Finalized
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Clock className="w-3 h-3 mr-1.5" />
+                                                            Draft
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
                                         </td>
 
                                         {/* Payment Toggle */}
                                         <td className="px-6 py-5 text-center">
-                                            <button
-                                                onClick={() => handleTogglePaid(booking)}
-                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
+                                            {(booking.type === 'pass' || booking.type === 'auto-pass') ? (
+                                                <span className="text-xs text-muted-foreground/30 font-medium select-none">—</span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleTogglePaid(booking)}
+                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
                                                         ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
                                                         : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
-                                                    }`}
-                                                title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
-                                            >
-                                                {booking.isPaid ? (
-                                                    <>
-                                                        <DollarSign className="w-3 h-3 mr-1" />
-                                                        PAID
-                                                    </>
-                                                ) : (
-                                                    "UNPAID"
-                                                )}
-                                            </button>
+                                                        }`}
+                                                    title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
+                                                >
+                                                    {booking.isPaid ? (
+                                                        <>
+                                                            <DollarSign className="w-3 h-3 mr-1" />
+                                                            PAID
+                                                        </>
+                                                    ) : (
+                                                        "UNPAID"
+                                                    )}
+                                                </button>
+                                            )}
                                         </td>
 
                                         <td className="px-6 py-5 text-right space-x-2">
@@ -715,10 +727,10 @@ export function AdminDashboard() {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div >
 
             {/* Shareholder List */}
-            <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
+            < div className="bg-card border rounded-xl shadow-sm overflow-hidden" >
                 <div className="p-6 border-b flex justify-between items-center">
                     <h2 className="text-xl font-bold">Shareholders (Read Only)</h2>
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">Source: Code</span>
@@ -745,12 +757,13 @@ export function AdminDashboard() {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div >
 
             {/* Modal */}
-            <ConfirmationModal
+            < ConfirmationModal
                 isOpen={confirmation.isOpen}
-                onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}
+                onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))
+                }
                 onConfirm={confirmation.onConfirm}
                 title={confirmation.title}
                 message={confirmation.message}
@@ -760,12 +773,12 @@ export function AdminDashboard() {
             />
 
             {/* Edit Modal */}
-            <EditBookingModal
+            < EditBookingModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 onSave={handleSaveEdit}
                 booking={editingBooking}
             />
-        </div>
+        </div >
     );
 }
