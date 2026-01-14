@@ -179,5 +179,10 @@ export const emailService = {
     sendPaymentReminder: async (recipient, data) => {
         const { subject, htmlContent } = emailTemplates.paymentReminder(data);
         return sendEmail({ to: recipient, subject, htmlContent });
+    },
+
+    sendPaymentReceived: async (recipient, data) => {
+        const { subject, htmlContent } = emailTemplates.paymentReceived(data);
+        return sendEmail({ to: recipient, subject, htmlContent });
     }
 };

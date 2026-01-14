@@ -5,8 +5,8 @@ import { emailService } from '../services/emailService';
 import { db } from '../lib/firebase';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { format } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
+import { format, differenceInDays } from 'date-fns';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react';
 import { set } from 'date-fns';
 import { EditBookingModal } from '../components/EditBookingModal';
 
@@ -230,6 +230,66 @@ export function AdminDashboard() {
             triggerAlert("Success", `Booking ${!currentStatus ? 'finalized' : 'reverted to draft'}.`);
         } catch (err) {
             triggerAlert("Error", err.message);
+        }
+    };
+
+    const handleTogglePaid = async (booking) => {
+        if (booking.isPaid) {
+            // Un-pay
+            triggerConfirm(
+                "Mark as Unpaid?",
+                `Are you sure you want to revert the payment status for ${booking.shareholderName}?`,
+                async () => {
+                    try {
+                        await updateDoc(doc(db, "bookings", booking.id), { isPaid: false });
+                        triggerAlert("Success", "Marked as Unpaid.");
+                    } catch (err) {
+                        triggerAlert("Error", err.message);
+                    }
+                },
+                false,
+                "Mark Unpaid"
+            );
+        } else {
+            // Mark as Paid
+            const start = booking.from;
+            const end = booking.to;
+            const nights = differenceInDays(end, start);
+            const amount = nights * 125;
+
+            triggerConfirm(
+                "Confirm Payment & Send Email",
+                `Mark booking for ${booking.shareholderName} as PAID?\n\nAmount: $${amount}\n\nThis will send a confirmation email to the user.`,
+                async () => {
+                    try {
+                        // 1. Update DB
+                        await updateDoc(doc(db, "bookings", booking.id), { isPaid: true });
+
+                        // 2. Send Email
+                        // Find email address
+                        const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                        const userEmail = owner ? owner.email : "bryan.m.hudson@gmail.com";
+
+                        await emailService.sendPaymentReceived({
+                            name: booking.shareholderName,
+                            email: "bryan.m.hudson@gmail.com" // OVERRIDE for safety/demo, could use userEmail
+                        }, {
+                            name: booking.shareholderName,
+                            amount: amount.toLocaleString(),
+                            check_in: format(start, 'MMM d, yyyy'),
+                            check_out: format(end, 'MMM d, yyyy'),
+                            cabin_number: booking.cabinNumber,
+                            dashboard_url: window.location.origin
+                        });
+
+                        triggerAlert("Success", "Payment recorded and email sent! 💰");
+                    } catch (err) {
+                        triggerAlert("Error", err.message);
+                    }
+                },
+                false,
+                "Confirm & Send"
+            );
         }
     };
 
@@ -617,6 +677,17 @@ export function AdminDashboard() {
                                                 className="text-xs font-bold px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
                                             >
                                                 Delete
+                                            </button>
+                                            <button
+                                                onClick={() => handleTogglePaid(booking)}
+                                                className={`text-xs font-bold px-3 py-1 rounded transition-colors flex items-center gap-1 ${booking.isPaid
+                                                    ? 'bg-green-600 text-white hover:bg-green-700'
+                                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                                    }`}
+                                                title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
+                                            >
+                                                <DollarSign className="h-3 w-3" />
+                                                {booking.isPaid ? 'Paid' : 'Unpaid'}
                                             </button>
                                         </td>
                                     </tr>

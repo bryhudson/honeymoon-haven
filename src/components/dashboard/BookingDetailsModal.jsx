@@ -54,24 +54,45 @@ export function BookingDetailsModal({ booking, onClose }) {
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                             <span className="font-bold text-slate-900">Total Amount Due</span>
-                            <span className="text-xl font-extrabold text-blue-700">${totalCost.toLocaleString()}</span>
+                            <div className="flex items-center gap-2">
+                                {booking.isPaid && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 uppercase tracking-widest">
+                                        PAID
+                                    </span>
+                                )}
+                                <span className="text-xl font-extrabold text-blue-700">${totalCost.toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-3 pt-2">
-                        <div className="flex items-center gap-2 text-amber-600">
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-sm font-bold">Payment Instructions</span>
+                    {booking.isPaid ? (
+                        <div className="space-y-3 pt-2">
+                            <div className="flex items-center gap-2 text-green-600">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="text-sm font-bold">Payment Received</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                Thank you! Your payment has been received and your booking is fully secured.
+                            </p>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            Please send an e-transfer for the total amount to the resort email below within 48 hours of booking.
-                        </p>
-                        <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-lg border border-blue-100 group">
-                            <code className="text-[13px] font-mono font-bold text-blue-700 flex-1">honeymoonhavenresort.lc@gmail.com</code>
+                    ) : (
+                        <div className="space-y-3 pt-2">
+                            <div className="flex items-center gap-2 text-amber-600">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="text-sm font-bold">Payment Instructions</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                Please send an e-transfer for the total amount to the resort email below within 48 hours of booking.
+                            </p>
+                            <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-lg border border-blue-100 group">
+                                <code className="text-[13px] font-mono font-bold text-blue-700 flex-1">honeymoonhavenresort.lc@gmail.com</code>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 <div className="p-4 bg-muted/10 border-t flex justify-end">

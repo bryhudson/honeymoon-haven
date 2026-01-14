@@ -354,5 +354,30 @@ export const emailTemplates = {
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
+  },
+
+  // 13. Payment Received
+  paymentReceived: (data) => {
+    const subject = `💰 Payment Received - Thank You!`;
+    const body = `
+      <p>Hi ${data.name},</p>
+      <p>Thank you! We have received your payment for your upcoming stay at Honeymoon Haven Resort.</p>
+
+      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #bbf7d0;">
+        <h3 style="margin-top: 0; color: #166534;">✅ PAYMENT CONFIRMED</h3>
+        <p style="margin-bottom: 0;">
+          • Amount Received: <strong>$${data.amount}</strong><br>
+          • For Dates: <strong>${data.check_in} - ${data.check_out}</strong><br>
+          • Cabin: <strong>${data.cabin_number}</strong>
+        </p>
+      </div>
+
+      <p>Your booking is now fully secured. We look forward to seeing you at the lake!</p>
+
+      <div style="margin: 25px 0;">
+        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Booking</a>
+      </div>
+    `;
+    return { subject, htmlContent: wrapHtml(subject, body) };
   }
 };
