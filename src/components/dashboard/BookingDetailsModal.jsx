@@ -66,7 +66,7 @@ export function BookingDetailsModal({ booking, onClose }) {
                             <span className="text-sm font-bold">Payment Instructions</span>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Please send an e-transfer for the total amount to the resort email below within 24 hours of booking.
+                            Please send an e-transfer for the total amount to the resort email below within 48 hours of booking.
                         </p>
                         <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-lg border border-blue-100 group">
                             <code className="text-[13px] font-mono font-bold text-blue-700 flex-1">honeymoonhavenresort.lc@gmail.com</code>
