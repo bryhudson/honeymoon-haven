@@ -452,7 +452,155 @@ export function Dashboard() {
         <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
             <OnboardingTour />
 
-            {/* ... rest of render ... */}
+            <div className="flex justify-between items-center mb-2">
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
+                {isSuperAdmin && (
+                    <a href="#/admin" className="text-xs md:text-sm font-bold text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md transition-colors">
+                        Admin Dashboard
+                    </a>
+                )}
+            </div>
+
+            <div id="tour-status">
+                <StatusCard status={status}>
+                    {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
+                    <div id="tour-actions">
+                        {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
+                            <div className="text-sm text-muted-foreground italic py-2">
+                                {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
+                            </div>
+                        ) : activeUserDraft ? (
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
+                                >
+                                    Finalize Booking
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setEditingBooking(activeUserDraft);
+                                        setIsBooking(true);
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Edit Booking
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => setIsBooking(true)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Choose Your Dates
+                                </button>
+                                <button
+                                    onClick={() => status.phase === 'PRE_DRAFT'
+                                        ? setShowPreDraftModal(true)
+                                        : (() => {
+                                            setPassData({ name: status.activePicker });
+                                            setIsPassing(true);
+                                        })()
+                                    }
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                >
+                                    Pass Turn
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </StatusCard>
+            </div>
+
+            <div id="tour-recent">
+                <RecentBookings
+                    bookings={allDraftRecords}
+                    onViewDetails={(booking) => setViewingBooking(booking)}
+                    currentShareholder={loggedInShareholder}
+                    isAdmin={isSuperAdmin}
+                />
+            </div>
+
+            <div id="tour-schedule">
+                <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} startDateOverride={startDateOverride} />
+            </div>
+
+            {/* Edit / Booking Modal Overlay */}
+            {
+                isBooking && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-6 md:pb-6">
+                        <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
+                            <div className="p-3 border-b flex justify-between items-center bg-muted/20">
+                                <h2 className="text-base font-semibold">
+                                    {editingBooking ? "Edit Booking" : "New Booking"}
+                                </h2>
+                                <button
+                                    onClick={() => { setIsBooking(false); setEditingBooking(null); }}
+                                    className="text-muted-foreground hover:text-foreground p-2 text-sm"
+                                >
+                                    ✕ Close
+                                </button>
+                            </div>
+                            <div className="p-2 md:p-4 max-h-[90vh] overflow-y-auto">
+                                <BookingSection
+                                    onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
+                                    initialBooking={editingBooking}
+                                    activePicker={status.activePicker}
+                                    onPass={() => { setIsBooking(false); setIsPassing(true); }}
+                                    onDiscard={handleDiscard}
+                                    onShowAlert={triggerAlert}
+                                    onFinalize={async (id, name) => {
+                                        await handleFinalize(id, name, true);
+                                    }}
+                                    startDateOverride={startDateOverride}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Pass Turn Modal Overlay */}
+            {
+                isPassing && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
+                            <h2 className="text-2xl font-bold mb-2 text-destructive">Pass Your Turn</h2>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                Are you sure you want to skip your turn in this round?
+                                <br />
+                                This will <strong>immediately</strong> open the booking window for the next shareholder.
+                            </p>
+
+                            <form onSubmit={handlePassSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Shareholder Passing Turn</label>
+                                    <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold text-foreground items-center">
+                                        {passData.name || "Loading..."}
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPassing(false)}
+                                        className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium transition-colors"
+                                    >
+                                        Confirm Pass
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Booking Details Modal Overlay */}
             {
@@ -509,7 +657,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.64.15 - Self Cancel</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.64.16 - Self Cancel Patch</p>
 
 
             </div>
