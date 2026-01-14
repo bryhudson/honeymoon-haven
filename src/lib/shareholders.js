@@ -38,7 +38,7 @@ export const CABIN_OWNERS = [
     { cabin: "1", name: "Gerry & Georgina", email: "gerrygeorgie@gmail.com" },
     { cabin: "2", name: "Mike & Janelle", email: "janellestaite@gmail.com" },
     { cabin: "3", name: "Brian & Monique", email: "moniquerwebster@gmail.com" },
-    { cabin: "4", name: "Brian & Sam", email: "sammysam3@hotmail.com" },
+    { cabin: "4", name: "Brian & Sam", email: "samantha.lange1978@gmail.com" },
     { cabin: "5", name: "Ernest & Sandy", email: "ernest@malahatvaluationgroup.com" },
     { cabin: "6", name: "Barb", email: "myakristy@gmail.com" },
     { cabin: "7", name: "Jeff & Lori", email: "loriball@live.ca" },
