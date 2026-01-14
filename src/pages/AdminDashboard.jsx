@@ -8,11 +8,20 @@ import { ConfirmationModal } from '../components/ConfirmationModal';
 import { format, differenceInDays, set } from 'date-fns';
 import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
+import { ReauthenticationModal } from '../components/ReauthenticationModal';
 
 export function AdminDashboard() {
     const [actionLog, setActionLog] = useState("");
     const [allBookings, setAllBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Auth Modal State
+    const [authModal, setAuthModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: async () => { }
+    });
 
     // Modal State
     const [confirmation, setConfirmation] = useState({
@@ -108,56 +117,60 @@ export function AdminDashboard() {
         return count;
     };
 
+    // Helper to trigger password check
+    const requireAuth = (title, message, action) => {
+        setAuthModal({
+            isOpen: true,
+            title,
+            message,
+            onConfirm: action
+        });
+    };
+
     const handleUpdateStartDate = async () => {
         if (!simStartDate) return triggerAlert("Error", "Please select a date.");
-        try {
-            const date = new Date(simStartDate);
-            // Ensure document exists
-            const settingsRef = doc(db, "settings", "general");
-            // simple merge update (will create if not exists, but we need set with merge for safety on sub-fields if any, but updateDoc fails if doc doesn't exist)
-            // Use setDoc with merge: true is safer, but let's assume updateDoc for now or use setDoc if I import it.
-            // I'll use setDoc (need to import it first? No, I only have updateDoc imported. I'll act as if I can import setDoc or just use updateDoc and hope it exists, or check existence. 
-            // Wait, I didn't add setDoc to imports. I'll stick to updateDoc but I need to ensure it exists. 
-            // Actually, I can use `writeBatch` or just `setDoc`. I'll add `setDoc` to imports in a separate check? 
-            // No, I'll just use `updateDoc` and if it fails (document not found), I'll `setDoc`.
-            // BETTER: Add `setDoc` to imports.
 
-            // Wait, I can't easily add setDoc to imports in this chunk without being messy.
-            // I'll use `writeBatch` which is imported.
-            const batch = writeBatch(db);
-            batch.set(settingsRef, { draftStartDate: date }, { merge: true });
-            await batch.commit();
+        requireAuth(
+            "Protected Action",
+            "You are about to override the simulation start date. This requires password verification.",
+            async () => {
+                try {
+                    const date = new Date(simStartDate);
+                    const batch = writeBatch(db);
+                    const settingsRef = doc(db, "settings", "general");
+                    batch.set(settingsRef, { draftStartDate: date }, { merge: true });
+                    await batch.commit();
 
-            triggerAlert("Success", "Simulation Start Date updated.");
-        } catch (err) {
-            triggerAlert("Error", err.message);
-        }
+                    triggerAlert("Success", "Simulation Start Date updated.");
+                } catch (err) {
+                    triggerAlert("Error", err.message);
+                }
+            }
+        );
     };
 
     const handleResetSimulation = async () => {
-        try {
-            const batch = writeBatch(db);
-            const settingsRef = doc(db, "settings", "general");
-            batch.update(settingsRef, { draftStartDate: null }); // Or delete field
-            await batch.commit();
-            triggerAlert("Success", "Simulation reset to default schedule.");
-        } catch (err) {
-            // trying delete field
-            try {
-                // If update fails (doc doesn't exist), we don't care because it's already default.
-                // But if it exists, we want to delete the field.
-                await updateDoc(doc(db, "settings", "general"), {
-                    draftStartDate: deleteDoc() // Wait, deleteField() is what I need. Import it?
-                    // Too complex without imports.
-                    // Just set to null.
-                });
-            } catch (e) {
-                // ignore
+        requireAuth(
+            "Protected Action",
+            "You are about to reset the simulation to default settings. This requires password verification.",
+            async () => {
+                try {
+                    const batch = writeBatch(db);
+                    const settingsRef = doc(db, "settings", "general");
+                    batch.update(settingsRef, { draftStartDate: null });
+                    await batch.commit();
+                    triggerAlert("Success", "Simulation reset to default schedule.");
+                } catch (err) {
+                    try {
+                        await updateDoc(doc(db, "settings", "general"), {
+                            draftStartDate: null
+                        });
+                    } catch (e) {
+                        // ignore
+                    }
+                }
             }
-            // Actually, setting to null is fine if my logic handles it.
-            // My hook: `setStartDateOverride(null)` if `doc.data().draftStartDate` is missing or null.
-            // So writing null is sufficient.
-        }
+        );
     };
 
 
@@ -167,18 +180,26 @@ export function AdminDashboard() {
         triggerConfirm(
             "⚠️ DANGER: WIPE DATABASE",
             "Are you sure you want to delete ALL bookings? This cannot be undone.",
-            async () => {
-                try {
-                    const count = await performWipe();
-                    triggerAlert("Reset Complete", `✅ Reset Complete.\n\nDeleted ${count} records. Reloading...`);
-                    setTimeout(() => window.location.reload(), 2000);
-                } catch (err) {
-                    console.error(err);
-                    triggerAlert("Error", err.message);
-                }
+            () => {
+                setTimeout(() => {
+                    requireAuth(
+                        "Security Check: Wipe Database",
+                        "High-risk action detected. Please verify your identity to proceed with database wipe.",
+                        async () => {
+                            try {
+                                const count = await performWipe();
+                                triggerAlert("Reset Complete", `✅ Reset Complete.\n\nDeleted ${count} records. Reloading...`);
+                                setTimeout(() => window.location.reload(), 2000);
+                            } catch (err) {
+                                console.error(err);
+                                triggerAlert("Error", err.message);
+                            }
+                        }
+                    );
+                }, 300);
             },
             true, // Danger
-            "Wipe Database"
+            "Proceed to Auth"
         );
     };
 
@@ -779,6 +800,15 @@ export function AdminDashboard() {
                 onSave={handleSaveEdit}
                 booking={editingBooking}
                 allBookings={allBookings}
+            />
+
+            {/* Reauth Modal */}
+            <ReauthenticationModal
+                isOpen={authModal.isOpen}
+                onClose={() => setAuthModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={authModal.onConfirm}
+                title={authModal.title}
+                message={authModal.message}
             />
         </div >
     );
