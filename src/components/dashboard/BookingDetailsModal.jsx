@@ -70,15 +70,6 @@ export function BookingDetailsModal({ booking, onClose }) {
                         </p>
                         <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-lg border border-blue-100 group">
                             <code className="text-[13px] font-mono font-bold text-blue-700 flex-1">honeymoonhavenresort.lc@gmail.com</code>
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
-                                }}
-                                className="p-1.5 hover:bg-white rounded border border-transparent hover:border-blue-200 text-blue-400 transition-all shadow-sm"
-                                title="Copy Email"
-                            >
-                                📋
-                            </button>
                         </div>
                     </div>
                 </div>

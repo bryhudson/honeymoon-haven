@@ -431,15 +431,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                             <div className="flex items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                                 <code className="text-sm md:text-base font-mono font-bold select-all flex-1 text-blue-700">honeymoonhavenresort.lc@gmail.com</code>
-                                                <button
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText('honeymoonhavenresort.lc@gmail.com');
-                                                    }}
-                                                    className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 text-slate-400 hover:text-blue-600 transition-all shadow-sm"
-                                                    title="Copy Email"
-                                                >
-                                                    📋
-                                                </button>
                                             </div>
 
                                             <div className="flex flex-col gap-3 pt-6">
