@@ -778,6 +778,7 @@ export function AdminDashboard() {
                 onClose={() => setIsEditModalOpen(false)}
                 onSave={handleSaveEdit}
                 booking={editingBooking}
+                allBookings={allBookings}
             />
         </div >
     );

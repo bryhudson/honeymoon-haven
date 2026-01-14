@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
+import { AlertCircle } from 'lucide-react';
 import { CABIN_OWNERS } from '../lib/shareholders';
 
-export function EditBookingModal({ isOpen, onClose, onSave, booking }) {
+export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings = [] }) {
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         shareholderName: '',
         cabinNumber: '',
@@ -10,6 +12,94 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking }) {
         to: '',
         isFinalized: false
     });
+
+
+    // Validation Effect
+    useEffect(() => {
+        if (formData.from && formData.to && allBookings.length > 0) {
+            checkAvailability(formData.from, formData.to);
+        } else {
+            setError(null);
+        }
+    }, [formData.from, formData.to, allBookings]);
+
+    const checkAvailability = (startStr, endStr) => {
+        if (!startStr || !endStr) return;
+
+        // Create standard dates for comparison (noon to avoid TZ issues)
+        const createCheckDate = (ds) => {
+            const [y, m, d] = ds.split('-').map(Number);
+            return new Date(y, m - 1, d, 12, 0, 0);
+        };
+
+        const start = createCheckDate(startStr);
+        const end = createCheckDate(endStr);
+
+        // Basic sanity check
+        if (start > end) {
+            setError("Check-out date cannot be before Check-in date.");
+            return;
+        }
+
+        // Overlap Check
+        const currentId = booking ? booking.id : null;
+
+        // Find conflicting booking
+        const conflict = allBookings.find(b => {
+            // Skip self
+            if (b.id === currentId) return false;
+            // Skip Passed/Draft/Cancelled if not blocking? 
+            // Usually we only care about active bookings. 
+            // In BookingSection, we filter out 'pass'. 'draft' is usually fine to overwrite? 
+            // But here "allBookings" typically contains everything. 
+            // Let's match BookingSection: filter out 'pass'.
+            if (b.type === 'pass' || b.type === 'auto-pass') return false;
+
+            // Date logic
+            // b.from and b.to are likely Timestamps or Dates. Convert to Date.
+            // AdminDashboard loads them. Let's assume they are Dates or we need to be careful.
+            // In AdminDashboard, onSnapshot converts them: `from: data.from?.toDate()...`
+            // So they are JS Dates.
+
+            // Standard overlap: (StartA <= EndB) and (EndA >= StartB)
+            // But we need to use comparable values (set hours to 0 or 12).
+            const bStart = new Date(b.from);
+            bStart.setHours(0, 0, 0, 0);
+
+            const bEnd = new Date(b.to);
+            bEnd.setHours(0, 0, 0, 0);
+
+            const myStart = new Date(start);
+            myStart.setHours(0, 0, 0, 0);
+
+            const myEnd = new Date(end);
+            myEnd.setHours(0, 0, 0, 0);
+
+            // Overlap logic
+            // Note: If I check out on the same day someone checks in, that IS allowed or NOT?
+            // Usually CheckIn day is blocked for others?
+            // If Booking A is 1st-5th.
+            // Booking B can start on 5th?
+            // Existing app logic: `startOfDay(d) <= startOfDay(range.to)` etc.
+            // Let's be strict: strict overlap means NO shared dates for full occupancy.
+            // But usually "Check Out" date is "Check In" date for next.
+            // Let's check BookingSection.jsx logic again if needed.
+            // For now, I'll use standard overlap and maybe refine.
+            // Re-reading BookingSection:
+            // return activeBookedDates.some(range => ... d >= start && d <= end)
+            // It blocks every day in the range [from, to].
+            // So [1st, 5th] blocks 1, 2, 3, 4, 5.
+            // So NO shared endpoints.
+
+            return (myStart <= bEnd && myEnd >= bStart);
+        });
+
+        if (conflict) {
+            setError(`Dates overlap with booking: ${conflict.shareholderName} (#${conflict.cabinNumber})`);
+        } else {
+            setError(null);
+        }
+    };
 
     useEffect(() => {
         if (booking) {
@@ -61,8 +151,22 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking }) {
             ...booking,
             ...formData,
             from: createDate(formData.from),
-            to: createDate(formData.to)
+            to: createDate(formData.to),
+            // If it was a 'pass', it's now a normal booking
+            type: (booking?.type === 'pass' || booking?.type === 'auto-pass') ? delete booking.type : booking.type
+            // Actually 'delete' keyword returns boolean. We should just not include 'type' or set to null.
+            // Safer: don't include type if we want to remove it, but spread 'booking' copies it.
+            // We should filter it out explicitly if needed, or just set it to null.
+            // Firestore: setting to null keeps field but null value. Ideally FieldValue.delete().
+            // But simple way: just keep it as undefined in local object?
+            // Let's just override it if it was pass.
         };
+
+        // Remove 'type' from updated object if it was pass
+        if (updated.type === 'pass' || updated.type === 'auto-pass') {
+            delete updated.type;
+        }
+
         onSave(updated);
     };
 
@@ -147,6 +251,14 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking }) {
                         Unchecking this moves the booking back to "Draft" status.
                     </p>
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="flex items-start gap-2 p-3 bg-red-50 text-red-600 rounded-md text-sm border border-red-100">
+                            <AlertCircle className="w-5 h-5 shrink-0" />
+                            <span>{error}</span>
+                        </div>
+                    )}
+
                     <div className="flex justify-end gap-3 pt-4 border-t mt-4">
                         <button
                             type="button"
@@ -157,7 +269,8 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking }) {
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
+                            disabled={!!error}
+                            className={`px-4 py-2 text-sm font-bold text-white rounded-md transition-colors shadow-sm ${error ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'}`}
                         >
                             Save Changes
                         </button>

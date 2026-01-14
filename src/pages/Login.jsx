@@ -114,7 +114,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <span className="block mt-1 normal-case opacity-50 font-normal">v2.64.1 - GitHub Pages</span>
+                    <span className="block mt-1 normal-case opacity-50 font-normal">v2.64.3 - GitHub Pages</span>
                 </p>
             </div>
         </div>
