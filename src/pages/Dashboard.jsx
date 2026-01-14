@@ -382,7 +382,11 @@ export function Dashboard() {
     // Auto-populate Pass Form Removed - Handled in Button Click to prevent glitch
     // useEffect(() => { ... }, [isPassing, status.activePicker]);
 
-    const activeUserDraft = allDraftRecords.find(b => b.shareholderName === status.activePicker && b.isFinalized === false);
+    const activeUserDraft = allDraftRecords.find(b =>
+        b.shareholderName === status.activePicker &&
+        b.isFinalized === false &&
+        b.type !== 'cancelled' // Fix: Ignore cancelled bookings
+    );
 
     return (
         <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
@@ -592,7 +596,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.64.13 - Cancel Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.64.14 - Cancel UI</p>
 
 
             </div>
