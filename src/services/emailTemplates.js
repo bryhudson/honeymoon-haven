@@ -79,7 +79,7 @@ export const emailTemplates = {
     const subject = `🏡 Your Honeymoon Haven Booking Turn Has Started!`;
     const body = `
       <p>Hi ${data.name},</p>
-      <p>Great news! Your 48-hour booking window for Honeymoon Haven Resort has officially started.</p>
+      <p>Great news! Your 48-hour booking window has officially started.</p>
       
       <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
         <strong>⏰ Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
