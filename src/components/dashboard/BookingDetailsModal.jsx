@@ -79,13 +79,17 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
+                        <div className="space-y-1 col-span-2">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Shareholder</p>
                             <p className="font-bold text-lg">{booking.shareholderName}</p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cabin</p>
                             <p className="font-bold text-lg">#{booking.cabinNumber}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Guests</p>
+                            <p className="font-bold text-lg">{booking.guests || 1}</p>
                         </div>
                     </div>
 
