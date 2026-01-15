@@ -183,7 +183,7 @@ export function Dashboard() {
                             cabin_number: bookingData.cabinNumber || "?",
                             cancelled_date: format(new Date(), 'PPP'),
                             within_turn_window: false, // Assuming draft discard is manual
-                            dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
+                            dashboard_url: "https://hhr-trailer-booking.web.app/"
                         });
                     }
                 } catch (e) {
@@ -231,9 +231,9 @@ export function Dashboard() {
                                 name: nextOwner.name,
                                 deadline_date: format(deadline, 'PPP'),
                                 deadline_time: format(deadline, 'p'),
-                                booking_url: "https://bryhudson.github.io/honeymoon-haven/",
-                                dashboard_url: "https://bryhudson.github.io/honeymoon-haven/",
-                                pass_turn_url: "https://bryhudson.github.io/honeymoon-haven/"
+                                booking_url: "https://hhr-trailer-booking.web.app/",
+                                dashboard_url: "https://hhr-trailer-booking.web.app/",
+                                pass_turn_url: "https://hhr-trailer-booking.web.app/"
                             });
                             console.log("Notification sent to", nextOwner.name);
                         } catch (e) {
@@ -295,7 +295,7 @@ export function Dashboard() {
                     email: "bryan.m.hudson@gmail.com" // OVERRIDE
                 }, {
                     name: passData.name,
-                    dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
+                    dashboard_url: "https://hhr-trailer-booking.web.app/"
                 });
             } catch (e) {
                 console.error("Pass email failed", e);
@@ -322,8 +322,8 @@ export function Dashboard() {
                             previous_shareholder: passData.name,
                             deadline_date: format(deadline, 'PPP'),
                             deadline_time: format(deadline, 'p'),
-                            booking_url: "https://bryhudson.github.io/honeymoon-haven/",
-                            dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
+                            booking_url: "https://hhr-trailer-booking.web.app/",
+                            dashboard_url: "https://hhr-trailer-booking.web.app/"
                         });
                         console.log("Notification sent to", nextOwner.name);
                     } catch (e) {

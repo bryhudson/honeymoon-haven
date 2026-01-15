@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.68.40",
   "type": "module",
-  "homepage": "https://bryhudson.github.io/honeymoon-haven",
+  "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

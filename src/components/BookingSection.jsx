@@ -316,7 +316,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             guests: formData.guests,
                             nights: nights,
                             total_price: totalPrice,
-                            dashboard_url: "https://bryhudson.github.io/honeymoon-haven/"
+                            dashboard_url: "https://hhr-trailer-booking.web.app/"
                         });
                         console.log('Confirmation email sent successfully');
                     } catch (error) {
