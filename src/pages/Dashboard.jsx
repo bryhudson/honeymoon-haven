@@ -14,6 +14,7 @@ import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { BookingDetailsModal } from '../components/dashboard/BookingDetailsModal';
+import { TrailerGuide } from '../components/dashboard/TrailerGuide';
 import { CABIN_OWNERS } from '../lib/shareholders';
 import { OnboardingTour } from '../components/OnboardingTour';
 import { BookingSection } from '../components/BookingSection';
@@ -570,6 +571,13 @@ export function Dashboard() {
                 <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} startDateOverride={startDateOverride} />
             </div>
 
+            <div id="tour-guide" className="mt-8">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    🚐 Travel Trailer Guide
+                </h3>
+                <TrailerGuide />
+            </div>
+
             {/* Edit / Booking Modal Overlay */}
             {
                 isBooking && (
@@ -719,7 +727,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.48 - UI Polish</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.49 - Trailer Guide</p>
 
 
             </div>
