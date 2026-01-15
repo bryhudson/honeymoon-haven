@@ -469,7 +469,8 @@ export function Dashboard() {
 
     return (
         <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
-            <OnboardingTour />
+            {/* Tour Guide */}
+            <OnboardingTour currentUser={currentUser} />
 
             {isSystemFrozen && (
                 <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2">

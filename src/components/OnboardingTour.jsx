@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Joyride, { STATUS } from 'react-joyride';
 
-export function OnboardingTour() {
+export function OnboardingTour({ currentUser }) {
     const [run, setRun] = useState(false);
 
     useEffect(() => {
-        const hasSeenTour = localStorage.getItem('hhr_tour_seen');
+        if (!currentUser?.email) return;
+
+        const storageKey = `hhr_tour_seen_${currentUser.email}`;
+        const hasSeenTour = localStorage.getItem(storageKey);
+
         if (!hasSeenTour) {
             // Delay slightly to ensure layout is ready
             const timer = setTimeout(() => {
@@ -13,7 +17,7 @@ export function OnboardingTour() {
             }, 1000);
             return () => clearTimeout(timer);
         }
-    }, []);
+    }, [currentUser]);
 
     const steps = [
         {
@@ -47,8 +51,9 @@ export function OnboardingTour() {
         const { status } = data;
         const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
 
-        if (finishedStatuses.includes(status)) {
-            localStorage.setItem('hhr_tour_seen', 'true');
+        if (finishedStatuses.includes(status) && currentUser?.email) {
+            const storageKey = `hhr_tour_seen_${currentUser.email}`;
+            localStorage.setItem(storageKey, 'true');
             setRun(false);
         }
     };
