@@ -1164,7 +1164,9 @@ export function AdminDashboard() {
                                         <tr key={booking.id} className="hover:bg-muted/10 transition-colors bg-white">
                                             <td className="px-6 py-5">
                                                 <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
-                                                <div className="text-xs text-muted-foreground font-mono mt-0.5">Cabin #{booking.cabinNumber}</div>
+                                                <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                                                    Cabin #{booking.cabinNumber || CABIN_OWNERS.find(o => o.name === booking.shareholderName)?.cabin || "?"}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex flex-col">

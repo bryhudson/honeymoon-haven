@@ -279,8 +279,10 @@ export function Dashboard() {
                 await deleteDoc(doc(db, "bookings", draft.id));
             }
 
+            const owner = shareholders.find(o => o.name === passData.name);
             await addDoc(collection(db, "bookings"), {
                 shareholderName: passData.name,
+                cabinNumber: owner ? owner.cabin : "?",
                 type: 'pass', // This is important
                 createdAt: new Date(),
                 from: new Date(),
@@ -717,7 +719,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.45 - Debug Mode</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.46 - Admin Fixes</p>
 
 
             </div>
