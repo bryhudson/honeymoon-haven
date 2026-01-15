@@ -294,6 +294,7 @@ export function AdminDashboard() {
                 cabinNumber: updatedBooking.cabinNumber,
                 from: updatedBooking.from,
                 to: updatedBooking.to,
+                guests: updatedBooking.guests || 1, // Fix: Save guest count
                 isFinalized: updatedBooking.isFinalized,
                 type: updatedBooking.type || null // Reset type if removed (e.g. un-cancelling)
             });
