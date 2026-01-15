@@ -61,19 +61,38 @@ export function Dashboard() {
     const { currentUser, logout } = useAuth();
     const navigate = useNavigate();
 
+    const [shareholders, setShareholders] = useState(CABIN_OWNERS);
+
+    // Fetch dynamic shareholders
+    useEffect(() => {
+        const fetchShareholders = async () => {
+            try {
+                const snapshot = await getDocs(collection(db, "shareholders"));
+                if (!snapshot.empty) {
+                    const list = snapshot.docs.map(d => d.data());
+                    setShareholders(list);
+                }
+            } catch (err) {
+                console.error("Failed to fetch shareholders:", err);
+            }
+        };
+        fetchShareholders();
+    }, []);
+
     // Resolve logged in share holder name from email
     // Handle multiple emails in one string (comma separated)
     const loggedInShareholder = React.useMemo(() => {
         if (!currentUser?.email) return null;
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
-        const owner = CABIN_OWNERS.find(o => o.email && o.email.includes(currentUser.email));
+        // Use dynamic list
+        const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
-    }, [currentUser]);
+    }, [currentUser, shareholders]);
 
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
-    const { allDraftRecords, loading, status, currentOrder, startDateOverride } = useBookingRealtime();
+    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen } = useBookingRealtime();
 
     const [isBooking, setIsBooking] = useState(false);
     const [isPassing, setIsPassing] = useState(false);
@@ -195,7 +214,7 @@ export function Dashboard() {
 
                 // Notify NEXT shareholder
                 if (status.nextPicker) {
-                    const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
+                    const nextOwner = shareholders.find(o => o.name === status.nextPicker);
                     if (nextOwner && nextOwner.email) {
                         try {
                             // Logic: Next Day 10 AM + 48 Hours
@@ -270,7 +289,7 @@ export function Dashboard() {
 
             // 1. Notify CURRENT user (Pass Confirmation)
             try {
-                const owner = CABIN_OWNERS.find(o => o.name === passData.name);
+                const owner = shareholders.find(o => o.name === passData.name);
                 await emailService.sendTurnPassedCurrent({
                     name: passData.name,
                     email: "bryan.m.hudson@gmail.com" // OVERRIDE
@@ -284,7 +303,7 @@ export function Dashboard() {
 
             // Notify NEXT shareholder
             if (status.nextPicker) {
-                const nextOwner = CABIN_OWNERS.find(o => o.name === status.nextPicker);
+                const nextOwner = shareholders.find(o => o.name === status.nextPicker);
                 if (nextOwner && nextOwner.email) {
                     try {
                         // Logic: Next Day 10 AM + 48 Hours
@@ -350,7 +369,7 @@ export function Dashboard() {
             `Create draft for ${format(start, 'MMM d')} - ${format(end, 'MMM d')}?\n\nYou will be able to review and finalize this selection on the next screen.`,
             async () => {
                 try {
-                    const owner = CABIN_OWNERS.find(o => o.name === status.activePicker);
+                    const owner = shareholders.find(o => o.name === status.activePicker);
                     await addDoc(collection(db, "bookings"), {
                         shareholderName: status.activePicker,
                         cabinNumber: owner ? owner.cabin : "?",
@@ -398,13 +417,13 @@ export function Dashboard() {
                     await updateDoc(doc(db, "bookings", booking.id), {
                         type: 'cancelled',
                         cancelledAt: new Date(),
-                        isFinalized: false,
+                        isFinalized: true, // Keep finalized so it's not a draft
                         isPaid: false
                     });
 
                     // 2. Send "Booking Cancelled" Email (Non-Blocking)
                     try {
-                        const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                        const owner = shareholders.find(o => o.name === booking.shareholderName);
                         // If self-cancelled, email the user AND maybe admin? 
                         // Requirement says "Booking Cancelled (notification to user)".
                         const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
@@ -452,6 +471,24 @@ export function Dashboard() {
         <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
             <OnboardingTour />
 
+            {isSystemFrozen && (
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-amber-100 rounded-full text-amber-600">
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-amber-900 text-lg">Maintenance Mode</h3>
+                            <p className="text-sm text-amber-800/80 font-medium">
+                                We are currently performing system updates. Booking actions are temporarily paused.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
                 {isSuperAdmin && (
@@ -465,7 +502,11 @@ export function Dashboard() {
                 <StatusCard status={status}>
                     {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
                     <div id="tour-actions">
-                        {(loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
+                        {(isSystemFrozen && !isSuperAdmin) ? (
+                            <div className="text-sm text-amber-700 font-bold py-3 px-4 bg-amber-50 rounded-md text-center border border-amber-200">
+                                �️ Maintenance in Progress
+                            </div>
+                        ) : (loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
                             <div className="text-sm text-muted-foreground italic py-2">
                                 {loggedInShareholder ? "Waiting for your turn..." : "Read Only Mode"}
                             </div>
@@ -529,7 +570,7 @@ export function Dashboard() {
             {/* Edit / Booking Modal Overlay */}
             {
                 isBooking && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-6 md:pb-6">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-4 md:pb-4">
                         <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
                             <div className="p-3 border-b flex justify-between items-center bg-muted/20">
                                 <h2 className="text-base font-semibold">
@@ -547,7 +588,11 @@ export function Dashboard() {
                                     onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
                                     initialBooking={editingBooking}
                                     activePicker={status.activePicker}
-                                    onPass={() => { setIsBooking(false); setIsPassing(true); }}
+                                    onPass={() => {
+                                        setIsBooking(false);
+                                        setPassData({ name: status.activePicker });
+                                        setIsPassing(true);
+                                    }}
                                     onDiscard={handleDiscard}
                                     onShowAlert={triggerAlert}
                                     onFinalize={async (id, name) => {
@@ -609,6 +654,11 @@ export function Dashboard() {
                         booking={viewingBooking}
                         onClose={() => setViewingBooking(null)}
                         onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
+                        onPass={(!isSystemFrozen || isSuperAdmin) ? () => {
+                            setViewingBooking(null);
+                            setPassData({ name: status.activePicker });
+                            setIsPassing(true);
+                        } : undefined}
                         currentUser={loggedInShareholder}
                         isAdmin={isSuperAdmin}
                     />
@@ -657,7 +707,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.64.16 - Self Cancel Patch</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.40 - Admin Rounds Report</p>
 
 
             </div>

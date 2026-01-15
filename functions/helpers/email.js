@@ -41,7 +41,7 @@ async function sendGmail({ to, subject, htmlContent }) {
 
     // Safely override recipient for testing if needed
     // const recipient = "bryan.m.hudson@gmail.com"; // Safety override
-    const recipient = to.email; // Real recipient
+    const recipient = typeof to === 'string' ? to : to?.email; // Real recipient
 
     const mailOptions = {
         from: from,

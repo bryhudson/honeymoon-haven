@@ -10,6 +10,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         cabinNumber: '',
         from: '',
         to: '',
+        guests: 1,
         isFinalized: false
     });
 
@@ -36,8 +37,15 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         const end = createCheckDate(endStr);
 
         // Basic sanity check
-        if (start > end) {
-            setError("Check-out date cannot be before Check-in date.");
+        if (start >= end) {
+            setError("Check-out date must be after Check-in date (minimum 1 night).");
+            return;
+        }
+
+        // Duration Check
+        const nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
+        if (nights > 7) {
+            setError(`Booking duration (${nights} nights) exceeds the maximum limit of 7 nights.`);
             return;
         }
 
@@ -109,6 +117,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                 // Format dates for input type="date" (YYYY-MM-DD)
                 from: booking.from ? format(booking.from, 'yyyy-MM-dd') : '',
                 to: booking.to ? format(booking.to, 'yyyy-MM-dd') : '',
+                guests: booking.guests || 1,
                 isFinalized: booking.isFinalized || false
             });
         }
@@ -162,8 +171,8 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
             // Let's just override it if it was pass.
         };
 
-        // Remove 'type' from updated object if it was pass
-        if (updated.type === 'pass' || updated.type === 'auto-pass') {
+        // Remove 'type' from updated object if it was pass or cancelled (restoring to valid booking)
+        if (updated.type === 'pass' || updated.type === 'auto-pass' || updated.type === 'cancelled') {
             delete updated.type;
         }
 
@@ -209,6 +218,23 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                         />
                     </div>
 
+                    {/* Guests */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Guests</label>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="number"
+                                name="guests"
+                                min="1"
+                                max="10"
+                                value={formData.guests}
+                                onChange={handleChange}
+                                className="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <span className="text-sm text-slate-500">Adults & Children</span>
+                        </div>
+                    </div>
+
                     {/* Dates */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -233,23 +259,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                         </div>
                     </div>
 
-                    {/* Status */}
-                    <div className="flex items-center gap-3 pt-2">
-                        <input
-                            type="checkbox"
-                            id="isFinalized"
-                            name="isFinalized"
-                            checked={formData.isFinalized}
-                            onChange={handleChange}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <label htmlFor="isFinalized" className="text-sm font-medium text-slate-700">
-                            Booking Finalized
-                        </label>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                        Unchecking this moves the booking back to "Draft" status.
-                    </p>
+
 
                     {/* Error Message */}
                     {error && (

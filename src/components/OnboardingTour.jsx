@@ -25,22 +25,21 @@ export function OnboardingTour() {
         {
             target: '#tour-actions',
             title: '⚡ Take Action',
-            content: "When it is your turn, use these buttons to Book or Pass. You will receive an automated email when your turn begins.",
+            content: "When it is your turn, buttons to Book or Pass will appear here. You will receive an automated email when your turn begins.",
+            disableBeacon: true,
         },
-        {
-            target: '#tour-actions',
-            title: '💸 Payment Required',
-            content: "To complete your booking, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 48 hours of confirmation. This ensures your dates are officially locked in!",
-        },
+
         {
             target: '#tour-recent',
             title: '📜 Recent Activity',
-            content: 'The Recent Bookings section shows the most recent activity on the trailer.',
+            content: 'Check here to see who has booked recently. Click "View Details" to see full information. If you have an active booking, you can also modify or cancel it from here.',
+            disableBeacon: true,
         },
         {
             target: '#tour-schedule',
             title: '📅 2026 Season Schedule',
             content: 'Finally, the Season Schedule shows the full order for both Round 1 and Round 2 (Snake order).',
+            disableBeacon: true,
         },
     ];
 

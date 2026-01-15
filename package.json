@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.64.16",
+  "version": "2.68.40",
   "type": "module",
   "homepage": "https://bryhudson.github.io/honeymoon-haven",
   "scripts": {
@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "firebase deploy",
+    "release": "sh scripts/release.sh"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

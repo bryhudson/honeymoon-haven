@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home } from './pages/Home';
+
 import { Dashboard } from './pages/Dashboard';
 
 import { AuthProvider } from './contexts/AuthContext';

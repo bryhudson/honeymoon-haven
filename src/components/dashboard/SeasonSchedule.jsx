@@ -64,6 +64,9 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                         if (entry.status === 'COMPLETED') {
                                             cellBg = "bg-green-50 text-green-700";
                                             badge = "✓ Done";
+                                        } else if (entry.status === 'CANCELLED') {
+                                            cellBg = "bg-red-50 text-red-600 line-through";
+                                            badge = "Cancelled";
                                         } else if (entry.status === 'PASSED') {
                                             cellBg = "bg-gray-100 text-gray-500 line-through";
                                             badge = "Passed";

@@ -34,6 +34,8 @@ export function getShareholderOrder(year) {
     ];
 }
 
+// DEPRECATED: Use Firestore 'shareholders' collection instead.
+// This constant is now only used as a fallback for initial migration.
 export const CABIN_OWNERS = [
     { cabin: "1", name: "Gerry & Georgina", email: "gerrygeorgie@gmail.com" },
     { cabin: "2", name: "Mike & Janelle", email: "janellestaite@gmail.com" },
@@ -52,7 +54,7 @@ export const CABIN_OWNERS = [
 // --- DRAFT CONFIGURATION ---
 export const DRAFT_CONFIG = {
     // Current Production Start: March 1, 2026.
-    START_DATE: new Date(2026, 2, 1, 10, 0, 0),
+    START_DATE: new Date(2026, 2, 1, 0, 0, 0),
 
     PICK_DURATION_DAYS: 2,
     SEASON_START: new Date(2026, 3, 3), // April 3
@@ -97,6 +99,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     let activeWindowEnd = null;
     let phase = 'PRE_DRAFT';
     let isGracePeriod = false;
+    let isSeasonStart = false;
 
     // Track how many turns each user has taken to match with bookings
     const userTurnCounts = {};
@@ -111,21 +114,28 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
         // Find if they have a booking/pass for this slot
         const userActions = bookings
-            .filter(b => b.shareholderName === shareholderName)
+            .filter(b => b.shareholderName === shareholderName) // Allow cancelled to be seen
             .sort((a, b) => a.createdAt - b.createdAt);
 
         const action = userActions[bookingIndex];
 
         if (action) {
-            // Check if this action completes the turn (Pass or Finalized Booking)
-            const isCompleted = action.type === 'pass' || action.isFinalized !== false;
+            // Check if this action completes the turn (Pass, Finalized Booking, or Cancelled)
+            const isCompleted = action.type === 'pass' || action.type === 'cancelled' || action.isFinalized !== false;
 
             if (isCompleted) {
                 // Turn is done. Next window starts at official 10 AM anchor.
-                let actionTime = action.createdAt || action.from;
+                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
                 if (!actionTime) actionTime = currentWindowStart;
 
-                const pTime = actionTime instanceof Date ? actionTime : new Date(actionTime);
+                // Safe Date Conversion (Handle Firestore Timestamp)
+                let pTime;
+                if (actionTime?.toDate) {
+                    pTime = actionTime.toDate();
+                } else {
+                    pTime = new Date(actionTime);
+                }
+
                 if (!isNaN(pTime.getTime())) {
                     currentWindowStart = getOfficialStart(pTime);
                 }
@@ -142,6 +152,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                     nextPicker = fullTurnOrder[i + 1] || null;
                     activeWindowEnd = windowLimit;
                     isGracePeriod = now < currentWindowStart;
+                    isSeasonStart = (i === 0);
                     phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                     break;
                 }
@@ -159,6 +170,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                 nextPicker = fullTurnOrder[i + 1] || null;
                 activeWindowEnd = windowLimit;
                 isGracePeriod = now < currentWindowStart;
+                isSeasonStart = (i === 0);
                 phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                 break;
             }
@@ -179,6 +191,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         windowEnds: activeWindowEnd,
         draftStart: DRAFT_START,
         isGracePeriod,
+        isSeasonStart,
         officialStart: currentWindowStart,
         debugPhase: phase // Helper for debugging
     };
@@ -209,11 +222,11 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
 
         // Find match
         const userActions = bookings
-            .filter(b => b.shareholderName === name)
+            .filter(b => b.shareholderName === name) // Allow cancelled
             .sort((a, b) => a.createdAt - b.createdAt);
 
         const action = userActions[turnIndex];
-        const isCompleted = action && (action.type === 'pass' || action.isFinalized !== false);
+        const isCompleted = action && (action.type === 'pass' || action.type === 'cancelled' || action.isFinalized !== false);
 
         // Calculate Window
         const windowStart = new Date(currentWindowStart);
@@ -223,10 +236,18 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
         let status = 'FUTURE';
 
         if (isCompleted) {
-            status = action.type === 'pass' ? 'PASSED' : 'COMPLETED';
-            let actionTime = action.createdAt || action.from;
+            if (action.type === 'cancelled') {
+                status = 'CANCELLED';
+            } else {
+                status = action.type === 'pass' ? 'PASSED' : 'COMPLETED';
+            }
+            let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
             if (!actionTime) actionTime = windowStart;
-            windowEnd = actionTime instanceof Date ? actionTime : new Date(actionTime);
+
+            // Safe Date Conversion
+            const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
+            windowEnd = pTime instanceof Date && !isNaN(pTime) ? pTime : new Date();
+
             currentWindowStart = adjustForCourtesy(windowEnd);
         } else {
             // Not completed. Check if this is the ACTIVE window or GRACE PERIOD
@@ -257,7 +278,8 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
             start: windowStart,
             end: windowEnd,
             status,
-            isCompleted
+            isCompleted,
+            booking: action || null // Expose full booking object (includes id, isPaid, etc.)
         });
     }
 

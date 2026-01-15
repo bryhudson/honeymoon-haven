@@ -6,10 +6,12 @@ import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
+import { PromptModal } from '../components/PromptModal';
 
 export function AdminDashboard() {
     const [actionLog, setActionLog] = useState("");
@@ -43,6 +45,21 @@ export function AdminDashboard() {
         setConfirmation({ isOpen: true, title, message, onConfirm: () => { }, isDanger: false, confirmText: "OK", showCancel: false });
     };
 
+    // Prompt Modal State
+    const [promptData, setPromptData] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        defaultValue: "",
+        inputType: "text",
+        confirmText: "Confirm",
+        onConfirm: () => { }
+    });
+
+    const triggerPrompt = (title, message, defaultValue, onConfirm, inputType = "text", confirmText = "Confirm") => {
+        setPromptData({ isOpen: true, title, message, defaultValue, onConfirm, inputType, confirmText });
+    };
+
     // Helper for safely converting Firestore timestamps/strings to Dates
     const safeDate = (val) => {
         if (!val) return null;
@@ -54,6 +71,7 @@ export function AdminDashboard() {
     // Simulation State
     const [simStartDate, setSimStartDate] = useState("");
     const [currentSimDate, setCurrentSimDate] = useState(null);
+    const [isSystemFrozen, setIsSystemFrozen] = useState(false);
 
     // Editing State
     const [editingBooking, setEditingBooking] = useState(null);
@@ -67,9 +85,11 @@ export function AdminDashboard() {
                 const d = doc.data().draftStartDate.toDate();
                 setCurrentSimDate(d);
                 setSimStartDate(format(d, "yyyy-MM-dd'T'HH:mm"));
+                setIsSystemFrozen(doc.data().isSystemFrozen || false);
             } else {
                 setCurrentSimDate(null);
                 setSimStartDate("");
+                setIsSystemFrozen(doc.data()?.isSystemFrozen || false);
             }
         });
 
@@ -136,7 +156,7 @@ export function AdminDashboard() {
             "You are about to override the simulation start date. This requires password verification.",
             async () => {
                 try {
-                    const date = new Date(simStartDate);
+                    const date = new Date(`${simStartDate}T00:00:00`);
                     const batch = writeBatch(db);
                     const settingsRef = doc(db, "settings", "general");
                     batch.set(settingsRef, { draftStartDate: date }, { merge: true });
@@ -177,15 +197,61 @@ export function AdminDashboard() {
 
     // --- SYSTEM CONTROLS ---
 
+    const generateAndDownloadCSV = (silent = false) => {
+        try {
+            const headers = ["Shareholder,Cabin,Check In,Check Out,Nights,Status,Payment Status"];
+            const rows = allBookings
+                .sort((a, b) => {
+                    const da = a.from ? new Date(a.from) : new Date(0);
+                    const db = b.from ? new Date(b.from) : new Date(0);
+                    return da - db;
+                })
+                .map(b => {
+                    const checkIn = (b.type !== 'pass' && b.type !== 'auto-pass' && b.from) ? (b.from instanceof Date ? format(b.from, 'yyyy-MM-dd') : formatDate(b.from)) : "";
+                    const checkOut = (b.type !== 'pass' && b.type !== 'auto-pass' && b.to) ? (b.to instanceof Date ? format(b.to, 'yyyy-MM-dd') : formatDate(b.to)) : "";
+                    const nights = (b.from && b.to && b.type !== 'pass' && b.type !== 'auto-pass') ? Math.round((new Date(b.to) - new Date(b.from)) / (1000 * 60 * 60 * 24)) : 0;
+
+                    let status = "Draft";
+                    if (b.type === 'cancelled') status = "Cancelled";
+                    else if (b.type === 'pass') status = "Passed";
+                    else if (b.type === 'auto-pass') status = "Auto-Passed";
+                    else if (b.isFinalized) status = "Finalized";
+
+                    const payment = b.isPaid ? "PAID" : (status === "Finalized" ? "UNPAID" : "-");
+
+                    return `"${b.shareholderName}","${b.cabinNumber || ''}","${checkIn}","${checkOut}","${nights}","${status}","${payment}"`;
+                });
+
+            const csvContent = [headers, ...rows].join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `bookings_backup_${format(new Date(), 'yyyyMMdd_HHmm')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            if (!silent) triggerAlert("Success", "CSV Downloaded.");
+            return true;
+        } catch (e) {
+            console.error(e);
+            triggerAlert("Error", "Failed to export CSV.");
+            return false;
+        }
+    };
+
     const handleResetDB = async () => {
         triggerConfirm(
             "⚠️ DANGER: WIPE DATABASE",
             "Are you sure you want to delete ALL bookings? This cannot be undone.",
             () => {
+                // Auto-backup
+                generateAndDownloadCSV(true); // Silent mode
+
                 setTimeout(() => {
                     requireAuth(
                         "Security Check: Wipe Database",
-                        "High-risk action detected. Please verify your identity to proceed with database wipe.",
+                        "High-risk action detected. Backup initiated. Please verify your identity to proceed with database wipe.",
                         async () => {
                             try {
                                 const count = await performWipe();
@@ -204,6 +270,18 @@ export function AdminDashboard() {
         );
     };
 
+    const toggleSystemFreeze = async () => {
+        try {
+            await updateDoc(doc(db, "settings", "general"), {
+                isSystemFrozen: !isSystemFrozen
+            });
+            triggerAlert("Success", `System is now ${!isSystemFrozen ? 'in Maintenance Mode' : 'Active'}`);
+        } catch (err) {
+            console.error("Failed to toggle freeze:", err);
+            triggerAlert("Error", "Failed to update freeze settings.");
+        }
+    };
+
     const handleEditClick = (booking) => {
         setEditingBooking(booking);
         setIsEditModalOpen(true);
@@ -216,7 +294,8 @@ export function AdminDashboard() {
                 cabinNumber: updatedBooking.cabinNumber,
                 from: updatedBooking.from,
                 to: updatedBooking.to,
-                isFinalized: updatedBooking.isFinalized
+                isFinalized: updatedBooking.isFinalized,
+                type: updatedBooking.type || null // Reset type if removed (e.g. un-cancelling)
             });
             setIsEditModalOpen(false);
             setEditingBooking(null);
@@ -296,7 +375,7 @@ export function AdminDashboard() {
 
                         // 2. Send Email
                         // Find email address
-                        const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                        const owner = shareholders.find(o => o.name === booking.shareholderName);
                         const userEmail = owner ? owner.email : "bryan.m.hudson@gmail.com";
 
                         await emailService.sendPaymentReceived({
@@ -328,7 +407,7 @@ export function AdminDashboard() {
             `Send an email reminder to ${booking.shareholderName} (Cabin #${booking.cabinNumber}) for $${booking.totalPrice}?`,
             async () => {
                 try {
-                    const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
+                    const owner = shareholders.find(o => o.name === booking.shareholderName);
                     const emailTo = "bryan.m.hudson@gmail.com"; // OVERRIDE for safety/demo
 
                     await emailService.sendPaymentReminder({
@@ -394,8 +473,11 @@ export function AdminDashboard() {
 
                     // 2. Send "Booking Cancelled" Email (Non-Blocking)
                     try {
-                        const owner = CABIN_OWNERS.find(o => o.name === booking.shareholderName);
-                        const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
+                        const owner = shareholders.find(o => o.name === booking.shareholderName);
+                        const emailTo = {
+                            name: booking.shareholderName,
+                            email: owner?.email || "bryan.m.hudson@gmail.com"
+                        };
 
                         // Helper for safe date formatting
                         const safeFormat = (dateObj) => {
@@ -457,7 +539,7 @@ export function AdminDashboard() {
             `Active User: ${activeTurn.name}\nTime Remaining: ${Math.round(hoursRemaining)} hours\n\nDo you want to send a reminder email to ${activeTurn.name}?`,
             async () => {
                 try {
-                    const owner = CABIN_OWNERS.find(o => o.name === activeTurn.name);
+                    const owner = shareholders.find(o => o.name === activeTurn.name);
                     if (owner) {
                         const emailData = {
                             name: activeTurn.name,
@@ -494,279 +576,541 @@ export function AdminDashboard() {
         );
     };
 
-    const handleProcessExpired = async () => {
-        setActionLog("Checking for expired turns...");
-        const currentOrder = getShareholderOrder(2026); // Hardcoded year for now
-        const schedule = mapOrderToSchedule(currentOrder, allBookings);
 
-        // Find skipped turns (implicit passes)
-        const expired = schedule.filter(s => s.status === 'SKIPPED');
-
-        if (expired.length === 0) {
-            setActionLog("No expired turns found.");
-            triggerAlert("Status", "All turns are up to date.");
-            return;
-        }
-
-        triggerConfirm(
-            "Process Expired Turns",
-            `Found ${expired.length} expired turns (Shareholders: ${expired.map(e => e.name).join(", ")}).\n\nDo you want to auto-pass them and send notification emails?`,
-            async () => {
-                let processedCount = 0;
-
-                for (const item of expired) {
-                    try {
-                        // 1. Create Auto-Pass Record
-                        await addDoc(collection(db, "bookings"), {
-                            shareholderName: item.name,
-                            type: 'auto-pass',
-                            createdAt: new Date(), // This will timestamp it NOW, which effectively ends their turn
-                            from: item.start, // Preserve original window for record
-                            to: item.start
-                        });
-
-                        // 2. Email the person who missed their turn
-                        const owner = CABIN_OWNERS.find(o => o.name === item.name);
-                        if (owner && owner.email) {
-                            await emailService.sendAutoPassCurrent({
-                                name: item.name,
-                                email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                            }, {
-                                name: item.name,
-                                deadline_date: format(item.end, 'PPP'),
-                                deadline_time: format(item.end, 'p'),
-                                next_shareholder: "Next Shareholder", // Generic or calculate?
-                                dashboard_url: window.location.origin
-                            });
-                        }
-
-                        // 3. Email the NEXT person?
-                        // The loop will eventually process them if they are also expired,
-                        // or if they are now active, we might want to notify them.
-                        // However, strictly speaking, just creating the 'auto-pass' record
-                        // will cause the UI to update and show the NEXT person as active.
-                        // We should probably rely on the 'Turn Started' logic or a separate 'Notify Active' check.
-                        // But for now, let's just process the expiration.
-
-                        // Actually, if we just auto-passed User A, User B is now ON THE CLOCK.
-                        // We should notify User B.
-                        // Finding User B is tricky inside this loop without recalculating.
-                        // Simplification: Just notify User A that they missed it.
-                        // User B will see it's their turn if they log in.
-                        // (Ideally we notify User B too, but let's stick to the core requirement first).
-
-                        processedCount++;
-                    } catch (err) {
-                        console.error("Error processing item:", item, err);
-                    }
-                }
-
-                setActionLog(`Processed ${processedCount} expired turns.`);
-                triggerAlert("Complete", `Successfully processed ${processedCount} expired turns.`);
-            },
-            false,
-            "Process ALL"
-        );
-    };
 
     // --- UI ---
 
-    return (
-        <div className="p-8 max-w-6xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-                <Link
-                    to="/"
-                    className="px-4 py-2 bg-slate-900 text-white rounded-md font-bold text-sm hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2"
-                >
-                    View Booking Application ↗
-                </Link>
+    // --- SHAREHOLDERS MANAGEMENT ---
+    const [shareholders, setShareholders] = useState([]);
+    const [editingShareholder, setEditingShareholder] = useState(null); // { id, email }
+
+    useEffect(() => {
+        // Fetch Shareholders
+        const q = query(collection(db, "shareholders"), orderBy("cabin"));
+        const unsub = onSnapshot(q, async (snapshot) => {
+            if (snapshot.empty) {
+                // AUTO-MIGRATION: If collection is empty, populate from code constant
+                console.log("Migrating shareholders to DB...");
+                const batch = writeBatch(db);
+                CABIN_OWNERS.forEach(owner => {
+                    const ref = doc(collection(db, "shareholders"));
+                    batch.set(ref, owner);
+                });
+                await batch.commit();
+                console.log("Migration complete.");
+            } else {
+                const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                // Sort by cabin number numeric
+                list.sort((a, b) => parseInt(a.cabin) - parseInt(b.cabin));
+                setShareholders(list);
+            }
+        });
+        return () => unsub();
+    }, []);
+
+    const handleUpdateShareholder = async () => {
+        if (!editingShareholder || !editingShareholder.email) return;
+
+        // Find original email to link Auth account
+        const originalShareholder = shareholders.find(s => s.id === editingShareholder.id);
+        const oldEmail = originalShareholder ? originalShareholder.email : null;
+        const newEmail = editingShareholder.email;
+        const hasChanged = oldEmail && oldEmail !== newEmail;
+
+        try {
+            // 1. Update Firestore (Database)
+            await updateDoc(doc(db, "shareholders", editingShareholder.id), {
+                email: newEmail
+            });
+            setEditingShareholder(null);
+
+            // 2. Sync Auth (if changed)
+            if (hasChanged) {
+                try {
+                    const updateEmailFn = httpsCallable(functions, 'adminUpdateShareholderEmail');
+                    const result = await updateEmailFn({ oldEmail, newEmail });
+
+                    const { authUpdated, message } = result.data;
+
+                    triggerConfirm(
+                        "Update Complete",
+                        `Database updated successfully.\n\nLogin Account Status:\n${authUpdated ? "✅ " : "⚠️ "}${message}`,
+                        () => { }, // No confirm action needed, just info
+                        false,
+                        "OK"
+                    );
+                } catch (authErr) {
+                    console.error("Auth sync failed", authErr);
+                    triggerConfirm(
+                        "Update Partial Success",
+                        `Database updated to ${newEmail}.\n\n⚠️ Failed to update Login Account: ${authErr.message}.\nUser may need to register new account.`,
+                        () => { },
+                        false,
+                        "OK"
+                    );
+                }
+            } else {
+                triggerAlert("Success", "Email updated.");
+            }
+
+        } catch (err) {
+            triggerAlert("Error", err.message);
+        }
+    };
+
+    const handlePasswordChange = async (shareholder) => {
+        if (!shareholder.email) {
+            triggerAlert("Error", "This shareholder has no email set.");
+            return;
+        }
+
+        triggerPrompt(
+            "Change Password",
+            `Enter NEW password for ${shareholder.name}\n(${shareholder.email}):`,
+            "",
+            (newPassword) => {
+                if (!newPassword) return;
+                if (newPassword.length < 6) {
+                    triggerAlert("Error", "Password must be at least 6 characters.");
+                    return;
+                }
+
+                triggerConfirm(
+                    "Confirm Change",
+                    `Are you sure you want to forcibly change the password for ${shareholder.name}? They will need to use this new password immediately.`,
+                    async () => {
+                        try {
+                            const adminUpdatePassword = httpsCallable(functions, 'adminUpdatePassword');
+                            const result = await adminUpdatePassword({
+                                targetEmail: shareholder.email,
+                                newPassword: newPassword
+                            });
+
+                            // Show exact message from server (e.g., "Account CREATED...")
+                            const msg = result.data?.message || "Password updated successfully.";
+                            triggerAlert(result.data?.success ? "Success" : "Notice", msg);
+
+                        } catch (err) {
+                            console.error("Password update failed:", err);
+                            triggerAlert("Error", "Failed to update password: " + err.message);
+                        }
+                    },
+                    true,
+                    "Update Password"
+                );
+            },
+            "password",
+            "Next"
+        );
+    };
+
+
+    // 4. Analytics Calculations
+    const analytics = React.useMemo(() => {
+        let totalRevenue = 0;
+        let outstandingFees = 0;
+        let totalBookings = 0;
+        let pendingPayments = 0;
+
+        allBookings.forEach(b => {
+            // Only count finalized active bookings towards stats (ignore drafts/cancelled/passes)
+            if (b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'auto-pass') {
+                const nights = (b.from && b.to) ? Math.max(0, Math.round((new Date(b.to) - new Date(b.from)) / (1000 * 60 * 60 * 24))) : 0;
+                const amount = nights * 125;
+
+                totalBookings++;
+
+                if (b.isPaid) {
+                    totalRevenue += amount;
+                } else {
+                    outstandingFees += amount;
+                    pendingPayments++;
+                }
+            }
+        });
+
+        return { totalRevenue, outstandingFees, totalBookings, pendingPayments };
+    }, [allBookings]);
+
+    // Render Loading
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
+        );
+    }
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {/* System Controls */}
-                <div className="bg-white border rounded-xl p-6 shadow-sm">
-                    <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800">
-                        <Settings className="h-5 w-5 text-slate-500" />
-                        System Controls
-                    </h2>
+    // Render Auth Modal if needed
+    if (!authModal.isOpen && !window.sessionStorage.getItem('admin_auth')) {
+        // Ideally we check this in useEffect but for now reliance on parent protected route or manual modal trigger
+    }
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Simulation Card */}
-                        <div className="col-span-1 md:col-span-2 p-4 rounded-lg bg-slate-50 border border-slate-200">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex gap-3">
-                                    <div className="mt-1 p-2 bg-white rounded-md border shadow-sm text-slate-500">
-                                        <Calendar className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-slate-900">Draft Simulation</h3>
-                                        <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                                            Override the official start date ({format(DRAFT_CONFIG.START_DATE, 'MMM d, yyyy')}) to test different draft phases.
-                                        </p>
-                                        <div className="mt-3 flex items-center gap-2">
-                                            <input
-                                                type="datetime-local"
-                                                value={simStartDate}
-                                                onChange={(e) => setSimStartDate(e.target.value)}
-                                                className="text-sm border rounded px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                            <button
-                                                onClick={handleUpdateStartDate}
-                                                className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded hover:bg-slate-800 transition-colors"
-                                            >
-                                                Sets Date
-                                            </button>
-                                            {currentSimDate && (
-                                                <button
-                                                    onClick={handleResetSimulation}
-                                                    className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded hover:bg-slate-50 transition-colors"
-                                                >
-                                                    Reset to Default
-                                                </button>
-                                            )}
-                                        </div>
-                                        {currentSimDate && (
-                                            <p className="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
-                                                <CheckCircle className="h-3 w-3" />
-                                                Simulation Active: {format(currentSimDate, 'MMM d, h:mm a')}
-                                            </p>
-                                        )}
-                                    </div>
+    return (
+        <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
+
+            {/* Header & Analytics */}
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Admin Dashboard</h1>
+                        <p className="text-muted-foreground mt-1">Overview of resort performance and bookings.</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Link to="/#book" className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-shadow shadow-sm text-sm">
+                            Shareholder Dashboard
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white p-6 rounded-xl border shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-green-100 text-green-700 rounded-lg">
+                                <DollarSign className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                                <h3 className="text-2xl font-bold text-slate-900">${analytics.totalRevenue.toLocaleString()}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-amber-100 text-amber-700 rounded-lg">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
+                                <h3 className="text-2xl font-bold text-slate-900">${analytics.outstandingFees.toLocaleString()}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-100 text-blue-700 rounded-lg">
+                                <Calendar className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Active Bookings</p>
+                                <h3 className="text-2xl font-bold text-slate-900">{analytics.totalBookings}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-purple-100 text-purple-700 rounded-lg">
+                                <Settings className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">System Status</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <button
+                                        onClick={toggleSystemFreeze}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 ${isSystemFrozen ? 'bg-amber-500' : 'bg-green-500'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isSystemFrozen ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                    <span className={`text-sm font-bold ${isSystemFrozen ? 'text-amber-700' : 'text-green-700'}`}>
+                                        {isSystemFrozen ? 'MAINTENANCE' : 'Active'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        {/* Reset DB */}
-                        <div className="p-4 rounded-lg border border-red-100 bg-red-50/50 hover:bg-red-50 transition-colors group">
-                            <div className="flex items-start justify-between">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                {/* Left Column: System Controls (Moved here) */}
+                <div className="lg:col-span-3">
+                    <div className="bg-white border rounded-xl p-6 shadow-sm">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
+                                <Settings className="h-5 w-5 text-slate-500" />
+                                System Controls
+                            </h2>
+                            {actionLog && <div className="text-xs font-mono text-muted-foreground bg-slate-100 px-2 py-1 rounded">Last: {actionLog}</div>}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Simulation Card */}
+                            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex gap-3">
+                                        <div className="mt-1 p-2 bg-white rounded-md border shadow-sm text-slate-500 h-fit">
+                                            <Calendar className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">Draft Simulation</h3>
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                Override date ({format(DRAFT_CONFIG.START_DATE, 'MMM d')}).
+                                            </p>
+                                            <div className="mt-3 flex flex-col gap-2">
+                                                <input
+                                                    type="datetime-local"
+                                                    value={simStartDate}
+                                                    onChange={(e) => setSimStartDate(e.target.value)}
+                                                    className="text-xs border rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none w-full"
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleUpdateStartDate}
+                                                        className="flex-1 px-2 py-1 bg-slate-900 text-white text-xs font-bold rounded hover:bg-slate-800 transition-colors"
+                                                    >
+                                                        Set
+                                                    </button>
+                                                    {currentSimDate && (
+                                                        <button
+                                                            onClick={handleResetSimulation}
+                                                            className="flex-1 px-2 py-1 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded hover:bg-slate-50 transition-colors"
+                                                        >
+                                                            Reset
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {currentSimDate && (
+                                                <p className="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
+                                                    <CheckCircle className="h-3 w-3" />
+                                                    Active: {format(currentSimDate, 'MMM d, h:mm a')}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Reset DB */}
+                            <div className="p-4 rounded-lg border border-red-100 bg-red-50/50 hover:bg-red-50 transition-colors group flex flex-col justify-between">
                                 <div className="flex gap-3">
-                                    <div className="p-2 bg-white rounded-md border border-red-100 text-red-500 group-hover:text-red-600 shadow-sm">
+                                    <div className="p-2 bg-white rounded-md border border-red-100 text-red-500 group-hover:text-red-600 shadow-sm h-fit">
                                         <Trash2 className="h-5 w-5" />
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-red-900">Wipe Database</h3>
                                         <p className="text-xs text-red-600/80 mt-1">
-                                            Delete all bookings and reset state.
+                                            Delete all bookings.
                                         </p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={handleResetDB}
-                                    className="px-3 py-1.5 bg-white border border-red-200 text-red-700 text-xs font-bold rounded hover:bg-red-100 transition-colors shadow-sm"
+                                    className="w-full mt-3 px-3 py-1.5 bg-white border border-red-200 text-red-700 text-xs font-bold rounded hover:bg-red-100 transition-colors shadow-sm"
                                 >
                                     Reset
                                 </button>
                             </div>
-                        </div>
 
-                        {/* Onboarding */}
-                        <div className="p-4 rounded-lg border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors group">
-                            <div className="flex items-start justify-between">
-                                <div className="flex gap-3">
-                                    <div className="p-2 bg-white rounded-md border border-blue-100 text-blue-500 group-hover:text-blue-600 shadow-sm">
-                                        <PlayCircle className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-blue-900">Reset Tour</h3>
-                                        <p className="text-xs text-blue-600/80 mt-1">
-                                            Show onboarding guide again.
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={resetOnboarding}
-                                    className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded hover:bg-blue-100 transition-colors shadow-sm"
-                                >
-                                    Reset
-                                </button>
-                            </div>
-                        </div>
 
-                        {/* Expired Turns */}
-                        <div className="p-4 rounded-lg border border-amber-100 bg-amber-50/50 hover:bg-amber-50 transition-colors group">
-                            <div className="flex items-start justify-between">
-                                <div className="flex gap-3">
-                                    <div className="p-2 bg-white rounded-md border border-amber-100 text-amber-500 group-hover:text-amber-600 shadow-sm">
-                                        <Clock className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-amber-900">Process Turns</h3>
-                                        <p className="text-xs text-amber-600/80 mt-1">
-                                            Check for missed deadlines.
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleProcessExpired}
-                                    className="px-3 py-1.5 bg-white border border-amber-200 text-amber-700 text-xs font-bold rounded hover:bg-amber-100 transition-colors shadow-sm"
-                                >
-                                    Run
-                                </button>
-                            </div>
-                        </div>
 
-                        {/* Reminders */}
-                        <div className="p-4 rounded-lg border border-purple-100 bg-purple-50/50 hover:bg-purple-50 transition-colors group">
-                            <div className="flex items-start justify-between">
-                                <div className="flex gap-3">
-                                    <div className="p-2 bg-white rounded-md border border-purple-100 text-purple-500 group-hover:text-purple-600 shadow-sm">
-                                        <Bell className="h-5 w-5" />
+                            {/* Reminders / Test Email Stack */}
+                            <div className="space-y-3">
+                                <div className="p-3 rounded-lg border border-purple-100 bg-purple-50/50 hover:bg-purple-50 transition-colors group flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Bell className="h-4 w-4 text-purple-600" />
+                                        <span className="text-sm font-semibold text-purple-900">Reminders</span>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold text-purple-900">Send Reminders</h3>
-                                        <p className="text-xs text-purple-600/80 mt-1">
-                                            Notify active shareholder.
-                                        </p>
-                                    </div>
+                                    <button onClick={handleRunReminders} className="text-xs bg-white border border-purple-200 px-2 py-1 rounded font-bold text-purple-700">Send</button>
                                 </div>
-                                <button
-                                    onClick={handleRunReminders}
-                                    className="px-3 py-1.5 bg-white border border-purple-200 text-purple-700 text-xs font-bold rounded hover:bg-purple-100 transition-colors shadow-sm"
-                                >
-                                    Send
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Test Email */}
-                        <div className="p-4 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors group">
-                            <div className="flex items-start justify-between">
-                                <div className="flex gap-3">
-                                    <div className="p-2 bg-white rounded-md border border-slate-100 text-slate-500 group-hover:text-slate-600 shadow-sm">
-                                        <Mail className="h-5 w-5" />
+                                <div className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors group flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="h-4 w-4 text-slate-600" />
+                                        <span className="text-sm font-semibold text-slate-900">Test Email</span>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold text-slate-900">Test Email</h3>
-                                        <p className="text-xs text-slate-600/80 mt-1">
-                                            Verify SMTP connection.
-                                        </p>
-                                    </div>
+                                    <button onClick={handleTestEmail} className="text-xs bg-white border border-slate-200 px-2 py-1 rounded font-bold text-slate-700">Test</button>
                                 </div>
-                                <button
-                                    onClick={handleTestEmail}
-                                    className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded hover:bg-slate-100 transition-colors shadow-sm"
-                                >
-                                    Test
-                                </button>
+                                <div className="p-3 rounded-lg border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors group flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <PlayCircle className="h-4 w-4 text-blue-600" />
+                                        <span className="text-sm font-semibold text-blue-900">Onboarding</span>
+                                    </div>
+                                    <button onClick={resetOnboarding} className="text-xs bg-white border border-blue-200 px-2 py-1 rounded font-bold text-blue-700">Reset</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {actionLog && <p className="mt-4 text-sm font-mono text-muted-foreground p-2 bg-slate-100 rounded">{actionLog}</p>}
             </div>
 
 
-
-
-
-
-            {/* All Bookings (Selective Updates) */}
+            {/* All Bookings (Structured by Rounds) */}
             <div className="bg-card border rounded-xl shadow-sm overflow-hidden mb-12">
                 <div className="p-6 border-b flex justify-between items-center bg-slate-50">
-                    <h2 className="text-xl font-bold">Manage All Bookings</h2>
-                    <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">Live Database</span>
+                    <h2 className="text-xl font-bold">Manage All Bookings (2026 Season)</h2>
+
+                    {/* NEW ACTIONS: Export & Report */}
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => generateAndDownloadCSV(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors text-sm font-medium border border-green-200"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Export CSV
+                        </button>
+                        <button
+                            onClick={() => {
+                                triggerPrompt(
+                                    "Send Status Report",
+                                    "Send a current booking status report via email?\n\nPlease enter the recipient email:",
+                                    "bryan.m.hudson@gmail.com",
+                                    async (inputEmail) => {
+                                        const recipient = inputEmail || "bryan.m.hudson@gmail.com";
+
+                                        // Reuse existing logic... (simplified for brevity)
+                                        // Note: We are keeping the actual report generation logically same for now
+                                        // just calling the same flow as before.
+
+                                        // Generate Schedule for Reports
+                                        const currentOrder = getShareholderOrder(2026);
+                                        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+
+                                        try {
+                                            // Helper to Row HTML
+                                            const generateRowHtml = (slot) => {
+                                                const b = slot.booking;
+                                                const hasBooking = !!b;
+
+                                                // Default/Empty Slot Values
+                                                let shareholder = slot.name;
+                                                let cabin = "-";
+                                                let dates = "-";
+                                                let nights = "-";
+                                                let statusText = "Pending";
+                                                let statusColor = "#f1f5f9"; // slate-100
+                                                let paymentStatus = "-";
+                                                let paymentColor = "#f1f5f9";
+
+                                                if (hasBooking) {
+                                                    shareholder = b.shareholderName;
+                                                    cabin = b.cabinNumber || '-';
+
+                                                    const isPass = b.type === 'pass' || b.type === 'auto-pass';
+                                                    dates = (!isPass && b.from && b.to)
+                                                        ? `${format(b.from instanceof Date ? b.from : new Date(b.from), 'MMM d')} - ${format(b.to instanceof Date ? b.to : new Date(b.to), 'MMM d')}`
+                                                        : "";
+
+                                                    nights = (!isPass && b.from && b.to)
+                                                        ? Math.round((new Date(b.to) - new Date(b.from)) / (1000 * 60 * 60 * 24))
+                                                        : 0;
+
+                                                    // Status Logic
+                                                    statusText = "Draft";
+                                                    statusColor = "#fef9c3"; // yellow
+
+                                                    if (b.type === 'cancelled') {
+                                                        statusText = "Cancelled";
+                                                        statusColor = "#fee2e2";
+                                                    } else if (b.type === 'pass') {
+                                                        statusText = "Passed";
+                                                        statusColor = "#f1f5f9";
+                                                    } else if (b.type === 'auto-pass') {
+                                                        statusText = "Auto-Passed";
+                                                        statusColor = "#f1f5f9";
+                                                    } else if (b.isFinalized) {
+                                                        statusText = "Finalized";
+                                                        statusColor = "#dcfce7";
+                                                    }
+
+                                                    // Payment Logic
+                                                    if (b.isPaid) {
+                                                        paymentStatus = "PAID";
+                                                        paymentColor = "#dcfce7";
+                                                    } else if (b.isFinalized) {
+                                                        paymentStatus = "UNPAID";
+                                                        paymentColor = "#fee2e2";
+                                                    }
+                                                }
+
+                                                return `
+                                                    <tr>
+                                                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${shareholder}</td>
+                                                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${cabin}</td>
+                                                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${dates}</td>
+                                                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${nights}</td>
+                                                        <td style="padding: 8px; border-bottom: 1px solid #eee;">
+                                                            <span style="background-color: ${statusColor}; padding: 2px 6px; borderRadius: 4px; font-size: 11px;">${statusText}</span>
+                                                        </td>
+                                                        <td style="padding: 8px; border-bottom: 1px solid #eee;">
+                                                            <span style="background-color: ${paymentColor}; padding: 2px 6px; borderRadius: 4px; font-size: 11px;">${paymentStatus}</span>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                            };
+
+                                            const round1Rows = schedule.filter(s => s.round === 1).map(generateRowHtml).join("");
+                                            const round2Rows = schedule.filter(s => s.round === 2).map(generateRowHtml).join("");
+
+                                            const htmlTable = `
+                                                <h2>Current Booking Report</h2>
+                                                <p>Generated on ${format(new Date(), 'PPP p')}</p>
+                                                
+                                                <h3 style="margin-top: 20px; background-color: #f1f5f9; padding: 10px;">Round 1 - Shareholder Rotation</h3>
+                                                <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
+                                                    <thead>
+                                                        <tr style="background-color: #f8fafc;">
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        ${round1Rows}
+                                                    </tbody>
+                                                </table>
+
+                                                <h3 style="margin-top: 30px; background-color: #f1f5f9; padding: 10px;">Round 2 - Snake Draft</h3>
+                                                <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
+                                                    <thead>
+                                                        <tr style="background-color: #f8fafc;">
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
+                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        ${round2Rows}
+                                                    </tbody>
+                                                </table>
+                                            `;
+
+                                            const sendEmailFn = httpsCallable(functions, 'sendEmail');
+                                            await sendEmailFn({
+                                                to: { name: "Admin", email: recipient },
+                                                subject: `Booking Report - ${format(new Date(), 'MMM d')}`,
+                                                htmlContent: htmlTable
+                                            });
+
+                                            triggerAlert("Success", `Report sent to ${recipient}`);
+                                        } catch (err) {
+                                            console.error("Report fail", err);
+                                            triggerAlert("Error", "Failed to send report.");
+                                        }
+                                    },
+                                    "text",
+                                    "Generate Report"
+                                );
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors text-sm font-medium border border-blue-200"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            Email Report
+                        </button>
+                    </div>
                 </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
@@ -785,125 +1129,245 @@ export function AdminDashboard() {
                                         Loading bookings...
                                     </td>
                                 </tr>
-                            ) : allBookings.length === 0 ? (
+                            ) : (() => {
+                                // GENERATE SCHEDULE VIEW
+                                const currentOrder = getShareholderOrder(2026); // Default 2026 Year
+                                const schedule = mapOrderToSchedule(currentOrder, allBookings);
+
+                                // Helper to Render a Row
+                                const renderRow = (slot) => {
+                                    const booking = slot.booking; // Full Booking Object
+                                    const isSlotBooked = !!booking;
+
+                                    // If not booked, show placeholder
+                                    if (!isSlotBooked) {
+                                        return (
+                                            <tr key={`${slot.name}-${slot.round}`} className="bg-slate-50/30">
+                                                <td className="px-6 py-5">
+                                                    <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
+                                                    <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">Pending</div>
+                                                </td>
+                                                <td className="px-6 py-5 text-slate-400">—</td>
+                                                <td className="px-6 py-5 text-center">
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
+                                                        Pending
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-5 text-center text-slate-300">—</td>
+                                                <td className="px-6 py-5 text-right text-slate-300">—</td>
+                                            </tr>
+                                        );
+                                    }
+
+                                    // If booked, show existing row logic
+                                    return (
+                                        <tr key={booking.id} className="hover:bg-muted/10 transition-colors bg-white">
+                                            <td className="px-6 py-5">
+                                                <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
+                                                <div className="text-xs text-muted-foreground font-mono mt-0.5">Cabin #{booking.cabinNumber}</div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-slate-900">
+                                                        {(booking.type === 'pass' || booking.type === 'auto-pass')
+                                                            ? '—'
+                                                            : (booking.from && booking.to
+                                                                ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
+                                                                : 'Invalid Dates')
+                                                        }
+                                                    </span>
+                                                    <span className="text-[11px] text-muted-foreground mt-0.5">
+                                                        Created: {booking.createdAt ? format(booking.createdAt, 'MMM d, HH:mm') : 'N/A'}
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-5 text-center">
+                                                {booking.type === 'pass' || booking.type === 'auto-pass' ? (
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default">
+                                                        <XCircle className="w-3 h-3 mr-1.5" />
+                                                        Passed
+                                                    </span>
+                                                ) : booking.type === 'cancelled' ? (
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default">
+                                                        <Ban className="w-3 h-3 mr-1.5" />
+                                                        Cancelled
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isFinalized
+                                                            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                                            : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                            }`}
+                                                        title={booking.isFinalized ? "Click to Revert to Draft" : "Click to Finalize"}
+                                                    >
+                                                        {booking.isFinalized ? (
+                                                            <>
+                                                                <CheckCircle className="w-3 h-3 mr-1.5" />
+                                                                Finalized
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Clock className="w-3 h-3 mr-1.5" />
+                                                                Draft
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-5 text-center">
+                                                {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                    <span className="text-xs text-muted-foreground/30 font-medium select-none">—</span>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleTogglePaid(booking)}
+                                                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
+                                                                ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
+                                                                : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
+                                                                }`}
+                                                            title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
+                                                        >
+                                                            {booking.isPaid ? (
+                                                                <>
+                                                                    <DollarSign className="w-3 h-3 mr-1" />
+                                                                    PAID
+                                                                </>
+                                                            ) : (
+                                                                "UNPAID"
+                                                            )}
+                                                        </button>
+                                                        {!booking.isPaid && (
+                                                            <button
+                                                                onClick={() => handleSendPaymentReminder(booking)}
+                                                                className="ml-2 p-1.5 align-middle text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                                                title="Send Payment Reminder"
+                                                            >
+                                                                <Bell className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-5 text-right">
+                                                {booking.type !== 'pass' && booking.type !== 'auto-pass' ? (
+                                                    <ActionsDropdown
+                                                        onEdit={() => handleEditClick(booking)}
+                                                        onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
+                                                        isCancelled={booking.type === 'cancelled'}
+                                                    />
+                                                ) : (booking.type === 'pass' || booking.type === 'auto-pass') && (
+                                                    // Allow editing turns that were passed (e.g. to un-pass)
+                                                    <ActionsDropdown
+                                                        onEdit={() => handleEditClick(booking)}
+                                                    />
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                };
+
+                                return (
+                                    <>
+                                        {/* ROUND 1 */}
+                                        <tr className="bg-slate-100 border-b border-t border-slate-200">
+                                            <td colSpan="5" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase">
+                                                Round 1 - Shareholder Rotation
+                                            </td>
+                                        </tr>
+                                        {schedule.filter(s => s.round === 1).map(renderRow)}
+
+                                        {/* ROUND 2 */}
+                                        <tr className="bg-slate-100 border-b border-t border-slate-200">
+                                            <td colSpan="5" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase mt-4">
+                                                Round 2 - Snake Draft
+                                            </td>
+                                        </tr>
+                                        {schedule.filter(s => s.round === 2).map(renderRow)}
+                                    </>
+                                );
+                            })()}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            {/* Shareholders Table */}
+            < div className="bg-white border rounded-xl shadow-sm overflow-hidden mb-12" >
+                <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                    <h2 className="text-xl font-bold text-slate-800">Shareholders</h2>
+                    <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-1 rounded">Editable Database</span>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-medium border-b">
+                            <tr>
+                                <th className="px-6 py-3 w-20">Cabin</th>
+                                <th className="px-6 py-3">Name</th>
+                                <th className="px-6 py-3">Email(s)</th>
+                                <th className="px-6 py-3 w-16"></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y text-slate-600">
+                            {shareholders.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-10 text-center text-muted-foreground italic">
-                                        No bookings found in database.
+                                    <td colSpan="4" className="px-6 py-8 text-center text-muted-foreground italic">
+                                        Loading shareholders...
                                     </td>
                                 </tr>
                             ) : (
-                                allBookings.map((booking) => (
-                                    <tr key={booking.id} className="hover:bg-muted/10 transition-colors">
-                                        <td className="px-6 py-5">
-                                            <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
-                                            <div className="text-xs text-muted-foreground font-mono mt-0.5">Cabin #{booking.cabinNumber}</div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-slate-900">
-                                                    {(booking.type === 'pass' || booking.type === 'auto-pass')
-                                                        ? '—'
-                                                        : (booking.from && booking.to
-                                                            ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
-                                                            : 'Invalid Dates')
-                                                    }
-                                                </span>
-                                                <span className="text-[11px] text-muted-foreground mt-0.5">
-                                                    Created: {booking.createdAt ? format(booking.createdAt, 'MMM d, HH:mm') : 'N/A'}
-                                                </span>
-                                            </div>
-                                        </td>
-
-
-
-                                        {/* Status Toggle */}
-                                        <td className="px-6 py-5 text-center">
-                                            {booking.type === 'pass' || booking.type === 'auto-pass' ? (
-                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default">
-                                                    <XCircle className="w-3 h-3 mr-1.5" />
-                                                    Passed
-                                                </span>
-                                            ) : booking.type === 'cancelled' ? (
-                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default">
-                                                    <Ban className="w-3 h-3 mr-1.5" />
-                                                    Cancelled
-                                                </span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isFinalized
-                                                        ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                                                        : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                                                        }`}
-                                                    title={booking.isFinalized ? "Click to Revert to Draft" : "Click to Finalize"}
-                                                >
-                                                    {booking.isFinalized ? (
-                                                        <>
-                                                            <CheckCircle className="w-3 h-3 mr-1.5" />
-                                                            Finalized
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Clock className="w-3 h-3 mr-1.5" />
-                                                            Draft
-                                                        </>
-                                                    )}
-                                                </button>
-                                            )}
-                                        </td>
-
-                                        {/* Payment Toggle */}
-                                        <td className="px-6 py-5 text-center">
-                                            {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
-                                                <span className="text-xs text-muted-foreground/30 font-medium select-none">—</span>
-                                            ) : (
-                                                <>
+                                shareholders.map((person) => (
+                                    <tr key={person.id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-3 font-mono text-slate-400">#{person.cabin}</td>
+                                        <td className="px-6 py-3 font-semibold text-slate-900">{person.name}</td>
+                                        <td className="px-6 py-3">
+                                            {editingShareholder?.id === person.id ? (
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={editingShareholder.email}
+                                                        onChange={(e) => setEditingShareholder({ ...editingShareholder, email: e.target.value })}
+                                                        className="flex-1 px-2 py-1 text-xs border rounded shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    />
                                                     <button
-                                                        onClick={() => handleTogglePaid(booking)}
-                                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
-                                                            ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
-                                                            : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
-                                                            }`}
-                                                        title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
+                                                        onClick={handleUpdateShareholder}
+                                                        className="p-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
                                                     >
-                                                        {booking.isPaid ? (
-                                                            <>
-                                                                <DollarSign className="w-3 h-3 mr-1" />
-                                                                PAID
-                                                            </>
-                                                        ) : (
-                                                            "UNPAID"
-                                                        )}
+                                                        <CheckCircle className="h-4 w-4" />
                                                     </button>
-                                                    {!booking.isPaid && (
-                                                        <button
-                                                            onClick={() => handleSendPaymentReminder(booking)}
-                                                            className="ml-2 p-1.5 align-middle text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                                                            title="Send Payment Reminder"
-                                                        >
-                                                            <Bell className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </>
+                                                    <button
+                                                        onClick={() => setEditingShareholder(null)}
+                                                        className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"
+                                                    >
+                                                        <XCircle className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-600">{person.email}</span>
                                             )}
                                         </td>
-
-                                        <td className="px-6 py-5 text-right space-x-2">
-                                            <button
-                                                onClick={() => handleEditClick(booking)}
-                                                className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                                                title="Edit Details"
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                            </button>
-                                            {booking.type !== 'cancelled' && booking.type !== 'pass' && booking.type !== 'auto-pass' && (
-                                                <button
-                                                    onClick={() => handleCancelBooking(booking)}
-                                                    className="p-2 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors"
-                                                    title="Cancel Booking"
-                                                >
-                                                    <Ban className="w-4 h-4" />
-                                                </button>
+                                        <td className="px-6 py-3 text-right">
+                                            {editingShareholder?.id !== person.id && (
+                                                <div className="flex gap-1 justify-end">
+                                                    <button
+                                                        onClick={() => setEditingShareholder({ id: person.id, email: person.email })}
+                                                        className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                                                        title="Edit Email"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handlePasswordChange(person)}
+                                                        className="p-1 text-slate-400 hover:text-amber-600 transition-colors"
+                                                        title="Change Password"
+                                                    >
+                                                        <Key className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             )}
                                         </td>
                                     </tr>
@@ -914,41 +1378,12 @@ export function AdminDashboard() {
                 </div>
             </div >
 
-            {/* Shareholder List */}
-            < div className="bg-card border rounded-xl shadow-sm overflow-hidden" >
-                <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-bold">Shareholders (Read Only)</h2>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">Source: Code</span>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
-                            <tr>
-                                <th className="px-6 py-4">Cabin</th>
-                                <th className="px-6 py-4">Name</th>
-                                <th className="px-6 py-4">Email(s)</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                            {CABIN_OWNERS.map((owner, i) => (
-                                <tr key={i} className="hover:bg-muted/10">
-                                    <td className="px-6 py-4 font-mono font-bold text-muted-foreground">#{owner.cabin}</td>
-                                    <td className="px-6 py-4 font-medium">{owner.name}</td>
-                                    <td className="px-6 py-4 text-muted-foreground max-w-md truncate" title={owner.email}>
-                                        {owner.email}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div >
 
             {/* Modal */}
-            < ConfirmationModal
+            {/* Modal */}
+            <ConfirmationModal
                 isOpen={confirmation.isOpen}
-                onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))
-                }
+                onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}
                 onConfirm={confirmation.onConfirm}
                 title={confirmation.title}
                 message={confirmation.message}
@@ -958,12 +1393,12 @@ export function AdminDashboard() {
             />
 
             {/* Edit Modal */}
-            < EditBookingModal
+            <EditBookingModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 onSave={handleSaveEdit}
                 booking={editingBooking}
-                allBookings={allBookings}
+                otherBookings={allBookings.filter(b => b.id !== editingBooking?.id)}
             />
 
             {/* Reauth Modal */}
@@ -974,6 +1409,18 @@ export function AdminDashboard() {
                 title={authModal.title}
                 message={authModal.message}
             />
-        </div >
+
+            {/* Prompt Modal */}
+            <PromptModal
+                isOpen={promptData.isOpen}
+                onClose={() => setPromptData(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={promptData.onConfirm}
+                title={promptData.title}
+                message={promptData.message}
+                defaultValue={promptData.defaultValue}
+                inputType={promptData.inputType}
+                confirmText={promptData.confirmText}
+            />
+        </div>
     );
 }

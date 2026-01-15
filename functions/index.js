@@ -85,3 +85,97 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 exports.onBookingChangeTrigger = onBookingChangeTrigger;
 exports.checkDailyReminders = checkDailyReminders;
 
+/**
+ * Admin: Update user password
+ * Can only be called by the Super Admin.
+ */
+exports.adminUpdatePassword = onCall(async (request) => {
+    // 1. Authenticate that the caller is the Super Admin
+    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
+        throw new HttpsError('permission-denied', 'Only the Super Admin can perform this action.');
+    }
+
+    const { targetEmail, newPassword } = request.data;
+
+    if (!targetEmail || !newPassword) {
+        throw new HttpsError('invalid-argument', 'Email and new password are required.');
+    }
+
+    try {
+        let userRecord;
+        try {
+            userRecord = await admin.auth().getUserByEmail(targetEmail);
+            await admin.auth().updateUser(userRecord.uid, {
+                password: newPassword
+            });
+            logger.info(`Password updated for user: ${targetEmail}`);
+            return { success: true, message: `Password updated for ${targetEmail}` };
+        } catch (getErr) {
+            if (getErr.code === "auth/user-not-found") {
+                userRecord = await admin.auth().createUser({
+                    email: targetEmail,
+                    password: newPassword,
+                    emailVerified: true
+                });
+                logger.info(`Created new user: ${targetEmail}`);
+                return { success: true, message: `Account CREATED for ${targetEmail} with new password.` };
+            }
+            throw getErr;
+        }
+    } catch (error) {
+        logger.error("Failed to update/create password:", error);
+        throw new HttpsError("internal", error.message || "Failed to process password update.");
+    }});
+
+/**
+ * Admin: Update shareholder email (Sync Auth)
+ */
+exports.adminUpdateShareholderEmail = onCall(async (request) => {
+    // 1. Authenticate that the caller is the Super Admin
+    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
+        throw new HttpsError('permission-denied', 'Only the Super Admin can perform this action.');
+    }
+
+    const { oldEmail, newEmail } = request.data;
+    if (!oldEmail || !newEmail) {
+        throw new HttpsError('invalid-argument', 'Old and New emails are required.');
+    }
+
+    let result = {
+        authUpdated: false,
+        message: ""
+    };
+
+    try {
+        // 2. Find by OLD email
+        const userRecord = await admin.auth().getUserByEmail(oldEmail);
+
+        // 3. Update to NEW email
+        await admin.auth().updateUser(userRecord.uid, {
+            email: newEmail,
+            emailVerified: true // Auto-verify since admin set it
+        });
+
+        result.authUpdated = true;
+        result.message = `Login account updated from ${oldEmail} to ${newEmail}`;
+
+    } catch (error) {
+        if (error.code === 'auth/user-not-found') {
+            // This is "okay" - means they didn't have an account yet.
+            result.authUpdated = false;
+            result.message = `No existing login account found for ${oldEmail}. User will need to register as ${newEmail}.`;
+        } else if (error.code === 'auth/email-already-exists') {
+            result.authUpdated = false;
+            result.message = `Cannot update login: Account with email ${newEmail} already exists!`;
+            // In this case, we might want to throw error or just warn? 
+            // Throwing error might obscure the fact that DB is updated. 
+            // We return success=true (function executed) but info in message.
+        } else {
+            logger.error("Failed to update email:", error);
+            throw new HttpsError('internal', "Failed to update Auth user: " + error.message);
+        }
+    }
+
+    return result;
+});
+

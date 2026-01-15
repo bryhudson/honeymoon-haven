@@ -10,14 +10,22 @@ export function useBookingRealtime() {
     const [allDraftRecords, setAllDraftRecords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [startDateOverride, setStartDateOverride] = useState(null);
+    const [isSystemFrozen, setIsSystemFrozen] = useState(false);
 
     useEffect(() => {
         // Fetch Settings
         const unsubSettings = onSnapshot(doc(db, "settings", "general"), (doc) => {
-            if (doc.exists() && doc.data().draftStartDate) {
-                setStartDateOverride(doc.data().draftStartDate.toDate ? doc.data().draftStartDate.toDate() : new Date(doc.data().draftStartDate));
+            if (doc.exists()) {
+                const data = doc.data();
+                if (data.draftStartDate) {
+                    setStartDateOverride(data.draftStartDate.toDate ? data.draftStartDate.toDate() : new Date(data.draftStartDate));
+                } else {
+                    setStartDateOverride(null);
+                }
+                setIsSystemFrozen(data.isSystemFrozen || false);
             } else {
                 setStartDateOverride(null);
+                setIsSystemFrozen(false);
             }
         });
 
@@ -31,7 +39,8 @@ export function useBookingRealtime() {
                     ...data,
                     from: data.from?.toDate ? data.from.toDate() : (data.from ? new Date(data.from) : null),
                     to: data.to?.toDate ? data.to.toDate() : (data.to ? new Date(data.to) : null),
-                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+                    cancelledAt: data.cancelledAt?.toDate ? data.cancelledAt.toDate() : (data.cancelledAt ? new Date(data.cancelledAt) : null)
                 };
             });
             setAllDraftRecords(records);
@@ -54,6 +63,7 @@ export function useBookingRealtime() {
         loading,
         status,
         currentOrder,
-        startDateOverride
+        startDateOverride,
+        isSystemFrozen
     };
 }

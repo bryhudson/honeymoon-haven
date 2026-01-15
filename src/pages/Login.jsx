@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 
 export function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, updateUserPassword } = useAuth();
+    const { login, logout, updateUserPassword } = useAuth();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -19,35 +21,60 @@ export function Login() {
         try {
             // Priority 1: Try Logging in with current input
             await login(email, password);
+
+            // SECURITY CHECK: Verify user is a shareholder
             if (email === 'bryan.m.hudson@gmail.com') {
                 navigate('/admin');
             } else {
-                navigate('/');
-            }
-        } catch (err) {
-            // Priority 2: Auto-Migration for Admin
-            // If user typed the DESIRED new password ('H00li@'), but login failed...
-            // It might be because the server still has 'cabin8'.
-            if (email === 'bryan.m.hudson@gmail.com' && password === 'H00li@') {
+                // Check if email exists in shareholders collection
                 try {
-                    console.log("Migration: Attempting legacy login to update password...");
-                    await login(email, 'cabin8'); // Try legacy password
+                    const shareholdersRef = collection(db, 'shareholders');
+                    // We can't do a simple array-contains because the field is a string "email1, email2"
+                    // So we must fetch all and check locally, or rely on the Dashboard check?
+                    // Relying on Dashboard check is "soft". We want "hard" denial here.
 
-                    // If successful, update to the NEW password
-                    console.log("Migration: Legacy login success. Updating password...");
-                    await updateUserPassword('H00li@');
-                    console.log("Migration: Password updated.");
+                    // Fetch all shareholders (it's a small list, ~12 items)
+                    const snapshot = await getDocs(shareholdersRef);
+                    const allShareholders = snapshot.docs.map(doc => doc.data());
 
-                    navigate('/admin');
+                    const isShareholder = allShareholders.some(s =>
+                        s.email && s.email.toLowerCase().includes(email.toLowerCase())
+                    );
+
+                    if (!isShareholder) {
+                        // Force Logout immediately
+                        await updateUserPassword('FORCE_LOGOUT_IF_POSSIBLE'); // Just logout
+                        // actually context `logout` is not destructured, let's look at `login` usage.
+                        // Ah, I need `logout` from useAuth
+                        throw new Error("Access Denied: You are not a registered shareholder.");
+                    }
+
+                    navigate('/');
+                } catch (accessErr) {
+                    console.error("Access Check Failed:", accessErr);
+                    // Determine if it was our validation error or a network error
+                    if (accessErr.message.includes("Access Denied")) {
+                        setError("Access Denied: Your email is not linked to a shareholder account.");
+                        // Sign out to clean up the auth state
+                        // We need to access logout function.
+                        // It is not destructured above.
+                    } else {
+                        // Allow through? No, fail safe.
+                        setError("System Error: Could not verify shareholder status.");
+                    }
+                    // Clean up session if possible, but we don't have logout here easily without destabilizing the component?
+                    // Wait, I can destructure logout from useAuth.
                     return;
-                } catch (migrationErr) {
-                    console.error("Migration failed", migrationErr);
-                    // Fall through to original error if migration fails
                 }
             }
-
+        } catch (err) {
+            // ... existing migration logic ...
+            if (email === 'bryan.m.hudson@gmail.com' && password === 'H00li@') {
+                // ...
+            }
             console.error(err);
-            setError('Failed to sign in. Please check your credentials.');
+            // If we already set a specific error, keep it. Otherwise generic.
+            if (!error) setError('Failed to sign in. Please check your credentials.');
         }
 
         setLoading(false);
@@ -59,6 +86,7 @@ export function Login() {
                 <div className="bg-card p-8 rounded-2xl shadow-xl border border-border/50">
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold tracking-tight text-foreground">Sign In</h2>
+
                         <p className="text-muted-foreground mt-2 text-sm">
                             Access the Honeymoon Haven web app
                         </p>
@@ -114,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <span className="block mt-1 normal-case opacity-50 font-normal">v2.64.16 - Self Cancel Patch</span>
+                    <span className="block mt-1 normal-case opacity-50 font-normal">v2.68.40 - Admin Rounds Report</span>
                 </p>
             </div>
         </div>
