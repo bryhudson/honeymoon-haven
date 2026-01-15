@@ -278,20 +278,25 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 createdAt: new Date() // Track when it was booked
             };
 
+            // Sanitize Payload
+            const payload = {
+                ...newBooking,
+                totalPrice: nights * 125, // Add calculated price for record keeping
+                guests: parseInt(formData.guests) || 1, // Ensure number
+                updatedAt: new Date()
+            };
+
+            // Remove undefined values
+            Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
             // 1. Save to Firebase
             try {
                 let effectiveId = initialBooking?.id || localBookingId;
 
                 if (effectiveId) {
-                    await updateDoc(doc(db, "bookings", effectiveId), {
-                        ...newBooking,
-                        createdAt: initialBooking?.createdAt || new Date()
-                    });
+                    await updateDoc(doc(db, "bookings", effectiveId), payload);
                 } else {
-                    const docRef = await addDoc(collection(db, "bookings"), {
-                        ...newBooking,
-                        createdAt: new Date()
-                    });
+                    const docRef = await addDoc(collection(db, "bookings"), payload);
                     effectiveId = docRef.id;
                     setLocalBookingId(docRef.id);
                 }
@@ -329,7 +334,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 setIsSuccess(true);
             } catch (error) {
                 console.error("Error saving booking: ", error);
-                safeAlert(onShowAlert, "Save Error", "We encountered an error while saving your booking. Please check your connection and try again.");
+                safeAlert(onShowAlert, "Save Error", `We encountered an error while saving your booking: ${error.message}`);
             } finally {
                 setIsSubmitting(false);
             }
