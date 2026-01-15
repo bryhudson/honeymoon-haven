@@ -22,17 +22,27 @@ export function StatusCard({ status, children }) {
 
                 <div className="mt-4 mb-6 relative">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-70">Current Turn</p>
-                    <p className="text-3xl md:text-5xl font-black text-primary tracking-tighter drop-shadow-sm flex items-center flex-wrap gap-3">
-                        {status.activePicker || "None"}
-                        {status.activePicker && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 border border-orange-100/50 ml-2">
-                                <Tent className="w-5 h-5 md:w-6 md:h-6 text-orange-600 fill-orange-600/20" />
-                                <span className="text-lg md:text-2xl font-bold text-orange-700">
-                                    {CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
-                                </span>
-                            </span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                        {status.activePicker ? (
+                            <div className="inline-flex items-center bg-white/50 border border-slate-200/60 rounded-xl shadow-sm overflow-hidden backdrop-blur-sm group hover:border-orange-200 transition-colors">
+                                {/* Cabin Section */}
+                                <div className="bg-orange-50/80 px-3 py-2 border-r border-orange-100/50 flex items-center gap-2 group-hover:bg-orange-100/50 transition-colors">
+                                    <Tent className="w-4 h-4 text-orange-600 fill-orange-600/20" />
+                                    <span className="font-bold text-orange-800 text-base">
+                                        #{CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
+                                    </span>
+                                </div>
+                                {/* Name Section */}
+                                <div className="px-4 py-2">
+                                    <span className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
+                                        {status.activePicker}
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="text-2xl font-bold text-muted-foreground">None</span>
                         )}
-                    </p>
+                    </div>
 
                     <div className="flex flex-wrap items-center gap-2 mt-3">
                         <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 uppercase tracking-wide border border-slate-200">
