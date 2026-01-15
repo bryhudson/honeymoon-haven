@@ -1,6 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Countdown } from './Countdown';
+import { Tent } from 'lucide-react';
 import { CABIN_OWNERS } from '../../lib/shareholders';
 
 export function StatusCard({ status, children }) {
@@ -21,11 +22,14 @@ export function StatusCard({ status, children }) {
 
                 <div className="mt-4 mb-6 relative">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-70">Current Turn</p>
-                    <p className="text-3xl md:text-5xl font-black text-primary tracking-tighter drop-shadow-sm">
+                    <p className="text-3xl md:text-5xl font-black text-primary tracking-tighter drop-shadow-sm flex items-center flex-wrap gap-3">
                         {status.activePicker || "None"}
                         {status.activePicker && (
-                            <span className="text-lg md:text-2xl font-medium text-muted-foreground ml-3 opacity-60">
-                                Cabin #{CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 border border-orange-100/50 ml-2">
+                                <Tent className="w-5 h-5 md:w-6 md:h-6 text-orange-600 fill-orange-600/20" />
+                                <span className="text-lg md:text-2xl font-bold text-orange-700">
+                                    {CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
+                                </span>
                             </span>
                         )}
                     </p>
