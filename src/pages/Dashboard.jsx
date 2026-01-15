@@ -654,14 +654,23 @@ export function Dashboard() {
                     <BookingDetailsModal
                         booking={viewingBooking}
                         onClose={() => setViewingBooking(null)}
-                        onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
-                        onPass={(!isSystemFrozen || isSuperAdmin) ? () => {
-                            setViewingBooking(null);
-                            setPassData({ name: status.activePicker });
-                            setIsPassing(true);
-                        } : undefined}
                         currentUser={loggedInShareholder}
                         isAdmin={isSuperAdmin}
+                        onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
+                        onPass={() => {
+                            setViewingBooking(null);
+                            setPassData({ name: viewingBooking.shareholderName });
+                            setIsPassing(true);
+                        }}
+                        onEdit={() => {
+                            setViewingBooking(null);
+                            setEditingBooking(viewingBooking);
+                            setIsBooking(true);
+                        }}
+                        onFinalize={() => {
+                            handleFinalize(viewingBooking.id, viewingBooking.shareholderName);
+                            setViewingBooking(null);
+                        }}
                     />
                 )
             }

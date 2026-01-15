@@ -1,7 +1,7 @@
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
 
-export function BookingDetailsModal({ booking, onClose, onCancel, onPass, currentUser, isAdmin }) {
+export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, currentUser, isAdmin }) {
     if (!booking) return null;
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
@@ -21,6 +21,10 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, curren
 
     // Pass: Only non-finalized (draft) bookings, requires onPass handler
     const canPass = !isFinalized && !isCancelled && onPass && (isAdmin || isOwner);
+
+    // Edit/Finalize: Drafts only
+    const canEdit = !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
+    const canFinalize = !isFinalized && !isCancelled && onFinalize && (isAdmin || isOwner);
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
@@ -147,12 +151,30 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, curren
 
                 <div className="p-4 bg-muted/10 border-t flex justify-between items-center">
                     {canPass ? (
-                        <button
-                            onClick={onPass}
-                            className="px-4 py-2 bg-muted text-foreground hover:bg-muted/80 rounded-lg text-sm font-bold transition-colors border shadow-sm"
-                        >
-                            Pass Turn
-                        </button>
+                        <div className="flex gap-2">
+                            {canFinalize && (
+                                <button
+                                    onClick={onFinalize}
+                                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg text-sm font-bold transition-colors shadow-sm animate-pulse"
+                                >
+                                    Finalize
+                                </button>
+                            )}
+                            {canEdit && (
+                                <button
+                                    onClick={onEdit}
+                                    className="px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-sm"
+                                >
+                                    Edit
+                                </button>
+                            )}
+                            <button
+                                onClick={onPass}
+                                className="px-4 py-2 bg-muted text-foreground hover:bg-muted/80 rounded-lg text-sm font-bold transition-colors border shadow-sm"
+                            >
+                                Pass Turn
+                            </button>
+                        </div>
                     ) : canCancel ? (
                         <button
                             onClick={onCancel}
