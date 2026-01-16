@@ -57,34 +57,34 @@ export function TrailerGuide() {
             <div className="flex border-b relative">
                 <button
                     onClick={() => setActiveTab('resort-rules')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'resort-rules'
+                    className={`flex-1 py-3 md:py-4 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 font-bold text-[10px] md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'resort-rules'
                         ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                         }`}
                 >
-                    <BookOpen className="w-4 h-4" />
-                    Guest Rules
+                    <BookOpen className="w-4 h-4 md:w-4 md:h-4" />
+                    <span className="text-center">Guest Rules</span>
                 </button>
                 <div className="w-px bg-slate-200"></div>
                 <button
                     onClick={() => setActiveTab('check-in')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-in'
+                    className={`flex-1 py-3 md:py-4 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 font-bold text-[10px] md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-in'
                         ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500'
                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                         }`}
                 >
-                    <LogIn className="w-4 h-4" />
+                    <LogIn className="w-4 h-4 md:w-4 md:h-4" />
                     Check In
                 </button>
                 <div className="w-px bg-slate-200"></div>
                 <button
                     onClick={() => setActiveTab('check-out')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-out'
+                    className={`flex-1 py-3 md:py-4 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 font-bold text-[10px] md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-out'
                         ? 'bg-rose-50 text-rose-700 border-b-2 border-rose-500'
                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                         }`}
                 >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 md:w-4 md:h-4" />
                     Check Out
                 </button>
 
