@@ -377,6 +377,56 @@ const emailTemplates = {
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
+  },
+
+  // 14. Guest Guide Email
+  guestGuide: (data) => {
+    const subject = `Welcome to Honeymoon Haven Resort - Guest Guide`;
+    const body = `
+      <p>Hi there,</p>
+      <p><strong>${data.shareholder_name}</strong> has shared the Honeymoon Haven Resort Guest Guide with you for your upcoming stay.</p>
+
+      <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
+        <h3 style="margin-top: 0; color: #1e293b;">📍 LOCATION</h3>
+        <p><strong>Honeymoon Haven Resort</strong><br>
+        10257 South Shore Road<br>
+        Honeymoon Bay, BC V0R 1Y0<br>
+        Canada</p>
+        <p><a href="https://goo.gl/maps/placeholder" style="color: #2563eb; text-decoration: none;">View on Google Maps</a></p>
+      </div>
+
+      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #bae6fd;">
+        <h3 style="margin-top: 0; color: #0369a1;">🔑 ACCESS CODES</h3>
+        <p style="font-size: 1.1em; margin-bottom: 5px;"><strong>Gate Code:</strong> <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px;">9816</span></p>
+        <p style="font-size: 1.1em;"><strong>Shed Code:</strong> <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px;">store</span></p>
+      </div>
+
+      <div style="margin: 20px 0;">
+        <h3 style="color: #334155;">📋 ESSENTIAL RULES</h3>
+        <ul style="padding-left: 20px; color: #475569;">
+            <li style="margin-bottom: 8px;"><strong>Hot Tub:</strong> Ages 5+ only. No food/drink. Always replace the lid.</li>
+            <li style="margin-bottom: 8px;"><strong>Waste:</strong> 1-ply toilet paper only (Septic Safe). NO WIPES. Sort recycling.</li>
+            <li style="margin-bottom: 8px;"><strong>Quiet Time:</strong> 11:00 PM — 8:00 AM.</li>
+            <li style="margin-bottom: 8px;"><strong>Safety:</strong> No lifeguards on duty. Life jackets recommended for kids on dock.</li>
+            <li style="margin-bottom: 8px;"><strong>Speed Limit:</strong> 10 km/h on property.</li>
+        </ul>
+      </div>
+
+      <div style="margin: 20px 0; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+        <h3 style="color: #334155;">🛍️ LOCAL ATTRACTIONS</h3>
+        
+        <p><strong>Honeymoon Bay Farmers Market</strong> (Saturdays)<br>
+        10055 S Shore Rd<br>
+        <a href="https://honeymoonbaymarket.com/" style="color: #2563eb;">Visit Website</a></p>
+
+        <p><strong>Honeymoon Bay Food & General Store</strong><br>
+        10056 S Shore Rd<br>
+        <a href="https://honeymoonbaystore.ca/" style="color: #2563eb;">Visit Website</a> | <a href="https://www.facebook.com/HoneymoonBay.Store/" style="color: #2563eb;">Facebook</a></p>
+      </div>
+
+      <p>We hope you enjoy your stay!</p>
+    `;
+    return { subject, htmlContent: wrapHtml(subject, body) };
   }
 };
 

@@ -144,46 +144,6 @@ async function getUserProfile(uid) {
     return doc.data() || {};
 }
 
-/**
- * 3. Callable: Send Guest Guide Email
- * Allows a shareholder to send the guide to a guest.
- */
-exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) => {
-    // 1. Auth Check
-    if (!request.auth) {
-        throw new HttpsError('unauthenticated', 'You must be logged in to send emails.');
-    }
-
-    const { guestEmail, guestName } = request.data;
-    if (!guestEmail) {
-        throw new HttpsError('invalid-argument', 'Guest email is required.');
-    }
-
-    // 2. Get Shareholder Name
-    const senderName = request.auth.token.name || "A HHR Shareholder";
-
-    logger.info(`Sending Guest Guide to ${guestEmail} from ${senderName}`);
-
-    // 3. Generate Content
-    const { subject, htmlContent } = emailTemplates.guestGuide({
-        shareholder_name: senderName,
-        guest_name: guestName || "Guest"
-    });
-
-    // 4. Send Email
-    try {
-        await sendGmail({
-            to: { name: guestName || "Guest", email: guestEmail },
-            subject: subject,
-            htmlContent: htmlContent
-        });
-        return { success: true, message: `Guest Guide sent to ${guestEmail}` };
-    } catch (error) {
-        logger.error("Failed to send Guest Guide:", error);
-        throw new HttpsError('internal', 'Failed to send email.');
-    }
-});
-
 function formatDate(dateString) {
     // Simple formatter, improve as needed
     return dateString;

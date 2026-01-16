@@ -17,16 +17,61 @@ import {
     Car,
     Moon,
     Wine,
-    Waves
+    Waves,
+    LogIn,
+    LogOut,
+    Send,
+    Loader2,
+    X,
+    Mail
 } from 'lucide-react';
+import { emailService } from '../../services/emailService';
 
 export function TrailerGuide() {
     const [activeTab, setActiveTab] = useState('check-in');
 
+    // Email Modal State
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [guestEmail, setGuestEmail] = useState('');
+    const [guestName, setGuestName] = useState('');
+    const [sending, setSending] = useState(false);
+    const [sentSuccess, setSentSuccess] = useState(false);
+
+    const handleSendEmail = async () => {
+        if (!guestEmail) return;
+        setSending(true);
+        try {
+            await emailService.sendGuestGuideEmail(guestEmail, guestName);
+            setSentSuccess(true);
+        } catch (error) {
+            console.error("Error sending email:", error);
+            alert("Failed to send email. Please try again.");
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border overflow-hidden relative">
             {/* Header / Tabs */}
-            <div className="flex border-b">
+            <div className="flex border-b relative">
+                {/* Floating Email Button (Desktop: Right, Mobile: Bottom or Icon?) */}
+                {/* Actually, let's put it on the right side of the tabs row if possible, or just as a tab? 
+                   Space is tight on mobile. Let's make it an absolute button on the far right 
+                   or a distinct action row. 
+                   Better: Put it inside the 'Resort Rules' content area or as a small icon button in the top right.
+                   Let's try absolute top-right of the container.
+                */}
+                <div className="absolute top-2 right-2 md:top-3 md:right-4 z-10">
+                    <button
+                        onClick={() => setIsEmailModalOpen(true)}
+                        className="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 p-2 md:px-3 md:py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 shadow-sm group"
+                        title="Email Guide to Guest"
+                    >
+                        <Send className="w-4 h-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                        <span className="hidden md:inline font-bold text-xs uppercase tracking-wider">Email Guest</span>
+                    </button>
+                </div>
                 <button
                     onClick={() => setActiveTab('check-in')}
                     className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-in'
@@ -310,6 +355,98 @@ export function TrailerGuide() {
                     </div>
                 )}
             </div>
+
+            {/* Email Guest Modal */}
+            {isEmailModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-blue-600" />
+                                Email Guest Guide
+                            </h3>
+                            <button
+                                onClick={() => setIsEmailModalOpen(false)}
+                                className="p-1 hover:bg-slate-200 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5 text-slate-500" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            {!sentSuccess ? (
+                                <>
+                                    <p className="text-sm text-slate-600">
+                                        Send the <strong>Resort Guest Guide</strong> (Rules, Codes, Location) directly to your guest.
+                                    </p>
+
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Guest Email</label>
+                                            <input
+                                                type="email"
+                                                placeholder="guest@example.com"
+                                                value={guestEmail}
+                                                onChange={(e) => setGuestEmail(e.target.value)}
+                                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Guest Name (Optional)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. John"
+                                                value={guestName}
+                                                onChange={(e) => setGuestName(e.target.value)}
+                                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={handleSendEmail}
+                                        disabled={!guestEmail || sending}
+                                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
+                                    >
+                                        {sending ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Sending...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send className="w-4 h-4" />
+                                                Send Email
+                                            </>
+                                        )}
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="text-center py-4 space-y-3 animate-in fade-in zoom-in">
+                                    <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <CheckCircle2 className="w-6 h-6" />
+                                    </div>
+                                    <h4 className="font-bold text-slate-900 text-lg">Email Sent!</h4>
+                                    <p className="text-sm text-slate-600">
+                                        The guide has been successfully sent to <strong>{guestEmail}</strong>.
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            setIsEmailModalOpen(false);
+                                            setSentSuccess(false);
+                                            setGuestEmail('');
+                                            setGuestName('');
+                                        }}
+                                        className="mt-4 px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors text-sm"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

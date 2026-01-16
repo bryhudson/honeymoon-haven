@@ -18,7 +18,7 @@ if (admin.apps.length === 0) {
 
 const { sendGmail, gmailSecrets } = require("./helpers/email");
 const { emailTemplates } = require("./helpers/emailTemplates");
-const { onBookingChangeTrigger, checkDailyReminders } = require("./triggers/emailTriggers");
+const { onBookingChangeTrigger, checkDailyReminders, sendGuestGuideEmail } = require("./triggers/emailTriggers");
 
 /**
  * Sends an email via Gmail SMTP.
@@ -84,6 +84,7 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 // Export triggers
 exports.onBookingChangeTrigger = onBookingChangeTrigger;
 exports.checkDailyReminders = checkDailyReminders;
+exports.sendGuestGuideEmail = sendGuestGuideEmail;
 
 /**
  * Admin: Update user password
@@ -125,7 +126,8 @@ exports.adminUpdatePassword = onCall(async (request) => {
     } catch (error) {
         logger.error("Failed to update/create password:", error);
         throw new HttpsError("internal", error.message || "Failed to process password update.");
-    }});
+    }
+});
 
 /**
  * Admin: Update shareholder email (Sync Auth)

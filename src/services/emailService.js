@@ -146,5 +146,20 @@ export const emailService = {
     sendPaymentReceived: async (recipient, data) => {
         const { subject, htmlContent } = emailTemplates.paymentReceived(data);
         return sendEmail({ to: recipient, subject, htmlContent });
+    },
+
+    /**
+     * Send Guest Guide Email
+     * Callable function directly invokable from frontend
+     */
+    sendGuestGuideEmail: async (guestEmail, guestName) => {
+        try {
+            const sendFn = httpsCallable(functions, 'sendGuestGuideEmail');
+            const result = await sendFn({ guestEmail, guestName });
+            return result.data;
+        } catch (error) {
+            console.error('Failed to send Guest Guide:', error);
+            throw error;
+        }
     }
 };
