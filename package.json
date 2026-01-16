@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.68.69",
+  "version": "2.68.75",
   "type": "module",
   "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "firebase deploy",
-    "release": "sh scripts/release.sh"
+    "release": "sh scripts/release.sh",
+    "auto-deploy": "sh scripts/auto_deploy.sh"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
