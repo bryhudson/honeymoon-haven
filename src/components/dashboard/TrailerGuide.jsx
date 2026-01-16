@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Droplets,
     Zap,
@@ -10,258 +10,199 @@ import {
     Trash2,
     Wind,
     Key,
+    ListChecks,
     LogOut,
-    LogIn,
-    Circle
+    LogIn
 } from 'lucide-react';
-
-const CHECK_IN_ITEMS = [
-    {
-        id: 'in-power',
-        icon: Zap,
-        color: 'blue',
-        title: 'Power & Water Heater',
-        content: (
-            <span>
-                Turn on the water heater switch in the bathroom to <strong>ELECTRIC</strong>.
-                <span className="block text-rose-600 font-bold mt-1 text-xs uppercase tracking-wide">⚠️ Do not use the GAS switch.</span>
-            </span>
-        )
-    },
-    {
-        id: 'in-fridge',
-        icon: ThermometerSnowflake,
-        color: 'cyan',
-        title: 'Refrigerator',
-        content: (
-            <span>
-                Check that the fridge is set to <strong>ELECTRIC</strong>.
-                <span className="block text-rose-600 font-bold mt-1 text-xs uppercase tracking-wide">⚠️ Do not use the GAS switch.</span>
-            </span>
-        )
-    },
-    {
-        id: 'in-tanks',
-        icon: Droplets,
-        color: 'purple',
-        title: 'Water Tanks (Grey & Black)',
-        content: (
-            <span className="space-y-1 block">
-                <span>Check levels on the monitor panel in the bathroom.</span>
-                <span className="block text-xs bg-slate-100 p-2 rounded border border-slate-200 mt-1">
-                    <strong>Every 48 Hours:</strong> Drain <strong>Black (Sewer)</strong> first, then <strong>Grey</strong>. Close valves after.
-                </span>
-            </span>
-        )
-    },
-    {
-        id: 'in-stove',
-        icon: Flame,
-        color: 'amber',
-        title: 'Stove & Oven',
-        content: 'Both can be lit using the push-button igniter or a match.'
-    },
-    {
-        id: 'in-issues',
-        icon: AlertCircle,
-        color: 'orange',
-        title: 'Report Issues',
-        content: 'Report any initial issues or empty propane tanks to a cabin owner immediately.'
-    }
-];
-
-const CHECK_OUT_ITEMS = [
-    {
-        id: 'out-off',
-        icon: LogOut,
-        color: 'slate',
-        title: 'Systems Off',
-        content: (
-            <ul className="list-disc list-inside space-y-0.5">
-                <li>Turn <strong>OFF</strong> Water Heater (Electric).</li>
-                <li>Ensure Furnace / AC is <strong>OFF</strong>.</li>
-                <li>Turn <strong>OFF</strong> lights & Retract awning.</li>
-            </ul>
-        )
-    },
-    {
-        id: 'out-drain',
-        icon: Droplets,
-        color: 'purple',
-        title: 'Final Tank Drain (Critical)',
-        content: (
-            <span>
-                <strong>1.</strong> Drain Black. <strong>2.</strong> Drain Grey. <strong>3.</strong> Close valves. <strong>4.</strong> Add septic cleaner & flush.
-            </span>
-        )
-    },
-    {
-        id: 'out-fridge',
-        icon: ThermometerSnowflake,
-        color: 'cyan',
-        title: 'Refrigerator',
-        content: (
-            <span>
-                Turn <strong>OFF</strong>. Clean & wipe out.
-                <span className="block text-rose-600 font-bold mt-1 text-xs uppercase tracking-wide">⚠️ Leave doors OPEN to prevent mold.</span>
-            </span>
-        )
-    },
-    {
-        id: 'out-clean',
-        icon: Trash2,
-        color: 'emerald',
-        title: 'Cleaning',
-        content: 'Clean floors, sinks, toilets. Fold sheets. Give used rags to cabin owner.'
-    },
-    {
-        id: 'out-vent',
-        icon: Wind,
-        color: 'sky',
-        title: 'Ventilation (Summer)',
-        content: 'Leave windows cracked and bathroom ceiling vent <strong>OPEN</strong>.'
-    },
-    {
-        id: 'out-lock',
-        icon: Key,
-        color: 'rose',
-        title: 'Lock Up',
-        content: 'Lock front & back doors. Return key to shed or cabin owner.'
-    }
-];
 
 export function TrailerGuide() {
     const [activeTab, setActiveTab] = useState('check-in');
-    const [checkedItems, setCheckedItems] = useState({});
-
-    // Load state from local storage on mount
-    useEffect(() => {
-        const saved = localStorage.getItem('hhr_trailer_checklist');
-        if (saved) {
-            try {
-                setCheckedItems(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse checklist state", e);
-            }
-        }
-    }, []);
-
-    const toggleItem = (id) => {
-        const newState = { ...checkedItems, [id]: !checkedItems[id] };
-        setCheckedItems(newState);
-        localStorage.setItem('hhr_trailer_checklist', JSON.stringify(newState));
-    };
-
-    const currentItems = activeTab === 'check-in' ? CHECK_IN_ITEMS : CHECK_OUT_ITEMS;
-    const completedCount = currentItems.filter(i => checkedItems[i.id]).length;
-    const totalCount = currentItems.length;
-    const progress = Math.round((completedCount / totalCount) * 100);
-
-    const isComplete = completedCount === totalCount;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
+        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             {/* Header / Tabs */}
             <div className="flex border-b">
                 <button
                     onClick={() => setActiveTab('check-in')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-sm md:text-base transition-colors relative ${activeTab === 'check-in'
-                        ? 'bg-emerald-50 text-emerald-700'
+                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-sm md:text-base transition-colors ${activeTab === 'check-in'
+                        ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500'
                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                         }`}
                 >
                     <LogIn className="w-5 h-5" />
                     CHECK IN
-                    {activeTab === 'check-in' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
-                    )}
                 </button>
                 <div className="w-px bg-slate-200"></div>
                 <button
                     onClick={() => setActiveTab('check-out')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-sm md:text-base transition-colors relative ${activeTab === 'check-out'
-                        ? 'bg-rose-50 text-rose-700'
+                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-sm md:text-base transition-colors ${activeTab === 'check-out'
+                        ? 'bg-rose-50 text-rose-700 border-b-2 border-rose-500'
                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                         }`}
                 >
                     <LogOut className="w-5 h-5" />
                     CHECK OUT
-                    {activeTab === 'check-out' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-rose-500" />
-                    )}
                 </button>
             </div>
 
-            {/* Progress Bar */}
-            <div className="bg-slate-100 h-2 w-full">
-                <div
-                    className={`h-full transition-all duration-500 ease-out ${activeTab === 'check-in' ? 'bg-emerald-500' : 'bg-rose-500'}`}
-                    style={{ width: `${progress}%` }}
-                />
-            </div>
-
-            <div className="px-4 py-2 bg-slate-50 border-b flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-500">
-                <span>Progress</span>
-                <span>{completedCount} / {totalCount} Completed</span>
-            </div>
-
-            {/* Checklist Items */}
-            <div className="p-4 md:p-6 space-y-3">
-                {currentItems.map((item) => {
-                    const isChecked = !!checkedItems[item.id];
-                    const Icon = item.icon;
-
-                    // Dynamic classes based on checked state
-                    const containerClass = isChecked
-                        ? `border-${activeTab === 'check-in' ? 'emerald' : 'rose'}-200 bg-${activeTab === 'check-in' ? 'emerald' : 'rose'}-50/50`
-                        : 'border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white';
-
-                    const iconBgClass = isChecked
-                        ? `bg-${activeTab === 'check-in' ? 'emerald' : 'rose'}-100 text-${activeTab === 'check-in' ? 'emerald' : 'rose'}-600`
-                        : `bg-${item.color}-100 text-${item.color}-600`;
-
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => toggleItem(item.id)}
-                            className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-start gap-4 group relative overflow-hidden ${containerClass}`}
-                        >
-                            <div className={`p-2 rounded-lg shrink-0 transition-colors ${iconBgClass}`}>
-                                <Icon className="w-5 h-5" />
+            <div className="p-4 md:p-8">
+                {activeTab === 'check-in' ? (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0 mt-1">
+                                <Zap className="w-5 h-5" />
                             </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Power & Water Heater</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    Turn on the water heater switch in the bathroom to <strong>ELECTRIC</strong>.
+                                    <span className="block text-rose-600 font-semibold mt-1 text-xs uppercase tracking-wide">⚠️ Do not use the GAS switch.</span>
+                                </p>
+                            </div>
+                        </div>
 
-                            <div className="flex-1 min-w-0">
-                                <h4 className={`font-bold text-base transition-colors ${isChecked ? 'text-slate-600 line-through decoration-slate-400' : 'text-slate-900'}`}>
-                                    {item.title}
-                                </h4>
-                                <div className={`text-sm mt-1 leading-relaxed transition-opacity ${isChecked ? 'opacity-50' : 'text-slate-600'}`}>
-                                    {item.content}
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-cyan-100 text-cyan-600 rounded-lg shrink-0 mt-1">
+                                <ThermometerSnowflake className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Refrigerator</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    Check that the fridge is set to <strong>ELECTRIC</strong>.
+                                    <span className="block text-rose-600 font-semibold mt-1 text-xs uppercase tracking-wide">⚠️ Do not use the GAS switch.</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-purple-100 text-purple-600 rounded-lg shrink-0 mt-1">
+                                <Droplets className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Water Tanks (Grey & Black)</h4>
+                                <div className="text-slate-600 text-sm mt-1 space-y-2 leading-relaxed">
+                                    <p>Check levels on the monitor panel in the bathroom. <span className="italic text-slate-400">(Note: Sensors may read half-full incorrectly).</span></p>
+                                    <p><strong>Every 48 Hours:</strong> Empty both tanks into the septic. Always drain <strong>Black (Sewer)</strong> first, followed by <strong>Grey (Sink/Bath)</strong>.</p>
+                                    <p className="font-medium text-slate-800">Close drain lines when finished to prevent smells.</p>
+                                    <p className="text-xs bg-slate-100 p-2 rounded border border-slate-200">
+                                        Note: Grey water fills fast! If tanks are full upon arrival, please notify a cabin owner.
+                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className={`mt-1 shrink-0 transition-all duration-300 ${isChecked
-                                ? `text-${activeTab === 'check-in' ? 'emerald' : 'rose'}-600 scale-110`
-                                : 'text-slate-300 group-hover:text-slate-400'}`}>
-                                {isChecked ? (
-                                    <CheckCircle2 className="w-6 h-6 fill-white" />
-                                ) : (
-                                    <Circle className="w-6 h-6" />
-                                )}
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg shrink-0 mt-1">
+                                <Flame className="w-5 h-5" />
                             </div>
-                        </button>
-                    );
-                })}
-            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Stove & Oven</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    Both can be lit using the push-button igniter or a match.
+                                </p>
+                            </div>
+                        </div>
 
-            {isComplete && (
-                <div className={`mx-4 mb-6 p-4 rounded-xl text-center animate-in zoom-in duration-300 ${activeTab === 'check-in'
-                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                        : 'bg-rose-100 text-rose-800 border border-rose-200'
-                    }`}>
-                    <p className="font-bold text-lg">🎉 All Set!</p>
-                    <p className="text-sm opacity-90">You have completed the {activeTab === 'check-in' ? 'Check-In' : 'Check-Out'} checklist.</p>
-                </div>
-            )}
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-orange-100 text-orange-600 rounded-lg shrink-0 mt-1">
+                                <AlertCircle className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Issues?</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    If propane tanks are empty (check front of trailer), consult your cabin owner for replacement/reimbursement.
+                                    <br />
+                                    Please report any initial issues immediately to a cabin owner.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0 mt-1">
+                                <LogOut className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Systems Off</h4>
+                                <ul className="text-slate-600 text-sm mt-1 space-y-1 list-disc list-inside">
+                                    <li>Turn <strong>OFF</strong> Water Heater switch (Electric).</li>
+                                    <li>Ensure Furnace / Air Conditioning is <strong>OFF</strong>.</li>
+                                    <li>Turn <strong>OFF</strong> all inside/outside lights.</li>
+                                    <li>Retract awning.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-purple-100 text-purple-600 rounded-lg shrink-0 mt-1">
+                                <Droplets className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Final Tank Drain (Critical)</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    <strong>1.</strong> Drain Black Water (Sewer).<br />
+                                    <strong>2.</strong> Drain Grey Water (Sink/Bath).<br />
+                                    <strong>3.</strong> Close valves.<br />
+                                    <strong>4.</strong> Add septic cleaner to toilet and flush once.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-cyan-100 text-cyan-600 rounded-lg shrink-0 mt-1">
+                                <ThermometerSnowflake className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Refrigerator</h4>
+                                <ul className="text-slate-600 text-sm mt-1 space-y-1">
+                                    <li>Turn <strong>OFF</strong> (unless new renter arrives tomorrow).</li>
+                                    <li>Clean and wipe out fridge & microwave.</li>
+                                    <li className="font-bold text-rose-600">⚠️ Leave fridge doors OPEN if turned off to prevent mold.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0 mt-1">
+                                <Trash2 className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Cleaning</h4>
+                                <ul className="text-slate-600 text-sm mt-1 space-y-1 list-disc list-inside">
+                                    <li>Clean floors, carpets, sinks, toilet counters.</li>
+                                    <li>Fold sheets and clean all surfaces.</li>
+                                    <li>Give used rags/towels to your cabin owner.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-sky-100 text-sky-600 rounded-lg shrink-0 mt-1">
+                                <Wind className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Ventilation (Summer)</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    Leave several windows cracked and ensure the bathroom ceiling vent is left <strong>open</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0 mt-1">
+                                <Key className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900">Lock Up</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                    Ensure front and back doors are locked. Return key to shed workbench or cabin owner.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
