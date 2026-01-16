@@ -9,7 +9,7 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
         <div className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold tracking-tight">Recent Bookings</h2>
             <div className="bg-card border rounded-lg shadow-sm overflow-hidden mb-8">
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
                             <tr>
@@ -75,6 +75,71 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Card Layout */}
+                <div className="md:hidden space-y-4 p-4 bg-slate-50/50">
+                    {bookingsForTable.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground bg-white rounded-lg border border-dashed">
+                            No bookings found.
+                        </div>
+                    ) : (
+                        bookingsForTable.map((booking, index) => {
+                            const canView = isAdmin || booking.shareholderName === currentShareholder;
+
+                            return (
+                                <div key={index} className="bg-white rounded-lg border shadow-sm p-4 flex flex-col gap-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className="font-bold text-slate-900 text-lg">
+                                                {booking.shareholderName || booking.partyName || "-"}
+                                            </div>
+                                            <div className="text-xs font-bold text-slate-500 mt-1">
+                                                Cabin {booking.cabinNumber || "-"}
+                                            </div>
+                                        </div>
+                                        {booking.type === 'cancelled' ? (
+                                            <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+                                                Cancelled
+                                            </span>
+                                        ) : booking.isFinalized ? (
+                                            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                Confirmed
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                                In Progress
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 text-sm border-t pt-3 mt-1 text-slate-600">
+                                        <div>
+                                            <span className="block text-xs font-semibold text-slate-400 uppercase">Dates</span>
+                                            {(booking.from && booking.to) ? (
+                                                <span className="font-medium text-slate-800">{format(booking.from, 'MMM d')} - {format(booking.to, 'MMM d')}</span>
+                                            ) : (
+                                                <span className="text-destructive">Invalid</span>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="block text-xs font-semibold text-slate-400 uppercase">Guests</span>
+                                            <span className="font-medium text-slate-800">{booking.guests || "-"}</span>
+                                        </div>
+                                    </div>
+
+                                    {canView && (
+                                        <button
+                                            onClick={() => onViewDetails(booking)}
+                                            className="w-full mt-1 inline-flex items-center justify-center text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 py-3 rounded-lg transition-all border border-blue-100"
+                                        >
+                                            View Details
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </div>
         </div>
