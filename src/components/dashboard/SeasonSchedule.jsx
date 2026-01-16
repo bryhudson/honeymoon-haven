@@ -22,7 +22,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                     </p>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
                             <tr>
@@ -41,20 +41,11 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                 return currentOrder.map((name, index) => {
                                     const owner = CABIN_OWNERS.find(o => o.name === name);
                                     const cabinNumber = owner ? owner.cabin : "-";
-
-                                    // Find R1 and R2 entries for this person
-                                    // Note: mapOrderToSchedule returns 24 items in order
-                                    // Round 1 is indices 0-11. Round 2 is 12-23 (reversed order).
-
-                                    // R1 entry is simply at index `index`
                                     const r1Entry = fullSchedule[index];
-
-                                    // R2 entry is at index `12 + (11 - index)`
                                     const r2Entry = fullSchedule[12 + (11 - index)];
-
                                     const isActive = name === status.activePicker;
 
-                                    // Helper to render cell
+                                    // Helper to render cell (REUSED)
                                     const renderCell = (entry, label) => {
                                         if (!entry) return <span className="text-gray-300">-</span>;
 
@@ -80,12 +71,11 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                             cellBg = "bg-red-50 text-red-400";
                                             badge = "Skipped";
                                         } else {
-                                            // Future
                                             cellBg = "text-muted-foreground";
                                         }
 
                                         return (
-                                            <div className={`px-3 py-2 rounded md:w-fit ${cellBg} `}>
+                                            <div className={`px-3 py-2 rounded w-fit ${cellBg} `}>
                                                 <div className="text-xs font-semibold uppercase tracking-wider mb-0.5 opacity-70">
                                                     {badge || label}
                                                 </div>
@@ -96,7 +86,6 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                         );
                                     };
 
-
                                     return (
                                         <tr key={name} className={`transition-colors border-l-4 ${isActive ? "bg-blue-50/50 border-l-blue-600 shadow-sm" : "hover:bg-muted/10 border-l-transparent"} `}>
                                             <td className="px-6 py-4 font-mono text-muted-foreground">
@@ -105,7 +94,6 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                             <td className="px-6 py-4 font-bold">{cabinNumber}</td>
                                             <td className="px-6 py-4 font-medium text-lg">
                                                 {name}
-                                                {/* Show simplified status badge next to name if needed */}
                                             </td>
                                             <td className="px-6 py-4">
                                                 {renderCell(r1Entry, "Round 1")}
@@ -119,6 +107,60 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                             })()}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4 p-4 bg-slate-50/50">
+                    {(() => {
+                        const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords, startDateOverride);
+                        return currentOrder.map((name, index) => {
+                            const owner = CABIN_OWNERS.find(o => o.name === name);
+                            const cabinNumber = owner ? owner.cabin : "-";
+                            const r1Entry = fullSchedule[index];
+                            const r2Entry = fullSchedule[12 + (11 - index)];
+                            const isActive = name === status.activePicker;
+
+                            // Inline helper to avoid duplication complexity in render loop
+                            const renderMobileStatus = (entry, roundLabel) => {
+                                if (!entry) return null;
+                                let statusColor = "text-slate-500";
+                                let statusText = "Pending";
+
+                                if (entry.status === 'COMPLETED') { statusColor = "text-green-600 font-medium"; statusText = "✓ Done"; }
+                                else if (entry.status === 'ACTIVE') { statusColor = "text-blue-600 font-bold"; statusText = "Active Now"; }
+                                else if (entry.status === 'GRACE_PERIOD') { statusColor = "text-amber-600 font-bold"; statusText = "Early Access"; }
+                                else if (entry.status === 'PASSED') { statusColor = "text-slate-400 line-through"; statusText = "Passed"; }
+
+                                return (
+                                    <div className="flex justify-between items-center py-2 border-b last:border-0 border-slate-100">
+                                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{roundLabel}</span>
+                                        <div className="text-right">
+                                            <div className={`text-xs ${statusColor}`}>{statusText}</div>
+                                            <div className="text-sm text-slate-700">{format(entry.start, 'MMM d, h:mm a')}</div>
+                                        </div>
+                                    </div>
+                                );
+                            };
+
+                            return (
+                                <div key={name} className={`bg-white rounded-lg border shadow-sm overflow-hidden ${isActive ? 'ring-2 ring-blue-500 border-transparent' : 'border-slate-200'}`}>
+                                    <div className={`px-4 py-3 flex justify-between items-center ${isActive ? 'bg-blue-50/50' : 'bg-slate-50/50 border-b border-slate-100'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-mono text-xs text-slate-400 font-bold">#{index + 1}</span>
+                                            <span className="font-bold text-slate-800">{name}</span>
+                                        </div>
+                                        <div className="text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded border">
+                                            Cabin {cabinNumber}
+                                        </div>
+                                    </div>
+                                    <div className="px-4 py-2">
+                                        {renderMobileStatus(r1Entry, "Round 1")}
+                                        {renderMobileStatus(r2Entry, "Round 2")}
+                                    </div>
+                                </div>
+                            );
+                        });
+                    })()}
                 </div>
             </div>
         </div>
