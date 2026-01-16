@@ -90,8 +90,10 @@ export function StatusCard({ status, children }) {
                     if (!targetDate || isNaN(new Date(targetDate))) return null;
 
                     return (
-                        <div className="text-center border-t md:border-t-0 pt-4 md:pt-0 md:border-l md:pl-8">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
+                        <div className="text-center border-t md:border-t-0 pt-4 md:pt-0 md:border-l md:pl-8 min-w-[200px]">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold mb-1">
+                                {label} {status.activePicker && <span className="text-blue-600 font-bold block md:inline md:ml-1">{status.activePicker}</span>}
+                            </p>
                             <p className="text-sm font-medium text-foreground mb-1">
                                 {(() => {
                                     const d = new Date(targetDate);
@@ -99,11 +101,6 @@ export function StatusCard({ status, children }) {
                                         return (
                                             <span className="flex flex-col items-center">
                                                 <span>{format(d, 'MMM d')}, Midnight</span>
-                                                {!isPreDraft && (
-                                                    <span className="text-[10px] text-muted-foreground font-normal lowercase italic">
-                                                        (next turn starts 10am)
-                                                    </span>
-                                                )}
                                             </span>
                                         );
                                     }
@@ -111,6 +108,14 @@ export function StatusCard({ status, children }) {
                                 })()}
                             </p>
                             <Countdown targetDate={targetDate} key={targetDate instanceof Date ? targetDate.getTime() : targetDate} />
+
+                            {status.nextPicker && !isPreDraft && (
+                                <div className="mt-3 pt-3 border-t border-slate-100 w-full">
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Up Next</p>
+                                    <p className="text-xs font-bold text-slate-700">{status.nextPicker}</p>
+                                    <p className="text-[10px] text-muted-foreground/60 italic lowercase">(starts 10am)</p>
+                                </div>
+                            )}
                         </div>
                     );
                 })()}
