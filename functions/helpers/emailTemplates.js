@@ -392,13 +392,7 @@ const emailTemplates = {
         10257 South Shore Road<br>
         Honeymoon Bay, BC V0R 1Y0<br>
         Canada</p>
-        <p><a href="https://goo.gl/maps/placeholder" style="color: #2563eb; text-decoration: none;">View on Google Maps</a></p>
-      </div>
-
-      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #bae6fd;">
-        <h3 style="margin-top: 0; color: #0369a1;">🔑 ACCESS CODES</h3>
-        <p style="font-size: 1.1em; margin-bottom: 5px;"><strong>Gate Code:</strong> <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px;">9816</span></p>
-        <p style="font-size: 1.1em;"><strong>Shed Code:</strong> <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px;">store</span></p>
+        <p><a href="https://www.google.com/maps/search/?api=1&query=Honeymoon+Haven+Resort+10257+South+Shore+Road+Honeymoon+Bay+BC+V0R+1Y0" style="color: #2563eb; text-decoration: none;">View on Google Maps</a></p>
       </div>
 
       <div style="margin: 20px 0;">
