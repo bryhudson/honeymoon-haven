@@ -156,7 +156,9 @@ export function AdminDashboard() {
             "You are about to override the simulation start date. This requires password verification.",
             async () => {
                 try {
-                    const date = new Date(`${simStartDate}T00:00:00`);
+                    const date = new Date(simStartDate);
+                    if (isNaN(date.getTime())) throw new Error("Invalid Date");
+
                     const batch = writeBatch(db);
                     const settingsRef = doc(db, "settings", "general");
                     batch.set(settingsRef, { draftStartDate: date }, { merge: true });
