@@ -517,7 +517,7 @@ export function Dashboard() {
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                                     </span>
-                                    Waiting for your turn...
+                                    Waiting for your turn, {loggedInShareholder}...
                                 </div>
                                 <p className="text-sm text-blue-700/80 leading-relaxed">
                                     It is currently <span className="font-bold text-blue-900">{status.activePicker}'s</span> turn.
@@ -737,7 +737,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.56 - UI Polish</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.57 - UI Polish</p>
 
 
             </div>
