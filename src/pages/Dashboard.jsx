@@ -472,7 +472,7 @@ export function Dashboard() {
     };
 
     return (
-        <div className="flex flex-col gap-8 py-6 md:py-10 container mx-auto px-4 relative">
+        <div className="flex flex-col gap-5 py-4 md:py-6 container mx-auto px-4 relative">
             {/* Tour Guide */}
             <OnboardingTour currentUser={currentUser} />
 
@@ -735,7 +735,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.63 - UI Polish</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.64 - UI Polish</p>
 
 
             </div>
