@@ -22,19 +22,19 @@ export function StatusCard({ status, children }) {
 
                 <div className="mt-4 mb-6 relative">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-70">Current Turn</p>
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap w-full">
                         {status.activePicker ? (
-                            <div className="inline-flex items-center bg-white/50 border border-slate-200/60 rounded-xl shadow-sm overflow-hidden backdrop-blur-sm group hover:border-orange-200 transition-colors">
+                            <div className="flex w-full items-center bg-white/50 border border-slate-200/60 rounded-xl shadow-sm overflow-hidden backdrop-blur-sm group hover:border-orange-200 transition-colors">
                                 {/* Cabin Section */}
-                                <div className="bg-orange-50/80 px-3 py-2 border-r border-orange-100/50 flex items-center gap-2 group-hover:bg-orange-100/50 transition-colors">
-                                    <Tent className="w-4 h-4 text-orange-600 fill-orange-600/20" />
-                                    <span className="font-bold text-orange-800 text-base">
+                                <div className="bg-orange-50/80 px-4 py-3 border-r border-orange-100/50 flex items-center justify-center gap-2 group-hover:bg-orange-100/50 transition-colors">
+                                    <Tent className="w-5 h-5 text-orange-600 fill-orange-600/20" />
+                                    <span className="font-bold text-orange-800 text-lg">
                                         #{CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
                                     </span>
                                 </div>
                                 {/* Name Section */}
-                                <div className="px-4 py-2">
-                                    <span className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
+                                <div className="px-4 py-2 flex-1">
+                                    <span className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight block truncate">
                                         {status.activePicker}
                                     </span>
                                 </div>
