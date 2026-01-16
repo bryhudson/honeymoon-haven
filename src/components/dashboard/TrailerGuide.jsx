@@ -28,7 +28,7 @@ import {
 import { emailService } from '../../services/emailService';
 
 export function TrailerGuide() {
-    const [activeTab, setActiveTab] = useState('check-in');
+    const [activeTab, setActiveTab] = useState('resort-rules');
 
     // Email Modal State
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -55,34 +55,6 @@ export function TrailerGuide() {
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden relative">
             {/* Header / Tabs */}
             <div className="flex border-b relative">
-                {/* Floating Email Button (Desktop: Right, Mobile: Bottom or Icon?) */}
-                {/* Actually, let's put it on the right side of the tabs row if possible, or just as a tab? 
-                   Space is tight on mobile. Let's make it an absolute button on the far right 
-                   or a distinct action row. 
-                   Better: Put it inside the 'Resort Rules' content area or as a small icon button in the top right.
-                   Let's try absolute top-right of the container.
-                */}
-                <div className="absolute top-2 right-2 md:top-3 md:right-4 z-10">
-                    <button
-                        onClick={() => setIsEmailModalOpen(true)}
-                        className="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 p-2 md:px-3 md:py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 shadow-sm group"
-                        title="Email Guide to Guest"
-                    >
-                        <Send className="w-4 h-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
-                        <span className="hidden md:inline font-bold text-xs uppercase tracking-wider">Email Guest</span>
-                    </button>
-                </div>
-                <button
-                    onClick={() => setActiveTab('check-in')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-in'
-                        ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500'
-                        : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                        }`}
-                >
-                    <LogIn className="w-4 h-4" />
-                    Check In
-                </button>
-                <div className="w-px bg-slate-200"></div>
                 <button
                     onClick={() => setActiveTab('resort-rules')}
                     className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'resort-rules'
@@ -95,6 +67,17 @@ export function TrailerGuide() {
                 </button>
                 <div className="w-px bg-slate-200"></div>
                 <button
+                    onClick={() => setActiveTab('check-in')}
+                    className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-in'
+                        ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500'
+                        : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        }`}
+                >
+                    <LogIn className="w-4 h-4" />
+                    Check In
+                </button>
+                <div className="w-px bg-slate-200"></div>
+                <button
                     onClick={() => setActiveTab('check-out')}
                     className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold text-xs md:text-sm uppercase tracking-wider transition-colors ${activeTab === 'check-out'
                         ? 'bg-rose-50 text-rose-700 border-b-2 border-rose-500'
@@ -104,6 +87,18 @@ export function TrailerGuide() {
                     <LogOut className="w-4 h-4" />
                     Check Out
                 </button>
+
+                {/* Email Guest Button - Integrated into layout */}
+                <div className="flex items-center px-2 md:px-4 bg-slate-50 border-l border-slate-200">
+                    <button
+                        onClick={() => setIsEmailModalOpen(true)}
+                        className="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 p-2 md:px-3 md:py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 shadow-sm group whitespace-nowrap"
+                        title="Email Guide to Guest"
+                    >
+                        <Send className="w-4 h-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                        <span className="hidden md:inline font-bold text-xs uppercase tracking-wider">Email Guest</span>
+                    </button>
+                </div>
             </div>
 
             <div className="p-4 md:p-8">
