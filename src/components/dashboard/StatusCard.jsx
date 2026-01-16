@@ -5,120 +5,121 @@ import { Tent } from 'lucide-react';
 import { CABIN_OWNERS } from '../../lib/shareholders';
 
 export function StatusCard({ status, children }) {
+    const isPreDraft = status.phase === 'PRE_DRAFT';
+    const targetDate = isPreDraft ? status.draftStart : status.windowEnds;
+    const label = isPreDraft ? "Draft Starts" : "Time Remaining";
+
     return (
-        <div className={`bg-card p-4 md:p-6 rounded-xl shadow-md border-l-4 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-500 ${status.isGracePeriod ? 'border-l-amber-400 bg-amber-50/10' : 'border-l-primary'}`}>
-            <div className="flex-1 w-full relative">
-                <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        📅 Current Booking Status
-                    </h2>
-                    {status.activePicker && (
-                        <span className="flex h-3 w-3 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200/60 overflow-hidden transition-all duration-300">
+            {/* Header: Badges & System Status */}
+            <div className="bg-slate-50/50 px-4 py-3 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
+                <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 border border-slate-200">
+                        <span className={`h-2 w-2 rounded-full ${status.activePicker ? 'bg-green-500' : 'bg-slate-400'}`}></span>
+                        {status.phase === 'PRE_DRAFT' ? 'Pending' : status.phase?.replace('_', ' ')}
+                    </span>
+                    {status.isSeasonStart && (
+                        <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700 border border-blue-200">
+                            🚀 Season Start
                         </span>
                     )}
                 </div>
-
-                <div className="mt-4 mb-6 relative">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-70">Current Turn</p>
-                    <div className="flex items-center gap-3 flex-wrap w-full">
-                        {status.activePicker ? (
-                            <div className="flex w-full items-center bg-white/50 border border-slate-200/60 rounded-xl shadow-sm overflow-hidden backdrop-blur-sm group hover:border-orange-200 transition-colors">
-                                {/* Cabin Section */}
-                                <div className="bg-orange-50/80 px-4 py-3 border-r border-orange-100/50 flex items-center justify-center gap-2 group-hover:bg-orange-100/50 transition-colors">
-                                    <Tent className="w-5 h-5 text-orange-600 fill-orange-600/20" />
-                                    <span className="font-bold text-orange-800 text-lg">
-                                        #{CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
-                                    </span>
-                                </div>
-                                {/* Name Section */}
-                                <div className="px-4 py-2 flex-1">
-                                    <span className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight block truncate">
-                                        {status.activePicker}
-                                    </span>
-                                </div>
-                            </div>
-                        ) : (
-                            <span className="text-2xl font-bold text-muted-foreground">None</span>
-                        )}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 mt-3">
-                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 uppercase tracking-wide border border-slate-200">
-                            Phase: {status.phase === 'PRE_DRAFT' ? 'Pending' : status.phase?.replace('_', ' ')}
-                        </span>
-
-                        {status.isGracePeriod && status.officialStart && !status.isSeasonStart && (
-                            <span className="inline-flex items-center rounded-md bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700 border border-amber-200 uppercase tracking-wide animate-in fade-in zoom-in duration-500">
-                                ✨ Early Access
-                            </span>
-                        )}
-                        {status.isSeasonStart && (
-                            <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700 border border-blue-200 uppercase tracking-wide animate-in fade-in zoom-in duration-500">
-                                🚀 Season Start
-                            </span>
-                        )}
-                    </div>
-
-                    {status.isGracePeriod && status.officialStart && (
-                        <p className={`text-[11px] font-bold mt-2 flex items-center gap-1.5 p-2 rounded-lg border w-fit ${status.isSeasonStart ? 'bg-blue-50/50 border-blue-100/50 text-blue-700' : 'bg-amber-50/50 border-amber-100/50 text-amber-700'}`}>
-                            <span>🕒</span>
-                            {status.isSeasonStart ? (
-                                <>Trailer Bookings for {status.officialStart.getFullYear()} Starts <strong>{format(status.officialStart, 'MMM d, h:mm a')}</strong></>
-                            ) : (
-                                <>Official 48-hour window starts <strong>{format(status.officialStart, 'MMM d, h:mm a')}</strong></>
-                            )}
-                        </p>
-                    )}
-                </div>
-
-                {/* Action Buttons Zone */}
-                {children && (
-                    <div className="flex gap-3 mt-4">
-                        {children}
+                {status.officialStart && (
+                    <div className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
+                        <span>🕒</span>
+                        {status.isSeasonStart ? 'Season Starts' : 'Window Starts'}: <span className="text-slate-700 font-bold">{format(status.officialStart, 'MMM d, h:mm a')}</span>
                     </div>
                 )}
             </div>
 
-            <div className="flex items-center gap-8 bg-muted/30 p-4 rounded-lg w-full md:w-auto justify-center md:justify-start">
-                {(() => {
-                    const isPreDraft = status.phase === 'PRE_DRAFT';
-                    const targetDate = isPreDraft ? status.draftStart : status.windowEnds;
-                    const label = isPreDraft ? "Draft Starts" : "Time Remaining";
+            {/* Hero Content: Active Turn & Timer */}
+            <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-8 relative">
+                {/* Active Player (Left) */}
+                <div className="flex-1 w-full md:w-auto relative z-10">
+                    <div className="mb-2 flex items-center gap-2">
+                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            Current Turn
+                        </h2>
+                        {status.activePicker && (
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                            </span>
+                        )}
+                    </div>
 
-                    if (!targetDate || isNaN(new Date(targetDate))) return null;
-
-                    return (
-                        <div className="text-center border-t md:border-t-0 pt-4 md:pt-0 md:border-l md:pl-8 min-w-[200px]">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold mb-1">
-                                {label} {status.activePicker && <span className="text-blue-600 font-bold block md:inline md:ml-1">{status.activePicker}</span>}
-                            </p>
-                            <p className="text-sm font-medium text-foreground mb-1">
-                                {(() => {
-                                    const d = new Date(targetDate);
-                                    if (d.getHours() === 0 && d.getMinutes() === 0) {
-                                        return (
-                                            <span className="flex flex-col items-center">
-                                                <span>{format(d, 'MMM d')}, Midnight</span>
-                                            </span>
-                                        );
-                                    }
-                                    return format(d, 'MMM d, h:mm a');
-                                })()}
-                            </p>
-                            <Countdown targetDate={targetDate} key={targetDate instanceof Date ? targetDate.getTime() : targetDate} />
-
-                            {status.nextPicker && !isPreDraft && (
-                                <div className="mt-3 pt-3 border-t border-slate-100 w-full">
-                                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Up Next</p>
-                                    <p className="text-xs font-bold text-slate-700">{status.nextPicker}</p>
-                                    <p className="text-[10px] text-muted-foreground/60 italic lowercase">(starts 10am)</p>
+                    {status.activePicker ? (
+                        <div className="flex items-center gap-4">
+                            <div className="hidden md:flex flex-col items-center justify-center h-14 w-14 rounded-2xl bg-orange-50 border border-orange-100 text-orange-700 shadow-sm">
+                                <Tent className="w-6 h-6 mb-0.5" />
+                                <span className="text-xs font-bold">#{CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}</span>
+                            </div>
+                            <div>
+                                <h1 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tight leading-tight">
+                                    {status.activePicker}
+                                </h1>
+                                <div className="md:hidden inline-flex items-center gap-1 mt-1 text-xs font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
+                                    <Tent className="w-3 h-3" />
+                                    Cabin #{CABIN_OWNERS.find(o => o.name === status.activePicker)?.cabin || "?"}
                                 </div>
-                            )}
+                            </div>
                         </div>
-                    );
-                })()}
+                    ) : (
+                        <div className="text-2xl md:text-3xl font-bold text-slate-300 italic">
+                            Waiting for start...
+                        </div>
+                    )}
+                </div>
+
+                {/* Divider (Mobile only) */}
+                <div className="w-full h-px bg-slate-100 md:hidden"></div>
+
+                {/* Timer (Right) */}
+                {targetDate && !isNaN(new Date(targetDate)) && (
+                    <div className="flex-shrink-0 text-center md:text-right bg-slate-50/80 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none w-full md:w-auto border md:border-0 border-slate-100 shadow-sm md:shadow-none">
+                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            {label}
+                        </div>
+                        <div className="font-variant-numeric tabular-nums text-slate-900">
+                            {(() => {
+                                const d = new Date(targetDate);
+                                if (d.getHours() === 0 && d.getMinutes() === 0) {
+                                    return (
+                                        <div className="flex flex-col md:items-end">
+                                            <span className="text-sm font-bold text-slate-600 mb-1">{format(d, 'MMM d')}, Midnight</span>
+                                        </div>
+                                    );
+                                }
+                                return <div className="text-sm font-bold text-slate-600 mb-1">{format(d, 'MMM d, h:mm a')}</div>;
+                            })()}
+                            <Countdown targetDate={targetDate} key={targetDate instanceof Date ? targetDate.getTime() : targetDate} />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Footer: Up Next & Actions */}
+            <div className="bg-slate-50 border-t border-slate-100 p-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+
+                {/* Up Next Helper */}
+                <div className="flex items-center gap-2 text-slate-500 w-full md:w-auto justify-center md:justify-start">
+                    {status.nextPicker && !isPreDraft ? (
+                        <>
+                            <span className="font-semibold text-slate-400 uppercase text-[10px] tracking-wider">Up Next:</span>
+                            <span className="font-bold text-slate-700">{status.nextPicker}</span>
+                            <span className="text-[10px] text-slate-400 italic">(starts 10am)</span>
+                        </>
+                    ) : (
+                        <span className="text-slate-400 italic text-xs">No upcoming turns scheduled</span>
+                    )}
+                </div>
+
+                {/* Actions */}
+                {children && (
+                    <div className="flex gap-2 w-full md:w-auto">
+                        {children}
+                    </div>
+                )}
             </div>
         </div>
     );
