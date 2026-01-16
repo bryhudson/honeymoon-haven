@@ -93,7 +93,22 @@ export function StatusCard({ status, children }) {
                         <div className="text-center border-t md:border-t-0 pt-4 md:pt-0 md:border-l md:pl-8">
                             <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
                             <p className="text-sm font-medium text-foreground mb-1">
-                                {format(targetDate, 'MMM d, h:mm a')}
+                                {(() => {
+                                    const d = new Date(targetDate);
+                                    if (d.getHours() === 0 && d.getMinutes() === 0) {
+                                        return (
+                                            <span className="flex flex-col items-center">
+                                                <span>{format(d, 'MMM d')}, Midnight</span>
+                                                {!isPreDraft && (
+                                                    <span className="text-[10px] text-muted-foreground font-normal lowercase italic">
+                                                        (next turn starts 10am)
+                                                    </span>
+                                                )}
+                                            </span>
+                                        );
+                                    }
+                                    return format(d, 'MMM d, h:mm a');
+                                })()}
                             </p>
                             <Countdown targetDate={targetDate} key={targetDate instanceof Date ? targetDate.getTime() : targetDate} />
                         </div>
