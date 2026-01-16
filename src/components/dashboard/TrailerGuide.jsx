@@ -352,7 +352,10 @@ export function TrailerGuide() {
                             {!sentSuccess ? (
                                 <>
                                     <p className="text-sm text-slate-600">
-                                        Send the <strong>Resort Guest Guide</strong> (Rules, Codes, Location) directly to your guest.
+                                        Send the <strong>Resort Guest Guide</strong> (Rules, Location) directly to your guest.
+                                        <span className="block mt-1 text-slate-500 text-xs font-semibold">
+                                            Note: Financial/Payment details are NOT included.
+                                        </span>
                                     </p>
 
                                     <div className="space-y-3">

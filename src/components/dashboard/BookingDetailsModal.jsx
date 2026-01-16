@@ -224,6 +224,9 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                 <p className="text-sm text-slate-600">
                                     Send the <strong>Trailer Checklist & Guest Rules</strong> directly to your guest.
                                     The email will appear to come from <strong>{currentUser}</strong>.
+                                    <span className="block mt-1 text-slate-500 text-xs font-semibold">
+                                        Note: Financial/Payment details are NOT included.
+                                    </span>
                                 </p>
 
                                 <div className="space-y-2">
