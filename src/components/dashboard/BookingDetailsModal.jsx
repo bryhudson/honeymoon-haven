@@ -198,82 +198,98 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                     )}
                 </div>
 
-                {/* Email Form Overlay */}
+                {/* Email Form Modal (Overlay on top of Booking Modal) */}
                 {showEmailForm && (
-                    <div className="absolute inset-0 bg-white z-20 flex flex-col animate-in slide-in-from-bottom-5 duration-300">
-                        <div className="p-4 border-b flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold flex items-center gap-2">
-                                <Mail className="w-5 h-5 text-blue-600" />
-                                Email Guest Guide
-                            </h3>
-                            <button onClick={() => setShowEmailForm(false)} className="p-1 hover:bg-slate-200 rounded-full">
-                                <X className="w-5 h-5 text-slate-500" />
-                            </button>
-                        </div>
-
-                        {sentSuccess ? (
-                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2">
-                                    <CheckCircle2 className="w-8 h-8" />
-                                </div>
-                                <h4 className="text-xl font-bold text-slate-900">Email Sent!</h4>
-                                <p className="text-slate-600">The guest guide has been sent successfully.</p>
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-in fade-in duration-300">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+                            <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
+                                <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                    <Mail className="w-4 h-4 text-blue-600" />
+                                    Email Guest Guide
+                                </h3>
+                                <button
+                                    onClick={() => setShowEmailForm(false)}
+                                    className="p-1 hover:bg-slate-200 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-slate-500" />
+                                </button>
                             </div>
-                        ) : (
-                            <form onSubmit={handleSendEmail} className="p-6 flex-1 flex flex-col gap-4">
-                                <p className="text-sm text-slate-600">
-                                    Send the <strong>Trailer Checklist & Guest Rules</strong> directly to your guest.
-                                    The email will appear to come from <strong>{currentUser}</strong>.
-                                    <span className="block mt-1 text-slate-500 text-xs font-semibold">
-                                        Note: Financial/Payment details are NOT included.
-                                    </span>
-                                </p>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase text-slate-500">Guest Name</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-                                        placeholder="e.g. John Doe"
-                                        value={guestName}
-                                        onChange={e => setGuestName(e.target.value)}
-                                    />
-                                </div>
+                            <div className="p-6 space-y-4">
+                                {!sentSuccess ? (
+                                    <>
+                                        <p className="text-sm text-slate-600">
+                                            Send the <strong>Trailer Checklist & Guest Rules</strong> directly to your guest.
+                                            The email will appear to come from <strong>{currentUser}</strong>.
+                                            <span className="block mt-1 text-slate-500 text-xs font-semibold">
+                                                Note: Financial/Payment details are NOT included.
+                                            </span>
+                                        </p>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase text-slate-500">Guest Email</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-                                        placeholder="guest@example.com"
-                                        value={guestEmail}
-                                        onChange={e => setGuestEmail(e.target.value)}
-                                    />
-                                </div>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Guest Email</label>
+                                                <input
+                                                    type="email"
+                                                    placeholder="guest@example.com"
+                                                    value={guestEmail}
+                                                    onChange={(e) => setGuestEmail(e.target.value)}
+                                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Guest Name (Optional)</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. John"
+                                                    value={guestName}
+                                                    onChange={(e) => setGuestName(e.target.value)}
+                                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                        </div>
 
-                                <div className="mt-auto pt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={sending}
-                                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
-                                    >
-                                        {sending ? (
-                                            <>
-                                                <Loader2 className="w-5 h-5 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="w-4 h-4" />
-                                                Send Email
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        )}
+                                        <button
+                                            onClick={handleSendEmail}
+                                            disabled={!guestEmail || sending}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
+                                        >
+                                            {sending ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Sending...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Send className="w-4 h-4" />
+                                                    Send Email
+                                                </>
+                                            )}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-4 space-y-3 animate-in fade-in zoom-in">
+                                        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <CheckCircle2 className="w-6 h-6" />
+                                        </div>
+                                        <h4 className="font-bold text-slate-900 text-lg">Email Sent!</h4>
+                                        <p className="text-sm text-slate-600">
+                                            The guide has been successfully sent to <strong>{guestEmail}</strong>.
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                setShowEmailForm(false);
+                                                setSentSuccess(false);
+                                                setGuestEmail('');
+                                            }}
+                                            className="mt-4 px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors text-sm"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
 
