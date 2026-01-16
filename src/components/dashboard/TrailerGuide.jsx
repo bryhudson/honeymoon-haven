@@ -6,7 +6,7 @@ import {
     Flame,
     AlertCircle,
     CheckCircle2,
-    DoorOpen,
+
     Trash2,
     Wind,
     Key,
@@ -177,27 +177,7 @@ export function TrailerGuide() {
 
                 {activeTab === 'resort-rules' && (
                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                        {/* Access Codes */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
-                                <div className="p-2 bg-white border border-slate-100 shadow-sm rounded-lg">
-                                    <Key className="w-5 h-5 text-slate-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gate Code</p>
-                                    <p className="text-lg font-black text-slate-900 tracking-widest font-mono">9816</p>
-                                </div>
-                            </div>
-                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
-                                <div className="p-2 bg-white border border-slate-100 shadow-sm rounded-lg">
-                                    <DoorOpen className="w-5 h-5 text-slate-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Shed Code</p>
-                                    <p className="text-lg font-black text-slate-900 tracking-widest font-mono">store</p>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {/* Rules Grid */}
                         <div className="grid md:grid-cols-2 gap-6">
