@@ -18,11 +18,6 @@ export function StatusCard({ status, children }) {
                         <span className={`h-2 w-2 rounded-full ${status.activePicker ? 'bg-green-500' : 'bg-slate-400'}`}></span>
                         {status.phase === 'PRE_DRAFT' ? 'Pending' : status.phase?.replace('_', ' ')}
                     </span>
-                    {status.isSeasonStart && (
-                        <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700 border border-blue-200">
-                            🚀 Season Start
-                        </span>
-                    )}
                 </div>
                 {status.officialStart && (
                     <div className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
@@ -41,9 +36,9 @@ export function StatusCard({ status, children }) {
                             Current Turn
                         </h2>
                         {status.activePicker && (
-                            <span className="relative flex h-2 w-2">
+                            <span className="relative flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                             </span>
                         )}
                     </div>
