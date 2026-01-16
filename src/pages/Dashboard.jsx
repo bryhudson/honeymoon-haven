@@ -573,7 +573,7 @@ export function Dashboard() {
 
             <div id="tour-guide" className="mt-8">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    🚐 Travel Trailer Guide
+                    🚐 Travel Trailer Checklist
                 </h3>
                 <TrailerGuide />
             </div>
@@ -727,7 +727,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.49 - Trailer Guide</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.50 - Checklist Mode</p>
 
 
             </div>
