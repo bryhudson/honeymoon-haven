@@ -1,3 +1,4 @@
+import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
@@ -734,7 +735,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.61 - UI Polish</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.62 - Hotfix</p>
 
 
             </div>
