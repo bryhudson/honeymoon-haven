@@ -93,6 +93,22 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     const round2Order = [...shareholders].reverse();
     const fullTurnOrder = [...round1Order, ...round2Order];
 
+    // If we are before the start date and no bookings exist, it is PRE_DRAFT.
+    // We enforce a hard start for the first person.
+    if (bookings.length === 0 && now < DRAFT_START) {
+        return {
+            phase: 'PRE_DRAFT',
+            activePicker: null,
+            nextPicker: fullTurnOrder[0], // First person is up next
+            windowEnds: null,
+            draftStart: DRAFT_START,
+            isGracePeriod: false,
+            isSeasonStart: false,
+            officialStart: DRAFT_START,
+            debugPhase: 'PRE_DRAFT_HARD_LOCK'
+        };
+    }
+
     let currentWindowStart = new Date(DRAFT_START);
     let activePicker = null;
     let nextPicker = null;
