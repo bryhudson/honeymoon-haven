@@ -126,15 +126,15 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                     <span className="font-medium">${totalCost.toLocaleString()}</span>
                                 </div>
 
-                                <div className="flex justify-between items-center p-3 bg-slate-900 text-white rounded-xl shadow-sm">
-                                    <span className="font-bold text-sm">Amount Due</span>
+                                <div className="flex justify-between items-center p-3 bg-slate-100/50 text-slate-700 border border-slate-200 rounded-xl shadow-sm">
+                                    <span className="font-bold text-sm text-slate-500 uppercase tracking-wider">Amount Due</span>
                                     <div className="flex items-center gap-2">
                                         {booking.isPaid && (
                                             <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-green-500 text-white uppercase tracking-widest">
                                                 PAID
                                             </span>
                                         )}
-                                        <span className="text-lg font-bold">${totalCost.toLocaleString()}</span>
+                                        <span className="text-xl font-bold text-slate-900">${totalCost.toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>
