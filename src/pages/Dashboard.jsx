@@ -518,8 +518,49 @@ export function Dashboard() {
                                     Hi, {loggedInShareholder}
                                 </div>
                                 <p className="text-sm text-blue-700/80 leading-relaxed ml-7">
-                                    It is currently <span className="font-bold text-blue-900">{status.activePicker}'s</span> turn.
-                                    We will send you an email notification as soon as it is your turn to pick.
+                                    {(() => {
+                                        // 1. Determine Current Round Target
+                                        let roundTarget = 1;
+                                        if (status.phase === 'ROUND_2') roundTarget = 2;
+                                        if (status.phase === 'OPEN_SEASON') roundTarget = 99;
+
+                                        // 2. Count My Actions (Bookings or Passes)
+                                        const myActions = allDraftRecords.filter(b =>
+                                            b.shareholderName === loggedInShareholder &&
+                                            (b.isFinalized || b.type === 'pass') &&
+                                            b.type !== 'cancelled'
+                                        );
+
+                                        const myCount = myActions.length;
+                                        const lastAction = myActions[myActions.length - 1];
+                                        const isDoneForRound = myCount >= roundTarget;
+
+                                        // 3. Render Message
+                                        if (isDoneForRound) {
+                                            if (lastAction?.type === 'pass') {
+                                                return (
+                                                    <span>
+                                                        You have <span className="font-bold text-amber-600">passed</span> your turn for this round.
+                                                        Sit tight!
+                                                    </span>
+                                                );
+                                            }
+                                            return (
+                                                <span>
+                                                    You have <span className="font-bold text-green-600">confirmed</span> your booking for this round.
+                                                    Relax and enjoy!
+                                                </span>
+                                            );
+                                        }
+
+                                        // Default: Waiting
+                                        return (
+                                            <span>
+                                                It is currently <span className="font-bold text-blue-900">{status.activePicker}'s</span> turn.
+                                                We will send you an email notification as soon as it is your turn to pick.
+                                            </span>
+                                        );
+                                    })()}
                                 </p>
                             </div>
                         ) : activeUserDraft ? (
@@ -735,7 +776,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.76 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.77 - Guest Rules UI</p>
 
 
             </div>
