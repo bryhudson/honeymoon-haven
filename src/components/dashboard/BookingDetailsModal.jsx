@@ -1,5 +1,7 @@
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
+import { Send, Loader2, Mail, CheckCircle2, X } from 'lucide-react';
+import { emailService } from '../../services/emailService';
 
 export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, currentUser, isAdmin }) {
     if (!booking) return null;
@@ -25,6 +27,33 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     // Edit/Finalize: Drafts only
     const canEdit = !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
     const canFinalize = !isFinalized && !isCancelled && onFinalize && (isAdmin || isOwner);
+
+    // Email Logic
+    const [showEmailForm, setShowEmailForm] = React.useState(false);
+    const [guestEmail, setGuestEmail] = React.useState('');
+    const [guestName, setGuestName] = React.useState('Guest'); // Default
+    const [sending, setSending] = React.useState(false);
+    const [sentSuccess, setSentSuccess] = React.useState(false);
+
+    const handleSendEmail = async (e) => {
+        e.preventDefault();
+        if (!guestEmail) return;
+        setSending(true);
+        try {
+            await emailService.sendGuestGuideEmail(guestEmail, guestName);
+            setSentSuccess(true);
+            setTimeout(() => {
+                setShowEmailForm(false);
+                setSentSuccess(false);
+                setGuestEmail('');
+            }, 2000);
+        } catch (error) {
+            console.error("Error sending email:", error);
+            alert("Failed to send email. Please try again.");
+        } finally {
+            setSending(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 md:p-4 animate-in fade-in duration-300">
@@ -169,6 +198,82 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                     )}
                 </div>
 
+                {/* Email Form Overlay */}
+                {showEmailForm && (
+                    <div className="absolute inset-0 bg-white z-20 flex flex-col animate-in slide-in-from-bottom-5 duration-300">
+                        <div className="p-4 border-b flex justify-between items-center bg-slate-50">
+                            <h3 className="font-bold flex items-center gap-2">
+                                <Mail className="w-5 h-5 text-blue-600" />
+                                Email Guest Guide
+                            </h3>
+                            <button onClick={() => setShowEmailForm(false)} className="p-1 hover:bg-slate-200 rounded-full">
+                                <X className="w-5 h-5 text-slate-500" />
+                            </button>
+                        </div>
+
+                        {sentSuccess ? (
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2">
+                                    <CheckCircle2 className="w-8 h-8" />
+                                </div>
+                                <h4 className="text-xl font-bold text-slate-900">Email Sent!</h4>
+                                <p className="text-slate-600">The guest guide has been sent successfully.</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSendEmail} className="p-6 flex-1 flex flex-col gap-4">
+                                <p className="text-sm text-slate-600">
+                                    Send the <strong>Trailer Checklist & Guest Rules</strong> directly to your guest.
+                                    The email will appear to come from <strong>{currentUser}</strong>.
+                                </p>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Guest Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                                        placeholder="e.g. John Doe"
+                                        value={guestName}
+                                        onChange={e => setGuestName(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Guest Email</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                                        placeholder="guest@example.com"
+                                        value={guestEmail}
+                                        onChange={e => setGuestEmail(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="mt-auto pt-4">
+                                    <button
+                                        type="submit"
+                                        disabled={sending}
+                                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                    >
+                                        {sending ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                Sending...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send className="w-4 h-4" />
+                                                Send Email
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                )}
+
                 {/* Footer */}
                 <div className="p-4 bg-muted/30 border-t flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center flex-shrink-0">
                     <div className="w-full md:w-auto flex gap-2">
@@ -207,12 +312,26 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         ) : null}
                     </div>
 
-                    <button
-                        onClick={onClose}
-                        className="w-full md:w-auto px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
-                    >
-                        Close
-                    </button>
+                    <div className="flex gap-2 w-full md:w-auto">
+                        {/* Email Button */}
+                        {!isCancelled && (isAdmin || isOwner) && (
+                            <button
+                                onClick={() => setShowEmailForm(true)}
+                                className="px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                                title="Email Guest Guide"
+                            >
+                                <Mail className="w-4 h-4" />
+                                <span className="hidden md:inline">Email Guest</span>
+                            </button>
+                        )}
+
+                        <button
+                            onClick={onClose}
+                            className="flex-1 md:flex-none px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

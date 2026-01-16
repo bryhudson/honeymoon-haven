@@ -175,7 +175,9 @@ exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) 
         await sendGmail({
             to: { name: guestName || "Guest", email: guestEmail },
             subject: subject,
-            htmlContent: htmlContent
+            htmlContent: htmlContent,
+            senderName: senderName,
+            replyTo: request.auth.token.email // Set Reply-To to the logged-in user's email
         });
         return { success: true, message: `Guest Guide sent to ${guestEmail}` };
     } catch (error) {

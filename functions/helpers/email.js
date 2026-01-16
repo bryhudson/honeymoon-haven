@@ -35,9 +35,10 @@ async function sendGmail({ to, subject, htmlContent }) {
     });
 
     // Sender Info
-    // Note: Gmail always overwrites the "From" address with the authenticated user,
-    // but we can set a custom name.
-    const from = `"Honeymoon Haven" <${user}>`;
+    // Gmail always overwrites the "From" address with the authenticated user, but we can set a custom name.
+    // Use provided senderName if available, otherwise default to "Honeymoon Haven"
+    const senderName = data.senderName || "Honeymoon Haven";
+    const from = `"${senderName}" <${user}>`;
 
     // Safely override recipient for testing if needed
     // const recipient = "bryan.m.hudson@gmail.com"; // Safety override
@@ -45,10 +46,15 @@ async function sendGmail({ to, subject, htmlContent }) {
 
     const mailOptions = {
         from: from,
-        to: recipient, // Nodemailer accepts "Name <email>" or just "email"
+        to: recipient,
         subject: subject,
         html: htmlContent,
     };
+
+    // Add Reply-To if provided
+    if (data.replyTo) {
+        mailOptions.replyTo = data.replyTo;
+    }
 
     try {
         const info = await transporter.sendMail(mailOptions);
