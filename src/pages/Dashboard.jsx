@@ -81,10 +81,10 @@ const WelcomeBanner = ({ loggedInShareholder, status, allDraftRecords, currentUs
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2 ring-2 ring-blue-400 ring-offset-2">
                 <div className="flex items-center gap-2 mb-2">
                     <Clock className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-bold text-blue-900 text-lg">Hi, {loggedInShareholder}</h3>
+                    <h3 className="font-bold text-blue-900 text-lg">It's Your Turn!</h3>
                 </div>
                 <p className="text-blue-800">
-                    It is currently <span className="font-bold uppercase">YOUR TURN</span> to pick! Please finalize your booking below.
+                    You are now on the clock. Please select your dates below to finalize your booking.
                 </p>
             </div>
         );
