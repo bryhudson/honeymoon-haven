@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
 import { emailService } from '../services/emailService';
 import { db, functions } from '../lib/firebase';
@@ -14,6 +15,9 @@ import { ReauthenticationModal } from '../components/ReauthenticationModal';
 import { PromptModal } from '../components/PromptModal';
 
 export function AdminDashboard() {
+    const { currentUser } = useAuth();
+    const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
+
     const [actionLog, setActionLog] = useState("");
     const [allBookings, setAllBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -833,112 +837,119 @@ export function AdminDashboard() {
 
                 {/* Left Column: System Controls (Moved here) */}
                 <div className="lg:col-span-3">
-                    <div className="bg-white border rounded-xl p-6 shadow-sm">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
-                                <Settings className="h-5 w-5 text-slate-500" />
-                                System Controls
-                            </h2>
-                            {actionLog && <div className="text-xs font-mono text-muted-foreground bg-slate-100 px-2 py-1 rounded">Last: {actionLog}</div>}
-                        </div>
+                    {isSuperAdmin ? (
+                        <div className="bg-white border rounded-xl p-6 shadow-sm">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
+                                    <Settings className="h-5 w-5 text-slate-500" />
+                                    System Controls
+                                </h2>
+                                {actionLog && <div className="text-xs font-mono text-muted-foreground bg-slate-100 px-2 py-1 rounded">Last: {actionLog}</div>}
+                            </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {/* Simulation Card */}
-                            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                                <div className="flex items-start justify-between gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {/* Simulation Card */}
+                                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex gap-3">
+                                            <div className="mt-1 p-2 bg-white rounded-md border shadow-sm text-slate-500 h-fit">
+                                                <Calendar className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-slate-900">Draft Simulation</h3>
+                                                <p className="text-xs text-slate-500 mt-1">
+                                                    Override date ({format(DRAFT_CONFIG.START_DATE, 'MMM d')}).
+                                                </p>
+                                                <div className="mt-3 flex flex-col gap-2">
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={simStartDate}
+                                                        onChange={(e) => setSimStartDate(e.target.value)}
+                                                        className="text-xs border rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none w-full"
+                                                    />
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={handleUpdateStartDate}
+                                                            className="flex-1 px-2 py-1 bg-slate-900 text-white text-xs font-bold rounded hover:bg-slate-800 transition-colors"
+                                                        >
+                                                            Set
+                                                        </button>
+                                                        {currentSimDate && (
+                                                            <button
+                                                                onClick={handleResetSimulation}
+                                                                className="flex-1 px-2 py-1 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded hover:bg-slate-50 transition-colors"
+                                                            >
+                                                                Reset
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {currentSimDate && (
+                                                    <p className="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
+                                                        <CheckCircle className="h-3 w-3" />
+                                                        Active: {format(currentSimDate, 'MMM d, h:mm a')}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Reset DB */}
+                                <div className="p-4 rounded-lg border border-red-100 bg-red-50/50 hover:bg-red-50 transition-colors group flex flex-col justify-between">
                                     <div className="flex gap-3">
-                                        <div className="mt-1 p-2 bg-white rounded-md border shadow-sm text-slate-500 h-fit">
-                                            <Calendar className="h-5 w-5" />
+                                        <div className="p-2 bg-white rounded-md border border-red-100 text-red-500 group-hover:text-red-600 shadow-sm h-fit">
+                                            <Trash2 className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-slate-900">Draft Simulation</h3>
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Override date ({format(DRAFT_CONFIG.START_DATE, 'MMM d')}).
+                                            <h3 className="font-semibold text-red-900">Wipe Database</h3>
+                                            <p className="text-xs text-red-600/80 mt-1">
+                                                Delete all bookings.
                                             </p>
-                                            <div className="mt-3 flex flex-col gap-2">
-                                                <input
-                                                    type="datetime-local"
-                                                    value={simStartDate}
-                                                    onChange={(e) => setSimStartDate(e.target.value)}
-                                                    className="text-xs border rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none w-full"
-                                                />
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={handleUpdateStartDate}
-                                                        className="flex-1 px-2 py-1 bg-slate-900 text-white text-xs font-bold rounded hover:bg-slate-800 transition-colors"
-                                                    >
-                                                        Set
-                                                    </button>
-                                                    {currentSimDate && (
-                                                        <button
-                                                            onClick={handleResetSimulation}
-                                                            className="flex-1 px-2 py-1 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded hover:bg-slate-50 transition-colors"
-                                                        >
-                                                            Reset
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {currentSimDate && (
-                                                <p className="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
-                                                    <CheckCircle className="h-3 w-3" />
-                                                    Active: {format(currentSimDate, 'MMM d, h:mm a')}
-                                                </p>
-                                            )}
                                         </div>
                                     </div>
+                                    <button
+                                        onClick={handleResetDB}
+                                        className="w-full mt-3 px-3 py-1.5 bg-white border border-red-200 text-red-700 text-xs font-bold rounded hover:bg-red-100 transition-colors shadow-sm"
+                                    >
+                                        Reset
+                                    </button>
                                 </div>
-                            </div>
-
-                            {/* Reset DB */}
-                            <div className="p-4 rounded-lg border border-red-100 bg-red-50/50 hover:bg-red-50 transition-colors group flex flex-col justify-between">
-                                <div className="flex gap-3">
-                                    <div className="p-2 bg-white rounded-md border border-red-100 text-red-500 group-hover:text-red-600 shadow-sm h-fit">
-                                        <Trash2 className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-red-900">Wipe Database</h3>
-                                        <p className="text-xs text-red-600/80 mt-1">
-                                            Delete all bookings.
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleResetDB}
-                                    className="w-full mt-3 px-3 py-1.5 bg-white border border-red-200 text-red-700 text-xs font-bold rounded hover:bg-red-100 transition-colors shadow-sm"
-                                >
-                                    Reset
-                                </button>
-                            </div>
 
 
 
-                            {/* Reminders / Test Email Stack */}
-                            <div className="space-y-3">
-                                <div className="p-3 rounded-lg border border-purple-100 bg-purple-50/50 hover:bg-purple-50 transition-colors group flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Bell className="h-4 w-4 text-purple-600" />
-                                        <span className="text-sm font-semibold text-purple-900">Reminders</span>
+                                {/* Reminders / Test Email Stack */}
+                                <div className="space-y-3">
+                                    <div className="p-3 rounded-lg border border-purple-100 bg-purple-50/50 hover:bg-purple-50 transition-colors group flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Bell className="h-4 w-4 text-purple-600" />
+                                            <span className="text-sm font-semibold text-purple-900">Reminders</span>
+                                        </div>
+                                        <button onClick={handleRunReminders} className="text-xs bg-white border border-purple-200 px-2 py-1 rounded font-bold text-purple-700">Send</button>
                                     </div>
-                                    <button onClick={handleRunReminders} className="text-xs bg-white border border-purple-200 px-2 py-1 rounded font-bold text-purple-700">Send</button>
-                                </div>
-                                <div className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors group flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Mail className="h-4 w-4 text-slate-600" />
-                                        <span className="text-sm font-semibold text-slate-900">Test Email</span>
+                                    <div className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors group flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Mail className="h-4 w-4 text-slate-600" />
+                                            <span className="text-sm font-semibold text-slate-900">Test Email</span>
+                                        </div>
+                                        <button onClick={handleTestEmail} className="text-xs bg-white border border-slate-200 px-2 py-1 rounded font-bold text-slate-700">Test</button>
                                     </div>
-                                    <button onClick={handleTestEmail} className="text-xs bg-white border border-slate-200 px-2 py-1 rounded font-bold text-slate-700">Test</button>
-                                </div>
-                                <div className="p-3 rounded-lg border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors group flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <PlayCircle className="h-4 w-4 text-blue-600" />
-                                        <span className="text-sm font-semibold text-blue-900">Onboarding</span>
+                                    <div className="p-3 rounded-lg border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors group flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <PlayCircle className="h-4 w-4 text-blue-600" />
+                                            <span className="text-sm font-semibold text-blue-900">Onboarding</span>
+                                        </div>
+                                        <button onClick={resetOnboarding} className="text-xs bg-white border border-blue-200 px-2 py-1 rounded font-bold text-blue-700">Reset</button>
                                     </div>
-                                    <button onClick={resetOnboarding} className="text-xs bg-white border border-blue-200 px-2 py-1 rounded font-bold text-blue-700">Reset</button>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        // Placeholder for Regular Admins? Or just nothing?
+                        // User said "hide the System Controls", so likely just nothing or a simplified view.
+                        // I will hide it completely for now as requested.
+                        null
+                    )}
                 </div>
             </div>
 
