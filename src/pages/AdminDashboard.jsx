@@ -1153,7 +1153,7 @@ export function AdminDashboard() {
                                             {isSlotBooked && (
                                                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 ml-2">
                                                     <ActionsDropdown
-                                                        onEdit={() => handleEditClick(booking)}
+                                                        onEdit={(booking.type !== 'cancelled' && booking.type !== 'pass' && booking.type !== 'auto-pass') ? () => handleEditClick(booking) : undefined}
                                                         onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
                                                         isCancelled={booking.type === 'cancelled'}
                                                         onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
@@ -1296,7 +1296,7 @@ export function AdminDashboard() {
                                                     <td className="px-6 py-5 text-right">
                                                         {booking.type !== 'pass' && booking.type !== 'auto-pass' ? (
                                                             <ActionsDropdown
-                                                                onEdit={() => handleEditClick(booking)}
+                                                                onEdit={booking.type !== 'cancelled' ? () => handleEditClick(booking) : undefined}
                                                                 onCancel={() => handleCancelBooking(booking)}
                                                                 isCancelled={booking.type === 'cancelled'}
                                                                 onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
@@ -1305,12 +1305,7 @@ export function AdminDashboard() {
                                                                 isPaid={booking.isPaid}
                                                                 onSendReminder={() => handleSendPaymentReminder(booking)}
                                                             />
-                                                        ) : (booking.type === 'pass' || booking.type === 'auto-pass') && (
-                                                            // Allow editing turns that were passed (e.g. to un-pass)
-                                                            <ActionsDropdown
-                                                                onEdit={() => handleEditClick(booking)}
-                                                            />
-                                                        )}
+                                                        ) : null}
                                                     </td>
                                                 </tr>
                                             );
