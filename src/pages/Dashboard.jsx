@@ -141,7 +141,7 @@ const WelcomeBanner = ({ loggedInShareholder, status, allDraftRecords, currentUs
                 <h3 className="font-bold text-slate-800 text-lg">Hi, {loggedInShareholder}</h3>
             </div>
             <p className="text-slate-600">
-                It is currently <span className="font-bold text-slate-900">{status.activePicker}'s</span> turn. We will notify you when you are up.
+                It is currently <span className="font-bold text-slate-900">{status.activePicker}'s</span> turn.
             </p>
         </div>
     );
@@ -868,7 +868,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.101 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.102 - Guest Rules UI</p>
 
 
             </div>
