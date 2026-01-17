@@ -393,27 +393,26 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         />
                     </div>
 
-                    <div className="p-3 bg-card rounded-xl shadow-md border w-full md:w-[400px]">
-                        <div className="border-b pb-2 mb-3 flex justify-between items-center">
-                            <h3 className="text-base font-bold text-primary flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs">2</span>
+                    <div className="p-5 md:p-6 bg-card rounded-xl shadow-md border w-full md:w-[450px]">
+                        <div className="border-b pb-4 mb-4 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-primary flex items-center gap-3">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">2</span>
                                 Booking Details
                             </h3>
-
                         </div>
 
                         {isSuccess ? (
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-green-50/50 border border-green-100 rounded-xl p-6 text-center">
-                                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-green-100 mb-2 border-4 border-green-50">
-                                        <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="bg-green-50/50 border border-green-100 rounded-xl p-8 text-center">
+                                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4 border-4 border-green-50">
+                                        <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                         </svg>
                                     </div>
-                                    <h3 className="text-lg font-black text-green-900 mb-1">
+                                    <h3 className="text-xl font-black text-green-900 mb-2">
                                         {isFinalSuccess ? "Booking Confirmed! 🎉" : "Draft Saved!"}
                                     </h3>
-                                    <p className="text-green-700/80 font-medium text-xs">
+                                    <p className="text-green-700/80 font-medium text-sm">
                                         {isFinalSuccess
                                             ? "Your turn is complete. See you at the lake!"
                                             : "Dates are held. Finalize on the dashboard when ready."}
@@ -422,27 +421,27 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                 {/* Step 3: Payment - Only show when booking is finalized */}
                                 {isFinalSuccess && (
-                                    <div className="p-4 bg-card rounded-xl shadow-lg border border-blue-100">
-                                        <div className="border-b pb-2 mb-3">
-                                            <h3 className="text-base font-bold text-blue-600 flex items-center gap-2">
-                                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs">3</span>
+                                    <div className="p-6 bg-slate-50 rounded-xl shadow-lg border border-blue-100">
+                                        <div className="border-b border-slate-200 pb-3 mb-4">
+                                            <h3 className="text-lg font-bold text-blue-600 flex items-center gap-3">
+                                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold">3</span>
                                                 Payment Required
                                             </h3>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <p className="text-xs text-slate-600 font-medium">
+                                        <div className="space-y-3">
+                                            <p className="text-sm text-slate-600 font-medium leading-relaxed">
                                                 To lock in your cabin, please send an e-transfer within <span className="text-blue-600 font-bold">48 hours</span>:
                                             </p>
 
-                                            <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                                <code className="text-xs md:text-sm font-mono font-bold select-all flex-1 text-blue-700 text-center">honeymoonhavenresort.lc@gmail.com</code>
+                                            <div className="flex items-center gap-2 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                                <code className="text-sm md:text-base font-mono font-bold select-all flex-1 text-blue-700 text-center">honeymoonhavenresort.lc@gmail.com</code>
                                             </div>
 
-                                            <div className="flex flex-col gap-2 pt-2">
+                                            <div className="flex flex-col gap-3 pt-4">
                                                 <button
                                                     onClick={() => onCancel()}
-                                                    className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-all shadow-md text-sm"
+                                                    className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md text-base"
                                                 >
                                                     Return to Dashboard
                                                 </button>
@@ -453,16 +452,16 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                 {/* Draft actions - Only show when NOT finalized */}
                                 {!isFinalSuccess && (
-                                    <div className="flex flex-col gap-2 pt-2">
+                                    <div className="flex flex-col gap-3 pt-2">
                                         <button
                                             onClick={() => onCancel()}
-                                            className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-all shadow-md text-sm"
+                                            className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md text-base"
                                         >
                                             Close & Finish Later
                                         </button>
                                         <button
                                             onClick={() => setIsSuccess(false)}
-                                            className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+                                            className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors py-2"
                                         >
                                             Edit Booking Details
                                         </button>
@@ -470,47 +469,48 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                 )}
                             </div>
                         ) : selectedRange?.from && selectedRange?.to ? (
-                            <div className="space-y-3">
+                            <div className="space-y-6">
                                 {isTooLong && (
-                                    <div className="p-2 rounded-md bg-destructive/10 text-destructive text-xs font-medium">
-                                        Maximum stay is 7 nights. Please select a shorter range.
+                                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-bold flex items-center gap-2">
+                                        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        Maximum stay is 7 nights.
                                     </div>
                                 )}
                                 {!isSuccess && !isSubmitting && isOverlap && (
-                                    <div className="p-2 rounded-md bg-destructive/10 text-destructive text-xs font-medium">
+                                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-bold">
                                         Dates unavailable.
                                         {conflictingBooking && (
-                                            <span className="block text-[10px] mt-1">
+                                            <span className="block text-xs font-normal mt-1 opacity-80">
                                                 Conflict: {format(conflictingBooking.from, 'MMM d')} - {format(conflictingBooking.to, 'MMM d')}
                                             </span>
                                         )}
                                     </div>
                                 )}
                                 {isTooShort && (
-                                    <div className="p-2 rounded-md bg-destructive/10 text-destructive text-xs font-medium">
-                                        Invalid duration. Please ensure check-out is after check-in.
+                                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-bold">
+                                        Invalid duration. Check-out must be after check-in.
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Shareholder</label>
-                                        <div className="h-8 flex items-center px-1 font-bold text-sm text-foreground truncate">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Shareholder</label>
+                                        <div className="min-h-[44px] flex items-center px-3 bg-slate-50/50 rounded-lg border border-slate-200 font-bold text-base text-slate-800 truncate">
                                             {formData.shareholderName || "Guest"}
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Cabin</label>
-                                        <div className="h-8 flex items-center px-1 font-bold text-sm text-foreground">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Cabin</label>
+                                        <div className="min-h-[44px] flex items-center px-3 bg-slate-50/50 rounded-lg border border-slate-200 font-bold text-base text-slate-800">
                                             {formData.cabinNumber || "?"}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-0">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Guests</label>
-                                        <div className="flex gap-2 items-center">
+                                <div className="pt-2">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Guests</label>
+                                        <div className="flex gap-3 items-center">
                                             <input
                                                 type="number"
                                                 name="guests"
@@ -518,47 +518,56 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 max="6"
                                                 value={formData.guests}
                                                 onChange={handleInputChange}
-                                                className="flex h-9 w-20 rounded-lg border border-input bg-background px-2 py-1 text-base font-bold shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                                className="flex h-12 w-24 rounded-lg border border-slate-300 bg-white px-3 text-lg font-bold shadow-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all text-center"
                                                 disabled={isTooLong || isOverlap}
                                             />
-                                            <span className="text-xs font-medium text-muted-foreground">Adults & Children</span>
+                                            <span className="text-sm font-bold text-slate-600">Adults & Children</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="border-t pt-2 space-y-1">
-                                    <div className="border-b pb-1 mb-1">
-                                        <h3 className="text-base font-bold text-primary flex items-center gap-2">
-                                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs">3</span>
-                                            Review
+                                {/* Modern Review Section */}
+                                <div className="mt-6 bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-4">
+                                    <div className="border-b border-slate-200 pb-2 mb-2">
+                                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">3</span>
+                                            Review Summary
                                         </h3>
                                     </div>
-                                    <div className="flex justify-between py-0.5 text-xs">
-                                        <span className="text-muted-foreground">Dates</span>
-                                        <span className="font-medium">
-                                            {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d, yyyy')}
-                                        </span>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-baseline">
+                                            <span className="text-sm font-medium text-slate-500">Dates</span>
+                                            <div className="text-right">
+                                                <span className="block text-sm font-bold text-slate-900">
+                                                    {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d, yyyy')}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium text-slate-500">Rate</span>
+                                            <span className="text-sm font-bold text-slate-900">$125.00 / night</span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium text-slate-500">Duration</span>
+                                            <span className="text-sm font-bold text-slate-900">{nights} Nights</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between py-0.5 text-xs">
-                                        <span className="text-muted-foreground">Rate</span>
-                                        <span className="font-medium">$125.00 / night</span>
-                                    </div>
-                                    <div className="flex justify-between py-0.5 text-xs">
-                                        <span className="text-muted-foreground">Duration</span>
-                                        <span className="font-medium">{nights} Nights</span>
-                                    </div>
-                                    <div className="flex justify-between py-1 text-sm font-black border-t mt-1">
-                                        <span>Total</span>
-                                        <span className="text-primary">${totalPrice.toLocaleString()}</span>
+
+                                    <div className="flex justify-between items-center pt-4 border-t border-slate-200 mt-2">
+                                        <span className="text-base font-bold text-slate-700">Total</span>
+                                        <span className="text-2xl font-black text-primary tracking-tight">${totalPrice.toLocaleString()}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2 mt-4">
+                                <div className="flex flex-col gap-3 mt-6 pt-2">
                                     <button
                                         onClick={() => setShowConfirmation(true)}
                                         disabled={isTooLong || isTooShort || isOverlap || !bookingStatus.canBook || isSubmitting}
-                                        className={`w-full py-3 rounded-xl font-bold text-sm shadow-md transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${!bookingStatus.canBook
-                                            ? "bg-slate-300 text-slate-500"
+                                        className={`w-full py-4 rounded-xl font-bold text-base shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${!bookingStatus.canBook
+                                            ? "bg-slate-200 text-slate-400 shadow-none"
                                             : "bg-primary text-primary-foreground hover:bg-primary/90"
                                             }`}
                                     >
@@ -572,34 +581,38 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                     <button
                                         onClick={() => handleBook(false)}
                                         disabled={isTooLong || isTooShort || isOverlap || !bookingStatus.canBook || isSubmitting}
-                                        className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors underline decoration-dotted underline-offset-4 text-center"
+                                        className="text-sm font-bold text-slate-500 hover:text-primary transition-colors py-2"
                                     >
                                         Save as Draft
                                     </button>
                                 </div>
 
                                 {initialBooking?.id && (
-                                    <div className="flex gap-2 mt-2">
+                                    <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
                                         <button
                                             onClick={() => onPass && onPass()}
-                                            className="w-full py-2 bg-muted text-foreground hover:bg-muted/80 rounded-lg text-xs font-bold transition-colors border"
+                                            className="w-full py-3 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg text-sm font-bold transition-all border border-slate-200"
                                         >
                                             Pass Turn
                                         </button>
                                     </div>
                                 )}
 
-                                <p className="text-center text-[10px] text-muted-foreground mt-1 opacity-50">v2.68.37 - Compact UI</p>
+                                <p className="text-center text-[10px] text-slate-400 mt-2">v2.68.127 - Enhanced UI</p>
 
                                 {!bookingStatus.canBook && formData.shareholderName && (
-                                    <div className="text-[10px] text-center text-amber-600 font-medium bg-amber-50 p-2 rounded border border-amber-200">
-                                        ⚠️ {bookingStatus.message}
+                                    <div className="text-xs text-center text-amber-700 font-bold bg-amber-50 p-3 rounded-lg border border-amber-200 flex items-center justify-center gap-2">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        {bookingStatus.message}
                                     </div>
                                 )}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <p className="text-sm">Select a date range on the calendar.</p>
+                            <div className="text-center py-12 flex flex-col items-center justify-center h-full text-muted-foreground bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-slate-300">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                                <p className="text-sm font-medium">Select dates to begin</p>
                             </div>
                         )}
                     </div>
