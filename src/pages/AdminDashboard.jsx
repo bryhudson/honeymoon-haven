@@ -9,7 +9,7 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
 import { PromptModal } from '../components/PromptModal';
@@ -718,7 +718,8 @@ export function AdminDashboard() {
         let totalRevenue = 0;
         let outstandingFees = 0;
         let totalBookings = 0;
-        let pendingPayments = 0;
+        let unpaidCount = 0;
+        let totalNights = 0;
 
         allBookings.forEach(b => {
             // Only count finalized active bookings towards stats (ignore drafts/cancelled/passes)
@@ -727,17 +728,18 @@ export function AdminDashboard() {
                 const amount = nights * 125;
 
                 totalBookings++;
+                totalNights += nights;
 
                 if (b.isPaid) {
                     totalRevenue += amount;
                 } else {
                     outstandingFees += amount;
-                    pendingPayments++;
+                    unpaidCount++;
                 }
             }
         });
 
-        return { totalRevenue, outstandingFees, totalBookings, pendingPayments };
+        return { totalRevenue, outstandingFees, totalBookings, unpaidCount, totalNights };
     }, [allBookings]);
 
 
@@ -876,8 +878,11 @@ export function AdminDashboard() {
                                         <AlertTriangle className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
-                                        <h3 className="text-2xl font-bold text-slate-900">${analytics.outstandingFees.toLocaleString()}</h3>
+                                        <p className="text-sm font-medium text-muted-foreground">Unpaid Fees</p>
+                                        <div className="flex items-baseline gap-2">
+                                            <h3 className="text-2xl font-bold text-slate-900">${analytics.outstandingFees.toLocaleString()}</h3>
+                                            <span className="text-sm text-muted-foreground">({analytics.unpaidCount})</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -897,11 +902,11 @@ export function AdminDashboard() {
                             <div className="bg-white p-6 rounded-xl border shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 bg-purple-100 text-purple-700 rounded-lg">
-                                        <Bell className="w-6 h-6" />
+                                        <Moon className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                                        <h3 className="text-2xl font-bold text-slate-900">{analytics.pendingPayments}</h3>
+                                        <p className="text-sm font-medium text-muted-foreground">Total Nights</p>
+                                        <h3 className="text-2xl font-bold text-slate-900">{analytics.totalNights}</h3>
                                     </div>
                                 </div>
                             </div>
