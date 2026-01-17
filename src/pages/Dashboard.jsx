@@ -362,75 +362,84 @@ export function Dashboard() {
         e.preventDefault();
         if (!passData.name) return triggerAlert("Selection Missing", "Please select your name.");
 
-        try {
-            // Check for existing draft to delete (replacing Draft with Pass)
-            const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
-            if (draft) {
-                await deleteDoc(doc(db, "bookings", draft.id));
-            }
+        // Double Confirmation for Passing
+        triggerConfirm(
+            "Final Confirmation: Pass Turn",
+            `Are you absolutely sure you want to pass your turn?\n\nThis action is irreversible and the schedule will immediately move to the next shareholder. You cannot undo this.`,
+            async () => {
+                try {
+                    // Check for existing draft to delete (replacing Draft with Pass)
+                    const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
+                    if (draft) {
+                        await deleteDoc(doc(db, "bookings", draft.id));
+                    }
 
-            const owner = shareholders.find(o => o.name === passData.name);
-            await addDoc(collection(db, "bookings"), {
-                shareholderName: passData.name,
-                cabinNumber: owner ? owner.cabin : "?",
-                type: 'pass', // This is important
-                createdAt: new Date(),
-                from: new Date(),
-                to: new Date()
-            });
+                    const owner = shareholders.find(o => o.name === passData.name);
+                    await addDoc(collection(db, "bookings"), {
+                        shareholderName: passData.name,
+                        cabinNumber: owner ? owner.cabin : "?",
+                        type: 'pass', // This is important
+                        createdAt: new Date(),
+                        from: new Date(),
+                        to: new Date()
+                    });
 
-            // 1. Notify CURRENT user (Pass Confirmation)
-            try {
-                const owner = shareholders.find(o => o.name === passData.name);
-                await emailService.sendTurnPassedCurrent({
-                    name: passData.name,
-                    email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                }, {
-                    name: passData.name,
-                    dashboard_url: "https://hhr-trailer-booking.web.app/"
-                });
-            } catch (e) {
-                console.error("Pass email failed", e);
-            }
-
-            // Notify NEXT shareholder
-            if (status.nextPicker) {
-                const nextOwner = shareholders.find(o => o.name === status.nextPicker);
-                if (nextOwner && nextOwner.email) {
+                    // 1. Notify CURRENT user (Pass Confirmation)
                     try {
-                        // Logic: Next Day 10 AM + 48 Hours
-                        // "Account for the 10 next day early access start period"
-                        const tomorrow10am = new Date();
-                        tomorrow10am.setDate(tomorrow10am.getDate() + 1);
-                        tomorrow10am.setHours(10, 0, 0, 0);
-
-                        const deadline = addHours(tomorrow10am, 48);
-
-                        await emailService.sendTurnPassedNext({
-                            name: nextOwner.name,
+                        const owner = shareholders.find(o => o.name === passData.name);
+                        await emailService.sendTurnPassedCurrent({
+                            name: passData.name,
                             email: "bryan.m.hudson@gmail.com" // OVERRIDE
                         }, {
-                            name: nextOwner.name,
-                            previous_shareholder: passData.name,
-                            deadline_date: format(deadline, 'PPP'),
-                            deadline_time: format(deadline, 'p'),
-                            booking_url: "https://hhr-trailer-booking.web.app/",
+                            name: passData.name,
                             dashboard_url: "https://hhr-trailer-booking.web.app/"
                         });
-                        console.log("Notification sent to", nextOwner.name);
                     } catch (e) {
-                        console.error("Next user email failed", e);
+                        console.error("Pass email failed", e);
                     }
-                }
-            }
 
-            triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
-            setIsPassing(false);
-            setPassData({ name: '' });
-        } catch (err) {
-            console.error(err);
-            triggerAlert("Error", "Error passing turn: " + err.message);
-        }
+                    // Notify NEXT shareholder
+                    if (status.nextPicker) {
+                        const nextOwner = shareholders.find(o => o.name === status.nextPicker);
+                        if (nextOwner && nextOwner.email) {
+                            try {
+                                // Logic: Next Day 10 AM + 48 Hours
+                                // "Account for the 10 next day early access start period"
+                                const tomorrow10am = new Date();
+                                tomorrow10am.setDate(tomorrow10am.getDate() + 1);
+                                tomorrow10am.setHours(10, 0, 0, 0);
+
+                                const deadline = addHours(tomorrow10am, 48);
+
+                                await emailService.sendTurnPassedNext({
+                                    name: nextOwner.name,
+                                    email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                                }, {
+                                    name: nextOwner.name,
+                                    previous_shareholder: passData.name,
+                                    deadline_date: format(deadline, 'PPP'),
+                                    deadline_time: format(deadline, 'p'),
+                                    booking_url: "https://hhr-trailer-booking.web.app/",
+                                    dashboard_url: "https://hhr-trailer-booking.web.app/"
+                                });
+                                console.log("Notification sent to", nextOwner.name);
+                            } catch (e) {
+                                console.error("Next user email failed", e);
+                            }
+                        }
+                    }
+
+                    triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
+                    setIsPassing(false);
+                    setPassData({ name: '' });
+                } catch (err) {
+                    console.error(err);
+                    triggerAlert("Error", "Error passing turn: " + err.message);
+                }
+            },
+            true, // Danger
+            "Confirm Pass (Cannot Undo)"
+        );
     };
 
     const handleQuickBook = async () => {
@@ -502,57 +511,66 @@ export function Dashboard() {
     const handleCancelConfirmedBooking = (booking) => {
         triggerConfirm(
             "Cancel Booking?",
-            `Are you sure you want to CANCEL your booking for ${format(booking.from?.toDate ? booking.from.toDate() : new Date(booking.from), 'MMM d')}? This will free up the dates for others.`,
+            `Are you sure you want to CANCEL your booking for ${format(booking.from?.toDate ? booking.from.toDate() : new Date(booking.from), 'MMM d')}?`,
             async () => {
-                try {
-                    // 1. Update Database (Priority)
-                    await updateDoc(doc(db, "bookings", booking.id), {
-                        type: 'cancelled',
-                        cancelledAt: new Date(),
-                        isFinalized: true, // Keep finalized so it's not a draft
-                        isPaid: false
-                    });
+                // Double Confirmation
+                triggerConfirm(
+                    "Final Confirmation: Cancel Booking",
+                    "This is your final confirmation. Cancelling this booking will open these dates to other shareholders and cannot be undone via this dashboard.\n\nProceed?",
+                    async () => {
+                        try {
+                            // 1. Update Database (Priority)
+                            await updateDoc(doc(db, "bookings", booking.id), {
+                                type: 'cancelled',
+                                cancelledAt: new Date(),
+                                isFinalized: true, // Keep finalized so it's not a draft
+                                isPaid: false
+                            });
 
-                    // 2. Send "Booking Cancelled" Email (Non-Blocking)
-                    try {
-                        const owner = shareholders.find(o => o.name === booking.shareholderName);
-                        // If self-cancelled, email the user AND maybe admin? 
-                        // Requirement says "Booking Cancelled (notification to user)".
-                        const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
-
-                        // Helper for safe date formatting
-                        const safeFormat = (dateObj) => {
+                            // 2. Send "Booking Cancelled" Email (Non-Blocking)
                             try {
-                                if (!dateObj) return "N/A";
-                                if (dateObj.toDate) return format(dateObj.toDate(), 'MMM d, yyyy');
-                                const d = new Date(dateObj);
-                                return isNaN(d.getTime()) ? "N/A" : format(d, 'MMM d, yyyy');
-                            } catch (e) {
-                                return "N/A";
+                                const owner = shareholders.find(o => o.name === booking.shareholderName);
+                                // If self-cancelled, email the user AND maybe admin? 
+                                // Requirement says "Booking Cancelled (notification to user)".
+                                const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
+
+                                // Helper for safe date formatting
+                                const safeFormat = (dateObj) => {
+                                    try {
+                                        if (!dateObj) return "N/A";
+                                        if (dateObj.toDate) return format(dateObj.toDate(), 'MMM d, yyyy');
+                                        const d = new Date(dateObj);
+                                        return isNaN(d.getTime()) ? "N/A" : format(d, 'MMM d, yyyy');
+                                    } catch (e) {
+                                        return "N/A";
+                                    }
+                                };
+
+                                await emailService.sendBookingCancelled(emailTo, {
+                                    name: booking.shareholderName,
+                                    check_in: safeFormat(booking.from),
+                                    check_out: safeFormat(booking.to),
+                                    cabin_number: booking.cabinNumber,
+                                    cancelled_date: format(new Date(), 'PPP'),
+                                    dashboard_url: window.location.origin
+                                });
+
+                                triggerAlert("Success", "Booking cancelled. The status has been updated.");
+                                setViewingBooking(null); // Close modal
+                            } catch (emailErr) {
+                                console.error("Email failed:", emailErr);
+                                triggerAlert("Warning", "Booking cancelled, but failed to send email notification.");
+                                setViewingBooking(null);
                             }
-                        };
 
-                        await emailService.sendBookingCancelled(emailTo, {
-                            name: booking.shareholderName,
-                            check_in: safeFormat(booking.from),
-                            check_out: safeFormat(booking.to),
-                            cabin_number: booking.cabinNumber,
-                            cancelled_date: format(new Date(), 'PPP'),
-                            dashboard_url: window.location.origin
-                        });
-
-                        triggerAlert("Success", "Booking cancelled. The status has been updated.");
-                        setViewingBooking(null); // Close modal
-                    } catch (emailErr) {
-                        console.error("Email failed:", emailErr);
-                        triggerAlert("Warning", "Booking cancelled, but failed to send email notification.");
-                        setViewingBooking(null);
-                    }
-
-                } catch (err) {
-                    console.error("Cancellation Critical Error:", err);
-                    triggerAlert("Error", "Failed to cancel booking: " + err.message);
-                }
+                        } catch (err) {
+                            console.error("Cancellation Critical Error:", err);
+                            triggerAlert("Error", "Failed to cancel booking: " + err.message);
+                        }
+                    },
+                    true, // Danger
+                    "Yes, Cancel It"
+                );
             },
             true, // Danger color
             "Cancel Booking"
