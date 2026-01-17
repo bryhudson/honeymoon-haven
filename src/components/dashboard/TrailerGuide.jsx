@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { format } from 'date-fns';
 import {
     Droplets,
     Zap,
@@ -27,7 +28,9 @@ import {
 } from 'lucide-react';
 import { emailService } from '../../services/emailService';
 
-export function TrailerGuide() {
+
+
+export function TrailerGuide({ shareholderName, booking }) {
     const [activeTab, setActiveTab] = useState('resort-rules');
 
     // Email Modal State
@@ -40,8 +43,26 @@ export function TrailerGuide() {
     const handleSendEmail = async () => {
         if (!guestEmail) return;
         setSending(true);
+
+        // Prepare Booking Details if available
+        let bookingDetails = {};
+        if (booking) {
+            const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
+            const end = booking.to?.toDate ? booking.to.toDate() : new Date(booking.to);
+            bookingDetails = {
+                checkIn: format(start, 'MMM d, yyyy'),
+                checkOut: format(end, 'MMM d, yyyy'),
+                cabinNumber: booking.cabinNumber
+            };
+        }
+
         try {
-            await emailService.sendGuestGuideEmail(guestEmail, guestName);
+            await emailService.sendGuestGuideEmail(
+                guestEmail,
+                guestName,
+                bookingDetails,
+                shareholderName || "A HHR Shareholder"
+            );
             setSentSuccess(true);
         } catch (error) {
             console.error("Error sending email:", error);

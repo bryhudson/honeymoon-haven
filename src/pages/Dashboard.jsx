@@ -647,7 +647,30 @@ export function Dashboard() {
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     🚐 Trailer Checklist and Guest Rules
                 </h3>
-                <TrailerGuide />
+                {/* 
+                    Find the NEXT upcoming finalized booking for the current user 
+                    so they can easily email the guide for it.
+                */}
+                <TrailerGuide
+                    shareholderName={loggedInShareholder}
+                    booking={(() => {
+                        if (!loggedInShareholder || !allDraftRecords) return null;
+                        const now = new Date();
+                        const myBookings = allDraftRecords
+                            .filter(b =>
+                                b.shareholderName === loggedInShareholder &&
+                                b.isFinalized &&
+                                b.type !== 'cancelled' &&
+                                (b.from?.toDate ? b.from.toDate() : new Date(b.from)) >= now
+                            )
+                            .sort((a, b) => {
+                                const dateA = a.from?.toDate ? a.from.toDate() : new Date(a.from);
+                                const dateB = b.from?.toDate ? b.from.toDate() : new Date(b.from);
+                                return dateA - dateB;
+                            });
+                        return myBookings[0] || null;
+                    })()}
+                />
             </div>
 
             {/* Edit / Booking Modal Overlay */}
@@ -799,7 +822,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.92 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.94 - Guest Rules UI</p>
 
 
             </div>
