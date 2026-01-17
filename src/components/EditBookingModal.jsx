@@ -156,24 +156,17 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
             return new Date(y, m - 1, d, 12, 0, 0); // Noon local time safest for dates
         };
 
+
         const updated = {
             ...booking,
             ...formData,
             from: createDate(formData.from),
-            to: createDate(formData.to),
-            // If it was a 'pass', it's now a normal booking
-            type: (booking?.type === 'pass' || booking?.type === 'auto-pass') ? delete booking.type : booking.type
-            // Actually 'delete' keyword returns boolean. We should just not include 'type' or set to null.
-            // Safer: don't include type if we want to remove it, but spread 'booking' copies it.
-            // We should filter it out explicitly if needed, or just set it to null.
-            // Firestore: setting to null keeps field but null value. Ideally FieldValue.delete().
-            // But simple way: just keep it as undefined in local object?
-            // Let's just override it if it was pass.
+            to: createDate(formData.to)
         };
 
-        // Remove 'type' from updated object if it was pass or cancelled (restoring to valid booking)
+        // If it was a 'pass' and we are saving (implying adding dates), remove the pass type
         if (updated.type === 'pass' || updated.type === 'auto-pass' || updated.type === 'cancelled') {
-            delete updated.type;
+            updated.type = null; // Signal to remove this field in Firestore
         }
 
         onSave(updated);
