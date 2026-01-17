@@ -7,6 +7,7 @@ import {
     Flame,
     AlertCircle,
     CheckCircle2,
+    AlertTriangle,
 
     Trash2,
     Wind,

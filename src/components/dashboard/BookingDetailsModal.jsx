@@ -1,6 +1,6 @@
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
-import { Send, Loader2, Mail, CheckCircle2, X } from 'lucide-react';
+import { Send, Loader2, Mail, CheckCircle2, X, AlertTriangle } from 'lucide-react';
 import { emailService } from '../../services/emailService';
 
 export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, currentUser, isAdmin }) {
