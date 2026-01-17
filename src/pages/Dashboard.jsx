@@ -121,12 +121,12 @@ const WelcomeBanner = ({ loggedInShareholder, status, allDraftRecords, currentUs
         }
         // C2. Confirmed
         return (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-2 mb-2">
-                    <Info className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-bold text-blue-900 text-lg">Hi, {loggedInShareholder}</h3>
+            <div className="mb-6 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 mb-1">
+                    <Info className="w-5 h-5 text-slate-400" />
+                    <h3 className="font-bold text-slate-800 text-lg">Hi, {loggedInShareholder}</h3>
                 </div>
-                <p className="text-blue-700">
+                <p className="text-slate-600 pl-7">
                     You have <span className="font-bold text-green-600">confirmed</span> your booking for this round. Relax and enjoy!
                 </p>
             </div>
@@ -870,7 +870,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.105 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.106 - Guest Rules UI</p>
 
 
             </div>
