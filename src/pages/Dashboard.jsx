@@ -684,6 +684,7 @@ export function Dashboard() {
                     onViewDetails={(booking) => setViewingBooking(booking)}
                     currentShareholder={loggedInShareholder}
                     isAdmin={isSuperAdmin}
+                    activePicker={status.activePicker}
                 />
             </div>
 
