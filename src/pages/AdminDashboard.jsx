@@ -1153,7 +1153,7 @@ export function AdminDashboard() {
                                             {isSlotBooked && (
                                                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 ml-2">
                                                     <ActionsDropdown
-                                                        onEdit={() => setEditingBooking(booking)}
+                                                        onEdit={() => handleEditClick(booking)}
                                                         onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
                                                         isCancelled={booking.type === 'cancelled'}
                                                         onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
@@ -1296,7 +1296,7 @@ export function AdminDashboard() {
                                                     <td className="px-6 py-5 text-right">
                                                         {booking.type !== 'pass' && booking.type !== 'auto-pass' ? (
                                                             <ActionsDropdown
-                                                                onEdit={() => setEditingBooking(booking)}
+                                                                onEdit={() => handleEditClick(booking)}
                                                                 onCancel={() => handleCancelBooking(booking)}
                                                                 isCancelled={booking.type === 'cancelled'}
                                                                 onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
