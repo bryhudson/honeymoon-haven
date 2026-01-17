@@ -33,7 +33,7 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                                     return (
                                         <tr key={index} className="hover:bg-muted/10 transition-colors">
                                             <td className="px-3 md:px-6 py-4 font-bold">{booking.cabinNumber || "-"}</td>
-                                            <td className="px-3 md:px-6 py-4 font-medium">{booking.shareholderName || booking.partyName || "-"}</td>
+                                            <td className="px-3 md:px-6 py-4 font-bold text-base text-slate-900">{booking.shareholderName || booking.partyName || "-"}</td>
                                             <td className="px-3 md:px-6 py-4 text-sm">
                                                 {(booking.from && booking.to) ? (
                                                     <>

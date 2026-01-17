@@ -91,7 +91,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                             <td className="px-6 py-4 font-mono text-muted-foreground">
                                                 #{index + 1}
                                             </td>
-                                            <td className="px-6 py-4 font-bold">{cabinNumber}</td>
+                                            <td className="px-6 py-4 font-bold text-base text-slate-900">{cabinNumber}</td>
                                             <td className="px-6 py-4 font-medium">
                                                 {name}
                                             </td>
