@@ -45,7 +45,7 @@ export function TrailerGuide() {
             setSentSuccess(true);
         } catch (error) {
             console.error("Error sending email:", error);
-            alert("Failed to send email. Please try again.");
+            alert(`Failed to send email: ${error.message}`);
         } finally {
             setSending(false);
         }

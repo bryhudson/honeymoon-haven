@@ -16,7 +16,7 @@ const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
  * @param {string} data.htmlContent - HTML body
  * @returns {Promise<{success: boolean, messageId: string}>}
  */
-async function sendGmail({ to, subject, htmlContent }) {
+async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven", replyTo }) {
     const user = gmailEmail.value();
     const pass = gmailAppPassword.value();
 
@@ -36,8 +36,6 @@ async function sendGmail({ to, subject, htmlContent }) {
 
     // Sender Info
     // Gmail always overwrites the "From" address with the authenticated user, but we can set a custom name.
-    // Use provided senderName if available, otherwise default to "Honeymoon Haven"
-    const senderName = data.senderName || "Honeymoon Haven";
     const from = `"${senderName}" <${user}>`;
 
     // Safely override recipient for testing if needed
@@ -52,8 +50,8 @@ async function sendGmail({ to, subject, htmlContent }) {
     };
 
     // Add Reply-To if provided
-    if (data.replyTo) {
-        mailOptions.replyTo = data.replyTo;
+    if (replyTo) {
+        mailOptions.replyTo = replyTo;
     }
 
     try {
