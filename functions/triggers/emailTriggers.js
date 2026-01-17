@@ -154,7 +154,7 @@ exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) 
         throw new HttpsError('unauthenticated', 'You must be logged in to send emails.');
     }
 
-    const { guestEmail, guestName } = request.data;
+    const { guestEmail, guestName, bookingDetails } = request.data;
     if (!guestEmail) {
         throw new HttpsError('invalid-argument', 'Guest email is required.');
     }
@@ -167,7 +167,8 @@ exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) 
     // 3. Generate Content
     const { subject, htmlContent } = emailTemplates.guestGuide({
         shareholder_name: senderName,
-        guest_name: guestName || "Guest"
+        guest_name: guestName || "Guest",
+        booking_details: bookingDetails || {}
     });
 
     // 4. Send Email

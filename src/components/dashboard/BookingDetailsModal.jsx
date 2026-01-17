@@ -39,7 +39,11 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
         if (!guestEmail) return;
         setSending(true);
         try {
-            await emailService.sendGuestGuideEmail(guestEmail, guestName);
+            await emailService.sendGuestGuideEmail(guestEmail, guestName, {
+                checkIn: format(start, 'MMM d, yyyy'),
+                checkOut: format(end, 'MMM d, yyyy'),
+                cabinNumber: booking.cabinNumber
+            });
             setSentSuccess(true);
             setTimeout(() => {
                 setShowEmailForm(false);

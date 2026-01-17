@@ -152,10 +152,10 @@ export const emailService = {
      * Send Guest Guide Email
      * Callable function directly invokable from frontend
      */
-    sendGuestGuideEmail: async (guestEmail, guestName) => {
+    sendGuestGuideEmail: async (guestEmail, guestName, bookingDetails = {}) => {
         try {
             const sendFn = httpsCallable(functions, 'sendGuestGuideEmail');
-            const result = await sendFn({ guestEmail, guestName });
+            const result = await sendFn({ guestEmail, guestName, bookingDetails });
             return result.data;
         } catch (error) {
             console.error('Failed to send Guest Guide:', error);

@@ -381,10 +381,34 @@ const emailTemplates = {
 
   // 14. Guest Guide Email
   guestGuide: (data) => {
+    const details = data.booking_details || {};
+    const hasDetails = details.checkIn && details.checkOut;
+
     const subject = `Welcome to Honeymoon Haven Resort - Guest Guide`;
     const body = `
       <p>Hi there,</p>
       <p><strong>${data.shareholder_name}</strong> has shared the Honeymoon Haven Resort Guest Guide with you for your upcoming stay.</p>
+
+      ${hasDetails ? `
+      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #bbf7d0;">
+        <h3 style="margin-top: 0; color: #166534;">🗓️ YOUR STAY DETAILS</h3>
+        <p style="margin-bottom: 0; color: #14532d;">
+          • Check-in: <strong>${details.checkIn}</strong><br>
+          • Check-out: <strong>${details.checkOut}</strong><br>
+          • Cabin: <strong>#${details.cabinNumber}</strong>
+        </p>
+      </div>
+      ` : ''}
+
+      <div style="margin: 20px 0;">
+        <h3 style="color: #334155;">🔑 CHECK-IN & CHECK-OUT</h3>
+        <ul style="padding-left: 20px; color: #475569;">
+            <li style="margin-bottom: 8px;"><strong>Check-in Time:</strong> 3:00 PM</li>
+            <li style="margin-bottom: 8px;"><strong>Check-out Time:</strong> 11:00 AM</li>
+            <li style="margin-bottom: 8px;"><strong>Arrival:</strong> Park in your designated spot. The cabin will be unlocked.</li>
+            <li style="margin-bottom: 8px;"><strong>Departure:</strong> Please follow the closing checklist on the fridge (turn off water heater, lights, etc.).</li>
+        </ul>
+      </div>
 
       <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
         <h3 style="margin-top: 0; color: #1e293b;">📍 LOCATION</h3>
@@ -396,13 +420,14 @@ const emailTemplates = {
       </div>
 
       <div style="margin: 20px 0;">
-        <h3 style="color: #334155;">📋 ESSENTIAL RULES</h3>
+        <h3 style="color: #334155;">📋 ESSENTIAL RESORT RULES</h3>
         <ul style="padding-left: 20px; color: #475569;">
-            <li style="margin-bottom: 8px;"><strong>Hot Tub:</strong> Ages 5+ only. No food/drink. Always replace the lid.</li>
-            <li style="margin-bottom: 8px;"><strong>Waste:</strong> 1-ply toilet paper only (Septic Safe). NO WIPES. Sort recycling.</li>
+            <li style="margin-bottom: 8px;"><strong>Hot Tub:</strong> Ages 5+ only. No food/drink. Always replace the lid properly.</li>
+            <li style="margin-bottom: 8px;"><strong>Septic System:</strong> 1-ply toilet paper only. <span style="color: #dc2626; font-weight: bold;">NO WIPES</span> (even "flushable" ones).</li>
+            <li style="margin-bottom: 8px;"><strong>Garbage:</strong> Please sort Recycling vs. Garbage into the correct bins.</li>
             <li style="margin-bottom: 8px;"><strong>Quiet Time:</strong> 11:00 PM — 8:00 AM.</li>
-            <li style="margin-bottom: 8px;"><strong>Safety:</strong> No lifeguards on duty. Life jackets recommended for kids on dock.</li>
             <li style="margin-bottom: 8px;"><strong>Speed Limit:</strong> 10 km/h on property.</li>
+            <li style="margin-bottom: 8px;"><strong>Safety:</strong> No lifeguards on duty. Life jackets recommended for kids on dock.</li>
         </ul>
       </div>
 
