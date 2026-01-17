@@ -118,7 +118,8 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                 from: booking.from ? format(booking.from, 'yyyy-MM-dd') : '',
                 to: booking.to ? format(booking.to, 'yyyy-MM-dd') : '',
                 guests: booking.guests || 1,
-                isFinalized: booking.isFinalized || false
+                // If it's a pass/cancelled/finalized, default to Finalized to avoid reverting schedule
+                isFinalized: booking.isFinalized || booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled' || false
             });
         }
     }, [booking]);
