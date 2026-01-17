@@ -130,8 +130,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Zap className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Power & Water Heater</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Power & Water Heater</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     Turn on the water heater switch in the bathroom to <strong>ELECTRIC</strong>.
                                     <span className="block text-rose-600 font-semibold mt-1 text-sm uppercase tracking-wide">⚠️ Do not use the GAS switch.</span>
                                 </p>
@@ -143,8 +143,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <ThermometerSnowflake className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Refrigerator</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Refrigerator</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     Check that the fridge is set to <strong>ELECTRIC</strong>.
                                     <span className="block text-rose-600 font-semibold mt-1 text-sm uppercase tracking-wide">⚠️ Do not use the GAS switch.</span>
                                 </p>
@@ -156,8 +156,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Droplets className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Water Tanks (Grey & Black)</h4>
-                                <div className="text-slate-600 text-base mt-1 space-y-2 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Water Tanks (Grey & Black)</h4>
+                                <div className="text-slate-600 text-sm mt-1 space-y-2 leading-relaxed">
                                     <p>Check levels on the monitor panel in the bathroom. <span className="italic text-slate-400">(Note: Sensors may read half-full incorrectly).</span></p>
                                     <p><strong>Every 48 Hours:</strong> Empty both tanks into the septic. Always drain <strong>Black (Sewer)</strong> first, followed by <strong>Grey (Sink/Bath)</strong>.</p>
                                     <p className="font-medium text-slate-800">Close drain lines when finished to prevent smells.</p>
@@ -173,8 +173,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Flame className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Stove & Oven</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Stove & Oven</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     Both can be lit using the push-button igniter or a match.
                                 </p>
                             </div>
@@ -185,8 +185,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <AlertCircle className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Issues?</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Issues?</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     If propane tanks are empty (check front of trailer), consult your cabin owner for replacement/reimbursement.
                                     <br />
                                     Please report any initial issues immediately to a cabin owner.
@@ -207,8 +207,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                     <Waves className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900 text-lg">Hot Tub & Safety</h4>
-                                    <ul className="text-base text-slate-600 mt-1 space-y-1">
+                                    <h4 className="font-bold text-slate-900 text-base">Hot Tub & Safety</h4>
+                                    <ul className="text-sm text-slate-600 mt-1 space-y-1">
                                         <li>• Age <strong>5+</strong> only. Supervise kids.</li>
                                         <li>• <span className="text-rose-600 font-bold">No food or drink</span> (water/alcohol ok).</li>
                                         <li>• Always <strong>replace the lid</strong> after use.</li>
@@ -222,8 +222,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                     <Trash2 className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900 text-lg">Waste & Septic</h4>
-                                    <ul className="text-base text-slate-600 mt-1 space-y-1">
+                                    <h4 className="font-bold text-slate-900 text-base">Waste & Septic</h4>
+                                    <ul className="text-sm text-slate-600 mt-1 space-y-1">
                                         <li>• <strong>Septic Sensitive:</strong> 1-ply paper only.</li>
                                         <li>• <span className="text-rose-600 font-bold">NO FLUSHABLE WIPES</span> or products.</li>
                                         <li>• Sort Garbage vs. Recycling bins.</li>
@@ -237,8 +237,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                     <Trees className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900 text-lg">Firewood & Outdoors</h4>
-                                    <ul className="text-base text-slate-600 mt-1 space-y-1">
+                                    <h4 className="font-bold text-slate-900 text-base">Firewood & Outdoors</h4>
+                                    <ul className="text-sm text-slate-600 mt-1 space-y-1">
                                         <li>• Split wood as you use it.</li>
                                         <li>• Respect provincial fire bans.</li>
                                         <li>• Do <strong>not</strong> use fences as drying racks.</li>
@@ -252,8 +252,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                     <Moon className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900 text-lg">Community</h4>
-                                    <ul className="text-base text-slate-600 mt-1 space-y-1">
+                                    <h4 className="font-bold text-slate-900 text-base">Community</h4>
+                                    <ul className="text-sm text-slate-600 mt-1 space-y-1">
                                         <li>• <strong>Quiet Time:</strong> 11:00 PM — 8:00 AM.</li>
                                         <li>• Speed Limit: <strong>10 km/h</strong> max.</li>
                                         <li>• Park in assigned spots only.</li>
@@ -272,8 +272,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <LogOut className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Systems Off</h4>
-                                <ul className="text-base text-slate-600 mt-1 space-y-1 list-disc list-inside">
+                                <h4 className="font-bold text-slate-900 text-base">Systems Off</h4>
+                                <ul className="text-sm text-slate-600 mt-1 space-y-1 list-disc list-inside">
                                     <li>Turn <strong>OFF</strong> Water Heater switch (Electric).</li>
                                     <li>Ensure Furnace / Air Conditioning is <strong>OFF</strong>.</li>
                                     <li>Turn <strong>OFF</strong> all inside/outside lights.</li>
@@ -287,8 +287,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Droplets className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Final Tank Drain (Critical)</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Final Tank Drain (Critical)</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     <strong>1.</strong> Drain Black Water (Sewer).<br />
                                     <strong>2.</strong> Drain Grey Water (Sink/Bath).<br />
                                     <strong>3.</strong> Close valves.<br />
@@ -302,8 +302,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <ThermometerSnowflake className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Refrigerator</h4>
-                                <ul className="text-base text-slate-600 mt-1 space-y-1">
+                                <h4 className="font-bold text-slate-900 text-base">Refrigerator</h4>
+                                <ul className="text-sm text-slate-600 mt-1 space-y-1">
                                     <li>Turn <strong>OFF</strong> (unless new renter arrives tomorrow).</li>
                                     <li>Clean and wipe out fridge & microwave.</li>
                                     <li className="font-bold text-rose-600">⚠️ Leave fridge doors OPEN if turned off to prevent mold.</li>
@@ -316,8 +316,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Trash2 className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Cleaning</h4>
-                                <ul className="text-base text-slate-600 mt-1 space-y-1 list-disc list-inside">
+                                <h4 className="font-bold text-slate-900 text-base">Cleaning</h4>
+                                <ul className="text-sm text-slate-600 mt-1 space-y-1 list-disc list-inside">
                                     <li>Clean floors, carpets, sinks, toilet counters.</li>
                                     <li>Fold sheets and clean all surfaces.</li>
                                     <li>Give used rags/towels to your cabin owner.</li>
@@ -330,8 +330,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Wind className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Ventilation (Summer)</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Ventilation (Summer)</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     Leave several windows cracked and ensure the bathroom ceiling vent is left <strong>open</strong>.
                                 </p>
                             </div>
@@ -342,8 +342,8 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <Key className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Lock Up</h4>
-                                <p className="text-slate-600 text-base mt-1 leading-relaxed">
+                                <h4 className="font-bold text-slate-900 text-base">Lock Up</h4>
+                                <p className="text-slate-600 text-sm mt-1 leading-relaxed">
                                     Ensure front and back doors are locked. Return key to shed workbench or cabin owner.
                                 </p>
                             </div>
