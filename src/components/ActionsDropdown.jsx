@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreVertical, Edit, Ban } from 'lucide-react';
+import { MoreVertical, Edit, Ban, CheckCircle } from 'lucide-react';
 
-export function ActionsDropdown({ onEdit, onCancel, isCancelled }) {
+export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus, isFinalized }) {
     const [isOpen, setIsOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const buttonRef = useRef(null);
@@ -104,6 +104,31 @@ export function ActionsDropdown({ onEdit, onCancel, isCancelled }) {
                                 Cancel Booking
                             </button>
                         )}
+
+                        {/* Status Toggle Action */}
+                        {!isCancelled && onToggleStatus && (
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    onToggleStatus && onToggleStatus();
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-purple-50 hover:text-purple-600 flex items-center gap-2 border-t border-slate-100"
+                                role="menuitem"
+                            >
+                                {isFinalized ? (
+                                    <>
+                                        <Edit className="w-4 h-4" /> {/* Or XCircle, using Edit/Undo icon implies change */}
+                                        Revert to Draft
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle className="w-4 h-4" />
+                                        Finalize Booking
+                                    </>
+                                )}
+                            </button>
+                        )}
+
                     </div>
                 </div>,
                 document.body

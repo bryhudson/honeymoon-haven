@@ -1271,13 +1271,12 @@ export function AdminDashboard() {
                                                                 Cancelled
                                                             </span>
                                                         ) : (
-                                                            <button
-                                                                onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isFinalized
-                                                                    ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                                                                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                            /* Static Badge - Interaction moved to Actions Menu */
+                                                            <span
+                                                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${booking.isFinalized
+                                                                    ? 'bg-green-50 text-green-700 border-green-200'
+                                                                    : 'bg-amber-50 text-amber-700 border-amber-200'
                                                                     }`}
-                                                                title={booking.isFinalized ? "Click to Revert to Draft" : "Click to Finalize"}
                                                             >
                                                                 {booking.isFinalized ? (
                                                                     <>
@@ -1290,56 +1289,33 @@ export function AdminDashboard() {
                                                                         Draft
                                                                     </>
                                                                 )}
-                                                            </button>
+                                                            </span>
                                                         )}
                                                     </td>
 
                                                     <td className="px-6 py-5 text-center">
-                                                        {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
-                                                            <span className="text-xs text-muted-foreground/30 font-medium select-none">—</span>
-                                                        ) : (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => handleTogglePaid(booking)}
-                                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 ${booking.isPaid
-                                                                        ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700 shadow-sm'
-                                                                        : 'bg-white text-slate-400 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
-                                                                        }`}
-                                                                    title={booking.isPaid ? "Mark as Unpaid" : "Mark as Paid"}
-                                                                >
-                                                                    {booking.isPaid ? (
-                                                                        <>
-                                                                            <DollarSign className="w-3 h-3 mr-1" />
-                                                                            PAID
-                                                                        </>
-                                                                    ) : (
-                                                                        "UNPAID"
-                                                                    )}
-                                                                </button>
-                                                                {!booking.isPaid && (
-                                                                    <button
-                                                                        onClick={() => handleSendPaymentReminder(booking)}
-                                                                        className="ml-2 p-1.5 align-middle text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                                                                        title="Send Payment Reminder"
-                                                                    >
-                                                                        <Bell className="w-3.5 h-3.5" />
-                                                                    </button>
-                                                                )}
-                                                            </>
-                                                        )}
+                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${booking.isPaid
+                                                            ? 'bg-green-100 text-green-800 border-green-200'
+                                                            : 'bg-white text-slate-500 border-slate-200'
+                                                            }`}>
+                                                            {booking.isPaid ? 'PAID' : 'UNPAID'}
+                                                            {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
+                                                        </span>
                                                     </td>
 
                                                     <td className="px-6 py-5 text-right">
                                                         {booking.type !== 'pass' && booking.type !== 'auto-pass' ? (
                                                             <ActionsDropdown
-                                                                onEdit={() => handleEditClick(booking)}
-                                                                onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
+                                                                onEdit={() => setEditingBooking(booking)}
+                                                                onCancel={() => handleCancelBooking(booking)}
                                                                 isCancelled={booking.type === 'cancelled'}
+                                                                onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                                isFinalized={booking.isFinalized}
                                                             />
                                                         ) : (booking.type === 'pass' || booking.type === 'auto-pass') && (
                                                             // Allow editing turns that were passed (e.g. to un-pass)
                                                             <ActionsDropdown
-                                                                onEdit={() => handleEditClick(booking)}
+                                                                onEdit={() => setEditingBooking(booking)}
                                                             />
                                                         )}
                                                     </td>
@@ -1371,146 +1347,149 @@ export function AdminDashboard() {
                             </table>
                         </div>
                     </>
-                )}
+                )
+                }
 
 
 
 
-                {activeTab === 'users' && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => { setCreateUserRole('shareholder'); setIsCreateUserModalOpen(true); }}
-                                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-sm"
-                                >
-                                    <PlusCircle className="w-4 h-4" />
-                                    Add Shareholder
-                                </button>
-                                <button
-                                    onClick={() => { setCreateUserRole('super_admin'); setIsCreateUserModalOpen(true); }}
-                                    className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
-                                >
-                                    <Shield className="w-4 h-4" />
-                                    Add Admin
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Mobile Card View (Users) */}
-                        <div className="md:hidden space-y-4">
-                            {shareholders.map((person) => (
-                                <div key={person.id} className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-bold text-slate-900 text-lg">{person.name}</h3>
-                                            <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mt-1 inline-block">
-                                                Cabin #{person.cabin}
-                                            </span>
-                                        </div>
-                                        <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${person.role === 'super_admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
-                                            {person.role === 'super_admin' ? 'Super Admin' : 'Shareholder'}
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
-                                        <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Email</div>
-                                        <div className="text-slate-700 font-medium break-all">{person.email}</div>
-                                    </div>
-
-                                    <div className="border-t border-slate-100 pt-3 flex justify-end">
-                                        <UserActionsDropdown
-                                            user={person}
-                                            isSuperAdmin={isSuperAdmin}
-                                            onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
-                                            onPassword={handlePasswordChange}
-                                            onDelete={handleDeleteUser}
-                                        />
-                                    </div>
+                {
+                    activeTab === 'users' && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => { setCreateUserRole('shareholder'); setIsCreateUserModalOpen(true); }}
+                                        className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-sm"
+                                    >
+                                        <PlusCircle className="w-4 h-4" />
+                                        Add Shareholder
+                                    </button>
+                                    <button
+                                        onClick={() => { setCreateUserRole('super_admin'); setIsCreateUserModalOpen(true); }}
+                                        className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
+                                    >
+                                        <Shield className="w-4 h-4" />
+                                        Add Admin
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
 
-                        {/* Desktop Table View (Users) */}
-                        <div className="bg-white border rounded-xl shadow-sm overflow-hidden hidden md:block">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-slate-50 text-slate-500 font-medium border-b">
-                                        <tr>
-                                            <th className="px-6 py-3 w-20">Cabin</th>
-                                            <th className="px-6 py-3">Name</th>
-                                            <th className="px-6 py-3">Email(s)</th>
-                                            <th className="px-6 py-3">Role</th>
-                                            <th className="px-6 py-3 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y text-slate-600">
-                                        {shareholders.length === 0 ? (
+                            {/* Mobile Card View (Users) */}
+                            <div className="md:hidden space-y-4">
+                                {shareholders.map((person) => (
+                                    <div key={person.id} className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-bold text-slate-900 text-lg">{person.name}</h3>
+                                                <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                                    Cabin #{person.cabin}
+                                                </span>
+                                            </div>
+                                            <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${person.role === 'super_admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                                                {person.role === 'super_admin' ? 'Super Admin' : 'Shareholder'}
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
+                                            <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Email</div>
+                                            <div className="text-slate-700 font-medium break-all">{person.email}</div>
+                                        </div>
+
+                                        <div className="border-t border-slate-100 pt-3 flex justify-end">
+                                            <UserActionsDropdown
+                                                user={person}
+                                                isSuperAdmin={isSuperAdmin}
+                                                onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
+                                                onPassword={handlePasswordChange}
+                                                onDelete={handleDeleteUser}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View (Users) */}
+                            <div className="bg-white border rounded-xl shadow-sm overflow-hidden hidden md:block">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-50 text-slate-500 font-medium border-b">
                                             <tr>
-                                                <td colSpan="5" className="px-6 py-8 text-center text-muted-foreground italic">
-                                                    Loading users...
-                                                </td>
+                                                <th className="px-6 py-3 w-20">Cabin</th>
+                                                <th className="px-6 py-3">Name</th>
+                                                <th className="px-6 py-3">Email(s)</th>
+                                                <th className="px-6 py-3">Role</th>
+                                                <th className="px-6 py-3 text-right">Actions</th>
                                             </tr>
-                                        ) : (
-                                            shareholders.map((person) => (
-                                                <tr key={person.id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-3 font-mono text-slate-400">#{person.cabin}</td>
-                                                    <td className="px-6 py-3 font-semibold text-slate-900">{person.name}</td>
-                                                    <td className="px-6 py-3">
-                                                        {editingShareholder?.id === person.id ? (
-                                                            <div className="flex gap-2">
-                                                                <input
-                                                                    type="text"
-                                                                    value={editingShareholder.email}
-                                                                    onChange={(e) => setEditingShareholder({ ...editingShareholder, email: e.target.value })}
-                                                                    className="flex-1 px-2 py-1 text-xs border rounded shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                                                />
-                                                                <button
-                                                                    onClick={handleUpdateShareholder}
-                                                                    className="p-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                                                                >
-                                                                    <CheckCircle className="h-4 w-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setEditingShareholder(null)}
-                                                                    className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"
-                                                                >
-                                                                    <XCircle className="h-4 w-4" />
-                                                                </button>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-slate-600">{person.email}</span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-3">
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded textxs font-medium ${person.role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-600'
-                                                            }`}>
-                                                            {person.role === 'super_admin' ? 'Super Admin' : 'Shareholder'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-3 text-right">
-                                                        {editingShareholder?.id !== person.id && (
-                                                            <div className="flex justify-end pr-2">
-                                                                <UserActionsDropdown
-                                                                    user={person}
-                                                                    isSuperAdmin={isSuperAdmin}
-                                                                    onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
-                                                                    onPassword={handlePasswordChange}
-                                                                    onDelete={handleDeleteUser}
-                                                                />
-                                                            </div>
-                                                        )}
+                                        </thead>
+                                        <tbody className="divide-y text-slate-600">
+                                            {shareholders.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="5" className="px-6 py-8 text-center text-muted-foreground italic">
+                                                        Loading users...
                                                     </td>
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                                            ) : (
+                                                shareholders.map((person) => (
+                                                    <tr key={person.id} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="px-6 py-3 font-mono text-slate-400">#{person.cabin}</td>
+                                                        <td className="px-6 py-3 font-semibold text-slate-900">{person.name}</td>
+                                                        <td className="px-6 py-3">
+                                                            {editingShareholder?.id === person.id ? (
+                                                                <div className="flex gap-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editingShareholder.email}
+                                                                        onChange={(e) => setEditingShareholder({ ...editingShareholder, email: e.target.value })}
+                                                                        className="flex-1 px-2 py-1 text-xs border rounded shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                                    />
+                                                                    <button
+                                                                        onClick={handleUpdateShareholder}
+                                                                        className="p-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                                                                    >
+                                                                        <CheckCircle className="h-4 w-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setEditingShareholder(null)}
+                                                                        className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"
+                                                                    >
+                                                                        <XCircle className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-slate-600">{person.email}</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-3">
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded textxs font-medium ${person.role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-600'
+                                                                }`}>
+                                                                {person.role === 'super_admin' ? 'Super Admin' : 'Shareholder'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-3 text-right">
+                                                            {editingShareholder?.id !== person.id && (
+                                                                <div className="flex justify-end pr-2">
+                                                                    <UserActionsDropdown
+                                                                        user={person}
+                                                                        isSuperAdmin={isSuperAdmin}
+                                                                        onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
+                                                                        onPassword={handlePasswordChange}
+                                                                        onDelete={handleDeleteUser}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
 
                 {/* Modal */}
                 {/* Modal */}
@@ -1554,7 +1533,7 @@ export function AdminDashboard() {
                     inputType={promptData.inputType}
                     confirmText={promptData.confirmText}
                 />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
