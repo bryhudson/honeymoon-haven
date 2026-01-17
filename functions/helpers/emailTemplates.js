@@ -383,32 +383,23 @@ const emailTemplates = {
   guestGuide: (data) => {
     const details = data.booking_details || {};
     const hasDetails = details.checkIn && details.checkOut;
+    const cabinText = details.cabinNumber ? ` for <strong>Cabin #${details.cabinNumber}</strong>` : '';
 
     const subject = `Welcome to Honeymoon Haven Resort - Guest Guide`;
     const body = `
       <p>Hi there,</p>
-      <p><strong>${data.shareholder_name}</strong> has shared the Honeymoon Haven Resort Guest Guide with you for your upcoming stay.</p>
+      <p><strong>${data.shareholder_name}</strong> has shared the Honeymoon Haven Resort Guest Guide with you for your upcoming stay${cabinText}.</p>
 
       ${hasDetails ? `
       <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #bbf7d0;">
         <h3 style="margin-top: 0; color: #166534;">🗓️ YOUR STAY DETAILS</h3>
         <p style="margin-bottom: 0; color: #14532d;">
-          • Check-in: <strong>${details.checkIn}</strong><br>
-          • Check-out: <strong>${details.checkOut}</strong><br>
+          • Check-in: <strong>${details.checkIn}</strong> (3:00 PM)<br>
+          • Check-out: <strong>${details.checkOut}</strong> (11:00 AM)<br>
           • Cabin: <strong>#${details.cabinNumber}</strong>
         </p>
       </div>
       ` : ''}
-
-      <div style="margin: 20px 0;">
-        <h3 style="color: #334155;">🔑 CHECK-IN & CHECK-OUT</h3>
-        <ul style="padding-left: 20px; color: #475569;">
-            <li style="margin-bottom: 8px;"><strong>Check-in Time:</strong> 3:00 PM</li>
-            <li style="margin-bottom: 8px;"><strong>Check-out Time:</strong> 11:00 AM</li>
-            <li style="margin-bottom: 8px;"><strong>Arrival:</strong> Park in your designated spot. The cabin will be unlocked.</li>
-            <li style="margin-bottom: 8px;"><strong>Departure:</strong> Please follow the closing checklist on the fridge (turn off water heater, lights, etc.).</li>
-        </ul>
-      </div>
 
       <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
         <h3 style="margin-top: 0; color: #1e293b;">📍 LOCATION</h3>
@@ -419,16 +410,123 @@ const emailTemplates = {
         <p><a href="https://www.google.com/maps/search/?api=1&query=Honeymoon+Haven+Resort+10257+South+Shore+Road+Honeymoon+Bay+BC+V0R+1Y0" style="color: #2563eb; text-decoration: none;">View on Google Maps</a></p>
       </div>
 
-      <div style="margin: 20px 0;">
-        <h3 style="color: #334155;">📋 ESSENTIAL RESORT RULES</h3>
-        <ul style="padding-left: 20px; color: #475569;">
-            <li style="margin-bottom: 8px;"><strong>Hot Tub:</strong> Ages 5+ only. No food/drink. Always replace the lid properly.</li>
-            <li style="margin-bottom: 8px;"><strong>Septic System:</strong> 1-ply toilet paper only. <span style="color: #dc2626; font-weight: bold;">NO WIPES</span> (even "flushable" ones).</li>
-            <li style="margin-bottom: 8px;"><strong>Garbage:</strong> Please sort Recycling vs. Garbage into the correct bins.</li>
-            <li style="margin-bottom: 8px;"><strong>Quiet Time:</strong> 11:00 PM — 8:00 AM.</li>
-            <li style="margin-bottom: 8px;"><strong>Speed Limit:</strong> 10 km/h on property.</li>
-            <li style="margin-bottom: 8px;"><strong>Safety:</strong> No lifeguards on duty. Life jackets recommended for kids on dock.</li>
-        </ul>
+      <!-- RULES SECTION -->
+      <div style="margin: 25px 0;">
+        <h3 style="color: #1e3a8a; border-bottom: 2px solid #bfdbfe; padding-bottom: 5px;">📋 RESORT RULES</h3>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #475569;">🌊 Hot Tub & Safety</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Age <strong>5+</strong> only. Supervise kids.</li>
+            <li><strong style="color: #be123c;">No food or drink</strong> (water/alcohol ok).</li>
+            <li>Always <strong>replace the lid</strong> after use.</li>
+            <li>No lifeguards on duty at beach/dock.</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #475569;">🗑️ Waste & Septic</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li><strong>Septic Sensitive:</strong> 1-ply paper only.</li>
+            <li><strong style="color: #be123c;">NO FLUSHABLE WIPES</strong> or products.</li>
+            <li>Sort Garbage vs. Recycling bins.</li>
+            <li>Returnables (cans/bottles) in small bins.</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #475569;">🌲 Firewood & Outdoors</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Split wood as you use it.</li>
+            <li>Respect provincial fire bans.</li>
+            <li>Do <strong>not</strong> use fences as drying racks.</li>
+            <li>Clean up beach/fire pit areas after use.</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong style="color: #475569;">🌙 Community</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li><strong>Quiet Time:</strong> 11:00 PM — 8:00 AM.</li>
+            <li>Speed Limit: <strong>10 km/h</strong> max.</li>
+            <li>Park in assigned spots only.</li>
+            <li>Be considerate of neighbors!</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- CHECK-IN SECTION -->
+      <div style="margin: 25px 0;">
+        <h3 style="color: #047857; border-bottom: 2px solid #a7f3d0; padding-bottom: 5px;">🔑 CHECK-IN CHECKLIST</h3>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">⚡ Power & Water Heater</strong>
+          <p style="margin: 5px 0 0 0; color: #475569;">Turn on the water heater switch in the bathroom to <strong>ELECTRIC</strong>.<br>
+          <span style="color: #be123c; font-weight: bold; font-size: 0.9em;">⚠️ Do not use the GAS switch.</span></p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">❄️ Refrigerator</strong>
+          <p style="margin: 5px 0 0 0; color: #475569;">Check that the fridge is set to <strong>ELECTRIC</strong>.<br>
+          <span style="color: #be123c; font-weight: bold; font-size: 0.9em;">⚠️ Do not use the GAS switch.</span></p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">💧 Water Tanks (Grey & Black)</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Check levels on the monitor panel in the bathroom.</li>
+            <li><strong>Every 48 Hours:</strong> Empty both tanks into the septic. Always drain <strong>Black (Sewer)</strong> first, followed by <strong>Grey (Sink/Bath)</strong>.</li>
+            <li>Close drain lines when finished to prevent smells.</li>
+            <li><em>Note: Grey water fills fast!</em></li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">🔥 Stove & Oven</strong>
+          <p style="margin: 5px 0 0 0; color: #475569;">Both can be lit using the push-button igniter or a match.</p>
+        </div>
+      </div>
+
+      <!-- CHECK-OUT SECTION -->
+      <div style="margin: 25px 0;">
+        <h3 style="color: #be123c; border-bottom: 2px solid #fecdd3; padding-bottom: 5px;">👋 CHECK-OUT CHECKLIST</h3>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">🔌 Systems Off</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Turn <strong>OFF</strong> Water Heater switch (Electric).</li>
+            <li>Ensure Furnace / Air Conditioning is <strong>OFF</strong>.</li>
+            <li>Turn <strong>OFF</strong> all inside/outside lights.</li>
+            <li>Retract awning.</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">🚿 Final Tank Drain (Critical)</strong>
+          <ol style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Drain Black Water (Sewer).</li>
+            <li>Drain Grey Water (Sink/Bath).</li>
+            <li>Close valves.</li>
+            <li>Add septic cleaner to toilet and flush once.</li>
+          </ol>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #334155;">❄️ Refrigerator</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Turn <strong>OFF</strong> (unless new renter arrives tomorrow).</li>
+            <li>Clean and wipe out fridge & microwave.</li>
+            <li><strong style="color: #be123c;">⚠️ Leave fridge doors OPEN</strong> if turned off to prevent mold.</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong style="color: #334155;">🧹 Cleaning</strong>
+          <ul style="margin-top: 5px; color: #475569; padding-left: 20px;">
+            <li>Clean floors, carpets, sinks, toilet counters.</li>
+            <li>Wipe down all surfaces.</li>
+          </ul>
+        </div>
       </div>
 
       <div style="margin: 20px 0; border-top: 1px solid #e2e8f0; padding-top: 20px;">
