@@ -92,7 +92,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                                 #{index + 1}
                                             </td>
                                             <td className="px-6 py-4 font-bold text-base text-slate-900">{cabinNumber}</td>
-                                            <td className="px-6 py-4 font-medium">
+                                            <td className="px-6 py-4 font-bold text-base text-slate-900">
                                                 {name}
                                             </td>
                                             <td className="px-6 py-4">
