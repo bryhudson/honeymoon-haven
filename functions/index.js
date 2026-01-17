@@ -19,6 +19,7 @@ if (admin.apps.length === 0) {
 const { sendGmail, gmailSecrets } = require("./helpers/email");
 const { emailTemplates } = require("./helpers/emailTemplates");
 const { onBookingChangeTrigger, checkDailyReminders, sendGuestGuideEmail } = require("./triggers/emailTriggers");
+const { createAccount, deleteAccount } = require("./triggers/userManagement");
 
 /**
  * Sends an email via Gmail SMTP.
@@ -85,6 +86,10 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 exports.onBookingChangeTrigger = onBookingChangeTrigger;
 exports.checkDailyReminders = checkDailyReminders;
 exports.sendGuestGuideEmail = sendGuestGuideEmail;
+
+// User Management
+exports.createAccount = createAccount;
+exports.deleteAccount = deleteAccount;
 
 /**
  * Admin: Update user password
