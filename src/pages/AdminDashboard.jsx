@@ -5,7 +5,7 @@ import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } f
 import { emailService } from '../services/emailService';
 import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc, deleteField } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, addDoc, deleteField, getDoc, setDoc } from 'firebase/firestore';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
@@ -152,6 +152,44 @@ export function AdminDashboard() {
             message,
             onConfirm: action
         });
+    };
+
+    const handleWipeDatabase = () => {
+        requireAuth(
+            "Wipe Database Audit",
+            "This action is destructive and irreversible. Please re-authenticate.",
+            () => {
+                triggerConfirm(
+                    "EXTREME DANGER: Wipe Database",
+                    "You are about to PERMANENTLY DELETE ALL BOOKINGS. This cannot be undone.\n\nAre you absolutely sure?",
+                    async () => {
+                        try {
+                            const count = await performWipe();
+                            triggerAlert("Success", `Database wiped. ${count} records deleted.`);
+                        } catch (err) {
+                            console.error(err);
+                            triggerAlert("Error", "Wipe failed: " + err.message);
+                        }
+                    },
+                    true,
+                    "NUKE DATA"
+                );
+            }
+        );
+    };
+
+    const handleToggleFreeze = async () => {
+        try {
+            const settingsRef = doc(db, "settings", "general");
+            const snap = await getDoc(settingsRef);
+            const current = snap.exists() ? snap.data().isSystemFrozen : false;
+
+            await setDoc(settingsRef, { isSystemFrozen: !current }, { merge: true });
+            triggerAlert("Success", `System is now ${!current ? 'FROZEN' : 'ACTIVE'}.`);
+        } catch (e) {
+            console.error(e);
+            triggerAlert("Error", "Failed to update system state.");
+        }
     };
 
     const handleUpdateStartDate = async () => {
@@ -971,7 +1009,26 @@ export function AdminDashboard() {
                                             </div>
                                         </div>
 
-                                        <div className="col-span-2 mt-4 flex justify-end border-t pt-4">
+                                        <div className="col-span-2 mt-4 flex justify-end border-t pt-4 gap-4">
+                                            <button
+                                                onClick={handleToggleFreeze}
+                                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${isSystemFrozen ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-blue-50 text-blue-700 border border-blue-200"}`}
+                                            >
+                                                {isSystemFrozen ? (
+                                                    <><PlayCircle className="w-4 h-4" /> Unfreeze System</>
+                                                ) : (
+                                                    <><Ban className="w-4 h-4" /> Freeze System</>
+                                                )}
+                                            </button>
+
+                                            <button
+                                                onClick={handleWipeDatabase}
+                                                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                Wipe Database
+                                            </button>
+
                                             <button
                                                 onClick={() => {
                                                     const generateRowHtml = (s) => {
