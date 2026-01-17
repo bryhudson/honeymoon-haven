@@ -749,6 +749,7 @@ export function AdminDashboard() {
 
     // --- USER MANAGEMENT ---
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+    const [createUserRole, setCreateUserRole] = useState('shareholder');
     const [currentUserRole, setCurrentUserRole] = useState(null);
 
     useEffect(() => {
@@ -818,6 +819,7 @@ export function AdminDashboard() {
         <div className="flex flex-col gap-6 py-4 md:py-6 container mx-auto px-4 relative animate-in fade-in duration-500">
             <CreateUserModal
                 isOpen={isCreateUserModalOpen}
+                initialRole={createUserRole}
                 onClose={() => setIsCreateUserModalOpen(false)}
                 onSuccess={() => triggerAlert("Success", "User created successfully.")}
             />
@@ -1372,13 +1374,22 @@ export function AdminDashboard() {
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
-                            <button
-                                onClick={() => setIsCreateUserModalOpen(true)}
-                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
-                            >
-                                <PlusCircle className="w-4 h-4" />
-                                Add User
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => { setCreateUserRole('shareholder'); setIsCreateUserModalOpen(true); }}
+                                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-sm"
+                                >
+                                    <PlusCircle className="w-4 h-4" />
+                                    Add Shareholder
+                                </button>
+                                <button
+                                    onClick={() => { setCreateUserRole('super_admin'); setIsCreateUserModalOpen(true); }}
+                                    className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    Add Admin
+                                </button>
+                            </div>
                         </div>
 
                         {/* Mobile Card View (Users) */}
@@ -1418,12 +1429,7 @@ export function AdminDashboard() {
 
                                         {isSuperAdmin && (
                                             <>
-                                                <button
-                                                    onClick={() => handleRoleChange(person, person.role === 'super_admin' ? 'shareholder' : 'super_admin')}
-                                                    className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5"
-                                                >
-                                                    <Shield className="w-3.5 h-3.5" /> Role
-                                                </button>
+
                                                 <button
                                                     onClick={() => handleDeleteUser(person)}
                                                     className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5"
@@ -1513,13 +1519,7 @@ export function AdminDashboard() {
                                                                 </button>
                                                                 {isSuperAdmin && (
                                                                     <div className="flex gap-1 border-l border-slate-200 pl-2 ml-1">
-                                                                        <button
-                                                                            onClick={() => handleRoleChange(person, person.role === 'super_admin' ? 'shareholder' : 'super_admin')}
-                                                                            className="p-1 text-slate-400 hover:text-purple-600 transition-colors"
-                                                                            title="Change Role"
-                                                                        >
-                                                                            <Shield className="h-4 w-4" />
-                                                                        </button>
+
                                                                         <button
                                                                             onClick={() => handleDeleteUser(person)}
                                                                             className="p-1 text-slate-400 hover:text-red-600 transition-colors"

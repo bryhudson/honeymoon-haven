@@ -3,13 +3,20 @@ import { X, Loader2 } from 'lucide-react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../lib/firebase';
 
-export function CreateUserModal({ isOpen, onClose, onSuccess }) {
+export function CreateUserModal({ isOpen, onClose, onSuccess, initialRole = 'shareholder' }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
-    const [role, setRole] = useState('shareholder');
+    const [role, setRole] = useState(initialRole);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Update role when modal opens with a specific intent
+    React.useEffect(() => {
+        if (isOpen) {
+            setRole(initialRole);
+        }
+    }, [isOpen, initialRole]);
 
     if (!isOpen) return null;
 
