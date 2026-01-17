@@ -1308,7 +1308,7 @@ export function AdminDashboard() {
                                                         ) : (booking.type === 'pass' || booking.type === 'auto-pass') && (
                                                             // Allow editing turns that were passed (e.g. to un-pass)
                                                             <ActionsDropdown
-                                                                onEdit={() => setEditingBooking(booking)}
+                                                                onEdit={() => handleEditClick(booking)}
                                                             />
                                                         )}
                                                     </td>
