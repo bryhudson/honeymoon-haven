@@ -815,7 +815,7 @@ export function AdminDashboard() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col gap-6 py-4 md:py-6 container mx-auto px-4 relative animate-in fade-in duration-500">
             <CreateUserModal
                 isOpen={isCreateUserModalOpen}
                 onClose={() => setIsCreateUserModalOpen(false)}
