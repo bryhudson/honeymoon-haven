@@ -35,8 +35,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     const [sending, setSending] = React.useState(false);
     const [sentSuccess, setSentSuccess] = React.useState(false);
 
-    const handleSendEmail = async (e) => {
-        e.preventDefault();
+    const handleSendEmail = async () => {
         if (!guestEmail) return;
         setSending(true);
         try {
@@ -46,10 +45,11 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                 setShowEmailForm(false);
                 setSentSuccess(false);
                 setGuestEmail('');
+                setGuestName('Guest'); // Reset name too
             }, 2000);
         } catch (error) {
             console.error("Error sending email:", error);
-            alert("Failed to send email. Please try again.");
+            alert(`Failed to send email: ${error.message}`);
         } finally {
             setSending(false);
         }
