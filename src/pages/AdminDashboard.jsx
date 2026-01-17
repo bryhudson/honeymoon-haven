@@ -1369,12 +1369,12 @@ export function AdminDashboard() {
 
 
                 {activeTab === 'users' && (
-                    <div className="space-y-6">
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
                             <button
                                 onClick={() => setIsCreateUserModalOpen(true)}
-                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
                             >
                                 <PlusCircle className="w-4 h-4" />
                                 Add User
