@@ -56,8 +56,96 @@ class ErrorBoundary extends React.Component {
 
 // Status Cards and Countdowns moved to components
 
+const WelcomeBanner = ({ loggedInShareholder, status, allDraftRecords, currentUser, isSuperAdmin }) => {
+    if (!loggedInShareholder) return null;
 
+    // 1. Determine User State
+    // A. Open Season
+    if (status.phase === 'OPEN_SEASON') {
+        return (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                    <h3 className="font-bold text-green-900 text-lg">Hi, {loggedInShareholder}</h3>
+                </div>
+                <p className="text-green-800">
+                    <span className="font-bold">Open Season is Live!</span> Booking is now first-come, first-served for all shareholders.
+                </p>
+            </div>
+        );
+    }
 
+    // B. Active Turn
+    if (status.activePicker === loggedInShareholder) {
+        return (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2 ring-2 ring-blue-400 ring-offset-2">
+                <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-bold text-blue-900 text-lg">Hi, {loggedInShareholder}</h3>
+                </div>
+                <p className="text-blue-800">
+                    It is currently <span className="font-bold uppercase">YOUR TURN</span> to pick! Please finalize your booking below.
+                </p>
+            </div>
+        );
+    }
+
+    // C. Waiting / Done
+    // Calculate if done for round
+    let roundTarget = 1;
+    if (status.phase === 'ROUND_2') roundTarget = 2;
+
+    const myActions = allDraftRecords.filter(b =>
+        b.shareholderName === loggedInShareholder &&
+        (b.isFinalized || b.type === 'pass') &&
+        b.type !== 'cancelled'
+    );
+
+    const isDoneForRound = myActions.length >= roundTarget;
+    const lastAction = myActions[myActions.length - 1];
+
+    if (isDoneForRound) {
+        // C1. Passed
+        if (lastAction?.type === 'pass') {
+            return (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Info className="w-5 h-5 text-amber-600" />
+                        <h3 className="font-bold text-amber-900 text-lg">Hi, {loggedInShareholder}</h3>
+                    </div>
+                    <p className="text-amber-800">
+                        You have <span className="font-bold text-amber-700">passed</span> your turn for this round. Sit tight!
+                    </p>
+                </div>
+            );
+        }
+        // C2. Confirmed
+        return (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 mb-2">
+                    <Info className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-bold text-blue-900 text-lg">Hi, {loggedInShareholder}</h3>
+                </div>
+                <p className="text-blue-700">
+                    You have <span className="font-bold text-green-600">confirmed</span> your booking for this round. Relax and enjoy!
+                </p>
+            </div>
+        );
+    }
+
+    // C3. Waiting (Pending)
+    return (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2 mb-2">
+                <Info className="w-5 h-5 text-slate-500" />
+                <h3 className="font-bold text-slate-800 text-lg">Hi, {loggedInShareholder}</h3>
+            </div>
+            <p className="text-slate-600">
+                It is currently <span className="font-bold text-slate-900">{status.activePicker}'s</span> turn. We will notify you when you are up.
+            </p>
+        </div>
+    );
+};
 
 export function Dashboard() {
     const { currentUser, logout } = useAuth();
@@ -503,6 +591,15 @@ export function Dashboard() {
                 )}
             </div>
 
+            {/* Welcome / Status Banner */}
+            <WelcomeBanner
+                loggedInShareholder={loggedInShareholder}
+                status={status}
+                allDraftRecords={allDraftRecords}
+                currentUser={currentUser}
+                isSuperAdmin={isSuperAdmin}
+            />
+
             <div id="tour-status">
                 <StatusCard status={status}>
                     {/* Only show controls if IT IS YOUR TURN OR ADMIN OR OPEN SEASON */}
@@ -534,58 +631,7 @@ export function Dashboard() {
                                     </button>
                                 </div>
                             </div>
-                        ) : (loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col gap-2 animate-in fade-in duration-700">
-                                <div className="flex items-center gap-2 text-blue-800 font-bold">
-                                    <Info className="w-5 h-5 text-blue-600" />
-                                    Hi, {loggedInShareholder}
-                                </div>
-                                <p className="text-sm text-blue-700/80 leading-relaxed ml-7">
-                                    {(() => {
-                                        // 1. Determine Current Round Target
-                                        let roundTarget = 1;
-                                        if (status.phase === 'ROUND_2') roundTarget = 2;
-                                        if (status.phase === 'OPEN_SEASON') roundTarget = 99;
 
-                                        // 2. Count My Actions (Bookings or Passes)
-                                        const myActions = allDraftRecords.filter(b =>
-                                            b.shareholderName === loggedInShareholder &&
-                                            (b.isFinalized || b.type === 'pass') &&
-                                            b.type !== 'cancelled'
-                                        );
-
-                                        const myCount = myActions.length;
-                                        const lastAction = myActions[myActions.length - 1];
-                                        const isDoneForRound = myCount >= roundTarget;
-
-                                        // 3. Render Message
-                                        if (isDoneForRound) {
-                                            if (lastAction?.type === 'pass') {
-                                                return (
-                                                    <span>
-                                                        You have <span className="font-bold text-amber-600">passed</span> your turn for this round.
-                                                        Sit tight!
-                                                    </span>
-                                                );
-                                            }
-                                            return (
-                                                <span>
-                                                    You have <span className="font-bold text-green-600">confirmed</span> your booking for this round.
-                                                    Relax and enjoy!
-                                                </span>
-                                            );
-                                        }
-
-                                        // Default: Waiting
-                                        return (
-                                            <span>
-                                                It is currently <span className="font-bold text-blue-900">{status.activePicker}'s</span> turn.
-                                                We will send you an email notification as soon as it is your turn to pick.
-                                            </span>
-                                        );
-                                    })()}
-                                </p>
-                            </div>
                         ) : activeUserDraft ? (
                             <div className="flex gap-3 mt-4">
                                 <button
@@ -822,7 +868,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.96 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.98 - Guest Rules UI</p>
 
 
             </div>
