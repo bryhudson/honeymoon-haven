@@ -11,6 +11,7 @@ import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
 import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
+import { UserActionsDropdown } from '../components/UserActionsDropdown';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
 import { PromptModal } from '../components/PromptModal';
 import { CreateUserModal } from '../components/CreateUserModal';
@@ -1418,31 +1419,14 @@ export function AdminDashboard() {
                                         <div className="text-slate-700 font-medium break-all">{person.email}</div>
                                     </div>
 
-                                    <div className="border-t border-slate-100 pt-3 flex flex-wrap gap-2 justify-end">
-                                        <button
-                                            onClick={() => setEditingShareholder({ id: person.id, email: person.email })}
-                                            className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1.5"
-                                        >
-                                            <Pencil className="w-3.5 h-3.5" /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handlePasswordChange(person)}
-                                            className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5"
-                                        >
-                                            <Key className="w-3.5 h-3.5" /> Password
-                                        </button>
-
-                                        {isSuperAdmin && (
-                                            <>
-
-                                                <button
-                                                    onClick={() => handleDeleteUser(person)}
-                                                    className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                                                </button>
-                                            </>
-                                        )}
+                                    <div className="border-t border-slate-100 pt-3 flex justify-end">
+                                        <UserActionsDropdown
+                                            user={person}
+                                            isSuperAdmin={isSuperAdmin}
+                                            onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
+                                            onPassword={handlePasswordChange}
+                                            onDelete={handleDeleteUser}
+                                        />
                                     </div>
                                 </div>
                             ))}
@@ -1507,33 +1491,14 @@ export function AdminDashboard() {
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         {editingShareholder?.id !== person.id && (
-                                                            <div className="flex gap-1 justify-end">
-                                                                <button
-                                                                    onClick={() => setEditingShareholder({ id: person.id, email: person.email })}
-                                                                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
-                                                                    title="Edit Email"
-                                                                >
-                                                                    <Pencil className="h-4 w-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handlePasswordChange(person)}
-                                                                    className="p-1 text-slate-400 hover:text-amber-600 transition-colors"
-                                                                    title="Change Password"
-                                                                >
-                                                                    <Key className="h-4 w-4" />
-                                                                </button>
-                                                                {isSuperAdmin && (
-                                                                    <div className="flex gap-1 border-l border-slate-200 pl-2 ml-1">
-
-                                                                        <button
-                                                                            onClick={() => handleDeleteUser(person)}
-                                                                            className="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                                                                            title="Delete User"
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                )}
+                                                            <div className="flex justify-end pr-2">
+                                                                <UserActionsDropdown
+                                                                    user={person}
+                                                                    isSuperAdmin={isSuperAdmin}
+                                                                    onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
+                                                                    onPassword={handlePasswordChange}
+                                                                    onDelete={handleDeleteUser}
+                                                                />
                                                             </div>
                                                         )}
                                                     </td>
