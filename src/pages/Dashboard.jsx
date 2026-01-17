@@ -651,26 +651,28 @@ export function Dashboard() {
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex gap-3 mt-4">
-                                <button
-                                    onClick={() => setIsBooking(true)}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                >
-                                    Choose Your Dates
-                                </button>
-                                <button
-                                    onClick={() => status.phase === 'PRE_DRAFT'
-                                        ? setShowPreDraftModal(true)
-                                        : (() => {
-                                            setPassData({ name: status.activePicker });
-                                            setIsPassing(true);
-                                        })()
-                                    }
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                >
-                                    Pass Turn
-                                </button>
-                            </div>
+                            (status.activePicker === loggedInShareholder || isSuperAdmin) && (
+                                <div className="flex gap-3 mt-4">
+                                    <button
+                                        onClick={() => setIsBooking(true)}
+                                        className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                    >
+                                        Choose Your Dates
+                                    </button>
+                                    <button
+                                        onClick={() => status.phase === 'PRE_DRAFT'
+                                            ? setShowPreDraftModal(true)
+                                            : (() => {
+                                                setPassData({ name: status.activePicker });
+                                                setIsPassing(true);
+                                            })()
+                                        }
+                                        className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                    >
+                                        Pass Turn
+                                    </button>
+                                </div>
+                            )
                         )}
                     </div>
                 </StatusCard>
@@ -868,7 +870,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.103 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.104 - Guest Rules UI</p>
 
 
             </div>
