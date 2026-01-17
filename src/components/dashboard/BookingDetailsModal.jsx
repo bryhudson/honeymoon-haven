@@ -43,7 +43,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                 checkIn: format(start, 'MMM d, yyyy'),
                 checkOut: format(end, 'MMM d, yyyy'),
                 cabinNumber: booking.cabinNumber
-            });
+            }, currentUser);
             setSentSuccess(true);
             setTimeout(() => {
                 setShowEmailForm(false);

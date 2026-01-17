@@ -154,15 +154,15 @@ exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) 
         throw new HttpsError('unauthenticated', 'You must be logged in to send emails.');
     }
 
-    const { guestEmail, guestName, bookingDetails } = request.data;
+    const { guestEmail, guestName, bookingDetails, shareholderName } = request.data;
     if (!guestEmail) {
         throw new HttpsError('invalid-argument', 'Guest email is required.');
     }
 
-    // 2. Get Shareholder Name
-    const senderName = request.auth.token.name || "A HHR Shareholder";
+    // 2. Get Shareholder Name (Prefer explicit arg, fallback to token, then default)
+    const senderName = shareholderName || request.auth.token.name || "A HHR Shareholder";
 
-    logger.info(`Sending Guest Guide to ${guestEmail} from ${senderName}`);
+    logger.info(`Sending Guest Guide to ${guestEmail} from ${senderName}. Details: ${JSON.stringify(bookingDetails)}`);
 
     // 3. Generate Content
     const { subject, htmlContent } = emailTemplates.guestGuide({
