@@ -1134,12 +1134,11 @@ export function AdminDashboard() {
                                                             {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
                                                                 <span className="text-slate-400 text-sm">—</span>
                                                             ) : (
-                                                                <button
-                                                                    onClick={() => handleTogglePaid(booking)}
-                                                                    className={`px-3 py-1 rounded text-xs font-bold border transition-all active:scale-95 ${paymentClass}`}
+                                                                <span
+                                                                    className={`px-3 py-1 rounded text-xs font-bold border ${paymentClass}`}
                                                                 >
                                                                     {booking.isPaid ? "PAID" : "UNPAID"}
-                                                                </button>
+                                                                </span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -1153,24 +1152,15 @@ export function AdminDashboard() {
                                             {/* Actions Footer */}
                                             {isSlotBooked && (
                                                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 ml-2">
-                                                    {!(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') && (
-                                                        <button
-                                                            onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${booking.isFinalized
-                                                                ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                                                                : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
-                                                        >
-                                                            {booking.isFinalized ? (
-                                                                <><XCircle className="w-3.5 h-3.5" /> Revert</>
-                                                            ) : (
-                                                                <><CheckCircle className="w-3.5 h-3.5" /> Finalize</>
-                                                            )}
-                                                        </button>
-                                                    )}
                                                     <ActionsDropdown
-                                                        onEdit={() => handleEditClick(booking)}
+                                                        onEdit={() => setEditingBooking(booking)}
                                                         onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
                                                         isCancelled={booking.type === 'cancelled'}
+                                                        onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                        isFinalized={booking.isFinalized}
+                                                        onTogglePaid={() => handleTogglePaid(booking)}
+                                                        isPaid={booking.isPaid}
+                                                        onSendReminder={() => handleSendPaymentReminder(booking)}
                                                     />
                                                 </div>
                                             )}
@@ -1311,6 +1301,9 @@ export function AdminDashboard() {
                                                                 isCancelled={booking.type === 'cancelled'}
                                                                 onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
                                                                 isFinalized={booking.isFinalized}
+                                                                onTogglePaid={() => handleTogglePaid(booking)}
+                                                                isPaid={booking.isPaid}
+                                                                onSendReminder={() => handleSendPaymentReminder(booking)}
                                                             />
                                                         ) : (booking.type === 'pass' || booking.type === 'auto-pass') && (
                                                             // Allow editing turns that were passed (e.g. to un-pass)

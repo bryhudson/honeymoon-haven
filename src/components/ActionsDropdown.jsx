@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreVertical, Edit, Ban, CheckCircle } from 'lucide-react';
+import { MoreVertical, Edit, Ban, CheckCircle, DollarSign, Bell } from 'lucide-react';
 
-export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus, isFinalized }) {
+export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus, isFinalized, onTogglePaid, isPaid, onSendReminder }) {
     const [isOpen, setIsOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const buttonRef = useRef(null);
@@ -117,7 +117,7 @@ export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus,
                             >
                                 {isFinalized ? (
                                     <>
-                                        <Edit className="w-4 h-4" /> {/* Or XCircle, using Edit/Undo icon implies change */}
+                                        <Edit className="w-4 h-4" />
                                         Revert to Draft
                                     </>
                                 ) : (
@@ -126,6 +126,38 @@ export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus,
                                         Finalize Booking
                                     </>
                                 )}
+                            </button>
+                        )}
+
+                        {/* Payment Actions */}
+                        {!isCancelled && onTogglePaid && (
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    onTogglePaid && onTogglePaid();
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 border-t border-slate-100 ${isPaid
+                                    ? 'text-red-700 hover:bg-red-50 hover:text-red-800'
+                                    : 'text-green-700 hover:bg-green-50 hover:text-green-800'
+                                    }`}
+                                role="menuitem"
+                            >
+                                <DollarSign className="w-4 h-4" />
+                                {isPaid ? "Mark as Unpaid" : "Mark as Paid"}
+                            </button>
+                        )}
+
+                        {!isCancelled && !isPaid && onSendReminder && (
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    onSendReminder && onSendReminder();
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 border-t border-slate-100"
+                                role="menuitem"
+                            >
+                                <Bell className="w-4 h-4" />
+                                Send Payment Reminder
                             </button>
                         )}
 
