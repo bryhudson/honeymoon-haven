@@ -1063,7 +1063,122 @@ export function AdminDashboard() {
                             )}
                         </div>
 
-                        <div className="overflow-x-auto">
+                        {/* Mobile Card View (Bookings) */}
+                        <div className="md:hidden space-y-4 mb-8">
+                            {(() => {
+                                const currentOrder = getShareholderOrder(2026);
+                                const schedule = mapOrderToSchedule(currentOrder, allBookings);
+
+                                const renderCard = (slot) => {
+                                    const booking = slot.booking;
+                                    const isSlotBooked = !!booking;
+
+                                    // Helper for payment status style
+                                    const paymentClass = booking?.isPaid
+                                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                        : 'bg-white text-slate-500 border-slate-200';
+
+                                    return (
+                                        <div key={`${slot.name}-${slot.round}`} className="bg-white p-5 rounded-xl border shadow-sm space-y-4 relative overflow-hidden">
+                                            {/* Status Stripe */}
+                                            {isSlotBooked && (
+                                                <div className={`absolute left-0 top-0 bottom-0 w-1 ${booking.isFinalized ? 'bg-green-500' : 'bg-amber-400'}`}></div>
+                                            )}
+
+                                            {/* Header */}
+                                            <div className="flex justify-between items-start pl-2">
+                                                <div>
+                                                    <h3 className="font-bold text-slate-900 text-lg">{slot.name}</h3>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                                                            Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                                            Round {slot.round}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {isSlotBooked ? (
+                                                    <div className={`px-2 py-1 rounded text-[10px] font-bold border ${booking.isFinalized
+                                                        ? 'bg-green-50 text-green-700 border-green-200'
+                                                        : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                                                        {booking.isFinalized ? "FINALIZED" : "DRAFT"}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400 font-medium italic pr-2">Pending</span>
+                                                )}
+                                            </div>
+
+                                            {/* Content */}
+                                            {isSlotBooked ? (
+                                                <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100 space-y-3 ml-2">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Dates</div>
+                                                            <div className="text-sm font-medium text-slate-900">
+                                                                {(booking.type === 'pass' || booking.type === 'auto-pass') ? 'Pass' :
+                                                                    (booking.from && booking.to ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d')}` : 'Invalid')}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Payment</div>
+                                                            {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                                <span className="text-slate-400 text-sm">—</span>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => handleTogglePaid(booking)}
+                                                                    className={`px-3 py-1 rounded text-xs font-bold border transition-all active:scale-95 ${paymentClass}`}
+                                                                >
+                                                                    {booking.isPaid ? "PAID" : "UNPAID"}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="ml-2 py-4 text-center border-2 border-dashed border-slate-100 rounded-lg text-slate-300 text-xs">
+                                                    No booking dates selected
+                                                </div>
+                                            )}
+
+                                            {/* Actions Footer */}
+                                            {isSlotBooked && (
+                                                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 ml-2">
+                                                    {!(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') && (
+                                                        <button
+                                                            onClick={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${booking.isFinalized
+                                                                ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                                                : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                                                        >
+                                                            {booking.isFinalized ? (
+                                                                <><XCircle className="w-3.5 h-3.5" /> Revert</>
+                                                            ) : (
+                                                                <><CheckCircle className="w-3.5 h-3.5" /> Finalize</>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                    <ActionsDropdown
+                                                        onEdit={() => handleEditClick(booking)}
+                                                        onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
+                                                        isCancelled={booking.type === 'cancelled'}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                };
+
+                                return (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {schedule.map(renderCard)}
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        <div className="overflow-x-auto hidden md:block">
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
                                     <tr>
@@ -1253,6 +1368,179 @@ export function AdminDashboard() {
 
 
 
+                {activeTab === 'users' && (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
+                            <button
+                                onClick={() => setIsCreateUserModalOpen(true)}
+                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2"
+                            >
+                                <PlusCircle className="w-4 h-4" />
+                                Add User
+                            </button>
+                        </div>
+
+                        {/* Mobile Card View (Users) */}
+                        <div className="md:hidden space-y-4">
+                            {shareholders.map((person) => (
+                                <div key={person.id} className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-bold text-slate-900 text-lg">{person.name}</h3>
+                                            <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                                Cabin #{person.cabin}
+                                            </span>
+                                        </div>
+                                        <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${person.role === 'super_admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                                            {person.role === 'super_admin' ? 'Super Admin' : 'Shareholder'}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
+                                        <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Email</div>
+                                        <div className="text-slate-700 font-medium break-all">{person.email}</div>
+                                    </div>
+
+                                    <div className="border-t border-slate-100 pt-3 flex flex-wrap gap-2 justify-end">
+                                        <button
+                                            onClick={() => setEditingShareholder({ id: person.id, email: person.email })}
+                                            className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handlePasswordChange(person)}
+                                            className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5"
+                                        >
+                                            <Key className="w-3.5 h-3.5" /> Password
+                                        </button>
+
+                                        {isSuperAdmin && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleRoleChange(person, person.role === 'super_admin' ? 'shareholder' : 'super_admin')}
+                                                    className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Shield className="w-3.5 h-3.5" /> Role
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteUser(person)}
+                                                    className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop Table View (Users) */}
+                        <div className="bg-white border rounded-xl shadow-sm overflow-hidden hidden md:block">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-slate-50 text-slate-500 font-medium border-b">
+                                        <tr>
+                                            <th className="px-6 py-3 w-20">Cabin</th>
+                                            <th className="px-6 py-3">Name</th>
+                                            <th className="px-6 py-3">Email(s)</th>
+                                            <th className="px-6 py-3">Role</th>
+                                            <th className="px-6 py-3 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y text-slate-600">
+                                        {shareholders.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="5" className="px-6 py-8 text-center text-muted-foreground italic">
+                                                    Loading users...
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            shareholders.map((person) => (
+                                                <tr key={person.id} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-6 py-3 font-mono text-slate-400">#{person.cabin}</td>
+                                                    <td className="px-6 py-3 font-semibold text-slate-900">{person.name}</td>
+                                                    <td className="px-6 py-3">
+                                                        {editingShareholder?.id === person.id ? (
+                                                            <div className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={editingShareholder.email}
+                                                                    onChange={(e) => setEditingShareholder({ ...editingShareholder, email: e.target.value })}
+                                                                    className="flex-1 px-2 py-1 text-xs border rounded shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                                />
+                                                                <button
+                                                                    onClick={handleUpdateShareholder}
+                                                                    className="p-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                                                                >
+                                                                    <CheckCircle className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setEditingShareholder(null)}
+                                                                    className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"
+                                                                >
+                                                                    <XCircle className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-slate-600">{person.email}</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-3">
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded textxs font-medium ${person.role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-600'
+                                                            }`}>
+                                                            {person.role === 'super_admin' ? 'Super Admin' : 'Shareholder'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-3 text-right">
+                                                        {editingShareholder?.id !== person.id && (
+                                                            <div className="flex gap-1 justify-end">
+                                                                <button
+                                                                    onClick={() => setEditingShareholder({ id: person.id, email: person.email })}
+                                                                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                                                                    title="Edit Email"
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handlePasswordChange(person)}
+                                                                    className="p-1 text-slate-400 hover:text-amber-600 transition-colors"
+                                                                    title="Change Password"
+                                                                >
+                                                                    <Key className="h-4 w-4" />
+                                                                </button>
+                                                                {isSuperAdmin && (
+                                                                    <div className="flex gap-1 border-l border-slate-200 pl-2 ml-1">
+                                                                        <button
+                                                                            onClick={() => handleRoleChange(person, person.role === 'super_admin' ? 'shareholder' : 'super_admin')}
+                                                                            className="p-1 text-slate-400 hover:text-purple-600 transition-colors"
+                                                                            title="Change Role"
+                                                                        >
+                                                                            <Shield className="h-4 w-4" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleDeleteUser(person)}
+                                                                            className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                                                                            title="Delete User"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Modal */}
                 {/* Modal */}
