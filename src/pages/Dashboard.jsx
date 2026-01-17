@@ -505,11 +505,34 @@ export function Dashboard() {
 
             <div id="tour-status">
                 <StatusCard status={status}>
-                    {/* Only show controls if IT IS YOUR TURN OR ADMIN */}
+                    {/* Only show controls if IT IS YOUR TURN OR ADMIN OR OPEN SEASON */}
                     <div id="tour-actions">
                         {(isSystemFrozen && !isSuperAdmin) ? (
                             <div className="text-sm text-amber-700 font-bold py-3 px-4 bg-amber-50 rounded-md text-center border border-amber-200">
-                                �️ Maintenance in Progress
+                                ️ Maintenance in Progress
+                            </div>
+                        ) : (status.phase === 'OPEN_SEASON') ? (
+                            <div className="flex flex-col gap-4 animate-in fade-in duration-700">
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 text-green-700 rounded-full">
+                                        <Calendar className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-green-900">Open Season is Live!</h4>
+                                        <p className="text-sm text-green-700 leading-tight">
+                                            Booking is now first-come, first-served for all shareholders.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setIsBooking(true)}
+                                        className="w-full md:w-auto inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
+                                    >
+                                        Book Dates
+                                    </button>
+                                </div>
                             </div>
                         ) : (loggedInShareholder !== status.activePicker && !isSuperAdmin) ? (
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col gap-2 animate-in fade-in duration-700">
@@ -647,7 +670,7 @@ export function Dashboard() {
                                 <BookingSection
                                     onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
                                     initialBooking={editingBooking}
-                                    activePicker={status.activePicker}
+                                    activePicker={status.phase === 'OPEN_SEASON' ? loggedInShareholder : status.activePicker}
                                     onPass={() => {
                                         setIsBooking(false);
                                         setPassData({ name: status.activePicker });
@@ -776,7 +799,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.89 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.90 - Guest Rules UI</p>
 
 
             </div>
