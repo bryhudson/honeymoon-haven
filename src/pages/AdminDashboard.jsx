@@ -22,6 +22,7 @@ import { Users, UserPlus } from 'lucide-react';
 
 export function AdminDashboard() {
     const { currentUser } = useAuth();
+    const IS_SITE_OWNER = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     const [actionLog, setActionLog] = useState("");
     const [allBookings, setAllBookings] = useState([]);
@@ -1106,23 +1107,28 @@ export function AdminDashboard() {
                     >
                         Users & Roles
                     </button>
-                    <button
-                        onClick={() => setActiveTab('system')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <span>System</span>
-                            {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
-                        </div>
-                    </button>
+                    {/* Only Site Owner sees System Tab */}
+                    {IS_SITE_OWNER && (
+                        <button
+                            onClick={() => setActiveTab('system')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <span>System</span>
+                                {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
+                            </div>
+                        </button>
+                    )}
                 </div>
 
                 {activeTab === 'calendar' && (
                     <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} />
                 )}
 
-                {activeTab === 'system' && (
+                {/* Secure System Tab Content */}
+                {activeTab === 'system' && IS_SITE_OWNER && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
                         <div className="flex items-center gap-3 mb-6">
                             <Settings className="w-8 h-8 text-slate-800" />
                             <h2 className="text-2xl font-bold text-slate-900">System Configuration</h2>
@@ -1558,7 +1564,7 @@ export function AdminDashboard() {
                                         Add Shareholder
                                     </button>
                                     <button
-                                        onClick={() => { setCreateUserRole('super_admin'); setIsCreateUserModalOpen(true); }}
+                                        onClick={() => { setCreateUserRole('admin'); setIsCreateUserModalOpen(true); }}
                                         className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
                                     >
                                         <Shield className="w-4 h-4" />

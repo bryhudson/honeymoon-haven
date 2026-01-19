@@ -106,7 +106,6 @@ export function CreateUserModal({ isOpen, onClose, onSuccess, initialRole = 'sha
                             >
                                 <option value="shareholder">Shareholder (Basic Access)</option>
                                 <option value="admin">Admin (Dashboard Access)</option>
-                                <option value="super_admin">Super Admin (Full Access)</option>
                             </select>
                         </div>
 
