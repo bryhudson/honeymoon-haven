@@ -502,16 +502,24 @@ export function AdminDashboard() {
         );
     };
 
-    const toggleSystemFreeze = async () => {
-        try {
-            await updateDoc(doc(db, "settings", "general"), {
-                isSystemFrozen: !isSystemFrozen
-            });
-            triggerAlert("Success", `System is now ${!isSystemFrozen ? 'in Maintenance Mode' : 'Active'}`);
-        } catch (err) {
-            console.error("Failed to toggle freeze:", err);
-            triggerAlert("Error", "Failed to update freeze settings.");
-        }
+    const toggleSystemFreeze = () => {
+        triggerConfirm(
+            "System Configuration",
+            `Are you sure you want to turn Maintenance Mode ${!isSystemFrozen ? 'ON' : 'OFF'}? Users will ${!isSystemFrozen ? 'NOT' : ''} be able to make bookings.`,
+            async () => {
+                try {
+                    await updateDoc(doc(db, "settings", "general"), {
+                        isSystemFrozen: !isSystemFrozen
+                    });
+                    triggerAlert("Success", `System is now ${!isSystemFrozen ? 'in Maintenance Mode' : 'Active'}`);
+                } catch (err) {
+                    console.error("Failed to toggle freeze:", err);
+                    triggerAlert("Error", "Failed to update freeze settings.");
+                }
+            },
+            !isSystemFrozen, // Danger if turning ON
+            !isSystemFrozen ? "Enable Maintenance" : "Disable Maintenance"
+        );
     };
 
     const toggleTestMode = async () => {
