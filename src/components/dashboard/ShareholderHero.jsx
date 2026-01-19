@@ -379,6 +379,7 @@ export function ShareholderHero({
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     const isJustCancelled = latestAction && latestAction.type === 'cancelled';
+    const isJustPassed = latestAction && latestAction.type === 'pass';
 
     // Find any upcoming confirmed booking to show details for (valid ones)
     const upcomingBooking = drafts
@@ -403,6 +404,11 @@ export function ShareholderHero({
                                 <AlertTriangle className="w-3 h-3" />
                                 Status: Cancelled
                             </div>
+                        ) : isJustPassed ? (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-900/50 text-amber-200 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
+                                <CheckCircle className="w-3 h-3" />
+                                Status: Passed
+                            </div>
                         ) : (
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
                                 <Clock className="w-3 h-3" />
@@ -424,6 +430,12 @@ export function ShareholderHero({
                                 You have cancelled your booking. No worries! You can rejoin the action when the next round opens or if another spot becomes available.
                                 <br />
                                 <span className="text-sm opacity-70 mt-1 block">In the meantime, sit back and relax.</span>
+                            </span>
+                        ) : isJustPassed ? (
+                            <span className="text-slate-200">
+                                You have passed your turn for this round. We'll let you know when the next round begins!
+                                <br />
+                                <span className="text-sm opacity-70 mt-1 block">Enjoy the break!</span>
                             </span>
                         ) : (
                             status.phase === 'PRE_DRAFT' ? (
