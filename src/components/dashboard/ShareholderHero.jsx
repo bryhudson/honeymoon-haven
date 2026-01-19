@@ -487,17 +487,7 @@ export function ShareholderHero({
                     )}
                     {/* For Passed, simply show nothing or a "View Schedule" if we had one. Currently just the banner is enough notification. */}
                     {/* For Passed, show View Schedule to match Cancelled state visual balance */}
-                    {isPassed && onViewSchedule && (
-                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                            <button
-                                onClick={onViewSchedule}
-                                className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-lg flex items-center justify-center gap-2"
-                            >
-                                <Calendar className="w-5 h-5" />
-                                View Schedule
-                            </button>
-                        </div>
-                    )}
+
                 </div>
             </div>
         );
@@ -579,15 +569,7 @@ export function ShareholderHero({
                         </button>
                     )}
 
-                    {onViewSchedule && (
-                        <button
-                            onClick={onViewSchedule}
-                            className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-lg flex items-center justify-center gap-2"
-                        >
-                            <Calendar className="w-5 h-5" />
-                            View Schedule
-                        </button>
-                    )}
+
 
 
                 </div>
