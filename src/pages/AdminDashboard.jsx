@@ -741,7 +741,8 @@ export function AdminDashboard() {
                 }
             },
             true, // Danger color
-            "Cancel Booking"
+            "Cancel Booking",
+            "cancel" // strict typing
         );
     };
 
