@@ -1130,7 +1130,7 @@ export function AdminDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Simulation Card */}
                             <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                                <h3 className="font-bold text-slate-700">Time Simulation</h3>
+                                <h3 className="font-bold text-slate-700">Staging Environment</h3>
                                 <p className="text-sm text-slate-500">Fast-forward the system time to test time-based rules (e.g. Turn Windows).</p>
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
@@ -1156,7 +1156,7 @@ export function AdminDashboard() {
                             {/* Danger Zone */}
                             <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4 border-red-100 bg-red-50/10">
                                 <h3 className="font-bold text-red-900 flex items-center gap-2">
-                                    <AlertTriangle className="w-4 h-4" /> Danger Zone
+                                    <AlertTriangle className="w-4 h-4" /> Site Config
                                 </h3>
 
                                 <div className="space-y-3">
