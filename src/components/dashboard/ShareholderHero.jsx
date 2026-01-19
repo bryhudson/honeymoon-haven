@@ -111,6 +111,15 @@ export function ShareholderHero({
         );
     }
 
+    // Helper for Phase Badge
+    const getPhaseLabel = (phase) => {
+        if (phase === 'ROUND_1') return 'Round 1';
+        if (phase === 'ROUND_2') return 'Round 2';
+        if (phase === 'OPEN_SEASON') return 'Open Season';
+        return null;
+    };
+    const phaseLabel = getPhaseLabel(status.phase);
+
     // 3. User State Logic
     const isYourTurn = status.activePicker === shareholderName;
     const activeDraft = drafts.find(b => b.shareholderName === shareholderName && !b.isFinalized && b.type !== 'cancelled');
@@ -164,12 +173,20 @@ export function ShareholderHero({
                             Welcome, {shareholderName}
                         </h1>
                         <div id="tour-status" className="flex flex-col items-center lg:items-start gap-1">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30 mb-2">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                                </span>
-                                It's Your Turn
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-2">
+                                {/* Phase Badge */}
+                                {phaseLabel && (
+                                    <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
+                                        {phaseLabel}
+                                    </span>
+                                )}
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                    </span>
+                                    It's Your Turn
+                                </div>
                             </div>
                             {/* TIMER INJECTED HERE */}
                             {TimerComponent}
@@ -217,9 +234,17 @@ export function ShareholderHero({
                             Welcome, {shareholderName}
                         </h1>
                         <div id="tour-status" className="flex flex-col items-center lg:items-start gap-1">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                                <Clock className="w-3 h-3" />
-                                Action Required
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                                {/* Phase Badge */}
+                                {phaseLabel && (
+                                    <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
+                                        {phaseLabel}
+                                    </span>
+                                )}
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                    <Clock className="w-3 h-3" />
+                                    Action Required
+                                </div>
                             </div>
                             {/* TIMER INJECTED HERE (Text color handled in component definition) */}
                             {showTimer && (
@@ -319,6 +344,13 @@ export function ShareholderHero({
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                                     {queueInfo.diff === 1 ? "You are Up Next!" : `You are ${queueInfo.diff} in line`}
                                 </div>
+                            )}
+
+                            {/* Phase Badge */}
+                            {phaseLabel && (
+                                <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
+                                    {phaseLabel}
+                                </span>
                             )}
                         </div>
 
@@ -441,6 +473,13 @@ export function ShareholderHero({
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                                 {queueInfo.diff === 1 ? "You are Up Next!" : `You are ${queueInfo.diff} in line`}
                             </div>
+                        )}
+
+                        {/* Phase Badge */}
+                        {phaseLabel && (
+                            <span className="px-3 py-1 rounded-full bg-slate-800/50 text-slate-400 text-xs font-bold uppercase tracking-wider border border-slate-700/50">
+                                {phaseLabel}
+                            </span>
                         )}
                     </div>
 
