@@ -448,7 +448,12 @@ export function ShareholderHero({
                                         booked for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
                                         <span className="opacity-60 ml-2">({nights} nights)</span>
                                     </p>
-                                    {!isPaid && (
+                                    {isPaid ? (
+                                        <p className="text-green-400 text-sm font-bold flex items-center justify-center md:justify-start gap-2">
+                                            <CheckCircle className="w-4 h-4" />
+                                            Payment Completed
+                                        </p>
+                                    ) : (
                                         <p className="text-amber-400 text-sm font-bold flex items-center justify-center md:justify-start gap-2">
                                             <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
                                             Payment Outstanding
