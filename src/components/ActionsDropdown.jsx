@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreVertical, Edit, Ban, CheckCircle, DollarSign, Bell } from 'lucide-react';
 
-export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus, isFinalized, onTogglePaid, isPaid, onSendReminder }) {
+export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus, isFinalized, onTogglePaid, isPaid, onSendReminder, onRemindToBook }) {
     const [isOpen, setIsOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const buttonRef = useRef(null);
@@ -158,6 +158,20 @@ export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus,
                             >
                                 <Bell className="w-4 h-4" />
                                 Send Payment Reminder
+                            </button>
+                        )}
+
+                        {onRemindToBook && (
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    onRemindToBook && onRemindToBook();
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 border-t border-slate-100"
+                                role="menuitem"
+                            >
+                                <Bell className="w-4 h-4" />
+                                Remind to Book
                             </button>
                         )}
 

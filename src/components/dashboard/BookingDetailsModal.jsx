@@ -1,9 +1,8 @@
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
-import { Send, Loader2, Mail, CheckCircle2, X, AlertTriangle } from 'lucide-react';
-import { emailService } from '../../services/emailService';
+import { CheckCircle2, X, AlertTriangle, Home, Mail } from 'lucide-react';
 
-export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, currentUser, isAdmin }) {
+export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin }) {
     if (!booking) return null;
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
@@ -115,86 +114,92 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         </div>
                     )}
 
-                    {/* Info Grid */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:gap-y-6">
-                        <div className="col-span-2">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Shareholder</p>
-                            <p className="font-bold text-base md:text-lg leading-tight">{booking.shareholderName}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Cabin</p>
-                            <div className="flex items-center gap-1.5 font-bold text-base md:text-lg">
-                                <span className="p-1 bg-slate-100 rounded text-slate-600">
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                                </span>
-                                #{booking.cabinNumber}
+                    {/* Unified Card: Details */}
+                    <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Shareholder</p>
+                                <p className="font-bold text-lg text-slate-900 leading-tight">{booking.shareholderName}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Cabin</p>
+                                <div className="inline-flex items-center gap-1.5 font-bold text-lg bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">
+                                    <Home className="w-3.5 h-3.5 text-slate-500" />
+                                    #{booking.cabinNumber}
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Guests</p>
-                            <p className="font-bold text-base md:text-lg">{booking.guests || 1} People</p>
+
+                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200/60">
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Dates</p>
+                                <p className="font-bold text-slate-700 text-sm">
+                                    {format(start, 'MMM d')} - {format(end, 'MMM d, yyyy')}
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Guests</p>
+                                <p className="font-bold text-slate-700 text-sm">{booking.guests || 1} People</p>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Compact Date Box */}
-                    <div className="bg-slate-50 rounded-xl border border-slate-100 p-3 md:p-4 flex justify-between items-center">
-                        <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Dates</p>
-                            <p className="font-bold text-slate-700 text-sm md:text-base">
-                                {format(start, 'MMM d')} <span className="text-slate-300 px-1">—</span> {format(end, 'MMM d, yyyy')}
-                            </p>
-                        </div>
-                        <div className="text-right pl-4 border-l border-slate-200">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Duration</p>
-                            <p className="font-bold text-blue-600 text-sm md:text-base whitespace-nowrap">{nights} Nights</p>
-                        </div>
-                    </div>
+
 
                     {!isCancelled && (
                         <>
                             {/* Cost Breakdown */}
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center text-xs md:text-sm text-slate-500 px-1">
-                                    <span>Fee ({nights} nights × $125)</span>
-                                    <span className="font-medium">${totalCost.toLocaleString()}</span>
-                                </div>
-
-                                <div className="flex justify-between items-center p-3 bg-slate-100/50 text-slate-700 border border-slate-200 rounded-xl shadow-sm">
-                                    <span className="font-bold text-sm text-slate-500 uppercase tracking-wider">Amount Due</span>
-                                    <div className="flex items-center gap-2">
-                                        {booking.isPaid && (
-                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-green-500 text-white uppercase tracking-widest">
-                                                PAID
-                                            </span>
-                                        )}
-                                        <span className="text-xl font-bold text-slate-900">${totalCost.toLocaleString()}</span>
-                                    </div>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-xs text-slate-500 px-1 font-medium">
+                                    <span>Rate ({nights} nights × $125)</span>
+                                    <span>${totalCost.toLocaleString()}</span>
                                 </div>
                             </div>
 
                             {/* Payment Info */}
                             {booking.isPaid ? (
-                                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-100 rounded-xl text-green-700">
-                                    <div className="bg-green-100 p-1.5 rounded-full shrink-0">
-                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                        </svg>
+                                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
+                                    <div className="flex justify-between items-center p-4 bg-green-50/50 text-green-900 border border-green-200 rounded-xl">
+                                        <span className="font-bold text-sm uppercase tracking-wider">Status</span>
+                                        <span className="px-2 py-1 rounded text-xs font-black bg-green-500 text-white uppercase tracking-widest shadow-sm">
+                                            PAID IN FULL
+                                        </span>
                                     </div>
-                                    <p className="text-xs font-semibold">Payment confirmed. Thank you!</p>
+
+                                    <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-100 rounded-xl text-green-800">
+                                        <div className="bg-green-200/50 p-2 rounded-full shrink-0">
+                                            <CheckCircle2 className="w-5 h-5 text-green-700" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold">Payment Verified</p>
+                                            <p className="text-xs opacity-80">Thank you! Your booking is fully secured.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="bg-blue-50/50 rounded-xl border border-blue-100 p-3 md:p-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-blue-700 mb-1">
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span className="text-xs font-bold uppercase tracking-wide">Payment Instructions</span>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center p-4 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl shadow-sm">
+                                        <span className="font-bold text-sm text-slate-500 uppercase tracking-wider">Amount Due</span>
+                                        <span className="text-2xl font-black text-slate-900 tracking-tight">${totalCost.toLocaleString()}</span>
                                     </div>
-                                    <p className="text-xs text-slate-600 leading-relaxed">
-                                        E-transfer <strong>${totalCost}</strong> within 48h to:
-                                    </p>
-                                    <div className="flex items-center gap-2 bg-white p-2 rounded border border-blue-100 shadow-sm relative group">
-                                        <code className="text-xs font-mono font-bold text-blue-700 break-all select-all">honeymoonhavenresort.lc@gmail.com</code>
+
+                                    <div className="bg-blue-50/50 rounded-xl border border-blue-100 p-4 space-y-3">
+                                        <div className="flex items-center gap-2 text-blue-800 mb-1">
+                                            <div className="p-1 bg-blue-100 rounded text-blue-600">
+                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-xs font-bold uppercase tracking-wide">Payment Instructions</span>
+                                        </div>
+                                        <div className="pl-1">
+                                            <p className="text-xs text-slate-600 mb-2">
+                                                Please e-transfer <strong>${totalCost}</strong> within 48h to:
+                                            </p>
+                                            <div className="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-blue-100 shadow-sm">
+                                                <code className="text-xs font-mono font-bold text-blue-700 break-all select-all">honeymoonhavenresort.lc@gmail.com</code>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -334,21 +339,20 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                 Cancel Booking
                             </button>
                         ) : null}
+
+                        {/* Email Guest Button (Paid & Confirmed) */}
+                        {booking.isFinalized && booking.isPaid && onEmail && (
+                            <button
+                                onClick={onEmail}
+                                className="w-full md:w-auto px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Mail className="w-4 h-4" />
+                                Email Guest
+                            </button>
+                        )}
                     </div>
 
                     <div className="flex gap-2 w-full md:w-auto">
-                        {/* Email Button */}
-                        {!isCancelled && (isAdmin || isOwner) && (
-                            <button
-                                onClick={() => setShowEmailForm(true)}
-                                className="px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                                title="Email Guest Guide"
-                            >
-                                <Mail className="w-4 h-4" />
-                                <span className="hidden md:inline">Email Guest</span>
-                            </button>
-                        )}
-
                         <button
                             onClick={onClose}
                             className="flex-1 md:flex-none px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"

@@ -9,12 +9,15 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon, Download } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { UserActionsDropdown } from '../components/UserActionsDropdown';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
 import { PromptModal } from '../components/PromptModal';
 import { CreateUserModal } from '../components/CreateUserModal';
+import { AdminCalendarView } from '../components/AdminCalendarView';
+import { ShareholderHero } from '../components/dashboard/ShareholderHero';
+import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
 import { Users, UserPlus } from 'lucide-react';
 
 export function AdminDashboard() {
@@ -78,6 +81,7 @@ export function AdminDashboard() {
     const [simStartDate, setSimStartDate] = useState("");
     const [currentSimDate, setCurrentSimDate] = useState(null);
     const [isSystemFrozen, setIsSystemFrozen] = useState(false);
+    const [draftStatus, setDraftStatus] = useState(null);
 
     // Editing State
     const [editingBooking, setEditingBooking] = useState(null);
@@ -96,6 +100,13 @@ export function AdminDashboard() {
                 setCurrentSimDate(null);
                 setSimStartDate("");
                 setIsSystemFrozen(doc.data()?.isSystemFrozen || false);
+            }
+        });
+
+        // 1b. Draft Status (Active Picker)
+        const unsubStatus = onSnapshot(doc(db, "status", "draftStatus"), (doc) => {
+            if (doc.exists()) {
+                setDraftStatus(doc.data());
             }
         });
 
@@ -118,30 +129,59 @@ export function AdminDashboard() {
         return () => {
             unsubscribe();
             unsubSettings();
+            unsubStatus();
         };
     }, []);
 
     const performWipe = async () => {
-        setActionLog("Reseting database...");
+        setActionLog("Resetting database...");
         const querySnapshot = await getDocs(collection(db, "bookings"));
-        const count = querySnapshot.size;
+        const totalDocs = querySnapshot.size;
 
-        if (count === 0) {
+        if (totalDocs === 0) {
             setActionLog("Database is already empty.");
             return 0;
         }
 
-        const batch = writeBatch(db);
-        querySnapshot.docs.forEach((doc) => {
-            batch.delete(doc.ref);
-        });
+        // Chunk into batches of 500 (Firestore limit)
+        const CHUNK_SIZE = 500;
+        const chunks = [];
+        for (let i = 0; i < totalDocs; i += CHUNK_SIZE) {
+            chunks.push(querySnapshot.docs.slice(i, i + CHUNK_SIZE));
+        }
 
-        await batch.commit();
+        let deletedCount = 0;
+        for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            chunk.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+            deletedCount += chunk.length;
+            console.log(`Deleted chunk of ${chunk.length} items. Total: ${deletedCount}`);
+        }
+
+        // 2. Reset Settings to Default
+        // Must match DRAFT_CONFIG.START_DATE from shareholders.js (March 1, 2026)
+        const defaultStart = new Date(2026, 2, 1, 10, 0, 0); // March 1, 10 AM
+
+        await setDoc(doc(db, "settings", "general"), {
+            draftStartDate: defaultStart,
+            isSystemFrozen: false,
+            season: 2026 // Updated to 2026 explicitly
+        }, { merge: true });
+
+        console.log("[DEBUG] performWipe: Settings reset command sent for March 1, 2026");
+
+        // Verify Write
+        const verifySnap = await getDoc(doc(db, "settings", "general"));
+        const verifyDate = verifySnap.data()?.draftStartDate?.toDate ? verifySnap.data().draftStartDate.toDate() : verifySnap.data().draftStartDate;
+        console.log("[DEBUG] performWipe: Verified DB Value: ", verifyDate);
 
         // Hard Clean
         localStorage.clear();
         sessionStorage.clear();
-        return count;
+        return deletedCount;
     };
 
     // Helper to trigger password check
@@ -185,11 +225,152 @@ export function AdminDashboard() {
             const current = snap.exists() ? snap.data().isSystemFrozen : false;
 
             await setDoc(settingsRef, { isSystemFrozen: !current }, { merge: true });
-            triggerAlert("Success", `System is now ${!current ? 'FROZEN' : 'ACTIVE'}.`);
+            triggerAlert("Success", `System is now ${!current ? 'in MAINTENANCE MODE' : 'ACTIVE'}.`);
         } catch (e) {
             console.error(e);
             triggerAlert("Error", "Failed to update system state.");
         }
+    };
+
+    const handleDownloadCSV = () => {
+        const currentOrder = getShareholderOrder(2026);
+        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Round,Shareholder,Cabin,Start Date,End Date,Nights,Status,Payment Status\n";
+
+        schedule.forEach(slot => {
+            const b = slot.booking;
+            const round = slot.round;
+            const shareholder = `"${slot.name}"`; // Quote for safety
+            const cabin = b?.cabinNumber || "";
+            const start = b?.from ? format(b.from, 'MM/dd/yyyy') : "";
+            const end = b?.to ? format(b.to, 'MM/dd/yyyy') : "";
+            const nights = (b?.from && b?.to) ? differenceInDays(b.to, b.from) : 0;
+            const status = b?.isFinalized ? "Finalized" : (b ? "Draft" : "");
+            const payment = b?.isPaid ? "Paid" : (b ? "Unpaid" : "");
+
+            const row = [round, shareholder, cabin, start, end, nights, status, payment].join(",");
+            csvContent += row + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `booking_report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleEmailBookingReport = () => {
+        const currentOrder = getShareholderOrder(2026);
+        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+
+        const generateRowHtml = (s) => {
+            const b = s.booking;
+            const paymentStatus = b?.isPaid ? "PAID" : "UNPAID";
+            const paymentColor = b?.isPaid ? "#dcfce7" : "#fee2e2";
+            const dateStr = b?.from && b?.to ? `${format(b.from, 'MMM d')} - ${format(b.to, 'MMM d')}` : "";
+
+            return `
+            <tr style="background-color: #fff;">
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.name}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.cabinNumber || "?"}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${b ? 7 : 0}</td>
+                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.isFinalized ? "Finalized" : "Draft"}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">
+                    <span style="background-color: ${paymentColor}; padding: 2px 6px; borderRadius: 4px; font-size: 11px;">${paymentStatus}</span>
+                </td>
+            </tr>
+            `;
+        };
+
+        triggerPrompt(
+            "Email Booking Report",
+            "Enter recipient email:",
+            currentUser?.email || "",
+            async (recipient) => {
+                if (!recipient) return;
+                try {
+                    const round1Rows = schedule.filter(s => s.round === 1).map(generateRowHtml).join("");
+                    const round2Rows = schedule.filter(s => s.round === 2).map(generateRowHtml).join("");
+
+                    const htmlTable = `
+                        <h2>Current Booking Report</h2>
+                        <p>Generated on ${format(new Date(), 'PPP p')}</p>
+
+                        <div style="display: flex; gap: 20px; margin: 30px 0; flex-wrap: wrap;">
+                             <div style="background-color: #f0fdf4; border: 1px solid #dcfce7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
+                                <div style="color: #166534; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Revenue</div>
+                                <div style="color: #166534; font-size: 24px; font-weight: bold;">$${analytics.totalRevenue.toLocaleString()}</div>
+                             </div>
+                             <div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
+                                <div style="color: #92400e; font-size: 11px; font-weight: bold; text-transform: uppercase;">Unpaid Fees</div>
+                                <div style="color: #92400e; font-size: 24px; font-weight: bold;">$${analytics.outstandingFees.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${analytics.unpaidCount})</span></div>
+                             </div>
+                             <div style="background-color: #feffff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
+                                <div style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Bookings</div>
+                                <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${analytics.totalBookings}</div>
+                             </div>
+                             <div style="background-color: #feffff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
+                                <div style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Nights</div>
+                                <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${analytics.totalNights}</div>
+                             </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; background-color: #f1f5f9; padding: 10px;">Round 1 - Shareholder Rotation</h3>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
+                            <thead>
+                                <tr style="background-color: #f8fafc;">
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${round1Rows}
+                            </tbody>
+                        </table>
+
+                        <h3 style="margin-top: 30px; background-color: #f1f5f9; padding: 10px;">Round 2 - Snake Draft</h3>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
+                            <thead>
+                                <tr style="background-color: #f8fafc;">
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${round2Rows}
+                            </tbody>
+                        </table>
+                    `;
+
+                    const sendEmailFn = httpsCallable(functions, 'sendEmail');
+                    await sendEmailFn({
+                        to: { name: "Admin", email: recipient },
+                        subject: `Booking Report - ${format(new Date(), 'MMM d')}`,
+                        htmlContent: htmlTable
+                    });
+
+                    triggerAlert("Success", `Report sent to ${recipient}`);
+                } catch (err) {
+                    console.error("Report fail", err);
+                    triggerAlert("Error", "Failed to send report.");
+                }
+            },
+            "text",
+            "Generate Report"
+        );
     };
 
     const handleUpdateStartDate = async () => {
@@ -568,50 +749,75 @@ export function AdminDashboard() {
         triggerAlert("Tour Reset", "The onboarding tour has been reset for your browser. It will appear the next time you visit the dashboard.");
     };
 
-    const handleRunReminders = async () => {
+    // --- Derived Schedule & Active Turn ---
+    const { schedule, activeTurn } = React.useMemo(() => {
         const currentOrder = getShareholderOrder(2026);
-        const schedule = mapOrderToSchedule(currentOrder, allBookings);
-        const activeTurn = schedule.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD');
+        const sched = mapOrderToSchedule(currentOrder, allBookings);
 
-        if (!activeTurn) {
-            triggerAlert("Status", "No active turn found to remind.");
+        // Use drafted status OR fallback to schedule calculation
+        let active = null;
+        if (draftStatus?.activePicker) {
+            active = sched.find(s => s.name === draftStatus.activePicker && s.round === draftStatus.round);
+        }
+
+        // Fallback if draftStatus not fully sync/migrated
+        if (!active) {
+            active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD');
+        }
+
+        return { schedule: sched, activeTurn: active };
+    }, [allBookings, draftStatus]);
+
+
+    const handleRemindActiveShareholder = async (targetShareholderName = null) => {
+        // Allow targeting specific shareholder (from row action) OR default to current global active
+        const targetName = targetShareholderName || activeTurn?.name;
+
+        if (!targetName) {
+            triggerAlert("Status", "No active shareholder found to remind.");
             return;
         }
 
-        const now = new Date();
-        const hoursRemaining = (activeTurn.end - now) / (1000 * 60 * 60);
+        // Calculate time remaining if it's the active turn
+        let hoursRemaining = 0;
+        let deadline = new Date();
+
+        if (activeTurn && activeTurn.name === targetName) {
+            const now = new Date();
+            deadline = activeTurn.end;
+            hoursRemaining = (activeTurn.end - now) / (1000 * 60 * 60);
+        }
 
         triggerConfirm(
             "Send Reminder?",
-            `Active User: ${activeTurn.name}\nTime Remaining: ${Math.round(hoursRemaining)} hours\n\nDo you want to send a reminder email to ${activeTurn.name}?`,
+            `Send a "Your Turn to Book" reminder to ${targetName}?` + (hoursRemaining > 0 ? `\nTime Remaining: ${Math.round(hoursRemaining)}h` : ""),
             async () => {
                 try {
-                    const owner = shareholders.find(o => o.name === activeTurn.name);
+                    const owner = shareholders.find(o => o.name === targetName);
+
                     if (owner) {
                         const emailData = {
-                            name: activeTurn.name,
-                            email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                            name: targetName,
+                            email: owner.email || "bryan.m.hudson@gmail.com"
                         };
                         const contextData = {
-                            name: activeTurn.name,
-                            hours_remaining: Math.round(hoursRemaining),
-                            deadline_date: format(activeTurn.end, 'PPP'),
-                            deadline_time: format(activeTurn.end, 'p'),
-                            check_in: "TBD", // Draft data could be fetched if we look up active booking
+                            name: targetName,
+                            hours_remaining: Math.max(0, Math.round(hoursRemaining)),
+                            deadline_date: format(deadline, 'PPP'),
+                            deadline_time: format(deadline, 'p'),
+                            check_in: "TBD",
                             check_out: "TBD",
-                            has_draft: false, // Could be improved by checking drafts
+                            has_draft: false,
                             booking_url: window.location.origin,
                             dashboard_url: window.location.origin
                         };
 
-                        if (hoursRemaining < 6) {
-                            await emailService.sendFinalWarning(emailData, contextData);
-                            triggerAlert("Sent", "Final Warning email sent.");
-                        } else {
-                            const type = now.getHours() < 12 ? 'morning' : 'evening';
-                            await emailService.sendDailyReminder(emailData, { ...contextData, type });
-                            triggerAlert("Sent", `${type === 'morning' ? "Morning" : "Evening"} reminder sent.`);
-                        }
+                        // Send Daily Reminder template as the generic "It's your turn"
+                        const type = new Date().getHours() < 12 ? 'morning' : 'evening';
+                        await emailService.sendDailyReminder(emailData, { ...contextData, type });
+                        triggerAlert("Sent", `Reminder sent to ${targetName}.`);
+                    } else {
+                        triggerAlert("Error", "Shareholder email not found.");
                     }
                 } catch (err) {
                     console.error(err);
@@ -619,7 +825,7 @@ export function AdminDashboard() {
                 }
             },
             false,
-            "Send Email"
+            "Send Reminder"
         );
     };
 
@@ -636,7 +842,6 @@ export function AdminDashboard() {
         const q = query(collection(db, "shareholders"), orderBy("cabin"));
         const unsub = onSnapshot(q, async (snapshot) => {
             if (snapshot.empty) {
-                // AUTO-MIGRATION: If collection is empty, populate from code constant
                 console.log("Migrating shareholders to DB...");
                 const batch = writeBatch(db);
                 CABIN_OWNERS.forEach(owner => {
@@ -699,7 +904,6 @@ export function AdminDashboard() {
             } else {
                 triggerAlert("Success", "Email updated.");
             }
-
         } catch (err) {
             triggerAlert("Error", err.message);
         }
@@ -733,7 +937,7 @@ export function AdminDashboard() {
                                 newPassword: newPassword
                             });
 
-                            // Show exact message from server (e.g., "Account CREATED...")
+                            // Show exact message from server
                             const msg = result.data?.message || "Password updated successfully.";
                             triggerAlert(result.data?.success ? "Success" : "Notice", msg);
 
@@ -761,7 +965,7 @@ export function AdminDashboard() {
         let totalNights = 0;
 
         allBookings.forEach(b => {
-            // Only count finalized active bookings towards stats (ignore drafts/cancelled/passes)
+            // Only count finalized active bookings towards stats
             if (b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'auto-pass') {
                 const nights = (b.from && b.to) ? Math.max(0, Math.round((new Date(b.to) - new Date(b.from)) / (1000 * 60 * 60 * 24))) : 0;
                 const amount = nights * 125;
@@ -791,30 +995,10 @@ export function AdminDashboard() {
     // --- USER MANAGEMENT ---
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
     const [createUserRole, setCreateUserRole] = useState('shareholder');
-    const [currentUserRole, setCurrentUserRole] = useState(null);
-
-    useEffect(() => {
-        if (currentUser?.email) {
-            // Fetch own role
-            const fetchRole = async () => {
-                const docRef = doc(db, 'shareholders', currentUser.email);
-                try {
-                    const snap = await getDocs(query(collection(db, 'shareholders'))); // Optimize: direct getDoc
-                    // Actually let's just look efficiently at the finding in `shareholders` array since we load it anyway?
-                    // Wait, `shareholders` state is loaded in separate useEffect.
-                    // Let's just trust `shareholders` state once loaded.
-                } catch (e) {
-                    console.error(e);
-                }
-            };
-        }
-    }, [currentUser]);
 
     // Derived Super Admin status from shareholders list
     const myShareholderProfile = shareholders.find(s => s.email === currentUser?.email);
-    // Fallback for hardcoded safety until DB is fully migrated
-    const isHardcodedSuper = currentUser?.email === 'bryan.m.hudson@gmail.com';
-    const isSuperAdmin = isHardcodedSuper || (myShareholderProfile?.role === 'super_admin');
+
 
 
     const handleDeleteUser = (user) => {
@@ -847,7 +1031,7 @@ export function AdminDashboard() {
     // --- TABS ---
     const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'users'
 
-    // Render Loading (Moved here to avoid Hooks Error #310)
+    // Render Loading
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -867,6 +1051,30 @@ export function AdminDashboard() {
 
             {/* Header & Analytics */}
             <div className="space-y-6">
+
+                {/* Unified Hero Section (matches Shareholder View) */}
+                {/* Unified Hero Section (matches Shareholder View) */}
+                {myShareholderProfile && activeTurn ? (
+                    <ShareholderHero
+                        currentUser={currentUser}
+                        status={{ ...draftStatus, activePicker: activeTurn.name, phase: 'ROUND_1' }}
+                        shareholderName={myShareholderProfile.name}
+                        drafts={allBookings}
+                        isSuperAdmin={true}
+                        onOpenBooking={() => window.location.hash = '#book'}
+                        onViewDetails={(booking) => {
+                            triggerAlert("Info", `Booking details: ${booking.cabinNumber} (${format(booking.from.toDate(), 'MM/dd')} - ${format(booking.to.toDate(), 'MM/dd')})`);
+                        }}
+                    />
+                ) : activeTurn && (
+                    /* Admin Specific Hero (When Admin is NOT the active shareholder) */
+                    <AdminTurnHero
+                        activeTurn={activeTurn}
+                        drafts={allBookings}
+                        onRemind={() => handleRemindActiveShareholder()}
+
+                    />
+                )}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Admin Dashboard</h1>
@@ -879,7 +1087,6 @@ export function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit">
                     <button
                         onClick={() => setActiveTab('bookings')}
@@ -888,12 +1095,101 @@ export function AdminDashboard() {
                         Bookings & Schedule
                     </button>
                     <button
+                        onClick={() => setActiveTab('calendar')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'calendar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                    >
+                        Calendar View
+                    </button>
+                    <button
                         onClick={() => setActiveTab('users')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
                         Users & Roles
                     </button>
+                    <button
+                        onClick={() => setActiveTab('system')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <span>System</span>
+                            {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
+                        </div>
+                    </button>
                 </div>
+
+                {activeTab === 'calendar' && (
+                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} />
+                )}
+
+                {activeTab === 'system' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center gap-3 mb-6">
+                            <Settings className="w-8 h-8 text-slate-800" />
+                            <h2 className="text-2xl font-bold text-slate-900">System Configuration</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Simulation Card */}
+                            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+                                <h3 className="font-bold text-slate-700">Time Simulation</h3>
+                                <p className="text-sm text-slate-500">Fast-forward the system time to test time-based rules (e.g. Turn Windows).</p>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
+                                        Simulation Date
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="datetime-local"
+                                            value={simStartDate}
+                                            onChange={(e) => setSimStartDate(e.target.value)}
+                                            className="flex-1 p-2 border rounded-lg text-sm"
+                                        />
+                                        <button
+                                            onClick={handleUpdateStartDate}
+                                            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800"
+                                        >
+                                            Set
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Danger Zone */}
+                            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4 border-red-100 bg-red-50/10">
+                                <h3 className="font-bold text-red-900 flex items-center gap-2">
+                                    <AlertTriangle className="w-4 h-4" /> Danger Zone
+                                </h3>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                                        <div>
+                                            <div className="font-bold text-slate-700 text-sm">Maintenance Mode</div>
+                                            <div className="text-xs text-slate-500">Prevent all non-admin access.</div>
+                                        </div>
+                                        <button
+                                            onClick={handleToggleFreeze}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${isSystemFrozen ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-slate-100 text-slate-700 border border-slate-200"}`}
+                                        >
+                                            {isSystemFrozen ? "End Maintenance" : "Start Maintenance"}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-100">
+                                        <div>
+                                            <div className="font-bold text-red-900 text-sm">Wipe Database</div>
+                                            <div className="text-xs text-red-700/70">Delete ALL bookings & resets.</div>
+                                        </div>
+                                        <button
+                                            onClick={handleWipeDatabase}
+                                            className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold uppercase tracking-wider"
+                                        >
+                                            Wipe DB
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {activeTab === 'bookings' && (
                     <>
@@ -951,181 +1247,31 @@ export function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Reminders & Simulation */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* ... (Existing Reminders Card) ... */}
-                            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Bell className="w-6 h-6 text-purple-600" />
-                                        <h2 className="text-xl font-bold text-slate-900">Email Reminders</h2>
-                                    </div>
-                                    <button
-                                        onClick={handleTestEmail}
-                                        className="text-xs font-bold text-slate-500 hover:text-slate-800 underline"
-                                    >
-                                        Test SMTP
-                                    </button>
-                                </div>
-                                <p className="text-sm text-slate-600">
-                                    Manually trigger reminder emails for the active shareholder turn.
-                                </p>
-                                <button
-                                    onClick={handleRunReminders}
-                                    className="w-full py-4 border-2 border-dashed border-purple-200 rounded-xl flex items-center justify-center gap-2 text-purple-700 font-bold hover:bg-purple-50 hover:border-purple-300 transition-all"
-                                >
-                                    <Bell className="w-5 h-5" />
-                                    Check & Send Reminders
-                                </button>
-                            </div>
+                        {/* Actions Bar */}
+                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                            <button
+                                onClick={() => handleRemindActiveShareholder()}
+                                className="flex-1 py-3 px-4 bg-purple-50 border border-purple-200 text-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-purple-100 transition-all shadow-sm"
+                            >
+                                <Bell className="w-4 h-4" />
+                                {activeTurn ? `Remind ${activeTurn.name}` : "Remind Active Shareholder"}
+                            </button>
 
-                            {/* System Controls (Restricted) */}
-                            {isSuperAdmin && (
-                                <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <Settings className="w-6 h-6 text-slate-600" />
-                                        <h2 className="text-xl font-bold text-slate-900">System Controls</h2>
-                                    </div>
+                            <button
+                                onClick={handleEmailBookingReport}
+                                className="flex-1 py-3 px-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-all shadow-sm"
+                            >
+                                <Mail className="w-4 h-4" />
+                                Email Report
+                            </button>
 
-                                    {/* ... Existing System Controls content ... */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="col-span-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                                                Simulation Date
-                                            </label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="datetime-local"
-                                                    value={simStartDate}
-                                                    onChange={(e) => setSimStartDate(e.target.value)}
-                                                    className="flex-1 p-2 border rounded-lg text-sm"
-                                                />
-                                                <button
-                                                    onClick={handleUpdateStartDate}
-                                                    className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold"
-                                                >
-                                                    Set
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="col-span-2 mt-4 flex justify-end border-t pt-4 gap-4">
-                                            <button
-                                                onClick={handleToggleFreeze}
-                                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${isSystemFrozen ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-blue-50 text-blue-700 border border-blue-200"}`}
-                                            >
-                                                {isSystemFrozen ? (
-                                                    <><PlayCircle className="w-4 h-4" /> Unfreeze System</>
-                                                ) : (
-                                                    <><Ban className="w-4 h-4" /> Freeze System</>
-                                                )}
-                                            </button>
-
-                                            <button
-                                                onClick={handleWipeDatabase}
-                                                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                                Wipe Database
-                                            </button>
-
-                                            <button
-                                                onClick={() => {
-                                                    const generateRowHtml = (s) => {
-                                                        const b = s.booking;
-                                                        const paymentStatus = b?.isPaid ? "PAID" : "UNPAID";
-                                                        const paymentColor = b?.isPaid ? "#dcfce7" : "#fee2e2";
-                                                        const dateStr = b?.from && b?.to ? `${format(b.from, 'MMM d')} - ${format(b.to, 'MMM d')}` : "";
-
-                                                        return `
-                                                        <tr style="background-color: #fff;">
-                                                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.name}</td>
-                                                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.cabinNumber || "?"}</td>
-                                                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
-                                                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${b ? 7 : 0}</td>
-                                                             <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.isFinalized ? "Finalized" : "Draft"}</td>
-                                                            <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                                                                <span style="background-color: ${paymentColor}; padding: 2px 6px; borderRadius: 4px; font-size: 11px;">${paymentStatus}</span>
-                                                            </td>
-                                                        </tr>
-                                                        `;
-                                                    };
-
-                                                    triggerPrompt(
-                                                        "Email Booking Report",
-                                                        "Enter recipient email:",
-                                                        currentUser?.email || "",
-                                                        async (recipient) => {
-                                                            if (!recipient) return;
-                                                            try {
-                                                                const round1Rows = schedule.filter(s => s.round === 1).map(generateRowHtml).join("");
-                                                                const round2Rows = schedule.filter(s => s.round === 2).map(generateRowHtml).join("");
-
-                                                                const htmlTable = `
-                                                <h2>Current Booking Report</h2>
-                                                <p>Generated on ${format(new Date(), 'PPP p')}</p>
-                                                
-                                                <h3 style="margin-top: 20px; background-color: #f1f5f9; padding: 10px;">Round 1 - Shareholder Rotation</h3>
-                                                <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
-                                                    <thead>
-                                                        <tr style="background-color: #f8fafc;">
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        ${round1Rows}
-                                                    </tbody>
-                                                </table>
-
-                                                <h3 style="margin-top: 30px; background-color: #f1f5f9; padding: 10px;">Round 2 - Snake Draft</h3>
-                                                <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
-                                                    <thead>
-                                                        <tr style="background-color: #f8fafc;">
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
-                                                            <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        ${round2Rows}
-                                                    </tbody>
-                                                </table>
-                                            `;
-
-                                                                const sendEmailFn = httpsCallable(functions, 'sendEmail');
-                                                                await sendEmailFn({
-                                                                    to: { name: "Admin", email: recipient },
-                                                                    subject: `Booking Report - ${format(new Date(), 'MMM d')}`,
-                                                                    htmlContent: htmlTable
-                                                                });
-
-                                                                triggerAlert("Success", `Report sent to ${recipient}`);
-                                                            } catch (err) {
-                                                                console.error("Report fail", err);
-                                                                triggerAlert("Error", "Failed to send report.");
-                                                            }
-                                                        },
-                                                        "text",
-                                                        "Generate Report"
-                                                    );
-                                                }}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors text-sm font-medium border border-blue-200"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                                Email Report
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            <button
+                                onClick={handleDownloadCSV}
+                                className="flex-1 py-3 px-4 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-all shadow-sm"
+                            >
+                                <Download className="w-4 h-4" />
+                                Download CSV
+                            </button>
                         </div>
 
                         {/* Mobile Card View (Bookings) */}
@@ -1445,7 +1591,6 @@ export function AdminDashboard() {
                                         <div className="border-t border-slate-100 pt-3 flex justify-end">
                                             <UserActionsDropdown
                                                 user={person}
-                                                isSuperAdmin={isSuperAdmin}
                                                 onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
                                                 onPassword={handlePasswordChange}
                                                 onDelete={handleDeleteUser}
@@ -1517,7 +1662,7 @@ export function AdminDashboard() {
                                                                 <div className="flex justify-end pr-2">
                                                                     <UserActionsDropdown
                                                                         user={person}
-                                                                        isSuperAdmin={isSuperAdmin}
+
                                                                         onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
                                                                         onPassword={handlePasswordChange}
                                                                         onDelete={handleDeleteUser}

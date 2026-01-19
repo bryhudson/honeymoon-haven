@@ -52,13 +52,12 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                                 <th scope="col" className="px-3 md:px-6 py-4">Dates</th>
                                 <th scope="col" className="px-3 md:px-6 py-4">Guests</th>
                                 <th scope="col" className="px-3 md:px-6 py-4">Status</th>
-                                <th scope="col" className="px-3 md:px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
                             {bookingsForTable.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-muted-foreground">
+                                    <td colSpan="5" className="px-6 py-12 text-center text-muted-foreground">
                                         No bookings found.
                                     </td>
                                 </tr>
@@ -80,16 +79,6 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                                             <td className="px-3 md:px-6 py-4">{booking.guests || "-"}</td>
                                             <td className="px-3 md:px-6 py-4">
                                                 {renderStatusBadge(booking)}
-                                            </td>
-                                            <td className="px-3 md:px-6 py-4 text-right">
-                                                {(isAdmin || booking.shareholderName === currentShareholder) && (
-                                                    <button
-                                                        onClick={() => onViewDetails(booking)}
-                                                        className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
-                                                    >
-                                                        View Details
-                                                    </button>
-                                                )}
                                             </td>
                                         </tr>
                                     );

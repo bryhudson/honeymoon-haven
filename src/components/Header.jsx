@@ -1,12 +1,15 @@
 import React from 'react';
 import { Tent, LogOut } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS } from '../lib/shareholders';
 
 export function Header() {
     const { currentUser, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation(); // Hook to check current path
+
+    const isLoginPage = location.pathname === '/login';
 
     // Resolve logged in share holder name from email
     const loggedInShareholder = React.useMemo(() => {
@@ -28,7 +31,8 @@ export function Header() {
                 </Link>
 
                 <div className="flex items-center gap-4 text-sm font-medium">
-                    {currentUser ? (
+                    {/* Hide "Welcome" and "Sign Out" if on Login page or not logged in */}
+                    {currentUser && !isLoginPage ? (
                         <>
                             <div className="flex flex-col items-end md:flex-row md:items-center md:gap-2">
                                 <span className="text-muted-foreground">

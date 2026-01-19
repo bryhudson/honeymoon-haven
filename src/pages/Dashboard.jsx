@@ -1,4 +1,4 @@
-import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
+import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info, BookOpen, User } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
@@ -6,7 +6,7 @@ import { emailService } from '../services/emailService';
 import { addHours } from 'date-fns';
 import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { collection, addDoc, updateDoc, deleteDoc, doc, } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmationModal } from '../components/ConfirmationModal';
@@ -14,11 +14,14 @@ import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
+import { CABIN_OWNERS } from '../lib/shareholders';
 import { BookingDetailsModal } from '../components/dashboard/BookingDetailsModal';
 import { TrailerGuide } from '../components/dashboard/TrailerGuide';
-import { CABIN_OWNERS } from '../lib/shareholders';
-import { OnboardingTour } from '../components/OnboardingTour';
+import { ShareholderHero } from '../components/dashboard/ShareholderHero';
 import { BookingSection } from '../components/BookingSection';
+import { OnboardingTour } from '../components/OnboardingTour';
+import { EmailGuestModal } from '../components/dashboard/EmailGuestModal';
+import { ShareholderCalendarView } from '../components/dashboard/ShareholderCalendarView';
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
@@ -56,96 +59,7 @@ class ErrorBoundary extends React.Component {
 
 // Status Cards and Countdowns moved to components
 
-const WelcomeBanner = ({ loggedInShareholder, status, allDraftRecords, currentUser, isSuperAdmin }) => {
-    if (!loggedInShareholder) return null;
-
-    // 1. Determine User State
-    // A. Open Season
-    if (status.phase === 'OPEN_SEASON') {
-        return (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="w-5 h-5 text-green-600" />
-                    <h3 className="font-bold text-green-900 text-lg">Hi, {loggedInShareholder}</h3>
-                </div>
-                <p className="text-green-800">
-                    <span className="font-bold">Open Season is Live!</span> Booking is now first-come, first-served for all shareholders.
-                </p>
-            </div>
-        );
-    }
-
-    // B. Active Turn
-    if (status.activePicker === loggedInShareholder) {
-        return (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2 ring-2 ring-blue-400 ring-offset-2">
-                <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-bold text-blue-900 text-lg">It's Your Turn!</h3>
-                </div>
-                <p className="text-blue-800">
-                    You are now on the clock. Please select your dates below to finalize your booking.
-                </p>
-            </div>
-        );
-    }
-
-    // C. Waiting / Done
-    // Calculate if done for round
-    let roundTarget = 1;
-    if (status.phase === 'ROUND_2') roundTarget = 2;
-
-    const myActions = allDraftRecords.filter(b =>
-        b.shareholderName === loggedInShareholder &&
-        (b.isFinalized || b.type === 'pass') &&
-        b.type !== 'cancelled'
-    );
-
-    const isDoneForRound = myActions.length >= roundTarget;
-    const lastAction = myActions[myActions.length - 1];
-
-    if (isDoneForRound) {
-        // C1. Passed
-        if (lastAction?.type === 'pass') {
-            return (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Info className="w-5 h-5 text-amber-600" />
-                        <h3 className="font-bold text-amber-900 text-lg">Hi, {loggedInShareholder}</h3>
-                    </div>
-                    <p className="text-amber-800">
-                        You have <span className="font-bold text-amber-700">passed</span> your turn for this round. Sit tight!
-                    </p>
-                </div>
-            );
-        }
-        // C2. Confirmed
-        return (
-            <div className="mb-6 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-2 mb-1">
-                    <Info className="w-5 h-5 text-slate-400" />
-                    <h3 className="font-bold text-slate-800 text-lg">Hi, {loggedInShareholder}</h3>
-                </div>
-                <p className="text-slate-600 pl-7">
-                    You have <span className="font-bold text-green-600">confirmed</span> your booking for this round. Relax and enjoy!
-                </p>
-            </div>
-        );
-    }
-
-    // C3. Waiting (Pending)
-    return (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center gap-2 mb-2">
-                <Info className="w-5 h-5 text-slate-500" />
-                <h3 className="font-bold text-slate-800 text-lg">Hi, {loggedInShareholder}</h3>
-            </div>
-            <p className="text-slate-600">
-                It is currently <span className="font-bold text-slate-900">{status.activePicker}'s</span> turn.
-            </p>
-        </div>
-    );
-};
+// Status Cards and Countdowns moved to components
 
 export function Dashboard() {
     const { currentUser, logout } = useAuth();
@@ -185,7 +99,7 @@ export function Dashboard() {
     const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen } = useBookingRealtime();
 
     const [isBooking, setIsBooking] = useState(false);
-    const [isPassing, setIsPassing] = useState(false);
+    const [passStep, setPassStep] = useState(0); // 0=Closed, 1=Init, 2=Warn
     const [showPreDraftModal, setShowPreDraftModal] = useState(false);
     const [passData, setPassData] = useState({ name: '' });
 
@@ -194,7 +108,11 @@ export function Dashboard() {
     const [quickEnd, setQuickEnd] = useState('');
     const [editingBooking, setEditingBooking] = useState(null);
     const [viewingBooking, setViewingBooking] = useState(null);
+    const [emailingBooking, setEmailingBooking] = useState(null);
     const [showBookingForm, setShowBookingForm] = useState(false);
+
+    // UI Layout State
+    const [activeTab, setActiveTab] = useState('bookings'); // bookings, schedule, guide
 
     // SYSTEM SAFETY: Build v2.30
     // Force Regular Users to Production Mode always
@@ -222,10 +140,12 @@ export function Dashboard() {
         onConfirm: () => { },
         isDanger: false,
         confirmText: "Confirm",
-        showCancel: true
+        showCancel: true,
+        requireTyping: null,
+        closeOnConfirm: true
     });
 
-    const triggerConfirm = (title, message, onConfirm, isDanger = false, confirmText = "Confirm") => {
+    const triggerConfirm = (title, message, onConfirm, isDanger = false, confirmText = "Confirm", requireTyping = null, closeOnConfirm = true) => {
         setConfirmation({
             isOpen: true,
             title,
@@ -233,7 +153,9 @@ export function Dashboard() {
             onConfirm,
             isDanger,
             confirmText,
-            showCancel: true
+            showCancel: true,
+            requireTyping,
+            closeOnConfirm
         });
     };
 
@@ -314,7 +236,8 @@ export function Dashboard() {
 
                             const deadline = addHours(tomorrow10am, 48);
 
-                            await emailService.sendTurnStarted({
+                            // NON-BLOCKING EMAIL
+                            emailService.sendTurnStarted({
                                 name: nextOwner.name,
                                 email: "bryan.m.hudson@gmail.com" // OVERRIDE
                             }, {
@@ -324,10 +247,11 @@ export function Dashboard() {
                                 booking_url: "https://hhr-trailer-booking.web.app/",
                                 dashboard_url: "https://hhr-trailer-booking.web.app/",
                                 pass_turn_url: "https://hhr-trailer-booking.web.app/"
-                            });
-                            console.log("Notification sent to", nextOwner.name);
+                            }).then(() => console.log("Notification sent to", nextOwner.name))
+                                .catch(e => console.error("Next user email failed", e));
+
                         } catch (e) {
-                            console.error("Next user email failed", e);
+                            console.error("Next user email setup failed", e);
                         }
                     }
                 }
@@ -362,14 +286,23 @@ export function Dashboard() {
         e.preventDefault();
         if (!passData.name) return triggerAlert("Selection Missing", "Please select your name.");
 
-        // Double Confirmation for Passing
+        // Step 1 -> Step 2
+        if (passStep === 1) {
+            setPassStep(2);
+            return;
+        }
+
+        // Step 2 -> Step 3 (Global Final Confirm)
         triggerConfirm(
             "Final Confirmation: Pass Turn",
             `Are you absolutely sure you want to pass your turn?\n\nThis action is irreversible and the schedule will immediately move to the next shareholder. You cannot undo this.`,
             async () => {
+                // IMMEDIATE UX FIX: Close the underlying "Are You Sure" modal so it doesn't reappear
+                setPassStep(0);
+
                 try {
                     // Check for existing draft to delete (replacing Draft with Pass)
-                    const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
+                    const draft = bookings.find(b => b.shareholderName === passData.name && b.isFinalized === false);
                     if (draft) {
                         await deleteDoc(doc(db, "bookings", draft.id));
                     }
@@ -430,7 +363,6 @@ export function Dashboard() {
                     }
 
                     triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
-                    setIsPassing(false);
                     setPassData({ name: '' });
                 } catch (err) {
                     console.error(err);
@@ -438,7 +370,8 @@ export function Dashboard() {
                 }
             },
             true, // Danger
-            "Confirm Pass (Cannot Undo)"
+            "Confirm Pass (Cannot Undo)",
+            "pass" // Require typing
         );
     };
 
@@ -499,6 +432,12 @@ export function Dashboard() {
     };
 
 
+    // --- EMAIL GUEST LOGIC ---
+    const handleEmailGuest = (booking) => {
+        setViewingBooking(null); // Close Details Modal
+        setEmailingBooking(booking); // Open Email Modal
+    };
+
     // Auto-populate Pass Form Removed - Handled in Button Click to prevent glitch
     // useEffect(() => { ... }, [isPassing, status.activePicker]);
 
@@ -527,53 +466,64 @@ export function Dashboard() {
                                 isPaid: false
                             });
 
-                            // 2. Send "Booking Cancelled" Email (Non-Blocking)
+                            // 2. Send "Booking Cancelled" Email
                             try {
                                 const owner = shareholders.find(o => o.name === booking.shareholderName);
-                                // If self-cancelled, email the user AND maybe admin? 
-                                // Requirement says "Booking Cancelled (notification to user)".
                                 const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
+                                const isTargetingAdminFallback = !owner?.email;
 
-                                // Helper for safe date formatting
+                                console.log(`Sending cancellation email to: ${emailTo} (Shareholder: ${booking.shareholderName})`);
+
+                                // Safe helper for dates
                                 const safeFormat = (dateObj) => {
                                     try {
                                         if (!dateObj) return "N/A";
                                         if (dateObj.toDate) return format(dateObj.toDate(), 'MMM d, yyyy');
                                         const d = new Date(dateObj);
                                         return isNaN(d.getTime()) ? "N/A" : format(d, 'MMM d, yyyy');
-                                    } catch (e) {
-                                        return "N/A";
-                                    }
+                                    } catch (e) { return "N/A"; }
                                 };
+
+                                // Determine if this cancellation affects the active turn
+                                const isActiveTurn = status?.activePicker === booking.shareholderName;
 
                                 await emailService.sendBookingCancelled(emailTo, {
                                     name: booking.shareholderName,
                                     check_in: safeFormat(booking.from),
                                     check_out: safeFormat(booking.to),
-                                    cabin_number: booking.cabinNumber,
+                                    cabin_number: booking.cabinNumber || "?",
                                     cancelled_date: format(new Date(), 'PPP'),
-                                    dashboard_url: window.location.origin
+                                    dashboard_url: window.location.origin,
+                                    within_turn_window: isActiveTurn,
+                                    next_shareholder: status?.nextPicker || "the next shareholder"
                                 });
 
-                                triggerAlert("Success", "Booking cancelled. The status has been updated.");
-                                setViewingBooking(null); // Close modal
+                                // If we fell back to admin (because owner email missing), log warning
+                                if (isTargetingAdminFallback) {
+                                    console.warn(`WARNING: Could not find email for shareholder '${booking.shareholderName}'. Defaulted to Admin.`);
+                                }
+
+                                triggerAlert("Success", "Booking cancelled. A confirmation email has been sent.");
+                                setViewingBooking(null);
                             } catch (emailErr) {
                                 console.error("Email failed:", emailErr);
                                 triggerAlert("Warning", "Booking cancelled, but failed to send email notification.");
                                 setViewingBooking(null);
                             }
-
                         } catch (err) {
                             console.error("Cancellation Critical Error:", err);
                             triggerAlert("Error", "Failed to cancel booking: " + err.message);
                         }
                     },
-                    true, // Danger
-                    "Yes, Cancel It"
+
+                    true, // isDanger
+                    "Cancel Booking" // confirmText
                 );
             },
             true, // Danger color
-            "Cancel Booking"
+            "Cancel Booking",
+            "cancel", // Require typing
+            false // Do NOT auto-close (wait for second confirmation)
         );
     };
 
@@ -600,151 +550,141 @@ export function Dashboard() {
                 </div>
             )}
 
-            <div className="flex justify-between items-center mb-2">
-                <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Trailer Booking Dashboard</h1>
+            {/* --- NEW HEADER: Shareholder Hero --- */}
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-sm font-bold tracking-tight text-slate-400 uppercase">Shareholder Dashboard</h1>
                 {isSuperAdmin && (
-                    <a href="#/admin" className="text-xs md:text-sm font-bold text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md transition-colors">
-                        Admin Dashboard
+                    <a href="#/admin" className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-md transition-colors">
+                        Switch to Admin
                     </a>
                 )}
             </div>
 
-            {/* Welcome / Status Banner */}
-            <WelcomeBanner
-                loggedInShareholder={loggedInShareholder}
-                status={status}
-                allDraftRecords={allDraftRecords}
+            <ShareholderHero
                 currentUser={currentUser}
+                status={status}
+                shareholderName={loggedInShareholder}
+                drafts={allDraftRecords}
+                onOpenBooking={() => setIsBooking(true)}
+                onFinalize={handleFinalize}
+                onPass={() => {
+                    if (status.phase === 'PRE_DRAFT') {
+                        setShowPreDraftModal(true);
+                    } else {
+                        setPassData({ name: status.activePicker });
+                        setPassStep(1);
+                    }
+                }}
+                isSystemFrozen={isSystemFrozen}
                 isSuperAdmin={isSuperAdmin}
+                onViewDetails={setViewingBooking}
+                onEmail={(booking) => setEmailingBooking(booking)}
+                onViewSchedule={() => setActiveTab('schedule')}
             />
 
-            <div id="tour-status">
-                <StatusCard status={status}>
-                    {/* Only show controls if IT IS YOUR TURN OR ADMIN OR OPEN SEASON */}
-                    <div id="tour-actions">
-                        {(isSystemFrozen && !isSuperAdmin) ? (
-                            <div className="text-sm text-amber-700 font-bold py-3 px-4 bg-amber-50 rounded-md text-center border border-amber-200">
-                                ️ Maintenance in Progress
-                            </div>
-                        ) : (status.phase === 'OPEN_SEASON') ? (
-                            <div className="flex flex-col gap-4 animate-in fade-in duration-700">
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-                                    <div className="p-2 bg-green-100 text-green-700 rounded-full">
-                                        <Calendar className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-green-900">Open Season is Live!</h4>
-                                        <p className="text-sm text-green-700 leading-tight">
-                                            Booking is now first-come, first-served for all shareholders.
-                                        </p>
-                                    </div>
-                                </div>
+            {/* --- TAB NAVIGATION --- */}
+            <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">
+                <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+                    <button
+                        onClick={() => setActiveTab('bookings')}
+                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <User className="w-4 h-4" />
+                        Recent Bookings
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('calendar')}
+                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'calendar' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <Calendar className="w-4 h-4" />
+                        Calendar View
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('schedule')}
+                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <Clock className="w-4 h-4" />
+                        2026 Season Schedule
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('guide')}
+                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'guide' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <BookOpen className="w-4 h-4" />
+                        Trailer Guide & Rules
+                    </button>
+                </div>
+            </div>
 
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => setIsBooking(true)}
-                                        className="w-full md:w-auto inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                    >
-                                        Book Dates
-                                    </button>
-                                </div>
-                            </div>
+            {/* --- TAB CONTENT --- */}
+            <div className="min-h-[400px] mt-6">
 
-                        ) : activeUserDraft ? (
-                            <div className="flex gap-3 mt-4">
-                                <button
-                                    onClick={() => handleFinalize(activeUserDraft.id, status.activePicker)}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-green-600 text-white hover:bg-green-700 h-12 md:h-10 px-6 py-2 shadow-sm transition-all animate-pulse"
-                                >
-                                    Finalize Booking
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setEditingBooking(activeUserDraft);
-                                        setIsBooking(true);
-                                    }}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                >
-                                    Edit Booking
-                                </button>
-                            </div>
-                        ) : (
-                            (status.activePicker === loggedInShareholder || isSuperAdmin) && (
-                                <div className="flex gap-3 mt-4">
-                                    <button
-                                        onClick={() => setIsBooking(true)}
-                                        className="inline-flex items-center justify-center rounded-md text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                    >
-                                        Choose Your Dates
-                                    </button>
-                                    <button
-                                        onClick={() => status.phase === 'PRE_DRAFT'
-                                            ? setShowPreDraftModal(true)
-                                            : (() => {
-                                                setPassData({ name: status.activePicker });
-                                                setIsPassing(true);
-                                            })()
-                                        }
-                                        className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 md:h-10 px-6 py-2 shadow-sm transition-all"
-                                    >
-                                        Pass Turn
-                                    </button>
-                                </div>
-                            )
-                        )}
+                {/* 1. MY BOOKINGS */}
+                {activeTab === 'bookings' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <RecentBookings
+                            bookings={allDraftRecords}
+                            onViewDetails={(booking) => setViewingBooking(booking)}
+                            currentShareholder={loggedInShareholder}
+                            isAdmin={isSuperAdmin}
+                            activePicker={status.activePicker}
+                        />
+                        {/* Fallback for empty state logic inside RecentBookings? If not, we could add here */}
                     </div>
-                </StatusCard>
-            </div>
+                )}
 
-            <div id="tour-recent">
-                <RecentBookings
-                    bookings={allDraftRecords}
-                    onViewDetails={(booking) => setViewingBooking(booking)}
-                    currentShareholder={loggedInShareholder}
-                    isAdmin={isSuperAdmin}
-                    activePicker={status.activePicker}
-                />
-            </div>
+                {/* 2. SEASON SCHEDULE */}
+                {activeTab === 'calendar' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <ShareholderCalendarView bookings={allDraftRecords} />
+                    </div>
+                )}
 
-            <div id="tour-schedule">
-                <SeasonSchedule currentOrder={currentOrder} allDraftRecords={allDraftRecords} status={status} startDateOverride={startDateOverride} />
-            </div>
+                {/* 3. SEASON SCHEDULE (Renumbered) */}
+                {activeTab === 'schedule' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <SeasonSchedule
+                            currentOrder={currentOrder}
+                            allDraftRecords={allDraftRecords}
+                            status={status}
+                            startDateOverride={startDateOverride}
+                        />
+                    </div>
+                )}
 
-            <div id="tour-guide" className="mt-8">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    🚐 Trailer Checklist and Guest Rules
-                </h3>
-                {/* 
-                    Find the NEXT upcoming finalized booking for the current user 
-                    so they can easily email the guide for it.
-                */}
-                <TrailerGuide
-                    shareholderName={loggedInShareholder}
-                    booking={(() => {
-                        if (!loggedInShareholder || !allDraftRecords) return null;
-                        const now = new Date();
-                        const myBookings = allDraftRecords
-                            .filter(b =>
-                                b.shareholderName === loggedInShareholder &&
-                                b.isFinalized &&
-                                b.type !== 'cancelled' &&
-                                (b.from?.toDate ? b.from.toDate() : new Date(b.from)) >= now
-                            )
-                            .sort((a, b) => {
-                                const dateA = a.from?.toDate ? a.from.toDate() : new Date(a.from);
-                                const dateB = b.from?.toDate ? b.from.toDate() : new Date(b.from);
-                                return dateA - dateB;
-                            });
-                        return myBookings[0] || null;
-                    })()}
-                />
+                {/* 3. TRAILER GUIDE */}
+                {activeTab === 'guide' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <TrailerGuide
+                            shareholderName={loggedInShareholder}
+                            booking={(() => {
+                                if (!loggedInShareholder || !allDraftRecords) return null;
+                                const now = new Date();
+                                const myBookings = allDraftRecords
+                                    .filter(b =>
+                                        b.shareholderName === loggedInShareholder &&
+                                        b.isFinalized &&
+                                        b.type !== 'cancelled' &&
+                                        (b.from?.toDate ? b.from.toDate() : new Date(b.from)) >= now
+                                    )
+                                    .sort((a, b) => {
+                                        const dateA = a.from?.toDate ? a.from.toDate() : new Date(a.from);
+                                        const dateB = b.from?.toDate ? b.from.toDate() : new Date(b.from);
+                                        return dateA - dateB;
+                                    });
+                                return myBookings[0] || null;
+                            })()}
+                        />
+                    </div>
+                )}
+
             </div>
 
             {/* Edit / Booking Modal Overlay */}
             {
                 isBooking && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-4 md:pb-4">
-                        <div className="bg-background w-full max-w-5xl rounded-lg shadow-2xl overflow-hidden my-auto relative">
+                        <div className="bg-background w-full max-w-lg rounded-lg shadow-2xl overflow-hidden my-auto relative">
                             <div className="p-3 border-b flex justify-between items-center bg-muted/20">
                                 <h2 className="text-base font-semibold">
                                     {editingBooking ? "Edit Booking" : "New Booking"}
@@ -758,19 +698,21 @@ export function Dashboard() {
                             </div>
                             <div className="p-2 md:p-4 max-h-[90vh] overflow-y-auto">
                                 <BookingSection
+                                    key={editingBooking ? editingBooking.id : 'new'}
                                     onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
                                     initialBooking={editingBooking}
                                     activePicker={status.phase === 'OPEN_SEASON' ? loggedInShareholder : status.activePicker}
                                     onPass={() => {
                                         setIsBooking(false);
                                         setPassData({ name: status.activePicker });
-                                        setIsPassing(true);
+                                        setPassStep(1);
                                     }}
                                     onDiscard={handleDiscard}
                                     onShowAlert={triggerAlert}
                                     onFinalize={async (id, name) => {
                                         await handleFinalize(id, name, true);
                                     }}
+                                    bookings={allDraftRecords}
                                     startDateOverride={startDateOverride}
                                 />
                             </div>
@@ -781,15 +723,23 @@ export function Dashboard() {
 
             {/* Pass Turn Modal Overlay */}
             {
-                isPassing && (
+                passStep > 0 && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                         <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
-                            <h2 className="text-2xl font-bold mb-2 text-destructive">Pass Your Turn</h2>
-                            <p className="text-sm text-muted-foreground mb-6">
-                                Are you sure you want to skip your turn in this round?
-                                <br />
-                                This will <strong>immediately</strong> open the booking window for the next shareholder.
-                            </p>
+                            <h2 className={`text-2xl font-bold mb-2 ${passStep === 2 ? 'text-destructive' : 'text-foreground'}`}>
+                                {passStep === 1 ? "Pass Your Turn?" : "Are You Sure?"}
+                            </h2>
+                            <div className="text-sm text-muted-foreground mb-6">
+                                {passStep === 1 ? (
+                                    <p>Do you want to skip your turn in this round? You can choose to pass now if you're not ready.</p>
+                                ) : (
+                                    <p className="font-medium text-destructive/80">
+                                        Warning: This will <strong>immediately end your turn</strong> and notify the next shareholder.
+                                        <br /><br />
+                                        You cannot undo this action.
+                                    </p>
+                                )}
+                            </div>
 
                             <form onSubmit={handlePassSubmit} className="space-y-4">
                                 <div className="space-y-2">
@@ -802,16 +752,19 @@ export function Dashboard() {
                                 <div className="pt-4 flex gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => setIsPassing(false)}
+                                        onClick={() => setPassStep(0)}
                                         className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="flex-1 h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium transition-colors"
+                                        className={`flex-1 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors ${passStep === 2
+                                            ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                            }`}
                                     >
-                                        Confirm Pass
+                                        {passStep === 1 ? "Continue" : "Proceed to Final Confirm"}
                                     </button>
                                 </div>
                             </form>
@@ -819,6 +772,7 @@ export function Dashboard() {
                     </div>
                 )
             }
+
 
             {/* Booking Details Modal Overlay */}
             {
@@ -832,7 +786,7 @@ export function Dashboard() {
                         onPass={() => {
                             setViewingBooking(null);
                             setPassData({ name: viewingBooking.shareholderName });
-                            setIsPassing(true);
+                            setPassStep(1);
                         }}
                         onEdit={() => {
                             setViewingBooking(null);
@@ -841,8 +795,20 @@ export function Dashboard() {
                         }}
                         onFinalize={() => {
                             handleFinalize(viewingBooking.id, viewingBooking.shareholderName);
-                            setViewingBooking(null);
                         }}
+                        onEmail={() => handleEmailGuest(viewingBooking)}
+
+                    />
+                )
+            }
+
+            {/* Email Guest Modal */}
+            {
+                emailingBooking && (
+                    <EmailGuestModal
+                        booking={emailingBooking}
+                        currentUser={loggedInShareholder}
+                        onClose={() => setEmailingBooking(null)}
                     />
                 )
             }
@@ -857,6 +823,8 @@ export function Dashboard() {
                 isDanger={confirmation.isDanger}
                 confirmText={confirmation.confirmText}
                 showCancel={confirmation.showCancel}
+                requireTyping={confirmation.requireTyping}
+                closeOnConfirm={confirmation.closeOnConfirm}
             />
 
             {/* Pre-Draft Modal */}
@@ -889,7 +857,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.108 - Guest Rules UI</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.163 - Race Fix</p>
 
 
             </div>

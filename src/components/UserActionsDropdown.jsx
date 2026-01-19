@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreVertical, Edit, Key, Trash2 } from 'lucide-react';
 
-export function UserActionsDropdown({ user, isSuperAdmin, onEdit, onPassword, onDelete }) {
+export function UserActionsDropdown({ user, onEdit, onPassword, onDelete }) {
     const [isOpen, setIsOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const buttonRef = useRef(null);
@@ -71,15 +71,13 @@ export function UserActionsDropdown({ user, isSuperAdmin, onEdit, onPassword, on
                             <Key className="w-4 h-4" />
                             Change Password
                         </button>
-                        {isSuperAdmin && (
-                            <button
-                                onClick={() => { setIsOpen(false); onDelete(user); }}
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                                Delete User
-                            </button>
-                        )}
+                        <button
+                            onClick={() => { setIsOpen(false); onDelete(user); }}
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete User
+                        </button>
                     </div>
                 </div>,
                 document.body
