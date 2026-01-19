@@ -1194,26 +1194,7 @@ export function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Actions Bar */}
-                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                            {/* Reminder button removed - relying on automated emails */}
 
-                            <button
-                                onClick={handleEmailBookingReport}
-                                className="flex-1 py-3 px-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-all shadow-sm"
-                            >
-                                <Mail className="w-4 h-4" />
-                                Email Report
-                            </button>
-
-                            <button
-                                onClick={handleDownloadCSV}
-                                className="flex-1 py-3 px-4 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-all shadow-sm"
-                            >
-                                <Download className="w-4 h-4" />
-                                Download CSV
-                            </button>
-                        </div>
 
                         {/* Mobile Card View (Bookings) */}
                         <div className="md:hidden space-y-4 mb-8">
@@ -1318,6 +1299,42 @@ export function AdminDashboard() {
                                     </div>
                                 );
                             })()}
+                        </div>
+
+                        {/* Desktop Table Utility Bar */}
+                        <div className="hidden md:flex justify-end gap-6 mb-2 px-1">
+                            <button
+                                onClick={handleEmailBookingReport}
+                                className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
+                            >
+                                <Mail className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
+                                Email Report
+                            </button>
+                            <button
+                                onClick={handleDownloadCSV}
+                                className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
+                            >
+                                <Download className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
+                                Download CSV
+                            </button>
+                        </div>
+
+                        {/* Mobile Action Links (Above Table/Cards) */}
+                        <div className="md:hidden flex justify-end gap-4 mb-4">
+                            <button
+                                onClick={handleEmailBookingReport}
+                                className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
+                            >
+                                <Mail className="w-3.5 h-3.5" />
+                                Email Report
+                            </button>
+                            <button
+                                onClick={handleDownloadCSV}
+                                className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
+                            >
+                                <Download className="w-3.5 h-3.5" />
+                                CSV
+                            </button>
                         </div>
 
                         <div className="overflow-x-auto hidden md:block">
