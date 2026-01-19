@@ -19,7 +19,8 @@ export function Header() {
         return owner ? owner.name : null;
     }, [currentUser]);
 
-    const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
+    // Hardcoded Admin Check (for now)
+    const isAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -34,19 +35,23 @@ export function Header() {
                     {/* Hide "Welcome" and "Sign Out" if on Login page or not logged in */}
                     {currentUser && !isLoginPage ? (
                         <>
-                            <div className="flex flex-col items-end md:flex-row md:items-center md:gap-2">
-                                <span className="text-muted-foreground">
+                            <div className="flex flex-col items-end md:flex-row md:items-center md:gap-4">
+                                <span className="text-muted-foreground hidden sm:inline">
                                     {loggedInShareholder ? `Welcome, ${loggedInShareholder}` : currentUser.email}
                                 </span>
-                                {isSuperAdmin && (
-                                    <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs font-bold">
-                                        ADMIN
-                                    </span>
+
+                                {isAdmin && (
+                                    <Link
+                                        to="/admin"
+                                        className="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-1"
+                                    >
+                                        Admin Dashboard
+                                    </Link>
                                 )}
                             </div>
                             <button
                                 onClick={() => logout().then(() => navigate('/login'))}
-                                className="flex items-center gap-2 hover:text-primary transition-colors"
+                                className="flex items-center gap-2 hover:text-primary transition-colors ml-2"
                                 title="Sign Out"
                             >
                                 <LogOut className="h-4 w-4" />
