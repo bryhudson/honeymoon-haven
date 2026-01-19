@@ -430,41 +430,47 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
     return (
         <section id="book" className="py-2 relative flex flex-col justify-center">
-            <div className="container mx-auto px-2 max-w-lg">
+            <div className="container mx-auto px-0 max-w-md">
 
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-black tracking-tight mb-2">
-                        {step === 1 ? "Select Dates" : "Finalize Booking"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        {step === 1
-                            ? <span>Season: <strong>March 1st - Oct 31st</strong></span>
-                            : <span>for <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>
-                        }
-                    </p>
-                </div>
+                {/* Compact Header */}
+                <div className="flex items-center justify-between mb-2 px-2">
+                    <div className="text-left">
+                        <h2 className="text-lg font-black tracking-tight text-foreground leading-none">
+                            {step === 1 ? "Select Dates" : "Finalize Booking"}
+                        </h2>
+                        <p className="text-[10px] text-muted-foreground font-medium mt-1">
+                            {step === 1
+                                ? <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> Mar 1 - Oct 31</span>
+                                : <span>Guest: <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>
+                            }
+                        </p>
+                    </div>
 
-                {/* Progress Indicator */}
-                <div className="flex justify-center mb-8 gap-3">
-                    <div className={`h-2 rounded-full transition-all duration-300 ${step === 1 ? "w-12 bg-primary" : "w-3 bg-slate-200"}`}></div>
-                    <div className={`h-2 rounded-full transition-all duration-300 ${step === 2 ? "w-12 bg-primary" : "w-3 bg-slate-200"}`}></div>
+                    {/* Compact Steps */}
+                    <div className="flex gap-1.5">
+                        <div className={`h-1.5 w-6 rounded-full transition-all ${step === 1 ? "bg-primary" : "bg-slate-200"}`}></div>
+                        <div className={`h-1.5 w-6 rounded-full transition-all ${step === 2 ? "bg-primary" : "bg-slate-200"}`}></div>
+                    </div>
                 </div>
 
                 <div className="flex flex-col items-center">
 
                     {/* STEP 1: CALENDAR */}
                     {step === 1 && (
-                        <div className="w-full bg-card rounded-2xl shadow-xl border overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
-                            <div className="p-4 bg-slate-50/50 border-b flex justify-between items-center">
-                                <h3 className="font-bold text-slate-700">Calendar</h3>
-                                {selectedRange?.from && selectedRange?.to && (
-                                    <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
+                        <div className="w-full bg-card rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
+                            {/* Floating Date Badge (if selected) */}
+                            {selectedRange?.from && selectedRange?.to && (
+                                <div className="bg-primary/5 border-b border-primary/10 p-2 text-center">
+                                    <span className="text-xs font-bold text-primary flex items-center justify-center gap-2">
+                                        <Calendar className="w-3 h-3" />
                                         {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d')}
+                                        <span className="opacity-50">|</span>
+                                        {differenceInCalendarDays(selectedRange.to, selectedRange.from)} nights
                                     </span>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
-                            <div className="p-4 flex justify-center flex-col items-center">
+                            <div className="p-0 md:p-2 flex justify-center flex-col items-center">
                                 <ErrorBoundary>
                                     <DayPicker
                                         mode="range"
@@ -501,7 +507,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                 {isOverlap && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Dates unavailable</p>}
                             </div>
 
-                            <div className="p-4 border-t bg-slate-50">
+                            <div className="p-3 border-t bg-slate-50">
                                 <button
                                     onClick={handleContinue}
                                     disabled={!selectedRange?.from || !selectedRange?.to || isTooLong || isTooShort || isOverlap}
