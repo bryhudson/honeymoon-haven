@@ -14,7 +14,8 @@ export function ShareholderHero({
     isSuperAdmin,
     onViewDetails,
     onEmail,
-    onViewSchedule
+    onViewSchedule,
+    currentOrder
 }) {
     if (!shareholderName) return null;
 
@@ -274,6 +275,41 @@ export function ShareholderHero({
         .filter(b => b.shareholderName === shareholderName && b.isFinalized && !b.type !== 'cancelled')
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
+    // --- QUEUE CALCULATION ---
+    const queueInfo = React.useMemo(() => {
+        if (!currentOrder || !status || !shareholderName) return null;
+
+        const fullTurnOrder = [...currentOrder, ...[...currentOrder].reverse()];
+        let activeIndex = -1;
+
+        if (status.phase === 'PRE_DRAFT') {
+            activeIndex = -1;
+        } else if (status.activePicker) {
+            const round1Len = currentOrder.length;
+            if (status.phase === 'ROUND_1') {
+                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i < round1Len);
+            } else {
+                // If phase is ROUND_2 (or fallback), look in 2nd half
+                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i >= round1Len);
+                // Fallback: if not found in 2nd half (edge case), find anywhere
+                if (activeIndex === -1) activeIndex = fullTurnOrder.findIndex(n => n === status.activePicker);
+            }
+        }
+
+        // Use findIndex with a filter condition is not direct, so loop
+        let myNextIndex = -1;
+        for (let i = 0; i < fullTurnOrder.length; i++) {
+            if (fullTurnOrder[i] === shareholderName && i > activeIndex) {
+                myNextIndex = i;
+                break;
+            }
+        }
+
+        if (myNextIndex === -1) return null;
+        return { diff: myNextIndex - activeIndex };
+    }, [currentOrder, status, shareholderName]);
+
+
     return (
         <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
             {/* Background Flair */}
@@ -282,9 +318,18 @@ export function ShareholderHero({
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 text-center lg:text-left max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600">
-                        <Clock className="w-3 h-3" />
-                        Status: Waiting
+                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600">
+                            <Clock className="w-3 h-3" />
+                            Status: Waiting
+                        </div>
+
+                        {/* QUEUE POSITION INDICATOR */}
+                        {queueInfo && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                {queueInfo.diff === 1 ? "You are Up Next!" : `You are ${queueInfo.diff} in line`}
+                            </div>
+                        )}
                     </div>
 
                     <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
