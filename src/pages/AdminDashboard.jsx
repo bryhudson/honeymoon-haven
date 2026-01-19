@@ -515,16 +515,29 @@ export function AdminDashboard() {
     };
 
     const toggleTestMode = async () => {
-        try {
-            await setDoc(doc(db, "settings", "general"), {
-                isTestMode: !isTestMode
-            }, { merge: true });
-            setIsTestMode(!isTestMode);
-            triggerAlert("Success", `Test Mode is now ${!isTestMode ? 'ON (Redirecting Emails)' : 'OFF (Real Production Emails)'}`);
-        } catch (err) {
-            console.error("Failed to toggle test mode:", err);
-            triggerAlert("Error", "Failed to update test mode settings.");
+        // 1. Strict Email Check
+        if (currentUser?.email !== 'bryan.m.hudson@gmail.com') {
+            triggerAlert("Access Denied", "Only the site owner (bryan.m.hudson@gmail.com) can toggle Test Mode.");
+            return;
         }
+
+        // 2. Require Re-Auth (Password Check)
+        requireAuth(
+            "Security Check: Toggle Test Mode",
+            `You are about to switch the system into ${!isTestMode ? 'TEST MODE' : 'PRODUCTION MODE'}. Please verify your password.`,
+            async () => {
+                try {
+                    await setDoc(doc(db, "settings", "general"), {
+                        isTestMode: !isTestMode
+                    }, { merge: true });
+                    setIsTestMode(!isTestMode);
+                    triggerAlert("Success", `Test Mode is now ${!isTestMode ? 'ON (Redirecting Emails)' : 'OFF (Real Production Emails)'}`);
+                } catch (err) {
+                    console.error("Failed to toggle test mode:", err);
+                    triggerAlert("Error", "Failed to update test mode settings.");
+                }
+            }
+        );
     };
 
     const handleEditClick = (booking) => {
