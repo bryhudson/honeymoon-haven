@@ -1074,12 +1074,7 @@ export function AdminDashboard() {
                         <p className="text-muted-foreground mt-1">Overview of resort performance and bookings.</p>
                     </div>
                     <div className="flex gap-3">
-                        <Link
-                            to={activeTurn ? `/?masquerade=${encodeURIComponent(activeTurn.name)}#book` : '/#book'}
-                            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors text-sm"
-                        >
-                            View As Shareholder
-                        </Link>
+                        {/* Button moved to System tab */}
                     </div>
                 </div>
 
@@ -1102,26 +1097,23 @@ export function AdminDashboard() {
                     >
                         Users & Roles
                     </button>
-                    {/* Only Site Owner sees System Tab */}
-                    {IS_SITE_OWNER && (
-                        <button
-                            onClick={() => setActiveTab('system')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                        >
-                            <div className="flex items-center gap-2">
-                                <span>System</span>
-                                {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
-                            </div>
-                        </button>
-                    )}
+                    <button
+                        onClick={() => setActiveTab('system')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <span>System</span>
+                            {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
+                        </div>
+                    </button>
                 </div>
 
                 {activeTab === 'calendar' && (
                     <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} />
                 )}
 
-                {/* Secure System Tab Content */}
-                {activeTab === 'system' && IS_SITE_OWNER && (
+                {/* System Tab Content */}
+                {activeTab === 'system' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
                         <div className="flex items-center gap-3 mb-6">
@@ -1154,66 +1146,88 @@ export function AdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* Danger Zone */}
-                            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                                <div className="flex items-center gap-2 mb-4 text-red-600">
-                                    <AlertTriangle className="w-5 h-5" />
-                                    <h3 className="font-bold">Site Config</h3>
+                            {/* Utility Actions */}
+                            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+                                <div className="flex items-center gap-2 mb-2 text-slate-600">
+                                    <Key className="w-5 h-5" />
+                                    <h3 className="font-bold">Admin Tools</h3>
                                 </div>
-
-                                <div className="space-y-4">
-                                    {/* Test Mode Toggle */}
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                        <div>
-                                            <div className="font-bold text-slate-800 flex items-center gap-2">
-                                                Test Mode (Redirect Emails)
-                                                {isTestMode && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
-                                            </div>
-                                            <div className="text-xs text-slate-500 mt-1">
-                                                {isTestMode
-                                                    ? "ON: All emails are redirected to 'bryan.m.hudson@gmail.com'."
-                                                    : "OFF: Emails assume PRODUCTION and go to real users."}
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={toggleTestMode}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isTestMode
-                                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                                                }`}
-                                        >
-                                            {isTestMode ? 'DISABLE TEST MODE' : 'ENABLE TEST MODE'}
-                                        </button>
+                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                    <div>
+                                        <div className="font-bold text-slate-800">Simulate Shareholder</div>
+                                        <div className="text-xs text-slate-500">View the dashboard as if you were a shareholder.</div>
                                     </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                        <div>
-                                            <div className="font-bold text-slate-800">Maintenance Mode</div>
-                                            <div className="text-xs text-slate-500">Prevent all non-admin access.</div>
-                                        </div>
-                                        <button
-                                            onClick={toggleSystemFreeze}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isSystemFrozen ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                                                }`}
-                                        >
-                                            {isSystemFrozen ? 'END MAINTENANCE' : 'START MAINTENANCE'}
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
-                                        <div>
-                                            <div className="font-bold text-red-900 text-sm">Wipe Database</div>
-                                            <div className="text-xs text-red-700/70">Delete ALL bookings & resets.</div>
-                                        </div>
-                                        <button
-                                            onClick={handleWipeDatabase}
-                                            className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold uppercase tracking-wider"
-                                        >
-                                            Wipe DB
-                                        </button>
-                                    </div>
+                                    <Link
+                                        to={activeTurn ? `/?masquerade=${encodeURIComponent(activeTurn.name)}#book` : '/#book'}
+                                        className="px-4 py-2 bg-white text-slate-700 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm"
+                                    >
+                                        VIEW AS USER
+                                    </Link>
                                 </div>
                             </div>
+
+                            {/* Danger Zone - Site Owner Only */}
+                            {IS_SITE_OWNER && (
+                                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-4 text-red-600">
+                                        <AlertTriangle className="w-5 h-5" />
+                                        <h3 className="font-bold">Site Config</h3>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {/* Test Mode Toggle */}
+                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div>
+                                                <div className="font-bold text-slate-800 flex items-center gap-2">
+                                                    Test Mode (Redirect Emails)
+                                                    {isTestMode && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-1">
+                                                    {isTestMode
+                                                        ? "ON: All emails are redirected to 'bryan.m.hudson@gmail.com'."
+                                                        : "OFF: Emails assume PRODUCTION and go to real users."}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={toggleTestMode}
+                                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isTestMode
+                                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                                    }`}
+                                            >
+                                                {isTestMode ? 'DISABLE TEST MODE' : 'ENABLE TEST MODE'}
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div>
+                                                <div className="font-bold text-slate-800">Maintenance Mode</div>
+                                                <div className="text-xs text-slate-500">Prevent all non-admin access.</div>
+                                            </div>
+                                            <button
+                                                onClick={toggleSystemFreeze}
+                                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isSystemFrozen ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                                                    }`}
+                                            >
+                                                {isSystemFrozen ? 'END MAINTENANCE' : 'START MAINTENANCE'}
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
+                                            <div>
+                                                <div className="font-bold text-red-900 text-sm">Wipe Database</div>
+                                                <div className="text-xs text-red-700/70">Delete ALL bookings & resets.</div>
+                                            </div>
+                                            <button
+                                                onClick={handleWipeDatabase}
+                                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold uppercase tracking-wider"
+                                            >
+                                                Wipe DB
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
