@@ -22,8 +22,8 @@ export function OnboardingTour({ currentUser }) {
     const steps = [
         {
             target: '#tour-status',
-            title: '👀 Your Queue Position',
-            content: "Check here to see exactly where you stand in line (e.g., 'You are Up Next!'). We've also added a clear countdown so you know when the current turn ends.",
+            title: '👀 Your Status & Queue',
+            content: "Check here for your current status, queue position, or the time remaining to make your booking.",
             disableBeacon: true,
         },
         {
@@ -41,7 +41,7 @@ export function OnboardingTour({ currentUser }) {
         {
             target: '#tour-schedule',
             title: '📅 New Season Schedule',
-            content: "Scroll down to see the revamped schedule. We've added a helpful 'How it Works' section that explains the 10:00 AM start time and Early Access rules!",
+            content: "Click this tab to view the full 2026 Season Schedule, including round dates and draft rules.",
             disableBeacon: true,
         },
     ];

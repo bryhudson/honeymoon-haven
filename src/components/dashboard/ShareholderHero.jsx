@@ -163,7 +163,7 @@ export function ShareholderHero({
                         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
                             Welcome, {shareholderName}
                         </h1>
-                        <div className="flex flex-col items-center lg:items-start gap-1">
+                        <div id="tour-status" className="flex flex-col items-center lg:items-start gap-1">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30 mb-2">
                                 <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -182,7 +182,7 @@ export function ShareholderHero({
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
+                    <div id="tour-actions" className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
                         <button
                             onClick={() => onViewDetails(activeDraft)}
                             className="flex-1 lg:flex-none px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
@@ -216,7 +216,7 @@ export function ShareholderHero({
                         <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
                             Welcome, {shareholderName}
                         </h1>
-                        <div className="flex flex-col items-center lg:items-start gap-1">
+                        <div id="tour-status" className="flex flex-col items-center lg:items-start gap-1">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                                 <Clock className="w-3 h-3" />
                                 Action Required
@@ -250,7 +250,7 @@ export function ShareholderHero({
                         </p>
                     </div>
 
-                    <div className="flex flex-col w-full sm:w-auto gap-4">
+                    <div id="tour-actions" className="flex flex-col w-full sm:w-auto gap-4">
                         <button
                             onClick={onOpenBooking}
                             className="w-full sm:w-64 px-8 py-4 bg-white text-slate-900 text-lg font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:bg-blue-50 hover:scale-105 transition-all flex items-center justify-center gap-3"
