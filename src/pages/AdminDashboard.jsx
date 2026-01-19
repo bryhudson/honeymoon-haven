@@ -1226,6 +1226,12 @@ export function AdminDashboard() {
                                                         <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
                                                             Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
                                                         </span>
+                                                        {isSlotBooked && booking.guests && (
+                                                            <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                                <Users className="w-3 h-3" />
+                                                                {booking.guests}
+                                                            </span>
+                                                        )}
                                                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                                                             Round {slot.round}
                                                         </span>
@@ -1342,6 +1348,7 @@ export function AdminDashboard() {
                                 <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
                                     <tr>
                                         <th className="px-6 py-4">Shareholder</th>
+                                        <th className="px-6 py-4">Guests</th>
                                         <th className="px-6 py-4">Dates</th>
                                         <th className="px-6 py-4 text-center">Status</th>
                                         <th className="px-6 py-4 text-center">Payment</th>
@@ -1374,6 +1381,7 @@ export function AdminDashboard() {
                                                             <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">Pending</div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-400">—</td>
+                                                        <td className="px-6 py-5 text-slate-400">—</td>
                                                         <td className="px-6 py-5 text-center">
                                                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
                                                                 Pending
@@ -1393,6 +1401,16 @@ export function AdminDashboard() {
                                                         <div className="text-xs text-muted-foreground font-mono mt-0.5">
                                                             Cabin #{booking.cabinNumber || CABIN_OWNERS.find(o => o.name === booking.shareholderName)?.cabin || "?"}
                                                         </div>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                            <span className="text-slate-400">—</span>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1.5 font-medium text-slate-600">
+                                                                <Users className="w-4 h-4 text-slate-400" />
+                                                                {booking.guests || 1}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="px-6 py-5">
                                                         <div className="flex flex-col">
