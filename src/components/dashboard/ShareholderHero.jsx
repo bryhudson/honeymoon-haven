@@ -304,13 +304,22 @@ export function ShareholderHero({
                             Welcome, {shareholderName}
                         </h1>
 
-                        {/* Status Pill */}
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${isPassed
-                            ? 'bg-amber-900/50 text-amber-200 border-amber-500/30'
-                            : 'bg-green-900/50 text-green-200 border-green-500/30'
-                            }`}>
-                            {isPassed ? <CheckCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
-                            {isPassed ? "Status: Passed" : "Booking Confirmed"}
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                            {/* Status Pill */}
+                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${isPassed
+                                ? 'bg-amber-900/50 text-amber-200 border-amber-500/30'
+                                : 'bg-green-900/50 text-green-200 border-green-500/30'
+                                }`}>
+                                {isPassed ? <CheckCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
+                                {isPassed ? "Status: Passed" : "Booking Confirmed"}
+                            </div>
+
+                            {/* QUEUE POSITION INDICATOR */}
+                            {queueInfo && (
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                    {queueInfo.diff === 1 ? "You are Up Next!" : `You are ${queueInfo.diff} in line`}
+                                </div>
+                            )}
                         </div>
 
                         <h2 className="text-2xl font-bold text-white/90">
@@ -363,9 +372,16 @@ export function ShareholderHero({
                         </div>
                     )}
                     {/* For Passed, simply show nothing or a "View Schedule" if we had one. Currently just the banner is enough notification. */}
-                    {isPassed && (
-                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto opacity-50">
-                            {/* Placeholder for balance, visual consistency */}
+                    {/* For Passed, show View Schedule to match Cancelled state visual balance */}
+                    {isPassed && onViewSchedule && (
+                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                            <button
+                                onClick={onViewSchedule}
+                                className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-lg flex items-center justify-center gap-2"
+                            >
+                                <Calendar className="w-5 h-5" />
+                                View Schedule
+                            </button>
                         </div>
                     )}
                 </div>
