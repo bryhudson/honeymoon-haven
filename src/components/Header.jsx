@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tent, LogOut, LayoutDashboard, User } from 'lucide-react';
+import { Tent, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS } from '../lib/shareholders';
@@ -65,6 +65,14 @@ export function Header() {
                                     </div>
                                 )}
                             </div>
+                            <a
+                                href="mailto:bryan.m.hudson@gmail.com?subject=Honeymoon Haven Feedback"
+                                className="flex items-center gap-2 hover:text-primary transition-colors ml-4 text-muted-foreground hover:text-blue-600"
+                                title="Report Bug / Send Feedback"
+                            >
+                                <MessageSquare className="h-4 w-4" />
+                                <span className="hidden lg:inline">Feedback</span>
+                            </a>
                             <button
                                 onClick={() => logout().then(() => navigate('/login'))}
                                 className="flex items-center gap-2 hover:text-primary transition-colors ml-2"
@@ -81,6 +89,6 @@ export function Header() {
                     )}
                 </div>
             </div>
-        </header>
+        </header >
     );
 }
