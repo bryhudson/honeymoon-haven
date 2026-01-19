@@ -599,20 +599,20 @@ export function Dashboard() {
                         2026 Season Schedule
                     </button>
                     <button
-                        id="tour-recent"
-                        onClick={() => setActiveTab('bookings')}
-                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <User className="w-4 h-4" />
-                        Recent Bookings
-                    </button>
-                    <button
                         id="tour-calendar"
                         onClick={() => setActiveTab('calendar')}
                         className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'calendar' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <Calendar className="w-4 h-4" />
                         Calendar View
+                    </button>
+                    <button
+                        id="tour-recent"
+                        onClick={() => setActiveTab('bookings')}
+                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <User className="w-4 h-4" />
+                        Recent Bookings
                     </button>
                     <button
                         id="tour-guide"
@@ -628,7 +628,26 @@ export function Dashboard() {
             {/* --- TAB CONTENT --- */}
             <div className="min-h-[400px] mt-6">
 
-                {/* 1. MY BOOKINGS */}
+                {/* 1. SEASON SCHEDULE */}
+                {activeTab === 'schedule' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <SeasonSchedule
+                            currentOrder={currentOrder}
+                            allDraftRecords={allDraftRecords}
+                            status={status}
+                            startDateOverride={startDateOverride}
+                        />
+                    </div>
+                )}
+
+                {/* 2. CALENDAR VIEW */}
+                {activeTab === 'calendar' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <ShareholderCalendarView bookings={allDraftRecords} />
+                    </div>
+                )}
+
+                {/* 3. MY BOOKINGS */}
                 {activeTab === 'bookings' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <RecentBookings
@@ -642,26 +661,7 @@ export function Dashboard() {
                     </div>
                 )}
 
-                {/* 2. SEASON SCHEDULE */}
-                {activeTab === 'calendar' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <ShareholderCalendarView bookings={allDraftRecords} />
-                    </div>
-                )}
-
-                {/* 3. SEASON SCHEDULE (Renumbered) */}
-                {activeTab === 'schedule' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <SeasonSchedule
-                            currentOrder={currentOrder}
-                            allDraftRecords={allDraftRecords}
-                            status={status}
-                            startDateOverride={startDateOverride}
-                        />
-                    </div>
-                )}
-
-                {/* 3. TRAILER GUIDE */}
+                {/* 4. TRAILER GUIDE */}
                 {activeTab === 'guide' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <TrailerGuide
@@ -866,7 +866,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.211 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.212 - Wipe Fix</p>
 
 
             </div>
