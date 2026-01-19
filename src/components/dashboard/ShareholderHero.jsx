@@ -312,14 +312,14 @@ export function ShareholderHero({
 
     return (
         <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
-            {/* Background Flair */}
-            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-slate-700 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+            {/* Background Flair - Aligning with AdminTurnHero (Indigo/Purple Theme) */}
+            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 text-center lg:text-left max-w-2xl">
                     <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
                             <Clock className="w-3 h-3" />
                             Status: Waiting
                         </div>
