@@ -60,7 +60,7 @@ export function Header() {
                                                 }`}
                                         >
                                             <User className="w-3.5 h-3.5" />
-                                            View as User
+                                            View as Shareholder
                                         </Link>
                                     </div>
                                 )}
