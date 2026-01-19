@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 export function AdminTurnHero({
     activeTurn,
     drafts,
-    onRemind
+
 }) {
     if (!activeTurn) return null;
 
@@ -42,15 +42,7 @@ export function AdminTurnHero({
                 </div>
 
                 <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
-                    <button
-                        onClick={() => onRemind(activeTurn.name)}
-                        className="px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
-                    >
-                        <Bell className="w-5 h-5" />
-                        Remind {activeTurn.name.split(' ')[0]}
-                    </button>
-
-
+                    {/* No manual remind button - automated emails handled by system */}
                 </div>
             </div>
         </div>

@@ -771,65 +771,7 @@ export function AdminDashboard() {
     }, [allBookings, draftStatus]);
 
 
-    const handleRemindActiveShareholder = async (targetShareholderName = null) => {
-        // Allow targeting specific shareholder (from row action) OR default to current global active
-        const targetName = targetShareholderName || activeTurn?.name;
 
-        if (!targetName) {
-            triggerAlert("Status", "No active shareholder found to remind.");
-            return;
-        }
-
-        // Calculate time remaining if it's the active turn
-        let hoursRemaining = 0;
-        let deadline = new Date();
-
-        if (activeTurn && activeTurn.name === targetName) {
-            const now = new Date();
-            deadline = activeTurn.end;
-            hoursRemaining = (activeTurn.end - now) / (1000 * 60 * 60);
-        }
-
-        triggerConfirm(
-            "Send Reminder?",
-            `Send a "Your Turn to Book" reminder to ${targetName}?` + (hoursRemaining > 0 ? `\nTime Remaining: ${Math.round(hoursRemaining)}h` : ""),
-            async () => {
-                try {
-                    const owner = shareholders.find(o => o.name === targetName);
-
-                    if (owner) {
-                        const emailData = {
-                            name: targetName,
-                            email: owner.email || "bryan.m.hudson@gmail.com"
-                        };
-                        const contextData = {
-                            name: targetName,
-                            hours_remaining: Math.max(0, Math.round(hoursRemaining)),
-                            deadline_date: format(deadline, 'PPP'),
-                            deadline_time: format(deadline, 'p'),
-                            check_in: "TBD",
-                            check_out: "TBD",
-                            has_draft: false,
-                            booking_url: window.location.origin,
-                            dashboard_url: window.location.origin
-                        };
-
-                        // Send Daily Reminder template as the generic "It's your turn"
-                        const type = new Date().getHours() < 12 ? 'morning' : 'evening';
-                        await emailService.sendDailyReminder(emailData, { ...contextData, type });
-                        triggerAlert("Sent", `Reminder sent to ${targetName}.`);
-                    } else {
-                        triggerAlert("Error", "Shareholder email not found.");
-                    }
-                } catch (err) {
-                    console.error(err);
-                    triggerAlert("Error", "Failed to send reminder.");
-                }
-            },
-            false,
-            "Send Reminder"
-        );
-    };
 
 
 
@@ -1073,8 +1015,6 @@ export function AdminDashboard() {
                     <AdminTurnHero
                         activeTurn={activeTurn}
                         drafts={allBookings}
-                        onRemind={() => handleRemindActiveShareholder()}
-
                     />
                 )}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1256,13 +1196,7 @@ export function AdminDashboard() {
 
                         {/* Actions Bar */}
                         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                            <button
-                                onClick={() => handleRemindActiveShareholder()}
-                                className="flex-1 py-3 px-4 bg-purple-50 border border-purple-200 text-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-purple-100 transition-all shadow-sm"
-                            >
-                                <Bell className="w-4 h-4" />
-                                {activeTurn ? `Remind ${activeTurn.name}` : "Remind Active Shareholder"}
-                            </button>
+                            {/* Reminder button removed - relying on automated emails */}
 
                             <button
                                 onClick={handleEmailBookingReport}
