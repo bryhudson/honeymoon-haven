@@ -47,8 +47,8 @@ export function AdminDashboard() {
         showCancel: true
     });
 
-    const triggerConfirm = (title, message, onConfirm, isDanger = false, confirmText = "Confirm") => {
-        setConfirmation({ isOpen: true, title, message, onConfirm, isDanger, confirmText, showCancel: true });
+    const triggerConfirm = (title, message, onConfirm, isDanger = false, confirmText = "Confirm", requireTyping = null) => {
+        setConfirmation({ isOpen: true, title, message, onConfirm, isDanger, confirmText, showCancel: true, requireTyping });
     };
 
     const triggerAlert = (title, message) => {
@@ -1699,6 +1699,7 @@ export function AdminDashboard() {
                     isDanger={confirmation.isDanger}
                     confirmText={confirmation.confirmText}
                     showCancel={confirmation.showCancel}
+                    requireTyping={confirmation.requireTyping}
                 />
 
                 {/* Edit Modal */}
