@@ -8,7 +8,7 @@ import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
@@ -85,13 +85,22 @@ export function Dashboard() {
 
     // Resolve logged in share holder name from email
     // Handle multiple emails in one string (comma separated)
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const masqueradeAs = searchParams.get('masquerade');
+
+    // Resolve logged in share holder name from email
+    // Handle multiple emails in one string (comma separated)
     const loggedInShareholder = React.useMemo(() => {
+        // Masquerade Override (Admin Only feature really, but logic lives here)
+        if (masqueradeAs) return masqueradeAs;
+
         if (!currentUser?.email) return null;
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
         // Use dynamic list
         const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
-    }, [currentUser, shareholders]);
+    }, [currentUser, shareholders, masqueradeAs]);
 
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 

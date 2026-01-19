@@ -1023,7 +1023,10 @@ export function AdminDashboard() {
                         <p className="text-muted-foreground mt-1">Overview of resort performance and bookings.</p>
                     </div>
                     <div className="flex gap-3">
-                        <Link to="/#book" className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors text-sm">
+                        <Link
+                            to={activeTurn ? `/?masquerade=${encodeURIComponent(activeTurn.name)}#book` : '/#book'}
+                            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors text-sm"
+                        >
                             View As Shareholder
                         </Link>
                     </div>
