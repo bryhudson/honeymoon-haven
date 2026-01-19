@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, RotateCw, Clock, Sunrise, Zap } from 'lucide-react';
+import { Info, RotateCw, Clock, Sunrise, Zap, CalendarCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
@@ -22,9 +22,9 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                 <RotateCw className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-sm">Annual Rotation</h4>
+                                <h4 className="font-bold text-slate-900 text-sm">Structure & Rotation</h4>
                                 <p className="text-xs text-slate-500 leading-relaxed mt-1">
-                                    The picking order rotates by one spot every year. First becomes last next year.
+                                    Two rounds of bookings (Snake Draft). Order rotates annually.
                                 </p>
                             </div>
                         </div>
@@ -34,21 +34,9 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                 <Clock className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-sm">48-Hour Window</h4>
+                                <h4 className="font-bold text-slate-900 text-sm">Turn Timing</h4>
                                 <p className="text-xs text-slate-500 leading-relaxed mt-1">
-                                    You have 2 days to make your selection for each round.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-amber-100/50 text-amber-600 rounded-lg shrink-0">
-                                <Sunrise className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-900 text-sm">10:00 AM Start</h4>
-                                <p className="text-xs text-slate-500 leading-relaxed mt-1">
-                                    Official turn start time is 10:00 AM the following day.
+                                    Official turn start time is 10:00 AM. You have 48 hours to make your selection.
                                 </p>
                             </div>
                         </div>
@@ -61,6 +49,18 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                 <h4 className="font-bold text-slate-900 text-sm">Early Access</h4>
                                 <p className="text-xs text-slate-500 leading-relaxed mt-1">
                                     If the previous person finishes early, you get bonus time immediately!
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-amber-100/50 text-amber-600 rounded-lg shrink-0">
+                                <CalendarCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 text-sm">Open Season</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                    After Round 2, remaining dates open up for first-come, first-served booking.
                                 </p>
                             </div>
                         </div>
