@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tent, LogOut } from 'lucide-react';
+import { Tent, LogOut, LayoutDashboard, User } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS } from '../lib/shareholders';
@@ -41,12 +41,28 @@ export function Header() {
                                 </span>
 
                                 {isAdmin && (
-                                    <Link
-                                        to="/admin"
-                                        className="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-1"
-                                    >
-                                        Admin Dashboard
-                                    </Link>
+                                    <div className="flex bg-slate-100 p-1 rounded-lg items-center gap-1">
+                                        <Link
+                                            to="/admin"
+                                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${location.pathname.startsWith('/admin')
+                                                ? 'bg-white text-slate-900 shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-900'
+                                                }`}
+                                        >
+                                            <LayoutDashboard className="w-3.5 h-3.5" />
+                                            Admin
+                                        </Link>
+                                        <Link
+                                            to="/"
+                                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${!location.pathname.startsWith('/admin')
+                                                ? 'bg-white text-slate-900 shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-900'
+                                                }`}
+                                        >
+                                            <User className="w-3.5 h-3.5" />
+                                            View as User
+                                        </Link>
+                                    </div>
                                 )}
                             </div>
                             <button
