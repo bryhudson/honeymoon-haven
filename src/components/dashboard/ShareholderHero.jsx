@@ -318,6 +318,10 @@ export function ShareholderHero({
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 text-center lg:text-left max-w-2xl">
+                    <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
+                        Welcome, {shareholderName}
+                    </h1>
+
                     <div id="tour-status" className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
                             <Clock className="w-3 h-3" />
@@ -331,10 +335,6 @@ export function ShareholderHero({
                             </div>
                         )}
                     </div>
-
-                    <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-                        Welcome, {shareholderName}
-                    </h1>
 
                     <div className="text-lg text-slate-300 leading-relaxed">
                         {status.phase === 'PRE_DRAFT' ? (
