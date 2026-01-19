@@ -349,10 +349,11 @@ export function ShareholderHero({
                             </span>
                         )}
 
-                        {status.windowEnds && (
+                        {/* Timer only relevant if Up Next */}
+                        {status.windowEnds && queueInfo?.diff === 1 && (
                             <div className="mt-2 text-sm font-bold text-indigo-300 flex items-center justify-center lg:justify-start gap-2">
                                 <Clock className="w-4 h-4" />
-                                Their Turn Ends In: {(() => {
+                                Your turn starts within: {(() => {
                                     if (!status.windowEnds) return '--';
                                     const end = new Date(status.windowEnds);
                                     const now = new Date();
