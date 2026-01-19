@@ -207,7 +207,8 @@ export function Dashboard() {
                 setIsBooking(false);
             },
             true, // Danger
-            "Delete Draft"
+            "Delete Draft",
+            "delete" // Require typing
         );
     };
 
@@ -286,93 +287,90 @@ export function Dashboard() {
         e.preventDefault();
         if (!passData.name) return triggerAlert("Selection Missing", "Please select your name.");
 
-        // Step 1 -> Step 2
+        // Step 1 -> Final Confirm (Skip intermediate step 2)
         if (passStep === 1) {
-            setPassStep(2);
-            return;
-        }
+            // Trigger Global Strict Confirm immediately
+            triggerConfirm(
+                "Confirm Pass",
+                `Are you absolutely sure you want to pass your turn?\n\nThis action is irreversible and the schedule will immediately move to the next shareholder. You cannot undo this.`,
+                async () => {
+                    setPassStep(0); // Close the name selection modal
 
-        // Step 2 -> Step 3 (Global Final Confirm)
-        triggerConfirm(
-            "Final Confirmation: Pass Turn",
-            `Are you absolutely sure you want to pass your turn?\n\nThis action is irreversible and the schedule will immediately move to the next shareholder. You cannot undo this.`,
-            async () => {
-                // IMMEDIATE UX FIX: Close the underlying "Are You Sure" modal so it doesn't reappear
-                setPassStep(0);
-
-                try {
-                    // Check for existing draft to delete (replacing Draft with Pass)
-                    const draft = bookings.find(b => b.shareholderName === passData.name && b.isFinalized === false);
-                    if (draft) {
-                        await deleteDoc(doc(db, "bookings", draft.id));
-                    }
-
-                    const owner = shareholders.find(o => o.name === passData.name);
-                    await addDoc(collection(db, "bookings"), {
-                        shareholderName: passData.name,
-                        cabinNumber: owner ? owner.cabin : "?",
-                        type: 'pass', // This is important
-                        createdAt: new Date(),
-                        from: new Date(),
-                        to: new Date()
-                    });
-
-                    // 1. Notify CURRENT user (Pass Confirmation)
                     try {
+                        // Check for existing draft to delete (replacing Draft with Pass)
+                        const draft = bookings.find(b => b.shareholderName === passData.name && b.isFinalized === false);
+                        if (draft) {
+                            await deleteDoc(doc(db, "bookings", draft.id));
+                        }
+
                         const owner = shareholders.find(o => o.name === passData.name);
-                        await emailService.sendTurnPassedCurrent({
-                            name: passData.name,
-                            email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                        }, {
-                            name: passData.name,
-                            dashboard_url: "https://hhr-trailer-booking.web.app/"
+                        await addDoc(collection(db, "bookings"), {
+                            shareholderName: passData.name,
+                            cabinNumber: owner ? owner.cabin : "?",
+                            type: 'pass', // This is important
+                            createdAt: new Date(),
+                            from: new Date(),
+                            to: new Date()
                         });
-                    } catch (e) {
-                        console.error("Pass email failed", e);
-                    }
 
-                    // Notify NEXT shareholder
-                    if (status.nextPicker) {
-                        const nextOwner = shareholders.find(o => o.name === status.nextPicker);
-                        if (nextOwner && nextOwner.email) {
-                            try {
-                                // Logic: Next Day 10 AM + 48 Hours
-                                // "Account for the 10 next day early access start period"
-                                const tomorrow10am = new Date();
-                                tomorrow10am.setDate(tomorrow10am.getDate() + 1);
-                                tomorrow10am.setHours(10, 0, 0, 0);
+                        // 1. Notify CURRENT user (Pass Confirmation)
+                        try {
+                            const owner = shareholders.find(o => o.name === passData.name);
+                            await emailService.sendTurnPassedCurrent({
+                                name: passData.name,
+                                email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                            }, {
+                                name: passData.name,
+                                dashboard_url: "https://hhr-trailer-booking.web.app/"
+                            });
+                        } catch (e) {
+                            console.error("Pass email failed", e);
+                        }
 
-                                const deadline = addHours(tomorrow10am, 48);
+                        // Notify NEXT shareholder
+                        if (status.nextPicker) {
+                            const nextOwner = shareholders.find(o => o.name === status.nextPicker);
+                            if (nextOwner && nextOwner.email) {
+                                try {
+                                    // Logic: Next Day 10 AM + 48 Hours
+                                    // "Account for the 10 next day early access start period"
+                                    const tomorrow10am = new Date();
+                                    tomorrow10am.setDate(tomorrow10am.getDate() + 1);
+                                    tomorrow10am.setHours(10, 0, 0, 0);
 
-                                await emailService.sendTurnPassedNext({
-                                    name: nextOwner.name,
-                                    email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                                }, {
-                                    name: nextOwner.name,
-                                    previous_shareholder: passData.name,
-                                    deadline_date: format(deadline, 'PPP'),
-                                    deadline_time: format(deadline, 'p'),
-                                    booking_url: "https://hhr-trailer-booking.web.app/",
-                                    dashboard_url: "https://hhr-trailer-booking.web.app/"
-                                });
-                                console.log("Notification sent to", nextOwner.name);
-                            } catch (e) {
-                                console.error("Next user email failed", e);
+                                    const deadline = addHours(tomorrow10am, 48);
+
+                                    await emailService.sendTurnPassedNext({
+                                        name: nextOwner.name,
+                                        email: "bryan.m.hudson@gmail.com" // OVERRIDE
+                                    }, {
+                                        name: nextOwner.name,
+                                        previous_shareholder: passData.name,
+                                        deadline_date: format(deadline, 'PPP'),
+                                        deadline_time: format(deadline, 'p'),
+                                        booking_url: "https://hhr-trailer-booking.web.app/",
+                                        dashboard_url: "https://hhr-trailer-booking.web.app/"
+                                    });
+                                    console.log("Notification sent to", nextOwner.name);
+                                } catch (e) {
+                                    console.error("Next user email failed", e);
+                                }
                             }
                         }
-                    }
 
-                    triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
-                    setPassData({ name: '' });
-                } catch (err) {
-                    console.error(err);
-                    triggerAlert("Error", "Error passing turn: " + err.message);
-                }
-            },
-            true, // Danger
-            "Confirm Pass (Cannot Undo)",
-            "pass" // Require typing
-        );
+                        triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
+                        setPassData({ name: '' });
+                    } catch (err) {
+                        console.error(err);
+                        triggerAlert("Error", "Error passing turn: " + err.message);
+                    }
+                },
+                true, // Danger
+                "Confirm Pass",
+                "pass" // Require typing
+            );
+            return;
+        }
     };
 
     const handleQuickBook = async () => {
@@ -517,12 +515,13 @@ export function Dashboard() {
                     },
 
                     true, // isDanger
-                    "Cancel Booking" // confirmText
+                    "Cancel Booking", // confirmText
+                    "cancel" // FINAL STEP: Require typing
                 );
             },
             true, // Danger color
             "Cancel Booking",
-            "cancel", // Require typing
+            null, // First step: NO typing required
             false // Do NOT auto-close (wait for second confirmation)
         );
     };
@@ -859,7 +858,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.179 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.180 - Wipe Fix</p>
 
 
             </div>
