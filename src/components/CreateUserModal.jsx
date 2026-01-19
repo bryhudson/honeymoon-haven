@@ -97,19 +97,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess, initialRole = 'sha
                             />
                         </div>
 
-                        {initialRole !== 'admin' && (
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Role</label>
-                                <select
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                >
-                                    <option value="shareholder">Shareholder (Basic Access)</option>
-                                    <option value="admin">Admin (Dashboard Access)</option>
-                                </select>
-                            </div>
-                        )}
+
 
                         <div className="pt-2 flex gap-3">
                             <button
