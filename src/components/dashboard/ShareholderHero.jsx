@@ -347,16 +347,7 @@ export function ShareholderHero({
                         </button>
                     )}
 
-                    {/* Admin Override Action */}
-                    {isSuperAdmin && (
-                        <button
-                            onClick={onOpenBooking}
-                            className="px-4 py-2 text-slate-400 hover:text-red-400 text-sm font-bold transition-colors"
-                            title="Admin Override"
-                        >
-                            Override
-                        </button>
-                    )}
+
                 </div>
             </div>
         </div>
