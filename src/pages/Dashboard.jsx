@@ -561,11 +561,7 @@ export function Dashboard() {
             {/* --- NEW HEADER: Shareholder Hero --- */}
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-sm font-bold tracking-tight text-slate-400 uppercase">Shareholder Dashboard</h1>
-                {isSuperAdmin && (
-                    <a href="#/admin" className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-md transition-colors">
-                        Switch to Admin
-                    </a>
-                )}
+
             </div>
 
             <ShareholderHero
