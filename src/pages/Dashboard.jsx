@@ -112,7 +112,7 @@ export function Dashboard() {
     const [showBookingForm, setShowBookingForm] = useState(false);
 
     // UI Layout State
-    const [activeTab, setActiveTab] = useState('bookings'); // bookings, schedule, guide
+    const [activeTab, setActiveTab] = useState('schedule'); // bookings, schedule, guide
 
     // SYSTEM SAFETY: Build v2.30
     // Force Regular Users to Production Mode always
@@ -586,6 +586,14 @@ export function Dashboard() {
             <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">
                 <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
                     <button
+                        id="tour-schedule"
+                        onClick={() => setActiveTab('schedule')}
+                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <Clock className="w-4 h-4" />
+                        2026 Season Schedule
+                    </button>
+                    <button
                         id="tour-recent"
                         onClick={() => setActiveTab('bookings')}
                         className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
@@ -599,14 +607,6 @@ export function Dashboard() {
                     >
                         <Calendar className="w-4 h-4" />
                         Calendar View
-                    </button>
-                    <button
-                        id="tour-schedule"
-                        onClick={() => setActiveTab('schedule')}
-                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Clock className="w-4 h-4" />
-                        2026 Season Schedule
                     </button>
                     <button
                         onClick={() => setActiveTab('guide')}
@@ -859,7 +859,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.196 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.197 - Wipe Fix</p>
 
 
             </div>

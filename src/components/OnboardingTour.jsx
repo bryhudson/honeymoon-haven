@@ -33,15 +33,15 @@ export function OnboardingTour({ currentUser }) {
             disableBeacon: true,
         },
         {
-            target: '#tour-recent',
-            title: '📜 Recent Activity',
-            content: 'Click here to see who has booked recently. If you have an active booking, you can also modify or cancel it from here.',
-            disableBeacon: true,
-        },
-        {
             target: '#tour-schedule',
             title: '📅 New Season Schedule',
             content: "Click this tab to view the full 2026 Season Schedule, including round dates and draft rules.",
+            disableBeacon: true,
+        },
+        {
+            target: '#tour-recent',
+            title: '📜 Recent Activity',
+            content: 'Click here to see who has booked recently. If you have an active booking, you can also modify or cancel it from here.',
             disableBeacon: true,
         },
     ];
