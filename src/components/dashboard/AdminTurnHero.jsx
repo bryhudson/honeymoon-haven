@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 export function AdminTurnHero({
     activeTurn,
     drafts,
-
+    isTestMode = false
 }) {
     if (!activeTurn) return null;
 
@@ -20,9 +20,17 @@ export function AdminTurnHero({
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 text-center lg:text-left max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
-                        <Clock className="w-3 h-3" />
-                        System Status: Active Turn
+                    <div className="flex gap-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
+                            <Clock className="w-3 h-3" />
+                            System Status: Active Turn
+                        </div>
+                        {isTestMode && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                <AlertTriangle className="w-3 h-3" />
+                                Test Mode
+                            </div>
+                        )}
                     </div>
 
                     <h1 className="text-3xl md:text-5xl font-bold tracking-tight">

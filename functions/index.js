@@ -185,4 +185,3 @@ exports.adminUpdateShareholderEmail = onCall(async (request) => {
 
     return result;
 });
-

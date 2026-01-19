@@ -1052,6 +1052,7 @@ export function AdminDashboard() {
                     <AdminTurnHero
                         activeTurn={activeTurn}
                         drafts={allBookings}
+                        isTestMode={isTestMode}
                     />
                 )}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1164,8 +1165,8 @@ export function AdminDashboard() {
                                         <button
                                             onClick={toggleTestMode}
                                             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isTestMode
-                                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
                                                 }`}
                                         >
                                             {isTestMode ? 'DISABLE TEST MODE' : 'ENABLE TEST MODE'}
