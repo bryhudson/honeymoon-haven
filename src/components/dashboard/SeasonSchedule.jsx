@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info, RotateCw, Clock, Sunrise, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
@@ -10,16 +11,60 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
             </div>
 
             <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 bg-muted/20 border-b">
-                    <p className="text-muted-foreground text-sm">
-                        <strong>How it works:</strong> The booking order rotates by one spot annually.
-                        <br />
-                        <strong>Round 1:</strong> 2 Days per person (Forward order).
-                        <br />
-                        <strong>Round 2:</strong> 2 Days per person (Reverse "Snake" order).
-                        <br />
-                        <strong>Open Season:</strong> Starts after Round 2. First come, first serve (48h cooldown).
-                    </p>
+                <div className="p-6 bg-slate-50 border-b">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-slate-500" />
+                        How the Draft Works
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-blue-100/50 text-blue-600 rounded-lg shrink-0">
+                                <RotateCw className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 text-sm">Annual Rotation</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                    The picking order rotates by one spot every year. First becomes last next year.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-purple-100/50 text-purple-600 rounded-lg shrink-0">
+                                <Clock className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 text-sm">48-Hour Window</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                    You have 2 days to make your selection for each round.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-amber-100/50 text-amber-600 rounded-lg shrink-0">
+                                <Sunrise className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 text-sm">10:00 AM Start</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                    Official turn start time is 10:00 AM the following day.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-emerald-100/50 text-emerald-600 rounded-lg shrink-0">
+                                <Zap className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 text-sm">Early Access</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                    If the previous person finishes early, you get bonus time immediately!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="hidden md:block overflow-x-auto">
