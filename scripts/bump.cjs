@@ -32,6 +32,18 @@ async function main() {
             console.warn(`Warning: Could not find version string "${oldVerString}" in Dashboard.jsx`);
         }
 
+        // 3. Update Login.jsx
+        const loginPath = path.join(__dirname, '../src/pages/Login.jsx');
+        let loginContent = fs.readFileSync(loginPath, 'utf8');
+
+        if (loginContent.includes(oldVerString)) {
+            loginContent = loginContent.replace(oldVerString, newVerString);
+            fs.writeFileSync(loginPath, loginContent);
+            console.log(`Updated Login.jsx: ${oldVerString} -> ${newVerString}`);
+        } else {
+            console.warn(`Warning: Could not find version string "${oldVerString}" in Login.jsx`);
+        }
+
     } catch (e) {
         console.error("Error bumping version:", e);
         process.exit(1);

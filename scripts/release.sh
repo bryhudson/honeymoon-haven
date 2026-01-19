@@ -17,6 +17,16 @@ echo "🚀 HHR Release Automation"
 echo "=========================================="
 echo ""
 
+# 1.5 Bump Version
+echo "📈 Step 0: Bumping Version..."
+node scripts/bump.cjs
+if [ $? -ne 0 ]; then
+    echo "❌ Version Bump Failed."
+    exit 1
+fi
+echo "✅ Version Jumped!"
+echo ""
+
 # 2. Deploy to Firebase
 echo "📦 Step 1: Deploying to Firebase..."
 npm run deploy

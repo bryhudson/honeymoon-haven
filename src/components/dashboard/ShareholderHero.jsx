@@ -116,7 +116,7 @@ export function ShareholderHero({
                             className="flex-1 lg:flex-none px-6 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2"
                         >
                             <Info className="w-5 h-5" />
-                            Review Selection
+                            Review Booking Details
                         </button>
                         <button
                             onClick={() => onFinalize(activeDraft.id, shareholderName)}
