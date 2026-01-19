@@ -37,6 +37,7 @@ export const sendEmail = async ({ to, subject, htmlContent, templateId, params }
 // --- Convenience Methods ---
 
 export const emailService = {
+    sendEmail,
     // ID 1: "Booking Started" (Notification to NEXT user)
     // Used for: Turn Started, Turn Passed (Next), Auto Pass (Next)
     sendTurnStarted: async (recipient, data) => {
