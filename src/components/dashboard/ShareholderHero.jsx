@@ -95,7 +95,10 @@ export function ShareholderHero({
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 animate-gradient"></div>
 
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-                    <div className="space-y-2 text-center lg:text-left w-full lg:w-auto">
+                    <div className="space-y-4 text-center lg:text-left w-full lg:w-auto">
+                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
+                            Welcome, {shareholderName}
+                        </h1>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -103,9 +106,9 @@ export function ShareholderHero({
                             </span>
                             It's Your Turn
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+                        <h2 className="text-2xl font-bold text-slate-800">
                             Draft Selection Saved
-                        </h1>
+                        </h2>
                         <p className="text-lg text-slate-600">
                             You have selected dates. Please <span className="font-bold text-slate-900">finalize</span> to lock them in.
                         </p>
@@ -142,13 +145,16 @@ export function ShareholderHero({
 
                 <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                     <div className="space-y-4 text-center lg:text-left max-w-2xl">
+                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
+                            Welcome, {shareholderName}
+                        </h1>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                             <Clock className="w-3 h-3" />
                             Action Required
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
+                        <h2 className="text-2xl font-bold text-blue-100">
                             It's Your Turn
-                        </h1>
+                        </h2>
                         <p className="text-lg text-slate-300 leading-relaxed">
                             The calendar is yours! Please select your dates or pass your turn to the next shareholder.
                         </p>
@@ -204,6 +210,10 @@ export function ShareholderHero({
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="space-y-4 text-center md:text-left max-w-2xl">
+                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
+                            Welcome, {shareholderName}
+                        </h1>
+
                         {/* Status Pill */}
                         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${isPassed
                             ? 'bg-amber-900/50 text-amber-200 border-amber-500/30'
@@ -213,9 +223,9 @@ export function ShareholderHero({
                             {isPassed ? "Turn Complete" : "Booking Confirmed"}
                         </div>
 
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                        <h2 className="text-2xl font-bold text-white/90">
                             {isPassed ? "You've Passed Your Turn" : "You're All Set!"}
-                        </h1>
+                        </h2>
 
                         <div className="text-lg text-slate-300 leading-relaxed">
                             {isPassed ? (
