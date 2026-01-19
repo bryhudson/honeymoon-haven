@@ -238,20 +238,21 @@ export function AdminDashboard() {
         const schedule = mapOrderToSchedule(currentOrder, allBookings);
 
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Round,Shareholder,Cabin,Start Date,End Date,Nights,Status,Payment Status\n";
+        csvContent += "Round,Shareholder,Cabin,Guests,Start Date,End Date,Nights,Status,Payment Status\n";
 
         schedule.forEach(slot => {
             const b = slot.booking;
             const round = slot.round;
             const shareholder = `"${slot.name}"`; // Quote for safety
             const cabin = b?.cabinNumber || "";
+            const guests = b?.guests || (b ? 1 : "");
             const start = b?.from ? format(b.from, 'MM/dd/yyyy') : "";
             const end = b?.to ? format(b.to, 'MM/dd/yyyy') : "";
             const nights = (b?.from && b?.to) ? differenceInDays(b.to, b.from) : 0;
             const status = b?.isFinalized ? "Finalized" : (b ? "Draft" : "");
             const payment = b?.isPaid ? "Paid" : (b ? "Unpaid" : "");
 
-            const row = [round, shareholder, cabin, start, end, nights, status, payment].join(",");
+            const row = [round, shareholder, cabin, guests, start, end, nights, status, payment].join(",");
             csvContent += row + "\n";
         });
 
@@ -278,6 +279,7 @@ export function AdminDashboard() {
             <tr style="background-color: #fff;">
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.name}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.cabinNumber || "?"}</td>
+                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.guests || (b ? 1 : "")}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b ? 7 : 0}</td>
                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.isFinalized ? "Finalized" : "Draft"}</td>
@@ -327,6 +329,7 @@ export function AdminDashboard() {
                                 <tr style="background-color: #f8fafc;">
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
+                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Guests</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
@@ -344,6 +347,7 @@ export function AdminDashboard() {
                                 <tr style="background-color: #f8fafc;">
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
+                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Guests</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
