@@ -369,14 +369,21 @@ export function ShareholderHero({
         );
     }
 
-    // --- CASE D: Waiting ---
-    // Find any upcoming confirmed booking to show details for
-    const upcomingBooking = drafts
-        .filter(b => b.shareholderName === shareholderName && b.isFinalized && !b.type !== 'cancelled')
+    // --- CASE D: Waiting (or Cancelled) ---
+
+    // Special check: Did they cancel their turn this round?
+    // We look for a booking that is: Mine, Finalized, Cancelled, and (if strict round logic applied) matches this round.
+    // For now, we just check if the MOST RECENT action was a cancellation and they are not currently the active picker.
+    const latestAction = drafts
+        .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
+    const isJustCancelled = latestAction && latestAction.type === 'cancelled';
 
-
+    // Find any upcoming confirmed booking to show details for (valid ones)
+    const upcomingBooking = drafts
+        .filter(b => b.shareholderName === shareholderName && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
+        .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     return (
         <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
@@ -391,10 +398,17 @@ export function ShareholderHero({
                     </h1>
 
                     <div id="tour-status" className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
-                            <Clock className="w-3 h-3" />
-                            Status: Waiting
-                        </div>
+                        {isJustCancelled ? (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/50 text-red-200 text-xs font-bold uppercase tracking-wider border border-red-500/30">
+                                <AlertTriangle className="w-3 h-3" />
+                                Status: Cancelled
+                            </div>
+                        ) : (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
+                                <Clock className="w-3 h-3" />
+                                Status: Waiting
+                            </div>
+                        )}
 
                         {/* QUEUE POSITION INDICATOR */}
                         {queueInfo && (
@@ -405,16 +419,24 @@ export function ShareholderHero({
                     </div>
 
                     <div className="text-lg text-slate-300 leading-relaxed">
-                        {status.phase === 'PRE_DRAFT' ? (
-                            <span>
-                                The 2026 Draft begins on <span className="font-bold text-white">{status.draftStart ? format(status.draftStart, 'MMMM do') : 'March 1st'}</span>.
-                                <br className="hidden md:block" />
-                                First up: <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">{status.nextPicker}</span>.
+                        {isJustCancelled ? (
+                            <span className="text-slate-200">
+                                You have cancelled your booking. No worries! You can rejoin the action when the next round opens or if another spot becomes available.
+                                <br />
+                                <span className="text-sm opacity-70 mt-1 block">In the meantime, sit back and relax.</span>
                             </span>
                         ) : (
-                            <span>
-                                Waiting for <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">{status.activePicker}</span> to finish their turn.
-                            </span>
+                            status.phase === 'PRE_DRAFT' ? (
+                                <span>
+                                    The 2026 Draft begins on <span className="font-bold text-white">{status.draftStart ? format(status.draftStart, 'MMMM do') : 'March 1st'}</span>.
+                                    <br className="hidden md:block" />
+                                    First up: <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">{status.nextPicker}</span>.
+                                </span>
+                            ) : (
+                                <span>
+                                    Waiting for <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">{status.activePicker}</span> to finish their turn.
+                                </span>
+                            )
                         )}
 
                         {/* Timer only relevant if Up Next */}
