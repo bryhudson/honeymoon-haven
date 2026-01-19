@@ -1146,25 +1146,7 @@ export function AdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* Utility Actions */}
-                            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                                <div className="flex items-center gap-2 mb-2 text-slate-600">
-                                    <Key className="w-5 h-5" />
-                                    <h3 className="font-bold">Admin Tools</h3>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                    <div>
-                                        <div className="font-bold text-slate-800">Simulate Shareholder</div>
-                                        <div className="text-xs text-slate-500">View the dashboard as if you were a shareholder.</div>
-                                    </div>
-                                    <Link
-                                        to={activeTurn ? `/?masquerade=${encodeURIComponent(activeTurn.name)}#book` : '/#book'}
-                                        className="px-4 py-2 bg-white text-slate-700 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm"
-                                    >
-                                        VIEW AS USER
-                                    </Link>
-                                </div>
-                            </div>
+
 
                             {/* Danger Zone - Site Owner Only */}
                             {IS_SITE_OWNER && (
