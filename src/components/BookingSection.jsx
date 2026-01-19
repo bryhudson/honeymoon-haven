@@ -1,4 +1,5 @@
 import { emailService } from '../services/emailService';
+import { Calendar } from 'lucide-react';
 import React, { useState, useEffect } from 'react'; // Assuming React and useEffect are needed for the change
 import { format, addWeeks, addDays, differenceInCalendarDays, eachDayOfInterval, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
