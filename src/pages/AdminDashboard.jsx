@@ -1633,13 +1633,15 @@ export function AdminDashboard() {
                                         <PlusCircle className="w-4 h-4" />
                                         Add Shareholder
                                     </button>
-                                    <button
-                                        onClick={() => { setCreateUserRole('admin'); setIsCreateUserModalOpen(true); }}
-                                        className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
-                                    >
-                                        <Shield className="w-4 h-4" />
-                                        Add Admin
-                                    </button>
+                                    {IS_SITE_OWNER && (
+                                        <button
+                                            onClick={() => { setCreateUserRole('admin'); setIsCreateUserModalOpen(true); }}
+                                            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
+                                        >
+                                            <Shield className="w-4 h-4" />
+                                            Add Admin
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
