@@ -1503,7 +1503,7 @@ export function AdminDashboard() {
                                                     </td>
 
                                                     <td className="px-6 py-5 text-right">
-                                                        {booking.type !== 'pass' && booking.type !== 'auto-pass' ? (
+                                                        {booking.type !== 'pass' && booking.type !== 'auto-pass' && booking.type !== 'cancelled' ? (
                                                             <ActionsDropdown
                                                                 onEdit={booking.type !== 'cancelled' ? () => handleEditClick(booking) : undefined}
                                                                 onCancel={() => handleCancelBooking(booking)}
