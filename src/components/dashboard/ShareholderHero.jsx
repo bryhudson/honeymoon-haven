@@ -50,7 +50,13 @@ export function ShareholderHero({
         }
 
         if (myNextIndex === -1) return null;
-        return { diff: myNextIndex - activeIndex };
+
+        // Determine which round the next slot belongs to
+        // If myNextIndex is within the first half of the full order (which is length * 2), it's Round 1
+        // Actually fullTurnOrder is [R1, R2]. R1 length is currentOrder.length.
+        const round = myNextIndex < currentOrder.length ? 1 : 2;
+
+        return { diff: myNextIndex - activeIndex, round };
     }, [currentOrder, status, shareholderName]);
 
     // 1. System Maintenance (Highest Priority)
@@ -134,6 +140,98 @@ export function ShareholderHero({
     );
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
+
+    // Helper: Render Split Round Badges
+    const renderBadges = () => {
+        return (
+            <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                {/* Round 1 Status Badge */}
+                {(() => {
+                    const r1Action = myActions[0]; // Logic assumes chronological order
+                    // Check if Round 1 is active relative to queue or phase
+                    const isR1Queue = queueInfo && queueInfo.round === 1;
+                    const isR1Turn = status.phase === 'ROUND_1' && isYourTurn;
+
+                    let bg = 'bg-slate-800/50 text-slate-400 border-slate-700/50';
+                    let icon = <Clock className="w-3 h-3" />;
+                    let text = "Waiting";
+
+                    if (r1Action) {
+                        if (r1Action.type === 'pass') {
+                            bg = 'bg-amber-900/50 text-amber-200 border-amber-500/30';
+                            icon = <CheckCircle className="w-3 h-3" />;
+                            text = "Passed";
+                        } else {
+                            const isPaid = r1Action.paymentStatus === 'paid';
+                            bg = 'bg-green-900/50 text-green-200 border-green-500/30';
+                            icon = <CheckCircle className="w-3 h-3" />;
+                            text = isPaid ? "Paid" : "Confirmed";
+                        }
+                    } else if (isR1Turn) {
+                        bg = 'bg-blue-900/50 text-blue-200 border-blue-500/30';
+                        icon = <PlayCircle className="w-3 h-3" />;
+                        text = "Your Turn";
+                    } else if (isR1Queue) {
+                        bg = 'bg-blue-900/50 text-blue-200 border-blue-500/30';
+                        text = queueInfo.diff === 1 ? "Up Next!" : `#${queueInfo.diff} in Line`;
+                    }
+
+                    return (
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${bg}`}>
+                            <span className="opacity-70 mr-1">R1:</span>
+                            {icon}
+                            {text}
+                        </div>
+                    );
+                })()}
+
+                {/* Round 2 Status Badge */}
+                {(() => {
+                    // Logic: Round 2 action is the second one if it exists
+                    // OR if R1 action exists, then the next 'myActions' slot would be R2?
+                    // Actually myActions only has Completed items.
+                    // If myActions has 2 items, r2Action is index 1.
+                    const r2Action = myActions.length > 1 ? myActions[1] : null;
+
+                    const isR2Queue = queueInfo && queueInfo.round === 2;
+                    // If R2 is active phase and R1 is done, and it's your turn
+                    const isR2Turn = status.phase === 'ROUND_2' && isYourTurn;
+
+                    let bg = 'bg-slate-800/50 text-slate-400 border-slate-700/50';
+                    let icon = <Clock className="w-3 h-3" />;
+                    let text = "Waiting";
+
+                    if (r2Action) {
+                        if (r2Action.type === 'pass') {
+                            bg = 'bg-amber-900/50 text-amber-200 border-amber-500/30';
+                            icon = <CheckCircle className="w-3 h-3" />;
+                            text = "Passed";
+                        } else {
+                            const isPaid = r2Action.paymentStatus === 'paid';
+                            bg = 'bg-green-900/50 text-green-200 border-green-500/30';
+                            icon = <CheckCircle className="w-3 h-3" />;
+                            text = isPaid ? "Paid" : "Confirmed";
+                        }
+                    } else if (isR2Turn) {
+                        bg = 'bg-blue-900/50 text-blue-200 border-blue-500/30';
+                        icon = <PlayCircle className="w-3 h-3" />;
+                        text = "Your Turn";
+                    } else if (isR2Queue) {
+                        bg = 'bg-blue-900/50 text-blue-200 border-blue-500/30';
+                        text = queueInfo.diff === 1 ? "Up Next!" : `#${queueInfo.diff} in Line`;
+                    }
+
+                    return (
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${bg}`}>
+                            <span className="opacity-70 mr-1">R2:</span>
+                            {icon}
+                            {text}
+                        </div>
+                    );
+                })()}
+            </div>
+        );
+    };
 
     // --- TIMER LOGIC (Unified) ---
     // Only show if windowEnds is defined AND (it's my turn OR I'm up next)
@@ -329,29 +427,8 @@ export function ShareholderHero({
                             Welcome, {shareholderName}
                         </h1>
 
-                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                            {/* Status Pill */}
-                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${isPassed
-                                ? 'bg-amber-900/50 text-amber-200 border-amber-500/30'
-                                : 'bg-green-900/50 text-green-200 border-green-500/30'
-                                }`}>
-                                {isPassed ? <CheckCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
-                                {isPassed ? "Status: Passed" : (isPaid ? "Status: Paid" : "Booking Confirmed")}
-                            </div>
-
-                            {/* QUEUE POSITION INDICATOR */}
-                            {queueInfo && (
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                                    {queueInfo.diff === 1 ? "You are Up Next!" : `You are ${queueInfo.diff} in line`}
-                                </div>
-                            )}
-
-                            {/* Phase Badge */}
-                            {phaseLabel && (
-                                <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
-                                    {phaseLabel}
-                                </span>
-                            )}
+                        <div id="tour-status">
+                            {renderBadges()}
                         </div>
 
                         <h2 className="text-2xl font-bold text-white/90">
@@ -450,37 +527,8 @@ export function ShareholderHero({
                         Welcome, {shareholderName}
                     </h1>
 
-                    <div id="tour-status" className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                        {isJustCancelled ? (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/50 text-red-200 text-xs font-bold uppercase tracking-wider border border-red-500/30">
-                                <AlertTriangle className="w-3 h-3" />
-                                Status: Cancelled
-                            </div>
-                        ) : isJustPassed ? (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-900/50 text-amber-200 text-xs font-bold uppercase tracking-wider border border-amber-500/30">
-                                <CheckCircle className="w-3 h-3" />
-                                Status: Passed
-                            </div>
-                        ) : (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 text-indigo-200 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
-                                <Clock className="w-3 h-3" />
-                                Status: Waiting
-                            </div>
-                        )}
-
-                        {/* QUEUE POSITION INDICATOR */}
-                        {queueInfo && (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                                {queueInfo.diff === 1 ? "You are Up Next!" : `You are ${queueInfo.diff} in line`}
-                            </div>
-                        )}
-
-                        {/* Phase Badge */}
-                        {phaseLabel && (
-                            <span className="px-3 py-1 rounded-full bg-slate-800/50 text-slate-400 text-xs font-bold uppercase tracking-wider border border-slate-700/50">
-                                {phaseLabel}
-                            </span>
-                        )}
+                    <div id="tour-status">
+                        {renderBadges()}
                     </div>
 
                     <div className="text-lg text-slate-300 leading-relaxed">
