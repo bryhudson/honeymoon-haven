@@ -25,10 +25,15 @@ export function AdminTurnHero({
                             <Clock className="w-3 h-3" />
                             System Status: Active Turn
                         </div>
-                        {isTestMode && (
+                        {isTestMode ? (
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                                 <AlertTriangle className="w-3 h-3" />
                                 Test Mode
+                            </div>
+                        ) : (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/50 text-emerald-200 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+                                <CheckCircle className="w-3 h-3" />
+                                Production Mode
                             </div>
                         )}
                     </div>
