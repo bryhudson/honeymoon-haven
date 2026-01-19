@@ -298,7 +298,7 @@ export function Dashboard() {
 
                     try {
                         // Check for existing draft to delete (replacing Draft with Pass)
-                        const draft = bookings.find(b => b.shareholderName === passData.name && b.isFinalized === false);
+                        const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
                         if (draft) {
                             await deleteDoc(doc(db, "bookings", draft.id));
                         }
@@ -858,7 +858,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.181 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.183 - Wipe Fix</p>
 
 
             </div>
