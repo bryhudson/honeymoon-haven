@@ -602,6 +602,7 @@ export function Dashboard() {
                         Recent Bookings
                     </button>
                     <button
+                        id="tour-calendar"
                         onClick={() => setActiveTab('calendar')}
                         className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'calendar' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
@@ -609,6 +610,7 @@ export function Dashboard() {
                         Calendar View
                     </button>
                     <button
+                        id="tour-guide"
                         onClick={() => setActiveTab('guide')}
                         className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'guide' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
@@ -859,7 +861,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.198 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.200 - Wipe Fix</p>
 
 
             </div>
