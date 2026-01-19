@@ -103,6 +103,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         email: ''
     });
 
+    // Calendar View State (Fix for stuck navigation)
+    const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // Default to March 2026
+
     // Hydrate form if editing
     useEffect(() => {
         if (initialBooking?.from && initialBooking?.to) {
@@ -118,6 +121,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     guests: initialBooking.guests || 1,
                     email: initialBooking.email || ''
                 });
+                setCurrentMonth(fromDate); // Sync calendar view
             }
         }
     }, [initialBooking, activePicker]);
@@ -464,7 +468,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                 <ErrorBoundary>
                                     <DayPicker
                                         mode="range"
-                                        month={safeSelected?.from || new Date(2026, 2)}
+                                        month={currentMonth}
+                                        onMonthChange={setCurrentMonth}
                                         selected={safeSelected}
                                         onSelect={handleSelectRange}
                                         numberOfMonths={1}
