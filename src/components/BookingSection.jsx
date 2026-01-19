@@ -531,13 +531,13 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                 {isSuccess ? (
                                     /* SUCCESS VIEW */
                                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500">
-                                        <div className="bg-green-50/50 border border-green-100 rounded-xl p-8 text-center">
-                                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4 border-4 border-green-50">
-                                                <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
+                                        <div className="bg-green-50/50 border border-green-100 rounded-xl p-5 text-center">
+                                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-2 border-4 border-green-50">
+                                                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                                 </svg>
                                             </div>
-                                            <h3 className="text-xl font-black text-green-900 mb-2">
+                                            <h3 className="text-xl font-black text-green-900 mb-1">
                                                 {isFinalSuccess ? "Booking Confirmed!" : "Draft Saved!"}
                                             </h3>
                                             <p className="text-green-700/80 font-medium text-sm">
@@ -549,26 +549,26 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                         {/* Step 3: Payment - Only show when booking is finalized */}
                                         {isFinalSuccess && (
-                                            <div className="p-6 bg-slate-50 rounded-xl shadow-lg border border-blue-100">
-                                                <div className="border-b border-slate-200 pb-3 mb-4">
-                                                    <h3 className="text-lg font-bold text-blue-600 flex items-center gap-3">
+                                            <div className="p-4 bg-slate-50 rounded-xl shadow-lg border border-blue-100">
+                                                <div className="border-b border-slate-200 pb-2 mb-3">
+                                                    <h3 className="text-lg font-bold text-blue-600 flex items-center gap-2">
                                                         Payment Info
                                                     </h3>
                                                 </div>
 
-                                                <div className="space-y-3">
+                                                <div className="space-y-2">
                                                     <p className="text-sm text-slate-600 font-medium leading-relaxed">
                                                         E-transfer within <span className="text-blue-600 font-bold">48 hours</span>:
                                                     </p>
 
-                                                    <div className="flex items-center gap-2 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                                    <div className="flex items-center gap-2 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
                                                         <code className="text-sm md:text-base font-mono font-bold select-all flex-1 text-blue-700 text-center">honeymoonhavenresort.lc@gmail.com</code>
                                                     </div>
 
-                                                    <div className="flex flex-col gap-3 pt-4">
+                                                    <div className="flex flex-col gap-2 pt-3">
                                                         <button
                                                             onClick={() => onCancel()}
-                                                            className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md text-base"
+                                                            className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md text-base"
                                                         >
                                                             All Done
                                                         </button>

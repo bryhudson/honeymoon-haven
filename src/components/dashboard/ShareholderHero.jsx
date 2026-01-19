@@ -19,6 +19,40 @@ export function ShareholderHero({
 }) {
     if (!shareholderName) return null;
 
+    // --- QUEUE CALCULATION (Moved to top to avoid ReferenceError) ---
+    const queueInfo = React.useMemo(() => {
+        if (!currentOrder || !status || !shareholderName) return null;
+
+        const fullTurnOrder = [...currentOrder, ...[...currentOrder].reverse()];
+        let activeIndex = -1;
+
+        if (status.phase === 'PRE_DRAFT') {
+            activeIndex = -1;
+        } else if (status.activePicker) {
+            const round1Len = currentOrder.length;
+            if (status.phase === 'ROUND_1') {
+                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i < round1Len);
+            } else {
+                // If phase is ROUND_2 (or fallback), look in 2nd half
+                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i >= round1Len);
+                // Fallback: if not found in 2nd half (edge case), find anywhere
+                if (activeIndex === -1) activeIndex = fullTurnOrder.findIndex(n => n === status.activePicker);
+            }
+        }
+
+        // Use findIndex with a filter condition is not direct, so loop
+        let myNextIndex = -1;
+        for (let i = 0; i < fullTurnOrder.length; i++) {
+            if (fullTurnOrder[i] === shareholderName && i > activeIndex) {
+                myNextIndex = i;
+                break;
+            }
+        }
+
+        if (myNextIndex === -1) return null;
+        return { diff: myNextIndex - activeIndex };
+    }, [currentOrder, status, shareholderName]);
+
     // 1. System Maintenance (Highest Priority)
     if (isSystemFrozen && !isSuperAdmin) {
         return (
@@ -41,23 +75,27 @@ export function ShareholderHero({
     // 2. Open Season
     if (status.phase === 'OPEN_SEASON') {
         return (
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-md relative overflow-hidden group">
+            <div className="bg-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden group">
+                {/* Abstract Background Shapes */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-green-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-emerald-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Calendar className="w-48 h-48 text-green-600 transform rotate-12" />
+                    <Calendar className="w-48 h-48 text-green-500 transform rotate-12" />
                 </div>
 
                 <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="px-3 py-1 rounded-full bg-green-200/50 text-green-800 text-xs font-bold uppercase tracking-wider border border-green-200">
+                            <span className="px-3 py-1 rounded-full bg-green-900/50 text-green-200 text-xs font-bold uppercase tracking-wider border border-green-500/30">
                                 Open Season
                             </span>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
                             Welcome, {shareholderName}
                         </h1>
-                        <p className="text-lg text-slate-600 max-w-xl">
-                            Booking is now <span className="font-bold text-green-700">Open Season</span>. Reservations are first-come, first-served.
+                        <p className="text-lg text-slate-300 max-w-xl">
+                            Booking is now <span className="font-bold text-green-400">Open Season</span>. Reservations are first-come, first-served.
                         </p>
                     </div>
 
@@ -88,36 +126,66 @@ export function ShareholderHero({
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
 
+    // --- TIMER LOGIC (Unified) ---
+    // Only show if windowEnds is defined AND (it's my turn OR I'm up next)
+    const showTimer = status.windowEnds && (isYourTurn || queueInfo?.diff === 1);
+
+    const TimerComponent = showTimer ? (
+        <div className={`mt-2 text-sm font-bold flex items-center justify-center lg:justify-start gap-2 ${isYourTurn ? 'text-blue-300' : 'text-indigo-300'}`}>
+            <Clock className="w-4 h-4" />
+            {isYourTurn ? "Your turn ends in:" : "Your turn starts within:"} {(() => {
+                if (!status.windowEnds) return '--';
+                const end = new Date(status.windowEnds);
+                const now = new Date();
+                if (end <= now) return 'Ending soon...';
+
+                const diff = intervalToDuration({ start: now, end });
+                const parts = [];
+                if (diff.days > 0) parts.push(`${diff.days}d`);
+                if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+
+                return parts.join(' ') || '< 1m';
+            })()}
+        </div>
+    ) : null;
+
     // --- CASE A: Your Turn + Has Draft ---
     if (isYourTurn && activeDraft) {
         return (
-            <div className="bg-white border-2 border-blue-500 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl shadow-blue-900/5 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 animate-gradient"></div>
+            <div className="bg-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+                {/* Abstract Background Shapes */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-purple-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
 
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                     <div className="space-y-4 text-center lg:text-left w-full lg:w-auto">
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
+                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
                             Welcome, {shareholderName}
                         </h1>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                            </span>
-                            It's Your Turn
+                        <div className="flex flex-col items-center lg:items-start gap-1">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30 mb-2">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                </span>
+                                It's Your Turn
+                            </div>
+                            {/* TIMER INJECTED HERE */}
+                            {TimerComponent}
                         </div>
-                        <h2 className="text-2xl font-bold text-slate-800">
+                        <h2 className="text-2xl font-bold text-blue-100">
                             Draft Selection Saved
                         </h2>
-                        <p className="text-lg text-slate-600">
-                            You have selected dates. Please <span className="font-bold text-slate-900">finalize</span> to lock them in.
+                        <p className="text-lg text-slate-300">
+                            You have selected dates. Please <span className="font-bold text-white">finalize</span> to lock them in.
                         </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
                         <button
                             onClick={() => onViewDetails(activeDraft)}
-                            className="flex-1 lg:flex-none px-6 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 lg:flex-none px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
                         >
                             <Info className="w-5 h-5" />
                             Review Booking Details
@@ -148,9 +216,31 @@ export function ShareholderHero({
                         <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
                             Welcome, {shareholderName}
                         </h1>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                            <Clock className="w-3 h-3" />
-                            Action Required
+                        <div className="flex flex-col items-center lg:items-start gap-1">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                <Clock className="w-3 h-3" />
+                                Action Required
+                            </div>
+                            {/* TIMER INJECTED HERE (Text color handled in component definition) */}
+                            {showTimer && (
+                                <div className="mt-1 text-sm font-bold text-blue-200 flex items-center justify-center lg:justify-start gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    Your turn ends in: {(() => {
+                                        if (!status.windowEnds) return '--';
+                                        const end = new Date(status.windowEnds);
+                                        const now = new Date();
+                                        if (end <= now) return 'Ending soon...';
+
+                                        const diff = intervalToDuration({ start: now, end });
+                                        const parts = [];
+                                        if (diff.days > 0) parts.push(`${diff.days}d`);
+                                        if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                        if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+
+                                        return parts.join(' ') || '< 1m';
+                                    })()}
+                                </div>
+                            )}
                         </div>
                         <h2 className="text-2xl font-bold text-blue-100">
                             It's Your Turn
@@ -285,39 +375,7 @@ export function ShareholderHero({
         .filter(b => b.shareholderName === shareholderName && b.isFinalized && !b.type !== 'cancelled')
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
-    // --- QUEUE CALCULATION ---
-    const queueInfo = React.useMemo(() => {
-        if (!currentOrder || !status || !shareholderName) return null;
 
-        const fullTurnOrder = [...currentOrder, ...[...currentOrder].reverse()];
-        let activeIndex = -1;
-
-        if (status.phase === 'PRE_DRAFT') {
-            activeIndex = -1;
-        } else if (status.activePicker) {
-            const round1Len = currentOrder.length;
-            if (status.phase === 'ROUND_1') {
-                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i < round1Len);
-            } else {
-                // If phase is ROUND_2 (or fallback), look in 2nd half
-                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i >= round1Len);
-                // Fallback: if not found in 2nd half (edge case), find anywhere
-                if (activeIndex === -1) activeIndex = fullTurnOrder.findIndex(n => n === status.activePicker);
-            }
-        }
-
-        // Use findIndex with a filter condition is not direct, so loop
-        let myNextIndex = -1;
-        for (let i = 0; i < fullTurnOrder.length; i++) {
-            if (fullTurnOrder[i] === shareholderName && i > activeIndex) {
-                myNextIndex = i;
-                break;
-            }
-        }
-
-        if (myNextIndex === -1) return null;
-        return { diff: myNextIndex - activeIndex };
-    }, [currentOrder, status, shareholderName]);
 
 
     return (
@@ -360,25 +418,7 @@ export function ShareholderHero({
                         )}
 
                         {/* Timer only relevant if Up Next */}
-                        {status.windowEnds && queueInfo?.diff === 1 && (
-                            <div className="mt-2 text-sm font-bold text-indigo-300 flex items-center justify-center lg:justify-start gap-2">
-                                <Clock className="w-4 h-4" />
-                                Your turn starts within: {(() => {
-                                    if (!status.windowEnds) return '--';
-                                    const end = new Date(status.windowEnds);
-                                    const now = new Date();
-                                    if (end <= now) return 'Ending soon...';
-
-                                    const diff = intervalToDuration({ start: now, end });
-                                    const parts = [];
-                                    if (diff.days > 0) parts.push(`${diff.days}d`);
-                                    if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                    if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-
-                                    return parts.join(' ') || '< 1m';
-                                })()}
-                            </div>
-                        )}
+                        {queueInfo?.diff === 1 && TimerComponent}
                     </div>
                 </div>
 
