@@ -1385,7 +1385,9 @@ export function AdminDashboard() {
                                                     <tr key={`${slot.name}-${slot.round}`} className="bg-slate-50/30">
                                                         <td className="px-6 py-5">
                                                             <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
-                                                            <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">Pending</div>
+                                                            <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">
+                                                                Cabin #{CABIN_OWNERS.find(o => o.name === slot.name)?.cabin || "?"}
+                                                            </div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-400">—</td>
                                                         <td className="px-6 py-5 text-slate-400">—</td>
@@ -1470,13 +1472,17 @@ export function AdminDashboard() {
                                                     </td>
 
                                                     <td className="px-6 py-5 text-center">
-                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${booking.isPaid
-                                                            ? 'bg-green-100 text-green-800 border-green-200'
-                                                            : 'bg-white text-slate-500 border-slate-200'
-                                                            }`}>
-                                                            {booking.isPaid ? 'PAID' : 'UNPAID'}
-                                                            {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
-                                                        </span>
+                                                        {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                            <span className="text-slate-400">—</span>
+                                                        ) : (
+                                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${booking.isPaid
+                                                                ? 'bg-green-100 text-green-800 border-green-200'
+                                                                : 'bg-white text-slate-500 border-slate-200'
+                                                                }`}>
+                                                                {booking.isPaid ? 'PAID' : 'UNPAID'}
+                                                                {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
+                                                            </span>
+                                                        )}
                                                     </td>
 
                                                     <td className="px-6 py-5 text-right">
