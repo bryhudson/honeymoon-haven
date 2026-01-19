@@ -22,27 +22,26 @@ export function OnboardingTour({ currentUser }) {
     const steps = [
         {
             target: '#tour-status',
-            title: '🗓️ Booking Status',
-            content: "Each shareholder gets a 48-hour window. If the previous person finishes early, you get 'Early Access' immediately, but your official 48-hour clock doesn't start until 10:00 AM the following day. This ensures no one is rushed if a turn changes late at night!",
+            title: '👀 Your Queue Position',
+            content: "Check here to see exactly where you stand in line (e.g., 'You are Up Next!'). We've also added a clear countdown so you know when the current turn ends.",
             disableBeacon: true,
         },
         {
             target: '#tour-actions',
             title: '⚡ Take Action',
-            content: "When it is your turn, buttons to Book or Pass will appear here. You will receive an automated email when your turn begins.",
+            content: "When it's your turn, the 'Start Booking' button will appear here. You can also finalize your draft or review booking details directly from this panel.",
             disableBeacon: true,
         },
-
         {
             target: '#tour-recent',
             title: '📜 Recent Activity',
-            content: 'Check here to see who has booked recently. Click "View Details" to see full information. If you have an active booking, you can also modify or cancel it from here.',
+            content: 'Click here to see who has booked recently. If you have an active booking, you can also modify or cancel it from here.',
             disableBeacon: true,
         },
         {
             target: '#tour-schedule',
-            title: '📅 2026 Season Schedule',
-            content: 'Finally, the Season Schedule shows the full order for both Round 1 and Round 2 (Snake order).',
+            title: '📅 New Season Schedule',
+            content: "Scroll down to see the revamped schedule. We've added a helpful 'How it Works' section that explains the 10:00 AM start time and Early Access rules!",
             disableBeacon: true,
         },
     ];

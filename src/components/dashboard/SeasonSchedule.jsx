@@ -5,7 +5,7 @@ import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
 export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride }) {
     return (
-        <div className="">
+        <div id="tour-schedule" className="">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold tracking-tight">2026 Season Booking Schedule</h2>
             </div>
