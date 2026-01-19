@@ -360,8 +360,7 @@ export function AdminDashboard() {
                         </table>
                     `;
 
-                    const sendEmailFn = httpsCallable(functions, 'sendEmail');
-                    await sendEmailFn({
+                    await emailService.sendEmail({
                         to: { name: "Admin", email: recipient },
                         subject: `Booking Report - ${format(new Date(), 'MMM d')}`,
                         htmlContent: htmlTable
@@ -673,8 +672,7 @@ export function AdminDashboard() {
             "Send a test email to bryan.m.hudson@gmail.com to verify Gmail SMTP?",
             async () => {
                 try {
-                    const sendEmail = httpsCallable(functions, 'sendEmail');
-                    await sendEmail({
+                    await emailService.sendEmail({
                         to: { name: "Test User", email: "bryan.m.hudson@gmail.com" },
                         subject: "Test Email from Admin Dashboard",
                         htmlContent: "<p>This is a test email sent from the Admin Dashboard to verify the new Gmail SMTP integration.</p>"
