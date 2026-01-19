@@ -309,17 +309,21 @@ export function ShareholderHero({
                             ? 'bg-amber-900/50 text-amber-200 border-amber-500/30'
                             : 'bg-green-900/50 text-green-200 border-green-500/30'
                             }`}>
-                            {isPassed ? <Clock className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
-                            {isPassed ? "Turn Complete" : "Booking Confirmed"}
+                            {isPassed ? <CheckCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
+                            {isPassed ? "Status: Passed" : "Booking Confirmed"}
                         </div>
 
                         <h2 className="text-2xl font-bold text-white/90">
-                            {isPassed ? "You've Passed Your Turn" : "You're All Set!"}
+                            {isPassed ? "" : "You're All Set!"}
                         </h2>
 
                         <div className="text-lg text-slate-300 leading-relaxed">
                             {isPassed ? (
-                                <p>You have opted to pass this round. We'll let you know when the next round begins.</p>
+                                <span className="text-slate-200">
+                                    You have passed your turn for this round. We'll let you know when the next round begins!
+                                    <br />
+                                    <span className="text-sm opacity-70 mt-1 block">Enjoy the break!</span>
+                                </span>
                             ) : (
                                 <div className="space-y-1">
                                     <p>
