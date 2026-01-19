@@ -311,7 +311,7 @@ export function ShareholderHero({
                                 : 'bg-green-900/50 text-green-200 border-green-500/30'
                                 }`}>
                                 {isPassed ? <CheckCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
-                                {isPassed ? "Status: Passed" : "Booking Confirmed"}
+                                {isPassed ? "Status: Passed" : (isPaid ? "Status: Paid" : "Booking Confirmed")}
                             </div>
 
                             {/* QUEUE POSITION INDICATOR */}
