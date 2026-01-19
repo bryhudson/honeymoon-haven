@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { PromptModal } from './PromptModal';
+import { emailService } from '../services/emailService';
 
 export function AdminCalendarView({ bookings, onNotify }) {
     // 2026 Season: March - October
@@ -99,8 +100,7 @@ export function AdminCalendarView({ bookings, onNotify }) {
                 </div>
             `;
 
-            const sendEmailFn = httpsCallable(functions, 'sendEmail');
-            await sendEmailFn({
+            await emailService.sendEmail({
                 to: { name: "Admin", email: recipient },
                 subject: `Calendar Snapshot - ${format(new Date(), 'MMM d')}`,
                 htmlContent: fullHtml

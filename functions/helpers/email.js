@@ -38,14 +38,38 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
     // Gmail always overwrites the "From" address with the authenticated user, but we can set a custom name.
     const from = `"${senderName}" <${user}>`;
 
-    // Safely override recipient for testing if needed
-    // const recipient = "bryan.m.hudson@gmail.com"; // Safety override
-    const recipient = typeof to === 'string' ? to : to?.email; // Real recipient
+    // --- DYNAMIC SAFETY OVERRIDE ---
+    const DEV_EMAIL_OVERRIDE = "bryan.m.hudson@gmail.com";
+
+    // Check Firestore for Test Mode
+    let isTestMode = true; // Default to safety
+    try {
+        const admin = require("firebase-admin");
+        if (admin.apps.length === 0) {
+            admin.initializeApp();
+        }
+        const db = admin.firestore();
+        const settingsDoc = await db.collection("settings").doc("general").get();
+        if (settingsDoc.exists) {
+            isTestMode = settingsDoc.data().isTestMode !== false; // Default true if undefined
+        }
+    } catch (err) {
+        logger.warn("Failed to fetch settings for email safety check, defaulting to TEST MODE", err);
+        isTestMode = true;
+    }
+
+    let recipient;
+    if (isTestMode) {
+        logger.info(`[TEST MODE ACTIVE] Intercepting email intended for: ${JSON.stringify(to)}. Redirecting to: ${DEV_EMAIL_OVERRIDE}`);
+        recipient = DEV_EMAIL_OVERRIDE;
+    } else {
+        recipient = typeof to === 'string' ? to : to?.email;
+    }
 
     const mailOptions = {
         from: from,
         to: recipient,
-        subject: subject,
+        subject: isTestMode ? `[TEST] ${subject}` : subject, // Prefix subject in test mode
         html: htmlContent,
     };
 

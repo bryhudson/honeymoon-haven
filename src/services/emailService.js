@@ -3,8 +3,6 @@ import { httpsCallable } from 'firebase/functions';
 import { emailTemplates } from './emailTemplates';
 
 // --- Constants ---
-const DEV_EMAIL_OVERRIDE = "bryan.m.hudson@gmail.com";
-
 const SEASON_CONFIG = {
     season_year: "2026",
     season_start: "April 3",
@@ -19,20 +17,8 @@ export const sendEmail = async ({ to, subject, htmlContent, templateId, params }
     try {
         const sendEmailFunction = httpsCallable(functions, 'sendEmail');
 
-        // --- SAFETY OVERRIDE ---
-        let safeTo = to;
-        if (DEV_EMAIL_OVERRIDE) {
-            console.log(`[EMAIL SAFETY] Intercepting email to: ${JSON.stringify(to)}. Redirecting to: ${DEV_EMAIL_OVERRIDE}`);
-            // If 'to' is an object {name, email}, preserve name but swap email
-            if (typeof to === 'object' && to.email) {
-                safeTo = { ...to, email: DEV_EMAIL_OVERRIDE };
-            } else {
-                safeTo = DEV_EMAIL_OVERRIDE;
-            }
-        }
-
         const result = await sendEmailFunction({
-            to: safeTo,
+            to,
             subject,
             htmlContent,
             templateId,
@@ -170,14 +156,7 @@ export const emailService = {
         try {
             const sendFn = httpsCallable(functions, 'sendGuestGuideEmail');
 
-            // --- SAFETY OVERRIDE ---
-            let safeGuestEmail = guestEmail;
-            if (DEV_EMAIL_OVERRIDE) {
-                console.log(`[EMAIL SAFETY] Intercepting Guest Guide to: ${guestEmail}. Redirecting to: ${DEV_EMAIL_OVERRIDE}`);
-                safeGuestEmail = DEV_EMAIL_OVERRIDE;
-            }
-
-            const result = await sendFn({ guestEmail: safeGuestEmail, guestName, bookingDetails, shareholderName });
+            const result = await sendFn({ guestEmail, guestName, bookingDetails, shareholderName });
             return result.data;
         } catch (error) {
             console.error('Failed to send Guest Guide:', error);
