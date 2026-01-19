@@ -540,6 +540,17 @@ export function AdminDashboard() {
         );
     };
 
+    const handleAddAdmin = () => {
+        requireAuth(
+            "Security Check: Add Administrator",
+            "This action grants high-level access to the system. Please verify your password to proceed.",
+            () => {
+                setCreateUserRole('admin');
+                setIsCreateUserModalOpen(true);
+            }
+        );
+    };
+
     const handleEditClick = (booking) => {
         setEditingBooking(booking);
         setIsEditModalOpen(true);
@@ -1617,7 +1628,7 @@ export function AdminDashboard() {
                                     </button>
                                     {IS_SITE_OWNER && (
                                         <button
-                                            onClick={() => { setCreateUserRole('admin'); setIsCreateUserModalOpen(true); }}
+                                            onClick={handleAddAdmin}
                                             className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
                                         >
                                             <Shield className="w-4 h-4" />
