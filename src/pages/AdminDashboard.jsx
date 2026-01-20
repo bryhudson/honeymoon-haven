@@ -240,55 +240,39 @@ export function AdminDashboard() {
     };
 
     const handleDownloadCSV = () => {
-        const currentOrder = getShareholderOrder(2026);
-        const schedule = mapOrderToSchedule(currentOrder, allBookings);
-
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Round,Shareholder,Cabin,Guests,Start Date,End Date,Nights,Status,Payment Status\n";
-
-        schedule.forEach(slot => {
-            const b = slot.booking;
-            const round = slot.round;
-            const shareholder = `"${slot.name}"`; // Quote for safety
-            const cabin = b?.cabinNumber || "";
-            const guests = b?.guests || (b ? 1 : "");
-            const start = b?.from ? format(b.from, 'MM/dd/yyyy') : "";
-            const end = b?.to ? format(b.to, 'MM/dd/yyyy') : "";
-            const nights = (b?.from && b?.to) ? differenceInDays(b.to, b.from) : 0;
-            const status = b?.isFinalized ? "Finalized" : (b ? "Draft" : "");
-            const payment = b?.isPaid ? "Paid" : (b ? "Unpaid" : "");
-
-            const row = [round, shareholder, cabin, guests, start, end, nights, status, payment].join(",");
-            csvContent += row + "\n";
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `booking_report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Use the same logic as the system backup (chronological master list)
+        generateAndDownloadCSV(false);
     };
 
     const handleEmailBookingReport = () => {
-        const currentOrder = getShareholderOrder(2026);
-        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+        // Generate Master Booking Report (Chronological)
+        const sortedBookings = [...allBookings].sort((a, b) => {
+            const da = a.from ? new Date(a.from) : new Date(0);
+            const db = b.from ? new Date(b.from) : new Date(0);
+            return da - db;
+        });
 
-        const generateRowHtml = (s) => {
-            const b = s.booking;
+        // Filter out purely technical records if desired, or keep them. 
+        // User asked for "full season calendar data". Usually implies "actual bookings".
+        // Let's filter out 'pass' records for the email report to keep it clean, or keep them if they want "full log".
+        // The visual calendar excludes passes, so let's exclude them here to match "Calendar Data".
+        const reportBookings = sortedBookings.filter(b => b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled');
+
+        const generateRowHtml = (b) => {
             const paymentStatus = b?.isPaid ? "PAID" : "UNPAID";
             const paymentColor = b?.isPaid ? "#dcfce7" : "#fee2e2";
-            const dateStr = b?.from && b?.to ? `${format(b.from, 'MMM d')} - ${format(b.to, 'MMM d')}` : "";
+            const dateStr = b?.from && b?.to ? `${format(b.from, 'MMM d')} - ${format(b.to, 'MMM d, yyyy')}` : "N/A";
+            const statusLabel = b.isFinalized ? "Finalized" : "Draft";
+            const nights = (b.from && b.to) ? differenceInDays(b.to, b.from) : 0;
 
             return `
             <tr style="background-color: #fff;">
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${s.name}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.cabinNumber || "?"}</td>
-                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.guests || (b ? 1 : "")}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${b.shareholderName}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${b.cabinNumber || "?"}</td>
+                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b.guests || 1}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${b ? 7 : 0}</td>
-                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${b?.isFinalized ? "Finalized" : "Draft"}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">${nights}</td>
+                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${statusLabel}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">
                     <span style="background-color: ${paymentColor}; padding: 2px 6px; borderRadius: 4px; font-size: 11px;">${paymentStatus}</span>
                 </td>
@@ -297,18 +281,18 @@ export function AdminDashboard() {
         };
 
         triggerPrompt(
-            "Email Booking Report",
+            "Email Season Report",
             "Enter recipient email:",
             currentUser?.email || "",
             async (recipient) => {
                 if (!recipient) return;
                 try {
-                    const round1Rows = schedule.filter(s => s.round === 1).map(generateRowHtml).join("");
-                    const round2Rows = schedule.filter(s => s.round === 2).map(generateRowHtml).join("");
+                    const rows = reportBookings.map(generateRowHtml).join("");
 
                     const htmlTable = `
-                        <h2>Current Booking Report</h2>
+                        <h2>2026 Season Booking Report</h2>
                         <p>Generated on ${format(new Date(), 'PPP p')}</p>
+                        <p>Showing ${reportBookings.length} active bookings.</p>
 
                         <div style="display: flex; gap: 20px; margin: 30px 0; flex-wrap: wrap;">
                              <div style="background-color: #f0fdf4; border: 1px solid #dcfce7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
@@ -321,7 +305,7 @@ export function AdminDashboard() {
                              </div>
                              <div style="background-color: #feffff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Bookings</div>
-                                <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${analytics.totalBookings}</div>
+                                <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${reportBookings.length}</div>
                              </div>
                              <div style="background-color: #feffff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Nights</div>
@@ -329,8 +313,7 @@ export function AdminDashboard() {
                              </div>
                         </div>
                         
-                        <h3 style="margin-top: 20px; background-color: #f1f5f9; padding: 10px;">Round 1 - Shareholder Rotation</h3>
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px; margin-top: 20px;">
                             <thead>
                                 <tr style="background-color: #f8fafc;">
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
@@ -343,32 +326,14 @@ export function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${round1Rows}
-                            </tbody>
-                        </table>
-
-                        <h3 style="margin-top: 30px; background-color: #f1f5f9; padding: 10px;">Round 2 - Snake Draft</h3>
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
-                            <thead>
-                                <tr style="background-color: #f8fafc;">
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Cabin</th>
-                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Guests</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${round2Rows}
+                                ${rows}
                             </tbody>
                         </table>
                     `;
 
                     await emailService.sendEmail({
                         to: { name: "Admin", email: recipient },
-                        subject: `Booking Report - ${format(new Date(), 'MMM d')}`,
+                        subject: `Date-Ordered Booking Report - ${format(new Date(), 'MMM d')}`,
                         htmlContent: htmlTable
                     });
 
