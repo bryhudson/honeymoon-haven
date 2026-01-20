@@ -364,48 +364,55 @@ export function ShareholderHero({
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-slate-800 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-slate-800 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                    <div className="space-y-4 text-center lg:text-left max-w-2xl">
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-                            Welcome, {shareholderName}
-                        </h1>
-                        <div id="tour-status" className="flex flex-col items-center lg:items-start gap-1">
-                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                                {/* Phase Badge */}
-                                {phaseLabel && (
-                                    <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
-                                        {phaseLabel}
-                                    </span>
-                                )}
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                                    <Clock className="w-3 h-3" />
-                                    Action Required
-                                </div>
-                            </div>
-                            {/* TIMER INJECTED HERE (Text color handled in component definition) */}
+                <div className="relative z-10 flex flex-col gap-8">
+                    {/* TOP HEADER ROW: Welcome & Badges */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                            <h1 className="text-2xl md:text-3xl font-medium text-blue-200">
+                                Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                            </h1>
                         </div>
+                        <div className="flex items-center gap-2">
+                            <div className="px-3 py-1 rounded-full bg-slate-700/50 border border-slate-600/50 text-slate-300 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                                Round {currentOrder?.round || 1}
+                            </div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30 animate-pulse">
+                                <Clock className="w-3 h-3" />
+                                Action Required
+                            </div>
+                        </div>
+                    </div>
 
-                        {/* HIGH PRIORITY DEADLINE TIMER */}
-                        {showTimer && status.windowEnds && (
-                            <div className="mt-6 bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 max-w-md mx-auto md:mx-0">
-                                <div className="flex flex-col md:flex-row items-center md:items-start md:text-left gap-3 md:gap-4 text-center">
-                                    <div className="p-2 bg-indigo-500/30 rounded-lg animate-pulse shrink-0">
-                                        <Clock className="w-5 h-5 text-indigo-200" />
+                    {/* MAIN HERO MESSAGE */}
+                    <div className="space-y-4">
+                        <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-md">
+                            It's Your Turn
+                        </h2>
+                        <p className="text-xl md:text-2xl text-blue-100/90 font-light leading-relaxed max-w-3xl">
+                            The calendar is yours! Please select your dates or pass your turn to the next shareholder.
+                        </p>
+                    </div>
+
+                    {/* ACTION BAR: Timer & Buttons */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-sm mt-2">
+                        <div className="flex flex-col xl:flex-row gap-8 xl:items-end justify-between">
+
+                            {/* DEADLINE TIMER */}
+                            {showTimer && status.windowEnds && (
+                                <div className="flex-1 min-w-[300px]">
+                                    <div className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <Clock className="w-4 h-4" />
+                                        {isYourTurn ? "Complete Request By" : "Turn Deadline"}
                                     </div>
-                                    <div>
-                                        <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
-                                            {isYourTurn ? "Complete Request By" : "Turn Deadline"}
-                                        </div>
-                                        <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                    <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
+                                        <div className="text-3xl md:text-4xl font-bold text-white tabular-nums tracking-tight">
                                             {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                         </div>
-                                        <div className="text-sm text-indigo-200 mt-1 font-medium flex items-center justify-center md:justify-start gap-1.5">
-                                            <Clock className="w-3.5 h-3.5" />
-                                            <span>Time remaining:</span>
-                                            <span className="text-white font-bold">
+                                        <div className="bg-blue-900/50 px-3 py-1 rounded-lg border border-blue-500/30 text-blue-200 text-sm font-bold flex items-center gap-2 w-fit">
+                                            Time remaining:
+                                            <span className="text-white">
                                                 {(() => {
                                                     const end = new Date(status.windowEnds);
-                                                    // Use live 'now' state
                                                     if (end <= now) return 'Ending soon...';
                                                     const diff = intervalToDuration({ start: now, end });
                                                     const parts = [];
@@ -418,39 +425,39 @@ export function ShareholderHero({
                                         </div>
                                     </div>
                                 </div>
+                            )}
+
+                            {/* PRIMARY ACTIONS */}
+                            <div id="tour-actions" className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto self-stretch xl:self-end">
+                                <button
+                                    onClick={onOpenBooking}
+                                    disabled={isReadOnly}
+                                    className={`flex-1 sm:flex-none py-4 px-8 text-xl font-bold rounded-xl shadow-lg flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95
+                                        ${isReadOnly
+                                            ? 'bg-slate-700 text-slate-400 cursor-not-allowed border border-slate-600'
+                                            : 'bg-white text-slate-900 shadow-blue-900/20 hover:shadow-blue-900/40 hover:bg-blue-50'
+                                        }`}
+                                >
+                                    <PlayCircle className={`w-6 h-6 ${isReadOnly ? 'text-slate-500' : 'text-blue-600'}`} />
+                                    {isReadOnly ? 'Booking Disabled' : 'Start Booking'}
+                                </button>
+
+                                <button
+                                    onClick={onPass}
+                                    disabled={isReadOnly}
+                                    className={`flex-1 sm:flex-none py-4 px-8 font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-transparent
+                                        ${isReadOnly
+                                            ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed border-slate-700'
+                                            : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-600'
+                                        }`}
+                                >
+                                    {isReadOnly ? 'Pass (Disabled)' : 'Pass Turn'}
+                                </button>
                             </div>
-                        )}
-
-
-                        <h2 className="text-2xl font-bold text-blue-100 mt-6">
-                            It's Your Turn
-                        </h2>
-                        <p className="text-lg text-slate-300 leading-relaxed">
-                            The calendar is yours! Please select your dates or pass your turn to the next shareholder.
-                        </p>
+                        </div>
                     </div>
+                </div>
 
-                    <div id="tour-actions" className="flex flex-col w-full sm:w-auto gap-4">
-                        <button
-                            onClick={onOpenBooking}
-                            className="w-full sm:w-64 px-8 py-4 bg-white text-slate-900 text-lg font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:bg-blue-50 hover:scale-105 transition-all flex items-center justify-center gap-3"
-                        >
-                            <PlayCircle className="w-6 h-6 text-blue-600" />
-                            {isReadOnly ? 'Booking Disabled' : 'Start Booking'}
-                        </button>
-                        <button
-                            onClick={onPass}
-                            disabled={isReadOnly}
-                            className={`w-full sm:w-64 px-8 py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2
-                                ${isReadOnly
-                                    ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
-                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                                }`}
-                        >
-                            {isReadOnly ? 'Pass (Disabled)' : 'Pass Turn'}
-                        </button>
-                    </div>
-                </div >
             </div >
         );
     }
