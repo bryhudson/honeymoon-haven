@@ -155,7 +155,7 @@ export function ShareholderHero({
     // Helper: Render Split Round Badges
     const renderBadges = () => {
         return (
-            <div className="flex flex-col sm:flex-row gap-2 mt-2">
+            <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-2 mt-2">
                 {/* Round 1 Status Badge */}
                 {(() => {
                     const r1Action = myActions[0]; // Logic assumes chronological order
@@ -360,9 +360,9 @@ export function ShareholderHero({
 
                         {/* HIGH PRIORITY DEADLINE TIMER */}
                         {showTimer && status.windowEnds && (
-                            <div className="mt-6 bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 max-w-md">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2 bg-indigo-500/30 rounded-lg animate-pulse">
+                            <div className="mt-6 bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 max-w-md mx-auto md:mx-0">
+                                <div className="flex flex-col md:flex-row items-center md:items-start md:text-left gap-3 md:gap-4 text-center">
+                                    <div className="p-2 bg-indigo-500/30 rounded-lg animate-pulse shrink-0">
                                         <Clock className="w-5 h-5 text-indigo-200" />
                                     </div>
                                     <div>
@@ -372,7 +372,7 @@ export function ShareholderHero({
                                         <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
                                             {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                         </div>
-                                        <div className="text-sm text-indigo-200 mt-1 font-medium flex items-center gap-1.5">
+                                        <div className="text-sm text-indigo-200 mt-1 font-medium flex items-center justify-center md:justify-start gap-1.5">
                                             <Clock className="w-3.5 h-3.5" />
                                             <span>Time remaining:</span>
                                             <span className="text-white font-bold">
