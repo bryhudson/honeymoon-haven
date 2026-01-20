@@ -1319,32 +1319,54 @@ export function AdminDashboard() {
 
 
 
-                        {/* Toggleable Views in Bookings Tab */}
-                        <div className="flex justify-between items-center mb-6 mt-6">
+                        {/* Toggleable Views & Actions */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 mt-6 gap-4">
                             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                                 {bookingViewMode === 'list' ? 'Booking Management' : 'Calendar View'}
                             </h2>
-                            <div className="flex space-x-2">
-                                <button
-                                    onClick={() => setBookingViewMode('list')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border ${bookingViewMode === 'list'
-                                        ? 'bg-slate-900 text-white border-slate-900'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <ListIcon className="w-4 h-4" />
-                                    <span>List</span>
-                                </button>
-                                <button
-                                    onClick={() => setBookingViewMode('calendar')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border ${bookingViewMode === 'calendar'
-                                        ? 'bg-slate-900 text-white border-slate-900'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <Calendar className="w-4 h-4" />
-                                    <span>Calendar</span>
-                                </button>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                                {/* Shared Reporting Actions */}
+                                <div className="flex items-center gap-2 mr-2 border-r pr-4 border-slate-200">
+                                    <button
+                                        onClick={handleEmailBookingReport}
+                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-slate-100 rounded"
+                                    >
+                                        <Mail className="w-4 h-4" />
+                                        <span className="hidden md:inline">Email Report</span>
+                                    </button>
+                                    <button
+                                        onClick={handleDownloadCSV}
+                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-slate-100 rounded"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        <span className="hidden md:inline">CSV</span>
+                                    </button>
+                                </div>
+
+                                {/* View Switcher */}
+                                <div className="flex space-x-2 bg-slate-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setBookingViewMode('list')}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-bold transition-all ${bookingViewMode === 'list'
+                                            ? 'bg-white text-slate-900 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-900'
+                                            }`}
+                                    >
+                                        <ListIcon className="w-4 h-4" />
+                                        <span>List</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setBookingViewMode('calendar')}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-bold transition-all ${bookingViewMode === 'calendar'
+                                            ? 'bg-white text-slate-900 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-900'
+                                            }`}
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        <span>Calendar</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -1355,44 +1377,12 @@ export function AdminDashboard() {
                         ) : (
                             // Detailed List View
                             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                                {/* Desktop Utility Bar - Moved inside List View */}
-                                <div className="hidden md:flex justify-end gap-6 mb-4 px-1">
-                                    <button
-                                        onClick={handleEmailBookingReport}
-                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
-                                    >
-                                        <Mail className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
-                                        Email Report
-                                    </button>
-                                    <button
-                                        onClick={handleDownloadCSV}
-                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
-                                    >
-                                        <Download className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
-                                        Download CSV
-                                    </button>
-                                </div>
-
-                                {/* Mobile Action Links (Above Table/Cards) */}
-                                <div className="md:hidden flex justify-end gap-4 mb-4">
-                                    <button
-                                        onClick={handleEmailBookingReport}
-                                        className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
-                                    >
-                                        <Mail className="w-3.5 h-3.5" />
-                                        Email Report
-                                    </button>
-                                    <button
-                                        onClick={handleDownloadCSV}
-                                        className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
-                                    >
-                                        <Download className="w-3.5 h-3.5" />
-                                        CSV
-                                    </button>
-                                </div>
 
                                 {/* Mobile Card View (Bookings) */}
                                 <div className="md:hidden space-y-4 mb-8">
+                                    <div className="flex justify-end gap-4 mb-2">
+                                        {/* Mobile-only shortcuts if needed, but header handles it now */}
+                                    </div>
                                     {(() => {
                                         const currentOrder = getShareholderOrder(2026);
                                         const schedule = mapOrderToSchedule(currentOrder, allBookings);
