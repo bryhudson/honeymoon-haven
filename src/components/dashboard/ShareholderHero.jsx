@@ -17,6 +17,13 @@ export function ShareholderHero({
     onViewSchedule,
     currentOrder
 }) {
+    const [now, setNow] = React.useState(new Date());
+
+    // Update timer every minute to keep countdown alive
+    React.useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
     if (!shareholderName) return null;
 
     // --- QUEUE CALCULATION (Moved to top to avoid ReferenceError) ---
@@ -257,7 +264,7 @@ export function ShareholderHero({
             {isYourTurn ? "Your turn ends in:" : "Your turn starts within:"} {(() => {
                 if (!status.windowEnds) return '--';
                 const end = new Date(status.windowEnds);
-                const now = new Date();
+                // Use live 'now' state
                 if (end <= now) return 'Ending soon...';
 
                 const diff = intervalToDuration({ start: now, end });
@@ -381,7 +388,7 @@ export function ShareholderHero({
                                             <span className="text-white font-bold">
                                                 {(() => {
                                                     const end = new Date(status.windowEnds);
-                                                    const now = new Date();
+                                                    // Use live 'now' state
                                                     if (end <= now) return 'Ending soon...';
                                                     const diff = intervalToDuration({ start: now, end });
                                                     const parts = [];
