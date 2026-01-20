@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.290 - Feat: Display App Version in Admin Dashboard</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.291 - Feat: Hide Report Actions in Calendar View</p>
                 </p>
             </div>
         </div>

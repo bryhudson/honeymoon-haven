@@ -1298,23 +1298,25 @@ export function AdminDashboard() {
                             </h2>
 
                             <div className="flex flex-wrap items-center gap-3">
-                                {/* Shared Reporting Actions */}
-                                <div className="flex items-center gap-2 mr-2 border-r pr-4 border-slate-200">
-                                    <button
-                                        onClick={handleEmailBookingReport}
-                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-slate-100 rounded"
-                                    >
-                                        <Mail className="w-4 h-4" />
-                                        <span className="hidden md:inline">Email Report</span>
-                                    </button>
-                                    <button
-                                        onClick={handleDownloadCSV}
-                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-slate-100 rounded"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        <span className="hidden md:inline">CSV</span>
-                                    </button>
-                                </div>
+                                {/* Shared Reporting Actions (List View Only) */}
+                                {bookingViewMode === 'list' && (
+                                    <div className="flex items-center gap-2 mr-2 border-r pr-4 border-slate-200">
+                                        <button
+                                            onClick={handleEmailBookingReport}
+                                            className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-slate-100 rounded"
+                                        >
+                                            <Mail className="w-4 h-4" />
+                                            <span className="hidden md:inline">Email Report</span>
+                                        </button>
+                                        <button
+                                            onClick={handleDownloadCSV}
+                                            className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-slate-100 rounded"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            <span className="hidden md:inline">CSV</span>
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* View Switcher */}
                                 <div className="flex space-x-2 bg-slate-100 p-1 rounded-lg">
