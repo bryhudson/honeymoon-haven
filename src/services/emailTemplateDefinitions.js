@@ -7,19 +7,19 @@ export const TEMPLATE_DEFINITIONS = [
     {
         id: "turnStarted",
         name: "Turn Started (Current User)",
-        variables: ["name", "deadline_date", "deadline_time", "booking_url", "dashboard_url", "pass_turn_url"],
+        variables: ["name", "deadline_date", "deadline_time", "booking_url", "dashboard_url", "pass_turn_url", "current_phase_title", "current_phase_detail"],
         description: "Sent to the shareholder when their 48h window begins."
     },
     {
         id: "reminder",
         name: "Daily Reminder (Morning/Evening)",
-        variables: ["name", "type", "hours_remaining", "deadline_date", "deadline_time", "has_draft", "check_in", "check_out", "booking_url", "dashboard_url"],
+        variables: ["name", "type", "hours_remaining", "deadline_date", "deadline_time", "has_draft", "check_in", "check_out", "booking_url", "dashboard_url", "current_phase_title", "current_phase_detail"],
         description: "Sent twice daily during the active window."
     },
     {
         id: "finalWarning",
         name: "Final Warning (6 Hours Left)",
-        variables: ["name", "hours_remaining", "deadline_date", "deadline_time", "has_draft", "check_in", "check_out", "total_price", "cabin_number", "next_shareholder", "booking_url", "dashboard_url"],
+        variables: ["name", "hours_remaining", "deadline_date", "deadline_time", "has_draft", "check_in", "check_out", "total_price", "cabin_number", "next_shareholder", "booking_url", "dashboard_url", "current_phase_title", "current_phase_detail"],
         description: "Urgent reminder sent 6 hours before deadline."
     },
     {
@@ -37,7 +37,7 @@ export const TEMPLATE_DEFINITIONS = [
     {
         id: "turnPassedNext",
         name: "Turn Passed (Next User Notified)",
-        variables: ["name", "previous_shareholder", "deadline_date", "deadline_time", "booking_url", "dashboard_url"],
+        variables: ["name", "previous_shareholder", "deadline_date", "deadline_time", "booking_url", "dashboard_url", "current_phase_title", "current_phase_detail"],
         description: "Sent to the NEXT user when the previous user passes early."
     },
     {
@@ -49,7 +49,7 @@ export const TEMPLATE_DEFINITIONS = [
     {
         id: "autoPassNext",
         name: "Auto-Pass (Next User Notified)",
-        variables: ["name", "deadline_date", "deadline_time", "booking_url", "dashboard_url"],
+        variables: ["name", "deadline_date", "deadline_time", "booking_url", "dashboard_url", "current_phase_title", "current_phase_detail"],
         description: "Sent to the NEXT user when the previous user times out."
     },
     {

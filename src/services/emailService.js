@@ -26,6 +26,34 @@ const processTemplate = (text, data) => {
 };
 
 /**
+ * Helper: Enrich Data with Phase/Round Info
+ */
+const enrichEmailData = (data) => {
+    const phase = data.phase;
+    const round = data.round;
+
+    let title = "Honeymoon Haven";
+    let detail = "";
+
+    if (phase === 'OPEN_SEASON') {
+        title = "OPEN SEASON";
+        detail = "Booking is now open to everyone on a first-come, first-served basis.";
+    } else if (phase === 'ROUND_2' || round === 2) {
+        title = "ROUND 2 (SNAKE DRAFT)";
+        detail = "We are in the second round (Snake Draft), where the booking order is reversed.";
+    } else if (phase === 'ROUND_1' || round === 1) {
+        title = "ROUND 1 (STANDARD)";
+        detail = "We are currently in the standard rotation draft (Round 1).";
+    }
+
+    return {
+        current_phase_title: title,
+        current_phase_detail: detail,
+        ...data
+    };
+};
+
+/**
  * Helper: Fetch Template from DB or use Fallback
  */
 const getEffectiveTemplate = async (templateId, fallbackFn, data) => {

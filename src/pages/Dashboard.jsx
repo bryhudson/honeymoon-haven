@@ -247,6 +247,21 @@ export function Dashboard() {
 
                             const deadline = addHours(tomorrow10am, 48);
 
+                            // Detect Phase Transition for Notification Context
+                            // If current user is the LAST one in Round 1, the next turn is Round 2.
+                            // If current user is the LAST one in Round 2, the next phase is Open Season.
+                            const order = getShareholderOrder(2026);
+                            let nextPhase = status.phase;
+                            let nextRound = status.round || (status.phase === 'ROUND_2' ? 2 : 1);
+
+                            if (status.phase === 'ROUND_1' && status.activePicker === order[order.length - 1]) {
+                                nextPhase = 'ROUND_2';
+                                nextRound = 2;
+                            } else if (status.phase === 'ROUND_2' && status.activePicker === order[0]) {
+                                // Last person in Round 2 (Reverse order ends at Start) is the FIRST person.
+                                nextPhase = 'OPEN_SEASON';
+                            }
+
                             // NON-BLOCKING EMAIL
                             emailService.sendTurnStarted({
                                 name: nextOwner.name,
@@ -257,7 +272,9 @@ export function Dashboard() {
                                 deadline_time: format(deadline, 'p'),
                                 booking_url: "https://hhr-trailer-booking.web.app/",
                                 dashboard_url: "https://hhr-trailer-booking.web.app/",
-                                pass_turn_url: "https://hhr-trailer-booking.web.app/"
+                                pass_turn_url: "https://hhr-trailer-booking.web.app/",
+                                phase: nextPhase,
+                                round: nextRound
                             }).then(() => console.log("Notification sent to", nextOwner.name))
                                 .catch(e => console.error("Next user email failed", e));
 
@@ -359,6 +376,18 @@ export function Dashboard() {
 
                                     const deadline = addHours(tomorrow10am, 48);
 
+                                    // Detect Phase Transition for Notification Context
+                                    const order = getShareholderOrder(2026);
+                                    let nextPhase = status.phase;
+                                    let nextRound = status.round || (status.phase === 'ROUND_2' ? 2 : 1);
+
+                                    if (status.phase === 'ROUND_1' && status.activePicker === order[order.length - 1]) {
+                                        nextPhase = 'ROUND_2';
+                                        nextRound = 2;
+                                    } else if (status.phase === 'ROUND_2' && status.activePicker === order[0]) {
+                                        nextPhase = 'OPEN_SEASON';
+                                    }
+
                                     await emailService.sendTurnPassedNext({
                                         name: nextOwner.name,
                                         email: "bryan.m.hudson@gmail.com" // OVERRIDE
@@ -368,7 +397,9 @@ export function Dashboard() {
                                         deadline_date: format(deadline, 'PPP'),
                                         deadline_time: format(deadline, 'p'),
                                         booking_url: "https://hhr-trailer-booking.web.app/",
-                                        dashboard_url: "https://hhr-trailer-booking.web.app/"
+                                        dashboard_url: "https://hhr-trailer-booking.web.app/",
+                                        phase: nextPhase,
+                                        round: nextRound
                                     });
                                     console.log("Notification sent to", nextOwner.name);
                                 } catch (e) {
@@ -881,7 +912,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.279 - Feat: Context-aware Turn Passed emails (Round 1 vs Open Season)</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.280 - Feat: Fully context-aware email notifications (Round/Phase logic)</p>
 
 
             </div>

@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.279 - Feat: Context-aware Turn Passed emails (Round 1 vs Open Season)</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.280 - Feat: Fully context-aware email notifications (Round/Phase logic)</p>
                 </p>
             </div>
         </div>

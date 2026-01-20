@@ -86,8 +86,12 @@ export const emailTemplates = {
     const subject = `Your Honeymoon Haven Booking Turn Has Started`;
     const body = `
       <p>Hi ${data.name},</p>
-      <p>Great news! Your 48-hour booking window has officially started.</p>
+      <p>Great news! Your 48-hour booking window for <strong>${data.current_phase_title || 'Round 1'}</strong> has officially started.</p>
       
+      <div style="background-color: #f0fdf4; padding: 12px; border-radius: 6px; font-size: 0.9em; border-left: 4px solid #16a34a; margin-bottom: 20px;">
+         <strong>${data.current_phase_title}</strong>: ${data.current_phase_detail}
+      </div>
+
       <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
         <strong>Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
       </div>
@@ -140,7 +144,7 @@ export const emailTemplates = {
 
     const body = `
       <p>Good ${isMorning ? 'morning' : 'evening'} ${data.name},</p>
-      <p>${isMorning ? 'This is a friendly reminder that your booking window is still active.' : 'Just checking in on your booking window for Honeymoon Haven Resort.'}</p>
+      <p>${isMorning ? `This is a friendly reminder that your booking window for <strong>${data.current_phase_title}</strong> is still active.` : `Just checking in on your booking window for Honeymoon Haven Resort (${data.current_phase_title}).`}</p>
 
       <p><strong>Time Remaining: ${data.hours_remaining} hours</strong><br>
       (Deadline: ${data.deadline_date} at ${data.deadline_time})</p>
@@ -161,7 +165,7 @@ export const emailTemplates = {
     const body = `
       <p>Hi ${data.name},</p>
       <p style="color: #dc2626; font-weight: bold;">URGENT REMINDER</p>
-      <p>Your 48-hour booking window expires in just 6 hours!</p>
+      <p>This is your last chance to book for <strong>${data.current_phase_title}</strong>. Your 48-hour booking window expires in just 6 hours!</p>
 
       <p><strong>Deadline: ${data.deadline_date} at ${data.deadline_time}</strong></p>
 
@@ -256,11 +260,12 @@ export const emailTemplates = {
     const subject = `It's Your Turn! Honeymoon Haven Booking Window Open`;
     const body = `
       <p>Hi ${data.name},</p>
-      <p>Exciting news! It's now your turn to book at Honeymoon Haven Resort!</p>
+      <p>Exciting news! It's now your turn to book for <strong>${data.current_phase_title}</strong> at Honeymoon Haven Resort!</p>
       <p>The previous shareholder (${data.previous_shareholder}) has passed their turn, which means your 48-hour booking window has started early.</p>
 
       <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
-        <strong>Your Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
+        <strong>Your Deadline: ${data.deadline_date} at ${data.deadline_time}</strong><br>
+        <span style="font-size: 0.85em; color: #1e3a8a;">${data.current_phase_detail}</span>
       </div>
 
       <div style="margin: 25px 0;">
@@ -296,11 +301,12 @@ export const emailTemplates = {
     const subject = `It's Your Turn! Honeymoon Haven Booking Window Open`;
     const body = `
       <p>Hi ${data.name},</p>
-      <p>Good news! It's now your turn to book at Honeymoon Haven Resort!</p>
+      <p>Good news! It's now your turn to book for <strong>${data.current_phase_title}</strong> at Honeymoon Haven Resort!</p>
       <p>The previous shareholder's booking window has expired, which means your 48-hour window has started.</p>
-
+      
       <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
-        <strong>Your Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
+        <strong>Your Deadline: ${data.deadline_date} at ${data.deadline_time}</strong><br>
+        <span style="font-size: 0.85em; color: #1e3a8a;">${data.current_phase_detail}</span>
       </div>
 
       <div style="margin: 25px 0;">
