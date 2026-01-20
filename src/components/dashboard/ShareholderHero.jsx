@@ -270,23 +270,36 @@ export function ShareholderHero({
 
     const showTimer = status.windowEnds && (isYourTurn || queueInfo?.diff === 1 || isAdminView);
 
-    const TimerComponent = showTimer ? (
-        <div className={`mt-2 text-sm font-bold flex items-center justify-center lg:justify-start gap-2 ${isYourTurn ? 'text-blue-300' : 'text-indigo-300'}`}>
-            <Clock className="w-4 h-4" />
-            {isYourTurn ? "Your turn ends in:" : "Your turn starts within:"} {(() => {
-                if (!status.windowEnds) return '--';
-                const end = new Date(status.windowEnds);
-                // Use live 'now' state
-                if (end <= now) return 'Ending soon...';
+    const TimerComponent = null; // Replaced by DeadlineTimerDisplay below
 
-                const diff = intervalToDuration({ start: now, end });
-                const parts = [];
-                if (diff.days > 0) parts.push(`${diff.days}d`);
-                if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-
-                return parts.join(' ') || '< 1m';
-            })()}
+    // --- SHARED DEADLINE TIMER DISPLAY ---
+    // Extracted from Case B to be used in Case A and logic reused elsewhere
+    const DeadlineTimerDisplay = (showTimer && status.windowEnds) ? (
+        <div className="flex-1 min-w-[300px]">
+            <div className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {isYourTurn || activeDraft ? "Complete Request By" : "Turn Deadline"}
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
+                <div className="text-3xl md:text-4xl font-bold text-white tabular-nums tracking-tight">
+                    {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                </div>
+                <div className="bg-blue-900/50 px-3 py-1 rounded-lg border border-blue-500/30 text-blue-200 text-sm font-bold flex items-center gap-2 w-fit">
+                    Time remaining:
+                    <span className="text-white">
+                        {(() => {
+                            const end = new Date(status.windowEnds);
+                            if (end <= now) return 'Ending soon...';
+                            const diff = intervalToDuration({ start: now, end });
+                            const parts = [];
+                            if (diff.days > 0) parts.push(`${diff.days}d`);
+                            if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                            return parts.join(' ') || '< 1m';
+                        })()}
+                    </span>
+                </div>
+            </div>
         </div>
     ) : null;
 
@@ -333,9 +346,7 @@ export function ShareholderHero({
                         <div className="flex flex-col xl:flex-row gap-4 xl:items-end justify-between">
 
                             {/* Draft Timer / Info */}
-                            <div className="flex-1">
-                                {TimerComponent}
-                            </div>
+                            {DeadlineTimerDisplay}
 
                             {/* Actions */}
                             <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
