@@ -1403,11 +1403,29 @@ export function AdminDashboard() {
                                                         </div>
 
                                                         {isSlotBooked ? (
-                                                            <div className={`px-2 py-1 rounded text-[10px] font-bold border ${booking.isFinalized
-                                                                ? 'bg-green-50 text-green-700 border-green-200'
-                                                                : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                                                                {booking.isFinalized ? "FINALIZED" : "DRAFT"}
-                                                            </div>
+                                                            (() => {
+                                                                if (booking.type === 'pass' || booking.type === 'auto-pass') {
+                                                                    return (
+                                                                        <div className="px-2 py-1 rounded text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
+                                                                            PASSED
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                if (booking.type === 'cancelled') {
+                                                                    return (
+                                                                        <div className="px-2 py-1 rounded text-[10px] font-bold border bg-red-50 text-red-700 border-red-200">
+                                                                            CANCELLED
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <div className={`px-2 py-1 rounded text-[10px] font-bold border ${booking.isFinalized
+                                                                        ? 'bg-green-50 text-green-700 border-green-200'
+                                                                        : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                                                                        {booking.isFinalized ? "FINALIZED" : "DRAFT"}
+                                                                    </div>
+                                                                );
+                                                            })()
                                                         ) : (
                                                             <span className="text-xs text-slate-400 font-medium italic pr-2">Pending</span>
                                                         )}
