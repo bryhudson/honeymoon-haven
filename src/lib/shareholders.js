@@ -112,7 +112,12 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     }
     */
 
-    let currentWindowStart = new Date(DRAFT_START);
+    // STRICT RULE: The calculation cycle must effectively start from an Official 10 AM block.
+    // If DRAFT_START is set to "Jan 20, 9:00 AM", it effectively means the first 10am slot is Jan 20, 10:00 AM.
+    // If DRAFT_START is set to "Jan 20, 11:00 AM", it effectively means the first 10am slot is Jan 21, 10:00 AM.
+    // This assumes the admin's 'Start Date' is just a trigger, and the clock respects the 10am rule.
+    let currentWindowStart = getOfficialStart(DRAFT_START);
+
     let activePicker = null;
     let nextPicker = null;
     let activeWindowEnd = null;
@@ -170,8 +175,9 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                     activePicker = shareholderName;
                     nextPicker = fullTurnOrder[i + 1] || null;
                     activeWindowEnd = windowLimit;
-                    isGracePeriod = now < currentWindowStart;
                     isSeasonStart = (i === 0);
+                    // Special Rule: First person ignores Grace Period (Early Access active immediately)
+                    isGracePeriod = isSeasonStart ? false : (now < currentWindowStart);
                     phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                     break;
                 }
@@ -188,8 +194,9 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                 activePicker = shareholderName;
                 nextPicker = fullTurnOrder[i + 1] || null;
                 activeWindowEnd = windowLimit;
-                isGracePeriod = now < currentWindowStart;
                 isSeasonStart = (i === 0);
+                // Special Rule: First person ignores Grace Period (Early Access active immediately)
+                isGracePeriod = isSeasonStart ? false : (now < currentWindowStart);
                 phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                 break;
             }
@@ -231,7 +238,10 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
     const userTurnCounts = {};
     shareholders.forEach(s => userTurnCounts[s] = 0);
 
-    let currentWindowStart = new Date(DRAFT_START);
+
+
+    // Mirror calculateDraftSchedule logic: Start cursor aligned to Official 10 AM rule
+    let currentWindowStart = getOfficialStart(DRAFT_START);
     let hasFoundActive = false;
 
     for (let i = 0; i < fullTurnOrder.length; i++) {
@@ -280,7 +290,9 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
             } else if (!hasFoundActive) {
                 // This is the first person who isn't done.
                 hasFoundActive = true;
-                status = (now < windowStart) ? 'GRACE_PERIOD' : 'ACTIVE';
+                const isFirst = (i === 0);
+                // If first person, force ACTIVE (Early Access), otherwise check grace period
+                status = (isFirst || now >= windowStart) ? 'ACTIVE' : 'GRACE_PERIOD';
                 windowEnd = projectedLimit;
                 currentWindowStart = getOfficialStart(projectedLimit);
             } else {
