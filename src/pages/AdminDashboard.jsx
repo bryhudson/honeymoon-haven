@@ -1085,6 +1085,7 @@ export function AdminDashboard() {
                         activeTurn={activeTurn}
                         drafts={allBookings}
                         isTestMode={isTestMode}
+                        isSystemFrozen={isSystemFrozen}
                     />
                 )}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

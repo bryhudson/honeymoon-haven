@@ -5,8 +5,34 @@ import { format } from 'date-fns';
 export function AdminTurnHero({
     activeTurn,
     drafts,
-    isTestMode = false
+    isTestMode = false,
+    isSystemFrozen = false
 }) {
+    // 1. System Maintenance Overlay (Highest Priority)
+    if (isSystemFrozen) {
+        return (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+                <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left relative z-10">
+                    <div className="p-4 bg-amber-100 rounded-full text-amber-600 shrink-0">
+                        <AlertTriangle className="w-10 h-10" />
+                    </div>
+                    <div>
+                        <h2 className="text-3xl font-bold text-amber-900 mb-2">System Maintenance Active</h2>
+                        <p className="text-amber-800/80 text-lg">
+                            The booking system is currently frozen. Users cannot make new bookings or pass their turn.
+                            <br />
+                            <span className="text-sm font-bold mt-1 block text-amber-900/60">
+                                Use "End Maintenance" in System Config to resume.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                {/* Background Pattern */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-amber-200 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+            </div>
+        );
+    }
+
     if (!activeTurn) return null;
 
     // Find any active draft for this user
