@@ -166,11 +166,16 @@ export function ShareholderHero({
 
     // Helper: Render Split Round Badges
     const renderBadges = () => {
+        // Filter for cancellations
+        const cancelledActions = drafts.filter(b => b.shareholderName === shareholderName && b.type === 'cancelled').sort((a, b) => a.createdAt - b.createdAt);
+
         return (
             <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-2 mt-2">
                 {/* Round 1 Status Badge */}
                 {(() => {
                     const r1Action = myActions[0]; // Logic assumes chronological order
+                    const r1Cancelled = !r1Action && cancelledActions.length > 0; // Better logic needed if re-cancelled, but works for simpler cases
+
                     // Check if Round 1 is active relative to queue or phase
                     const isR1Queue = queueInfo && queueInfo.round === 1;
                     const isR1Turn = status.phase === 'ROUND_1' && isYourTurn;
@@ -190,6 +195,10 @@ export function ShareholderHero({
                             icon = <CheckCircle className="w-3 h-3" />;
                             text = isPaid ? "Paid" : "Confirmed";
                         }
+                    } else if (r1Cancelled) {
+                        bg = 'bg-red-900/50 text-red-200 border-red-500/30';
+                        icon = <XCircle className="w-3 h-3" />;
+                        text = "Cancelled";
                     } else if (isR1Turn) {
                         bg = 'bg-blue-900/50 text-blue-200 border-blue-500/30';
                         icon = <PlayCircle className="w-3 h-3" />;
@@ -211,10 +220,18 @@ export function ShareholderHero({
                 {/* Round 2 Status Badge */}
                 {(() => {
                     // Logic: Round 2 action is the second one if it exists
-                    // OR if R1 action exists, then the next 'myActions' slot would be R2?
-                    // Actually myActions only has Completed items.
-                    // If myActions has 2 items, r2Action is index 1.
                     const r2Action = myActions.length > 1 ? myActions[1] : null;
+                    const r2Cancelled = !r2Action && cancelledActions.length > (r2Action ? 2 : 1); // Simplistic check: If more cancellations than expected? Ideally we check Round IDs but we don't have them easily mapped here.
+                    // Actually, if R1 is done (or cancelled), and we have ANOTHER cancellation, then R2 is cancelled.
+                    const r1DoneOrCancelled = myActions.length > 0 || cancelledActions.length > 0;
+                    const isR2Cancelled = r1DoneOrCancelled && !r2Action && cancelledActions.length >= (myActions.length > 0 ? 1 : 2); // Very rough heuristic, assumes chronological.
+
+                    // Actually, better heuristic:
+                    // If we have 1 "good" action (R1 done), and 1 "cancelled" action (R2 cancelled).
+                    // If we have 0 "good" actions, and 2 "cancelled" actions (R1 cancelled, R2 cancelled).
+                    // If we have 0 "good" actions, and 1 "cancelled" action, it's R1 cancelled.
+
+                    const isR2CancelledHeuristic = (myActions.length === 1 && cancelledActions.length >= 1) || (myActions.length === 0 && cancelledActions.length >= 2);
 
                     const isR2Queue = queueInfo && queueInfo.round === 2;
                     // If R2 is active phase and R1 is done, and it's your turn
@@ -235,6 +252,10 @@ export function ShareholderHero({
                             icon = <CheckCircle className="w-3 h-3" />;
                             text = isPaid ? "Paid" : "Confirmed";
                         }
+                    } else if (isR2CancelledHeuristic) {
+                        bg = 'bg-red-900/50 text-red-200 border-red-500/30';
+                        icon = <XCircle className="w-3 h-3" />;
+                        text = "Cancelled";
                     } else if (isR2Turn) {
                         bg = 'bg-blue-900/50 text-blue-200 border-blue-500/30';
                         icon = <PlayCircle className="w-3 h-3" />;
