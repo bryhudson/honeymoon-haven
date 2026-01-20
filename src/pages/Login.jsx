@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.277 - Refactor: Unify email branding with Caravan logo</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.278 - Feat: Dynamic Email Notifications Editor in Admin Dashboard</p>
                 </p>
             </div>
         </div>

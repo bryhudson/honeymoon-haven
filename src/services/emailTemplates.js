@@ -55,7 +55,7 @@ const FOOTER_STYLES = `
 `;
 
 // Helper to wrap content in a basic HTML shell
-const wrapHtml = (title, bodyContent) => `
+export const wrapHtml = (title, bodyContent) => `
 <!DOCTYPE html>
 <html>
 <head>

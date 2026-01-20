@@ -20,6 +20,7 @@ import { ShareholderHero } from '../components/dashboard/ShareholderHero';
 import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { Users, UserPlus } from 'lucide-react';
+import { NotificationsTab } from '../components/admin/NotificationsTab';
 
 export function AdminDashboard() {
     const { currentUser } = useAuth();
@@ -1122,6 +1123,12 @@ export function AdminDashboard() {
                         Users & Roles
                     </button>
                     <button
+                        onClick={() => setActiveTab('notifications')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'notifications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                    >
+                        Notifications
+                    </button>
+                    <button
                         onClick={() => setActiveTab('system')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
@@ -1232,6 +1239,13 @@ export function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* Notifications Tab Content */}
+                {activeTab === 'notifications' && (
+                    <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <NotificationsTab triggerAlert={triggerAlert} triggerConfirm={triggerConfirm} />
                     </div>
                 )}
 

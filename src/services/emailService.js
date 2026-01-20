@@ -1,6 +1,8 @@
 import { functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { emailTemplates } from './emailTemplates';
+import { emailTemplates, wrapHtml } from './emailTemplates';
+import { db } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 // --- Constants ---
 const SEASON_CONFIG = {
@@ -13,15 +15,51 @@ const SEASON_CONFIG = {
  * Generic send function via Firebase Cloud Functions
  * Securely calls the backend to send email.
  */
+/**
+ * Helper: Replace {{variables}} in text
+ */
+const processTemplate = (text, data) => {
+    if (!text) return "";
+    return text.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+        return data[key] !== undefined ? data[key] : match;
+    });
+};
+
+/**
+ * Helper: Fetch Template from DB or use Fallback
+ */
+const getEffectiveTemplate = async (templateId, fallbackFn, data) => {
+    try {
+        const docRef = doc(db, "email_templates", templateId);
+        const snapshot = await getDoc(docRef);
+
+        if (snapshot.exists()) {
+            const dbTmpl = snapshot.data();
+            const subject = processTemplate(dbTmpl.subject, data);
+            const body = processTemplate(dbTmpl.body, data);
+            return {
+                subject,
+                htmlContent: wrapHtml(subject, body)
+            };
+        }
+    } catch (err) {
+        console.warn(`Failed to fetch dynamic template ${templateId}, using fallback.`, err);
+    }
+    // Fallback
+    return fallbackFn(data);
+};
+
 export const sendEmail = async ({ to, subject, htmlContent, templateId, params }) => {
     try {
         const sendEmailFunction = httpsCallable(functions, 'sendEmail');
 
+        // Note: We are now preferring pre-hydrated htmlContent over templateId
+        // to support client-side dynamic templates.
         const result = await sendEmailFunction({
             to,
             subject,
             htmlContent,
-            templateId,
+            templateId: htmlContent ? null : templateId,
             params
         });
 
@@ -29,7 +67,6 @@ export const sendEmail = async ({ to, subject, htmlContent, templateId, params }
         return result.data;
     } catch (error) {
         console.error('Failed to send email via backend:', error);
-        // Fallback or Alert could be triggered here
         throw error;
     }
 };
@@ -41,111 +78,98 @@ export const emailService = {
     // ID 1: "Booking Started" (Notification to NEXT user)
     // Used for: Turn Started, Turn Passed (Next), Auto Pass (Next)
     sendTurnStarted: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.turnStarted(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('turnStarted', emailTemplates.turnStarted, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendDailyReminder: async (recipient, data) => {
-        // ID 2: Morning, ID 3: Evening
-        const id = data.type === 'evening' ? 3 : 2;
+        // ID 2: Morning, ID 3: Evening - Mapped to 'reminder' key in DB
+        // We distinguish by checking data.type
+        const effectiveKey = 'reminder';
 
-        // Construct status message if not provided
-        const statusMsg = data.status_message || "Please check the dashboard to make your selection.";
-        const urgencyMsg = data.urgency_message || "The clock is ticking!";
+        // Ensure status/urgency are in data for replacement
+        const enrichedData = {
+            ...SEASON_CONFIG,
+            status_message: data.status_message || "Please check the dashboard to make your selection.",
+            urgency_message: data.urgency_message || "The clock is ticking!",
+            cabin_number: data.cabin_number || "?",
+            booking_url: `${data.dashboard_url}#book`,
+            ...data
+        };
+
+        const { subject, htmlContent } = await getEffectiveTemplate(effectiveKey, emailTemplates.reminder, enrichedData);
 
         return sendEmail({
             to: recipient,
-            templateId: id,
-            params: {
-                ...SEASON_CONFIG,
-                name: data.name,
-                hours_remaining: data.hours_remaining,
-                deadline_date: data.deadline_date,
-                deadline_time: data.deadline_time,
-                status_message: statusMsg,
-                urgency_message: urgencyMsg,
-                cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url,
-                booking_url: `${data.dashboard_url}#book`
-            }
+            subject,
+            htmlContent
         });
     },
 
     // ID 4: "Final Reminder (6hr)"
+    // ID 4: "Final Reminder (6hr)"
     sendFinalWarning: async (recipient, data) => {
-        return sendEmail({
-            to: recipient,
-            templateId: 4,
-            params: {
-                ...SEASON_CONFIG,
-                name: data.name,
-                hours_remaining: data.hours_remaining,
-                deadline_date: data.deadline_date,
-                deadline_time: data.deadline_time,
-                status_message: data.status_message || "Your turn is ending soon.",
-                next_shareholder: data.next_shareholder || "the next shareholder",
-                cabin_number: data.cabin_number || "?",
-                dashboard_url: data.dashboard_url,
-                booking_url: `${data.dashboard_url}#book`
-            }
-        });
+        const enrichedData = {
+            ...SEASON_CONFIG,
+            status_message: data.status_message || "Your turn is ending soon.",
+            next_shareholder: data.next_shareholder || "the next shareholder",
+            cabin_number: data.cabin_number || "?",
+            booking_url: `${data.dashboard_url}#book`,
+            ...data
+        };
+        const { subject, htmlContent } = await getEffectiveTemplate('finalWarning', emailTemplates.finalWarning, enrichedData);
+        return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     // ID 5: "Booking Finalized Confirmation"
+    // ID 5: "Booking Finalized Confirmation"
     sendBookingConfirmed: async (recipient, data) => {
-        return sendEmail({
-            to: recipient,
-            templateId: 5,
-            params: {
-                ...SEASON_CONFIG,
-                name: data.name,
-                check_in: data.check_in,
-                check_out: data.check_out,
-                cabin_number: data.cabin_number,
-                guests: data.guests || "1",
-                nights: data.nights || "0",
-                total_price: data.total_price,
-                dashboard_url: data.dashboard_url
-            }
-        });
+        const enrichedData = {
+            ...SEASON_CONFIG,
+            guests: data.guests || "1",
+            nights: data.nights || "0",
+            ...data
+        };
+        const { subject, htmlContent } = await getEffectiveTemplate('bookingConfirmed', emailTemplates.bookingConfirmed, enrichedData);
+        return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     // --- Legacy / Missing Templates (Reuse ID 1 or Fallback) ---
 
     sendTurnPassedCurrent: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.turnPassedCurrent(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('turnPassedCurrent', emailTemplates.turnPassedCurrent, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendTurnPassedNext: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.turnPassedNext(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('turnPassedNext', emailTemplates.turnPassedNext, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendAutoPassCurrent: async (recipient, data) => {
         // No template for "You missed your turn" yet? 
         // Fallback to text for now.
-        const { subject, htmlContent } = emailTemplates.autoPassCurrent(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('autoPassCurrent', emailTemplates.autoPassCurrent, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendAutoPassNext: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.autoPassNext(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('autoPassNext', emailTemplates.autoPassNext, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendBookingCancelled: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.bookingCancelled(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('bookingCancelled', emailTemplates.bookingCancelled, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendPaymentReminder: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.paymentReminder(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('paymentReminder', emailTemplates.paymentReminder, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
     sendPaymentReceived: async (recipient, data) => {
-        const { subject, htmlContent } = emailTemplates.paymentReceived(data);
+        const { subject, htmlContent } = await getEffectiveTemplate('paymentReceived', emailTemplates.paymentReceived, data);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
