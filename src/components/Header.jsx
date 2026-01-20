@@ -91,6 +91,11 @@ export function Header() {
                     )}
                 </div>
             </div>
-        </header >
+            <FeedbackModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
+                shareholderName={loggedInShareholder}
+            />
+        </header>
     );
 }
