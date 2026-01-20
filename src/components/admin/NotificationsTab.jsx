@@ -8,7 +8,7 @@ import { Loader2, Mail, RefreshCw, Undo, Save, Info } from 'lucide-react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
-export function NotificationsTab({ triggerAlert, triggerConfirm }) {
+export function NotificationsTab({ triggerAlert, triggerConfirm, currentUser, requireAuth }) {
     const [templates, setTemplates] = useState({});
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
@@ -56,19 +56,33 @@ export function NotificationsTab({ triggerAlert, triggerConfirm }) {
 
     const handleSave = async () => {
         if (!editingId) return;
-        try {
-            await setDoc(doc(db, "email_templates", editingId), {
-                id: editingId,
-                subject: editForm.subject,
-                body: editForm.body,
-                updatedAt: new Date()
-            });
-            triggerAlert("Success", "Template saved.");
-            setEditingId(null);
-            fetchTemplates();
-        } catch (err) {
-            triggerAlert("Error", err.message);
+
+        // Security Check: Whitelist Logic
+        const ALLOWED_EMAIL = "bryan.m.hudson@gmail.com";
+        if (currentUser?.email !== ALLOWED_EMAIL) {
+            return triggerAlert("Access Denied", "Only the primary admin (bryan.m.hudson@gmail.com) can modify email templates.");
         }
+
+        // Require Password Re-authentication
+        requireAuth(
+            "Protected Action",
+            "Modifying system email templates requires password verification.",
+            async () => {
+                try {
+                    await setDoc(doc(db, "email_templates", editingId), {
+                        id: editingId,
+                        subject: editForm.subject,
+                        body: editForm.body,
+                        updatedAt: new Date()
+                    });
+                    triggerAlert("Success", "Template saved.");
+                    setEditingId(null);
+                    fetchTemplates();
+                } catch (err) {
+                    triggerAlert("Error", err.message);
+                }
+            }
+        );
     };
 
     const handleReset = () => {

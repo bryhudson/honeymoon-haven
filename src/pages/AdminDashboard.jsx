@@ -1217,7 +1217,12 @@ export function AdminDashboard() {
                 {/* Notifications Tab Content */}
                 {activeTab === 'notifications' && (
                     <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <NotificationsTab triggerAlert={triggerAlert} triggerConfirm={triggerConfirm} />
+                        <NotificationsTab
+                            triggerAlert={triggerAlert}
+                            triggerConfirm={triggerConfirm}
+                            currentUser={currentUser}
+                            requireAuth={requireAuth}
+                        />
                     </div>
                 )}
 
