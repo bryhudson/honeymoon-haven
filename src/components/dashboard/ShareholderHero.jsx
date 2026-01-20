@@ -727,17 +727,48 @@ export function ShareholderHero({
                     </div>
 
                     {/* Progress / Info Bar */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-md w-full md:w-fit min-w-[300px]">
-                        <div className="flex items-center justify-between gap-8">
-                            <div>
-                                <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Current Round</div>
-                                <div className="text-lg font-bold text-white">Round {currentOrder?.round || 1}</div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Queue Size</div>
-                                <div className="text-lg font-bold text-white">{currentOrder?.length || 0} Shareholders</div>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-md w-full md:w-fit min-w-[300px]">
+                            <div className="flex items-center justify-between gap-8">
+                                <div>
+                                    <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Current Round</div>
+                                    <div className="text-lg font-bold text-white">Round {currentOrder?.round || 1}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Queue Size</div>
+                                    <div className="text-lg font-bold text-white">{currentOrder?.length || 0} Shareholders</div>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Active Turn Deadline (Observer View) */}
+                        {status.windowEnds && !isJustPassed && (
+                            <div className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 md:p-5 backdrop-blur-md w-full md:w-fit min-w-[300px]">
+                                <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    Active Turn Ends
+                                </div>
+                                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
+                                    <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                        {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                    </div>
+                                    <div className="bg-indigo-900/50 px-2 py-1 rounded-lg border border-indigo-500/30 text-indigo-200 text-xs font-bold w-fit">
+                                        Time left: <span className="text-white">
+                                            {(() => {
+                                                const end = new Date(status.windowEnds);
+                                                if (end <= now) return 'Ending...';
+                                                const diff = intervalToDuration({ start: now, end });
+                                                const parts = [];
+                                                if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                return parts.join(' ') || '< 1m';
+                                            })()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.294 - UI: Modernize Shareholder Hero Waiting State</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.295 - UI: Add Deadline to Shareholder Hero Waiting Banner</p>
                 </p>
             </div>
         </div>
