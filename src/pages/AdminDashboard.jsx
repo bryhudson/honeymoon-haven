@@ -827,7 +827,7 @@ export function AdminDashboard() {
     // --- Derived Schedule & Active Turn ---
     const { schedule, activeTurn } = React.useMemo(() => {
         const currentOrder = getShareholderOrder(2026);
-        const sched = mapOrderToSchedule(currentOrder, allBookings);
+        const sched = mapOrderToSchedule(currentOrder, allBookings, currentSimDate);
 
         // Use drafted status OR fallback to schedule calculation
         let active = null;
@@ -841,7 +841,7 @@ export function AdminDashboard() {
         }
 
         return { schedule: sched, activeTurn: active };
-    }, [allBookings, draftStatus]);
+    }, [allBookings, draftStatus, currentSimDate]);
 
 
 
