@@ -583,14 +583,71 @@ export function ShareholderHero({
 
     }
 
-    // --- CASE D: Waiting (or Cancelled) ---
-
-    // Special check: Did they cancel their turn this round?
-    // We look for a booking that is: Mine, Finalized, Cancelled, and (if strict round logic applied) matches this round.
-    // For now, we just check if the MOST RECENT action was a cancellation and they are not currently the active picker.
+    // --- CASE D: Booking Cancelled ---
+    // Moved up to have its own dedicated Hero style
     const latestAction = drafts
         .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
+
+    if (latestAction?.type === 'cancelled' && !isYourTurn) {
+        return (
+            <div className="bg-slate-900 text-white rounded-xl p-5 md:p-6 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+                {/* Abstract Background Shapes - Red/Rose for Cancellation */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-red-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-rose-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+
+                <div className="relative z-10 flex flex-col gap-4">
+                    {/* Header Row */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h1 className="text-xl md:text-2xl font-medium text-red-200">
+                            Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                        </h1>
+                        <div id="tour-status">
+                            {renderBadges()}
+                        </div>
+                    </div>
+
+                    {/* Hero Message */}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                            <XCircle className="w-8 h-8 text-red-500" />
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                                Booking Cancelled
+                            </h2>
+                        </div>
+                        <p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
+                            Your previous booking was cancelled. You have returned to the queue and will be able to book again when your turn comes up in the next available round or open season.
+                        </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm mt-1 flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        <button
+                            onClick={() => onViewDetails(latestAction)}
+                            className="px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
+                        >
+                            <Info className="w-5 h-5" />
+                            View Cancelled Details
+                        </button>
+                        <button
+                            onClick={onViewSchedule}
+                            className="px-6 py-3 bg-slate-800 text-slate-200 font-bold rounded-xl hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Calendar className="w-5 h-5" />
+                            Check Schedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- CASE E: Waiting (Queue) ---
+    // Special check: Did they cancel their turn this round?
+    // We look for a booking that is: Mine, Finalized, Cancelled, and (if strict round logic applied) matches this round.
+    // For now, we just check if the MOST RECENT action was a cancellation and they are not currently the active picker.
+
+    // Note: 'latestAction' is already calculated above.
 
     const isJustCancelled = latestAction && latestAction.type === 'cancelled';
     const isJustPassed = latestAction && latestAction.type === 'pass';
@@ -622,17 +679,17 @@ export function ShareholderHero({
 
                     {/* PRIMARY: MY STATUS */}
                     <div className="bg-white/10 border border-white/10 rounded-xl p-5 md:p-6 backdrop-blur-sm flex flex-col justify-center">
-                        {isJustCancelled ? (
+                        {isJustPassed ? (
                             <div className="space-y-2">
                                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                                    Booking Cancelled
+                                    Turn Passed
                                 </h2>
                                 <p className="text-sm text-indigo-200/80 leading-relaxed">
-                                    You'll rejoin next round.
+                                    See you next round!
                                 </p>
                             </div>
-                        ) : isJustPassed ? (
+                        ) : status.phase === 'PRE_DRAFT' ? (
                             <div className="space-y-2">
                                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-slate-400"></div>
@@ -675,7 +732,7 @@ export function ShareholderHero({
                     </div>
 
                     {/* SECONDARY: CURRENT ACTIVITY */}
-                    {!isJustCancelled && !isJustPassed && (
+                    {!isJustPassed && (
                         <div className="bg-indigo-900/20 border border-indigo-500/10 rounded-xl p-5 md:p-6 flex flex-col justify-center">
                             {status.phase === 'PRE_DRAFT' ? (
                                 <div className="space-y-2">
