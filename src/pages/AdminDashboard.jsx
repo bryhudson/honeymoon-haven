@@ -18,6 +18,7 @@ import { CreateUserModal } from '../components/CreateUserModal';
 import { AdminCalendarView } from '../components/AdminCalendarView';
 import { ShareholderHero } from '../components/dashboard/ShareholderHero';
 import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
+import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { Users, UserPlus } from 'lucide-react';
 
 export function AdminDashboard() {
@@ -1288,6 +1289,16 @@ export function AdminDashboard() {
                                         <h3 className="text-2xl font-bold text-slate-900">{analytics.totalNights}</h3>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Season Schedule Table (New) */}
+                            <div className="mb-8">
+                                <SeasonSchedule
+                                    currentOrder={getShareholderOrder(2026)}
+                                    allDraftRecords={allBookings}
+                                    status={draftStatus || { phase: 'PRE_DRAFT' }}
+                                    startDateOverride={currentSimDate}
+                                />
                             </div>
                         </div>
 
