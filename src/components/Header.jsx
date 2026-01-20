@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tent, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
+import { Caravan, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useBookingRealtime } from '../hooks/useBookingRealtime';
@@ -43,7 +43,7 @@ export function Header() {
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
                     <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:opacity-80 transition-opacity">
-                        <Tent className="h-8 w-8" />
+                        <Caravan className="h-8 w-8" />
                         <span className="hidden md:inline">Honeymoon Haven Resort - Trailer Booking App</span>
                         <span className="md:hidden">HHR Booking</span>
                     </Link>
