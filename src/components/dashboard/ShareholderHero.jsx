@@ -604,8 +604,8 @@ export function ShareholderHero({
                             )
                         )}
 
-                        {/* Timer only relevant if Up Next */}
-                        {queueInfo?.diff === 1 && TimerComponent}
+                        {/* Timer is logic-gated by 'showTimer', so just render it */}
+                        {TimerComponent}
                     </div>
                 </div>
 
