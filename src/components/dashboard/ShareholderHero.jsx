@@ -359,16 +359,16 @@ export function ShareholderHero({
     // --- CASE B: Your Turn (No Draft) ---
     if (isYourTurn) {
         return (
-            <div className="bg-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+            <div className="bg-slate-900 text-white rounded-xl p-5 md:p-6 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
                 {/* Abstract Background Shapes */}
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-slate-800 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-slate-800 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-                <div className="relative z-10 flex flex-col gap-8">
+                <div className="relative z-10 flex flex-col gap-4">
                     {/* TOP HEADER ROW: Welcome & Badges */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-1">
-                            <h1 className="text-2xl md:text-3xl font-medium text-blue-200">
+                            <h1 className="text-xl md:text-2xl font-medium text-blue-200">
                                 Welcome, <span className="text-white font-bold">{shareholderName}</span>
                             </h1>
                         </div>
@@ -384,18 +384,18 @@ export function ShareholderHero({
                     </div>
 
                     {/* MAIN HERO MESSAGE */}
-                    <div className="space-y-4">
-                        <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-md">
+                    <div className="space-y-2">
+                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">
                             It's Your Turn
                         </h2>
-                        <p className="text-xl md:text-2xl text-blue-100/90 font-light leading-relaxed max-w-3xl">
+                        <p className="text-lg text-blue-100/90 font-light leading-relaxed max-w-3xl">
                             The calendar is yours! Please select your dates or pass your turn to the next shareholder.
                         </p>
                     </div>
 
                     {/* ACTION BAR: Timer & Buttons */}
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-sm mt-2">
-                        <div className="flex flex-col xl:flex-row gap-8 xl:items-end justify-between">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm mt-1">
+                        <div className="flex flex-col xl:flex-row gap-4 xl:items-end justify-between">
 
                             {/* DEADLINE TIMER */}
                             {showTimer && status.windowEnds && (
@@ -580,55 +580,84 @@ export function ShareholderHero({
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     return (
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 md:p-6 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
             {/* Background Flair - Aligning with AdminTurnHero (Indigo/Purple Theme) */}
             <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
 
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                <div className="space-y-4 text-center lg:text-left max-w-2xl">
-                    <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-                        Welcome, {shareholderName}
+            <div className="relative z-10 flex flex-col gap-4">
+                {/* Header Row */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h1 className="text-xl md:text-2xl font-medium text-indigo-200">
+                        Welcome, <span className="text-white font-bold">{shareholderName}</span>
                     </h1>
-
                     <div id="tour-status">
                         {renderBadges()}
                     </div>
+                </div>
 
-                    <div className="text-lg text-slate-300 leading-relaxed">
-                        {isJustCancelled ? (
-                            <span className="text-slate-200">
+                {/* Status Card */}
+                {/* Status Card */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm shadow-inner min-h-[160px] flex flex-col justify-center">
+
+                    {isJustCancelled ? (
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                Booking Cancelled
+                            </h2>
+                            <p className="text-lg text-indigo-200/80 leading-relaxed max-w-2xl">
                                 You have cancelled your booking. No worries! You can rejoin the action when the next round opens or if another spot becomes available.
-                                <br />
-                                <span className="text-sm opacity-70 mt-1 block">In the meantime, sit back and relax.</span>
-                            </span>
-                        ) : isJustPassed ? (
-                            <span className="text-slate-200">
+                            </p>
+                        </div>
+                    ) : isJustPassed ? (
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                Turn Passed
+                            </h2>
+                            <p className="text-lg text-indigo-200/80 leading-relaxed max-w-2xl">
                                 You have passed your turn for this round. We'll let you know when the next round begins!
-                                <br />
-                                <span className="text-sm opacity-70 mt-1 block">Enjoy the break!</span>
-                            </span>
-                        ) : (
-                            status.phase === 'PRE_DRAFT' ? (
-                                <span>
-                                    The 2026 Draft begins on <span className="font-bold text-white">{status.draftStart ? format(status.draftStart, 'MMMM do') : 'March 1st'}</span>.
-                                    <br className="hidden md:block" />
-                                    First up: <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">{status.nextPicker}</span>.
-                                </span>
-                            ) : (
-                                <span>
-                                    Waiting for <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">{status.activePicker}</span> to finish their turn.
-                                </span>
-                            )
-                        )}
+                            </p>
+                        </div>
+                    ) : status.phase === 'PRE_DRAFT' ? (
+                        <div className="space-y-3">
+                            <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Draft Starts Soon
+                            </h2>
+                            <div className="text-3xl font-bold text-white">
+                                {status.draftStart ? format(status.draftStart, 'MMMM do') : 'March 1st'}
+                            </div>
+                            <p className="text-indigo-200/80">
+                                First up: <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded">{status.nextPicker}</span>
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+                                Current Booking Status
+                            </h2>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-2xl md:text-3xl font-bold text-white tracking-tight">
+                                <span className="opacity-60 text-indigo-300 font-light">Waiting for</span>
+                                <span className="text-indigo-100 border-b-2 border-indigo-500/30 pb-1">{status.activePicker}</span>
+                            </div>
+                            <p className="text-indigo-200/60 text-lg">
+                                to finish their turn.
+                            </p>
+                        </div>
+                    )}
 
-                        {/* Timer is logic-gated by 'showTimer', so just render it */}
+                    {/* Timer Component (Injected if relevant) */}
+                    <div className="mt-6">
                         {TimerComponent}
                     </div>
                 </div>
 
-                <div id="tour-actions" className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
-                    {upcomingBooking && (
+                {/* Footer Actions */}
+                {upcomingBooking && (
+                    <div id="tour-actions" className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(upcomingBooking)}
                             className="px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
@@ -636,13 +665,15 @@ export function ShareholderHero({
                             <Info className="w-5 h-5" />
                             View Details
                         </button>
-                    )}
+                    </div>
+                )}
 
 
 
 
-                </div>
+
             </div>
         </div>
+
     );
 }
