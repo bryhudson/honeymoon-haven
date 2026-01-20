@@ -28,22 +28,11 @@ export function Header() {
     // Hardcoded Admin Check (for now)
     const isAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
 
-    // Fetch Active Picker for Masquerade (Admin Only)
-    const [masqueradeTarget, setMasqueradeTarget] = useState(null);
-
-    React.useEffect(() => {
-        if (!isAdmin) return;
-
-        // Listen to draft status to find active picker
-        const unsub = onSnapshot(doc(db, "status", "draftStatus"), (doc) => {
-            if (doc.exists() && doc.data().activePicker) {
-                setMasqueradeTarget(doc.data().activePicker);
-            } else {
-                setMasqueradeTarget(null);
-            }
-        });
-        return () => unsub();
-    }, [isAdmin]);
+    // Fetch Active Picker for Masquerade (Admin Only) using the robust hook
+    // Note: This adds a listener to bookings/settings even on non-dashboard pages, 
+    // but ensures the link is accurate.
+    const { status } = useBookingRealtime();
+    const masqueradeTarget = isAdmin ? status?.activePicker : null;
 
     const viewAsLink = masqueradeTarget
         ? `/?masquerade=${encodeURIComponent(masqueradeTarget)}`
