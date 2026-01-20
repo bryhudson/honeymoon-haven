@@ -618,20 +618,12 @@ export function Dashboard() {
                         2026 Season Schedule
                     </button>
                     <button
-                        id="tour-calendar"
-                        onClick={() => setActiveTab('calendar')}
-                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'calendar' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Calendar className="w-4 h-4" />
-                        Calendar View
-                    </button>
-                    <button
                         id="tour-recent"
                         onClick={() => setActiveTab('bookings')}
                         className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
-                        <User className="w-4 h-4" />
-                        Recent Bookings
+                        <Calendar className="w-4 h-4" />
+                        Bookings (Calendar & List)
                     </button>
                     <button
                         id="tour-guide"
@@ -659,12 +651,7 @@ export function Dashboard() {
                     </div>
                 )}
 
-                {/* 2. CALENDAR VIEW */}
-                {activeTab === 'calendar' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <ShareholderCalendarView bookings={allDraftRecords} />
-                    </div>
-                )}
+                {/* 2. BOOKINGS VIEW (Consolidated) */}
 
                 {/* 3. MY BOOKINGS */}
                 {activeTab === 'bookings' && (
@@ -885,7 +872,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.257 - Refactor: Unified Bookings Tab</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.258 - Feat: Unified Bookings Tab (Final)</p>
 
 
             </div>
