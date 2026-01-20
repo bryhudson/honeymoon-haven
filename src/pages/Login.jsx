@@ -23,7 +23,7 @@ export function Login() {
             await login(email, password);
 
             // SECURITY CHECK: Verify user is a shareholder
-            if (email === 'bryan.m.hudson@gmail.com') {
+            if (email === 'bryan.m.hudson@gmail.com' || email === 'honeymoonhavenresort.lc@gmail.com') {
                 navigate('/admin');
             } else {
                 // Check if email exists in shareholders collection
@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.220 - Wipe Fix</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.221 - Wipe Fix</p>
                 </p>
             </div>
         </div>
