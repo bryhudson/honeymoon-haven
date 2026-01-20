@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.285 - Fix: Update R1/R2 status badges to show Cancelled state</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.286 - Feat: Add Visual Editor and Live Preview for Email Templates</p>
                 </p>
             </div>
         </div>

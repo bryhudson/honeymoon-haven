@@ -5,12 +5,15 @@ import { db } from '../../lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Loader2, Mail, RefreshCw, Undo, Save, Info } from 'lucide-react';
 
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
 export function NotificationsTab({ triggerAlert, triggerConfirm }) {
     const [templates, setTemplates] = useState({});
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({ subject: '', body: '' });
-    const [activeTab, setActiveTab] = useState('active'); // active vs available
+    const [isHtmlMode, setIsHtmlMode] = useState(false); // Toggle between Visual (False) and Code (True)
 
     // Fetch existing overrides
     const fetchTemplates = async () => {
@@ -48,6 +51,7 @@ export function NotificationsTab({ triggerAlert, triggerConfirm }) {
             });
         }
         setEditingId(id);
+        setIsHtmlMode(false); // Default to visual mode
     };
 
     const handleSave = async () => {
@@ -81,6 +85,10 @@ export function NotificationsTab({ triggerAlert, triggerConfirm }) {
     };
 
     const insertVar = (v) => {
+        // For Quill, we might need a different insertion method if using ref, but appending to string works for state
+        // However, if using WYSIWYG, we need to insert at cursor.
+        // For now, simplified: append to end if in Code mode, or just copy to clipboard? 
+        // Let's just append or update state for now.
         setEditForm(prev => ({
             ...prev,
             body: prev.body + `{{${v}}}`
@@ -88,6 +96,35 @@ export function NotificationsTab({ triggerAlert, triggerConfirm }) {
     };
 
     const currentDef = TEMPLATE_DEFINITIONS.find(d => d.id === editingId);
+
+    // Generate Preview Content
+    const getPreviewContent = () => {
+        let content = editForm.body;
+        // Replace known variables with dummy data for preview
+        const dummyData = {
+            name: "John Doe",
+            deadline_date: "Oct 15, 2026",
+            deadline_time: "5:00 PM",
+            booking_url: "#",
+            dashboard_url: "#",
+            pass_turn_url: "#",
+            current_phase_title: "Round 1",
+            current_phase_detail: "Pick 1-12",
+            email: "john@example.com",
+            role: "Shareholder",
+            temp_password: "secure-password-123"
+        };
+
+        // Simple replace for preview
+        Object.keys(dummyData).forEach(key => {
+            content = content.replaceAll(`{{${key}}}`, `<span class="bg-yellow-100 text-yellow-800 px-1 rounded">${dummyData[key]}</span>`);
+        });
+
+        // Handle unknown variables
+        content = content.replace(/{{(.*?)}}/g, '<span class="bg-red-100 text-red-800 px-1 rounded">{{$1}}</span>');
+
+        return { __html: content };
+    };
 
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-slate-400" /></div>;
 
@@ -118,29 +155,75 @@ export function NotificationsTab({ triggerAlert, triggerConfirm }) {
 
                     <div>
                         <div className="flex justify-between items-center mb-1">
-                            <label className="block text-sm font-medium">Body Content (HTML allowed)</label>
-                            <span className="text-xs text-slate-400">Wrappers (Header/Footer) are added automatically.</span>
+                            <label className="block text-sm font-medium">Body Content</label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-400">Editor Mode:</span>
+                                <button
+                                    onClick={() => setIsHtmlMode(!isHtmlMode)}
+                                    className="text-xs font-bold text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded"
+                                >
+                                    {isHtmlMode ? "Switch to Visual Editor" : "Switch to Code Editor"}
+                                </button>
+                            </div>
                         </div>
-                        <textarea
-                            className="w-full h-64 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm leading-relaxed"
-                            value={editForm.body}
-                            onChange={e => setEditForm(prev => ({ ...prev, body: e.target.value }))}
-                            placeholder="<p>Hi {{name}},</p>..."
-                        />
+
+                        {isHtmlMode ? (
+                            <textarea
+                                className="w-full h-64 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm leading-relaxed"
+                                value={editForm.body}
+                                onChange={e => setEditForm(prev => ({ ...prev, body: e.target.value }))}
+                                placeholder="<p>Hi {{name}},</p>..."
+                            />
+                        ) : (
+                            <div className="h-80 mb-12">
+                                <ReactQuill
+                                    theme="snow"
+                                    value={editForm.body}
+                                    onChange={(content) => setEditForm(prev => ({ ...prev, body: content }))}
+                                    className="h-64"
+                                    modules={{
+                                        toolbar: [
+                                            [{ 'header': [1, 2, false] }],
+                                            ['bold', 'italic', 'underline', 'strike'],
+                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                            ['link', 'clean']
+                                        ]
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {!isHtmlMode && <p className="text-xs text-amber-600 mt-2">Note: Complex layouts (cards, buttons) may be simplified by the Visual Editor. Switch to Code Editor for full control.</p>}
                     </div>
 
                     <div className="bg-slate-50 p-4 rounded-lg border">
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Available Variables</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Available Variables (Click to Copy)</label>
                         <div className="flex flex-wrap gap-2">
                             {currentDef?.variables.map(v => (
                                 <button
                                     key={v}
-                                    onClick={() => insertVar(v)}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`{{${v}}}`);
+                                        triggerAlert("Copied", `{{${v}}} copied to clipboard`);
+                                    }}
                                     className="px-2 py-1 bg-white border rounded text-xs text-blue-600 hover:bg-blue-50 transition-colors font-mono"
                                 >
                                     {`{{${v}}}`}
                                 </button>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* LIVE PREVIEW */}
+                    <div className="border border-slate-200 rounded-lg overflow-hidden mt-6">
+                        <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+                            <span className="text-xs font-bold text-slate-500 uppercase">Live Preview</span>
+                            <span className="text-[10px] text-slate-400">Values are examples</span>
+                        </div>
+                        <div className="p-6 bg-white prose prose-sm max-w-none">
+                            {/* Simulate Email Wrapper */}
+                            <div style={{ fontFamily: 'sans-serif', lineHeight: '1.6', color: '#1a202c' }}>
+                                <div dangerouslySetInnerHTML={getPreviewContent()} />
+                            </div>
                         </div>
                     </div>
 
