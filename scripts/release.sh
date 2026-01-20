@@ -19,7 +19,7 @@ echo ""
 
 # 1.5 Bump Version
 echo "📈 Step 0: Bumping Version..."
-node scripts/bump.cjs
+node scripts/bump.cjs "$MSG"
 if [ $? -ne 0 ]; then
     echo "❌ Version Bump Failed."
     exit 1

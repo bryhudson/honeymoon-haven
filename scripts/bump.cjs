@@ -4,6 +4,8 @@ const path = require('path');
 
 async function main() {
     try {
+        const commitMsg = process.argv[2] || '';
+
         // 1. Update package.json
         const pkgPath = path.join(__dirname, '../package.json');
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
@@ -24,10 +26,31 @@ async function main() {
         const oldVerString = `v${oldVersion}`;
         const newVerString = `v${newVersion}`;
 
+        // Regex to replace version AND description: v2.68.251 - .*</p>
+        // We look for patterns like: >v2.68.250 - Wipe Fix</p>
+
+        let didUpdate = false;
+
+        // Strategy: First simple replace of version number (legacy compat)
         if (dbContent.includes(oldVerString)) {
-            dbContent = dbContent.replace(oldVerString, newVerString);
+            // If we have a commit message, try to update the whole string
+            if (commitMsg) {
+                // Regex: vOldVersion - CurrentMsg
+                // CAUTION: The hyphen might be part of the user manual edits.
+                const regex = new RegExp(`v${oldVersion.replace(/\./g, '\\.')}\\s*-\\s*[^<]*`, 'g');
+                if (regex.test(dbContent)) {
+                    dbContent = dbContent.replace(regex, `${newVerString} - ${commitMsg}`);
+                    didUpdate = true;
+                }
+            }
+
+            // If regex failed or no commit msg, just bump version number
+            if (!didUpdate) {
+                dbContent = dbContent.replace(oldVerString, newVerString);
+            }
+
             fs.writeFileSync(dbPath, dbContent);
-            console.log(`Updated Dashboard.jsx: ${oldVerString} -> ${newVerString}`);
+            console.log(`Updated Dashboard.jsx: ${oldVerString} -> ${newVerString} (Msg: ${commitMsg || 'kept'})`);
         } else {
             console.warn(`Warning: Could not find version string "${oldVerString}" in Dashboard.jsx`);
         }
@@ -37,7 +60,19 @@ async function main() {
         let loginContent = fs.readFileSync(loginPath, 'utf8');
 
         if (loginContent.includes(oldVerString)) {
-            loginContent = loginContent.replace(oldVerString, newVerString);
+            // Reuse same logic for Login
+            let didUpdateLogin = false;
+            if (commitMsg) {
+                const regex = new RegExp(`v${oldVersion.replace(/\./g, '\\.')}\\s*-\\s*[^<]*`, 'g');
+                if (regex.test(loginContent)) {
+                    loginContent = loginContent.replace(regex, `${newVerString} - ${commitMsg}`);
+                    didUpdateLogin = true;
+                }
+            }
+            if (!didUpdateLogin) {
+                loginContent = loginContent.replace(oldVerString, newVerString);
+            }
+
             fs.writeFileSync(loginPath, loginContent);
             console.log(`Updated Login.jsx: ${oldVerString} -> ${newVerString}`);
         } else {
