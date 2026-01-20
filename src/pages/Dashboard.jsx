@@ -97,6 +97,7 @@ export function Dashboard() {
 
         if (!currentUser?.email) return null;
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
+        if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
         // Use dynamic list
         const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
@@ -866,7 +867,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.223 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.224 - Wipe Fix</p>
 
 
             </div>
