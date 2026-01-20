@@ -27,13 +27,17 @@ export function ShareholderHero({
     if (!shareholderName) return null;
 
     // --- QUEUE CALCULATION (Moved to top to avoid ReferenceError) ---
+    // Define Admin Persona Check at top-level so it can be used in Timer logic too
+    const isAdminPersona = shareholderName === 'HHR Admin' || shareholderName === 'Bryan';
+
     const queueInfo = React.useMemo(() => {
+        if (!currentOrder || !status || !shareholderName) return null;
+
         if (!currentOrder || !status || !shareholderName) return null;
 
         // ADMIN OVERRIDE: If name is Admin/Bryan but they are not in the list, return a mock object
         // so they can see the "Active Turn" or "Waiting" UI without crashing or return null
-        const isAdminPersona = shareholderName === 'HHR Admin' || shareholderName === 'Bryan';
-        // Note: 'Bryan' might actually be in the list if he's playing. 'HHR Admin' is definitely not.
+        // Note: 'Bryan' might actually be in the list if he's playing.List check handles that below.
 
         const fullTurnOrder = [...currentOrder, ...[...currentOrder].reverse()];
         let activeIndex = -1;
@@ -255,7 +259,14 @@ export function ShareholderHero({
     // Only show if windowEnds is defined AND (it's my turn OR I'm up next)
     // --- TIMER LOGIC (Unified) ---
     // Only show if windowEnds is defined AND (it's my turn OR I'm up next OR I'm an admin)
-    const isAdminView = isSuperAdmin || currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
+    // --- TIMER LOGIC (Unified) ---
+    // Only show if windowEnds is defined AND (it's my turn OR I'm up next OR I'm an admin/persona)
+    const isAdminView = isSuperAdmin
+        || isAdminPersona
+        || currentUser?.role === 'admin'
+        || currentUser?.role === 'super_admin'
+        || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
+
     const showTimer = status.windowEnds && (isYourTurn || queueInfo?.diff === 1 || isAdminView);
 
     const TimerComponent = showTimer ? (
