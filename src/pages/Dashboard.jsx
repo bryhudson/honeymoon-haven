@@ -581,341 +581,355 @@ export function Dashboard() {
             {/* Tour Guide */}
             <OnboardingTour currentUser={currentUser} />
 
-            {/* MASQUERADE BANNER */}
-            {masqueradeAs && (
-                <div className="bg-purple-100 border-l-4 border-purple-600 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2 mb-2">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-200 rounded-full text-purple-700">
-                            <User className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-purple-900 text-lg">Viewing as Shareholder ({masqueradeAs})</h3>
-                            <p className="text-sm text-purple-800/80 font-medium">
-                                You are seeing the dashboard exactly as {masqueradeAs} sees it. This is a read-only admin preview.
-                            </p>
-                        </div>
-                    </div>
+            {/* LOADING STATE */}
+            {loading && (
+                <div className="animate-pulse space-y-6">
+                    {/* Hero Skeleton */}
+                    <div className="h-64 bg-slate-200 rounded-3xl w-full"></div>
+                    {/* Schedule Skeleton */}
+                    <div className="h-96 bg-slate-100 rounded-3xl w-full"></div>
                 </div>
             )}
 
-            {isSystemFrozen && (
-                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-amber-100 rounded-full text-amber-600">
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-amber-900 text-lg">Maintenance Mode</h3>
-                            <p className="text-sm text-amber-800/80 font-medium">
-                                We are currently performing system updates. Booking actions are temporarily paused.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* --- NEW HEADER: Shareholder Hero --- */}
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-sm font-bold tracking-tight text-slate-400 uppercase">Shareholder Dashboard</h1>
-
-            </div>
-
-            <ShareholderHero
-                currentUser={currentUser}
-                status={status}
-                shareholderName={loggedInShareholder}
-                drafts={allDraftRecords}
-                onOpenBooking={() => setIsBooking(true)}
-                onFinalize={handleFinalize}
-                onPass={() => {
-                    if (status.phase === 'PRE_DRAFT') {
-                        setShowPreDraftModal(true);
-                    } else {
-                        setPassData({ name: status.activePicker });
-                        setPassStep(1);
-                    }
-                }}
-                isSystemFrozen={isSystemFrozen}
-                isSuperAdmin={isSuperAdmin}
-                isReadOnly={!!masqueradeAs}
-                onViewDetails={setViewingBooking}
-                currentOrder={currentOrder}
-                onEmail={(booking) => setEmailingBooking(booking)}
-                onViewSchedule={() => setActiveTab('schedule')}
-            />
-
-            {/* --- TAB NAVIGATION --- */}
-            <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">
-                <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
-                    <button
-                        id="tour-schedule"
-                        onClick={() => setActiveTab('schedule')}
-                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Clock className="w-4 h-4" />
-                        2026 Season Schedule
-                    </button>
-                    <button
-                        id="tour-recent"
-                        onClick={() => setActiveTab('bookings')}
-                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Calendar className="w-4 h-4" />
-                        Bookings (Calendar & List)
-                    </button>
-                    <button
-                        id="tour-guide"
-                        onClick={() => setActiveTab('guide')}
-                        className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'guide' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <BookOpen className="w-4 h-4" />
-                        Trailer Guide & Rules
-                    </button>
-                </div>
-            </div>
-
-            {/* --- TAB CONTENT --- */}
-            <div className="min-h-[400px] mt-6">
-
-                {/* 1. SEASON SCHEDULE */}
-                {activeTab === 'schedule' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <SeasonSchedule
-                            currentOrder={currentOrder}
-                            allDraftRecords={allDraftRecords}
-                            status={status}
-                            startDateOverride={startDateOverride}
-                        />
-                    </div>
-                )}
-
-                {/* 2. BOOKINGS VIEW (Consolidated) */}
-
-                {/* 3. MY BOOKINGS */}
-                {activeTab === 'bookings' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <RecentBookings
-                            bookings={allDraftRecords}
-                            onViewDetails={(booking) => setViewingBooking(booking)}
-                            currentShareholder={loggedInShareholder}
-                            isAdmin={isSuperAdmin}
-                            activePicker={status.activePicker}
-                        />
-                        {/* Fallback for empty state logic inside RecentBookings? If not, we could add here */}
-                    </div>
-                )}
-
-                {/* 4. TRAILER GUIDE */}
-                {activeTab === 'guide' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <TrailerGuide
-                            shareholderName={loggedInShareholder}
-                            booking={(() => {
-                                if (!loggedInShareholder || !allDraftRecords) return null;
-                                const now = new Date();
-                                const myBookings = allDraftRecords
-                                    .filter(b =>
-                                        b.shareholderName === loggedInShareholder &&
-                                        b.isFinalized &&
-                                        b.type !== 'cancelled' &&
-                                        (b.from?.toDate ? b.from.toDate() : new Date(b.from)) >= now
-                                    )
-                                    .sort((a, b) => {
-                                        const dateA = a.from?.toDate ? a.from.toDate() : new Date(a.from);
-                                        const dateB = b.from?.toDate ? b.from.toDate() : new Date(b.from);
-                                        return dateA - dateB;
-                                    });
-                                return myBookings[0] || null;
-                            })()}
-                        />
-                    </div>
-                )}
-
-            </div>
-
-            {/* Edit / Booking Modal Overlay */}
-            {
-                isBooking && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-4 md:pb-4">
-                        <div className="bg-background w-full max-w-lg rounded-lg shadow-2xl overflow-hidden my-auto relative">
-                            <div className="p-3 border-b flex justify-between items-center bg-muted/20">
-                                <h2 className="text-base font-semibold">
-                                    {editingBooking ? "Edit Booking" : "New Booking"}
-                                </h2>
-                                <button
-                                    onClick={() => { setIsBooking(false); setEditingBooking(null); }}
-                                    className="text-muted-foreground hover:text-foreground p-2 text-sm"
-                                >
-                                    ✕ Close
-                                </button>
-                            </div>
-                            <div className="p-2 md:p-4 max-h-[90vh] overflow-y-auto">
-                                <BookingSection
-                                    key={editingBooking ? editingBooking.id : 'new'}
-                                    onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
-                                    initialBooking={editingBooking}
-                                    activePicker={status.phase === 'OPEN_SEASON' ? loggedInShareholder : status.activePicker}
-                                    onPass={() => {
-                                        setIsBooking(false);
-                                        setPassData({ name: status.activePicker });
-                                        setPassStep(1);
-                                    }}
-                                    onDiscard={handleDiscard}
-                                    onShowAlert={triggerAlert}
-                                    onFinalize={async (id, name) => {
-                                        await handleFinalize(id, name, true);
-                                    }}
-                                    bookings={allDraftRecords}
-                                    startDateOverride={startDateOverride}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-
-            {/* Pass Turn Modal Overlay */}
-            {
-                passStep > 0 && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
-                            <h2 className={`text-2xl font-bold mb-2 ${passStep === 2 ? 'text-destructive' : 'text-foreground'}`}>
-                                {passStep === 1 ? "Pass Your Turn?" : "Are You Sure?"}
-                            </h2>
-                            <div className="text-sm text-muted-foreground mb-6">
-                                {passStep === 1 ? (
-                                    <p>Do you want to skip your turn in this round? You can choose to pass now if you're not ready.</p>
-                                ) : (
-                                    <p className="font-medium text-destructive/80">
-                                        Warning: This will <strong>immediately end your turn</strong> and notify the next shareholder.
-                                        <br /><br />
-                                        You cannot undo this action.
+            {!loading && (
+                <>
+                    {/* MASQUERADE BANNER */}
+                    {masqueradeAs && (
+                        <div className="bg-purple-100 border-l-4 border-purple-600 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2 mb-2">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-purple-200 rounded-full text-purple-700">
+                                    <User className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-purple-900 text-lg">Viewing as Shareholder ({masqueradeAs})</h3>
+                                    <p className="text-sm text-purple-800/80 font-medium">
+                                        You are seeing the dashboard exactly as {masqueradeAs} sees it. This is a read-only admin preview.
                                     </p>
-                                )}
+                                </div>
                             </div>
-
-                            <form onSubmit={handlePassSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Shareholder Passing Turn</label>
-                                    <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold text-foreground items-center">
-                                        {passData.name || "Loading..."}
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPassStep(0)}
-                                        className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className={`flex-1 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors ${passStep === 2
-                                            ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                            : "bg-primary text-primary-foreground hover:bg-primary/90"
-                                            }`}
-                                    >
-                                        {passStep === 1 ? "Continue" : "Proceed to Final Confirm"}
-                                    </button>
-                                </div>
-                            </form>
                         </div>
+                    )}
+
+                    {isSystemFrozen && (
+                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber-100 rounded-full text-amber-600">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-amber-900 text-lg">Maintenance Mode</h3>
+                                    <p className="text-sm text-amber-800/80 font-medium">
+                                        We are currently performing system updates. Booking actions are temporarily paused.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- NEW HEADER: Shareholder Hero --- */}
+                    <div className="flex justify-between items-center mb-4">
+                        <h1 className="text-sm font-bold tracking-tight text-slate-400 uppercase">Shareholder Dashboard</h1>
+
                     </div>
-                )
-            }
 
-
-            {/* Booking Details Modal Overlay */}
-            {
-                viewingBooking && (
-                    <BookingDetailsModal
-                        booking={viewingBooking}
-                        onClose={() => setViewingBooking(null)}
-                        currentUser={loggedInShareholder}
-                        isAdmin={isSuperAdmin}
-                        onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
+                    <ShareholderHero
+                        currentUser={currentUser}
+                        status={status}
+                        shareholderName={loggedInShareholder}
+                        drafts={allDraftRecords}
+                        onOpenBooking={() => setIsBooking(true)}
+                        onFinalize={handleFinalize}
                         onPass={() => {
-                            setViewingBooking(null);
-                            setPassData({ name: viewingBooking.shareholderName });
-                            setPassStep(1);
+                            if (status.phase === 'PRE_DRAFT') {
+                                setShowPreDraftModal(true);
+                            } else {
+                                setPassData({ name: status.activePicker });
+                                setPassStep(1);
+                            }
                         }}
-                        onEdit={() => {
-                            setViewingBooking(null);
-                            setEditingBooking(viewingBooking);
-                            setIsBooking(true);
-                        }}
-                        onFinalize={() => {
-                            handleFinalize(viewingBooking.id, viewingBooking.shareholderName, false, () => setViewingBooking(null));
-                        }}
-                        onEmail={() => handleEmailGuest(viewingBooking)}
-
+                        isSystemFrozen={isSystemFrozen}
+                        isSuperAdmin={isSuperAdmin}
+                        isReadOnly={!!masqueradeAs}
+                        onViewDetails={setViewingBooking}
+                        currentOrder={currentOrder}
+                        onEmail={(booking) => setEmailingBooking(booking)}
+                        onViewSchedule={() => setActiveTab('schedule')}
                     />
-                )
-            }
 
-            {/* Email Guest Modal */}
-            {
-                emailingBooking && (
-                    <EmailGuestModal
-                        booking={emailingBooking}
-                        currentUser={loggedInShareholder}
-                        onClose={() => setEmailingBooking(null)}
-                    />
-                )
-            }
-
-            {/* Global Confirmation Modal */}
-            <ConfirmationModal
-                isOpen={confirmation.isOpen}
-                onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}
-                onConfirm={confirmation.onConfirm}
-                title={confirmation.title}
-                message={confirmation.message}
-                isDanger={confirmation.isDanger}
-                confirmText={confirmation.confirmText}
-                showCancel={confirmation.showCancel}
-                requireTyping={confirmation.requireTyping}
-                closeOnConfirm={confirmation.closeOnConfirm}
-            />
-
-            {/* Pre-Draft Modal */}
-            {
-                showPreDraftModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-                            <div className="flex items-center gap-3 text-amber-600">
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                <h3 className="font-bold text-lg">Booking Not Started</h3>
-                            </div>
-                            <p className="text-muted-foreground">
-                                Booking and passing actions are disabled until the schedule officially begins.
-                            </p>
-                            <div className="bg-muted p-3 rounded-md text-sm font-medium text-center">
-                                Opens: {format(status.draftStart, 'PPP p')}
-                            </div>
+                    {/* --- TAB NAVIGATION --- */}
+                    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">
+                        <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
                             <button
-                                onClick={() => setShowPreDraftModal(false)}
-                                className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+                                id="tour-schedule"
+                                onClick={() => setActiveTab('schedule')}
+                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                             >
-                                Understood
+                                <Clock className="w-4 h-4" />
+                                2026 Season Schedule
+                            </button>
+                            <button
+                                id="tour-recent"
+                                onClick={() => setActiveTab('bookings')}
+                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                            >
+                                <Calendar className="w-4 h-4" />
+                                Bookings (Calendar & List)
+                            </button>
+                            <button
+                                id="tour-guide"
+                                onClick={() => setActiveTab('guide')}
+                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'guide' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                            >
+                                <BookOpen className="w-4 h-4" />
+                                Trailer Guide & Rules
                             </button>
                         </div>
                     </div>
-                )
-            }
 
-            <div className="mt-12 pt-8 border-t text-center space-y-2">
-                <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.280 - Feat: Fully context-aware email notifications (Round/Phase logic)</p>
+                    {/* --- TAB CONTENT --- */}
+                    <div className="min-h-[400px] mt-6">
+
+                        {/* 1. SEASON SCHEDULE */}
+                        {activeTab === 'schedule' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <SeasonSchedule
+                                    currentOrder={currentOrder}
+                                    allDraftRecords={allDraftRecords}
+                                    status={status}
+                                    startDateOverride={startDateOverride}
+                                />
+                            </div>
+                        )}
+
+                        {/* 2. BOOKINGS VIEW (Consolidated) */}
+
+                        {/* 3. MY BOOKINGS */}
+                        {activeTab === 'bookings' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <RecentBookings
+                                    bookings={allDraftRecords}
+                                    onViewDetails={(booking) => setViewingBooking(booking)}
+                                    currentShareholder={loggedInShareholder}
+                                    isAdmin={isSuperAdmin}
+                                    activePicker={status.activePicker}
+                                />
+                                {/* Fallback for empty state logic inside RecentBookings? If not, we could add here */}
+                            </div>
+                        )}
+
+                        {/* 4. TRAILER GUIDE */}
+                        {activeTab === 'guide' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <TrailerGuide
+                                    shareholderName={loggedInShareholder}
+                                    booking={(() => {
+                                        if (!loggedInShareholder || !allDraftRecords) return null;
+                                        const now = new Date();
+                                        const myBookings = allDraftRecords
+                                            .filter(b =>
+                                                b.shareholderName === loggedInShareholder &&
+                                                b.isFinalized &&
+                                                b.type !== 'cancelled' &&
+                                                (b.from?.toDate ? b.from.toDate() : new Date(b.from)) >= now
+                                            )
+                                            .sort((a, b) => {
+                                                const dateA = a.from?.toDate ? a.from.toDate() : new Date(a.from);
+                                                const dateB = b.from?.toDate ? b.from.toDate() : new Date(b.from);
+                                                return dateA - dateB;
+                                            });
+                                        return myBookings[0] || null;
+                                    })()}
+                                />
+                            </div>
+                        )}
+
+                    </div>
+
+                    {/* Edit / Booking Modal Overlay */}
+                    {
+                        isBooking && (
+                            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto pt-2 pb-2 md:pt-4 md:pb-4">
+                                <div className="bg-background w-full max-w-lg rounded-lg shadow-2xl overflow-hidden my-auto relative">
+                                    <div className="p-3 border-b flex justify-between items-center bg-muted/20">
+                                        <h2 className="text-base font-semibold">
+                                            {editingBooking ? "Edit Booking" : "New Booking"}
+                                        </h2>
+                                        <button
+                                            onClick={() => { setIsBooking(false); setEditingBooking(null); }}
+                                            className="text-muted-foreground hover:text-foreground p-2 text-sm"
+                                        >
+                                            ✕ Close
+                                        </button>
+                                    </div>
+                                    <div className="p-2 md:p-4 max-h-[90vh] overflow-y-auto">
+                                        <BookingSection
+                                            key={editingBooking ? editingBooking.id : 'new'}
+                                            onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
+                                            initialBooking={editingBooking}
+                                            activePicker={status.phase === 'OPEN_SEASON' ? loggedInShareholder : status.activePicker}
+                                            onPass={() => {
+                                                setIsBooking(false);
+                                                setPassData({ name: status.activePicker });
+                                                setPassStep(1);
+                                            }}
+                                            onDiscard={handleDiscard}
+                                            onShowAlert={triggerAlert}
+                                            onFinalize={async (id, name) => {
+                                                await handleFinalize(id, name, true);
+                                            }}
+                                            bookings={allDraftRecords}
+                                            startDateOverride={startDateOverride}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    {/* Pass Turn Modal Overlay */}
+                    {
+                        passStep > 0 && (
+                            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
+                                    <h2 className={`text-2xl font-bold mb-2 ${passStep === 2 ? 'text-destructive' : 'text-foreground'}`}>
+                                        {passStep === 1 ? "Pass Your Turn?" : "Are You Sure?"}
+                                    </h2>
+                                    <div className="text-sm text-muted-foreground mb-6">
+                                        {passStep === 1 ? (
+                                            <p>Do you want to skip your turn in this round? You can choose to pass now if you're not ready.</p>
+                                        ) : (
+                                            <p className="font-medium text-destructive/80">
+                                                Warning: This will <strong>immediately end your turn</strong> and notify the next shareholder.
+                                                <br /><br />
+                                                You cannot undo this action.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <form onSubmit={handlePassSubmit} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Shareholder Passing Turn</label>
+                                            <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm font-semibold text-foreground items-center">
+                                                {passData.name || "Loading..."}
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPassStep(0)}
+                                                className="flex-1 h-10 px-4 py-2 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm font-medium transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className={`flex-1 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors ${passStep === 2
+                                                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                    }`}
+                                            >
+                                                {passStep === 1 ? "Continue" : "Proceed to Final Confirm"}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )
+                    }
 
 
-            </div>
+                    {/* Booking Details Modal Overlay */}
+                    {
+                        viewingBooking && (
+                            <BookingDetailsModal
+                                booking={viewingBooking}
+                                onClose={() => setViewingBooking(null)}
+                                currentUser={loggedInShareholder}
+                                isAdmin={isSuperAdmin}
+                                onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
+                                onPass={() => {
+                                    setViewingBooking(null);
+                                    setPassData({ name: viewingBooking.shareholderName });
+                                    setPassStep(1);
+                                }}
+                                onEdit={() => {
+                                    setViewingBooking(null);
+                                    setEditingBooking(viewingBooking);
+                                    setIsBooking(true);
+                                }}
+                                onFinalize={() => {
+                                    handleFinalize(viewingBooking.id, viewingBooking.shareholderName, false, () => setViewingBooking(null));
+                                }}
+                                onEmail={() => handleEmailGuest(viewingBooking)}
+
+                            />
+                        )
+                    }
+
+                    {/* Email Guest Modal */}
+                    {
+                        emailingBooking && (
+                            <EmailGuestModal
+                                booking={emailingBooking}
+                                currentUser={loggedInShareholder}
+                                onClose={() => setEmailingBooking(null)}
+                            />
+                        )
+                    }
+
+                    {/* Global Confirmation Modal */}
+                    <ConfirmationModal
+                        isOpen={confirmation.isOpen}
+                        onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))}
+                        onConfirm={confirmation.onConfirm}
+                        title={confirmation.title}
+                        message={confirmation.message}
+                        isDanger={confirmation.isDanger}
+                        confirmText={confirmation.confirmText}
+                        showCancel={confirmation.showCancel}
+                        requireTyping={confirmation.requireTyping}
+                        closeOnConfirm={confirmation.closeOnConfirm}
+                    />
+
+                    {/* Pre-Draft Modal */}
+                    {
+                        showPreDraftModal && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+                                    <div className="flex items-center gap-3 text-amber-600">
+                                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <h3 className="font-bold text-lg">Booking Not Started</h3>
+                                    </div>
+                                    <p className="text-muted-foreground">
+                                        Booking and passing actions are disabled until the schedule officially begins.
+                                    </p>
+                                    <div className="bg-muted p-3 rounded-md text-sm font-medium text-center">
+                                        Opens: {format(status.draftStart, 'PPP p')}
+                                    </div>
+                                    <button
+                                        onClick={() => setShowPreDraftModal(false)}
+                                        className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+                                    >
+                                        Understood
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    <div className="mt-12 pt-8 border-t text-center space-y-2">
+                        <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.281 - Fix: Prevent content flash on dashboard load</p>
+
+
+                    </div>
+                </>
+            )}
         </div >
     );
 }
