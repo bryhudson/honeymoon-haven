@@ -3,6 +3,8 @@ import { Tent, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS } from '../lib/shareholders';
+import { db } from '../lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { FeedbackModal } from './FeedbackModal';
 
 export function Header() {
@@ -24,6 +26,27 @@ export function Header() {
 
     // Hardcoded Admin Check (for now)
     const isAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
+
+    // Fetch Active Picker for Masquerade (Admin Only)
+    const [masqueradeTarget, setMasqueradeTarget] = useState(null);
+
+    React.useEffect(() => {
+        if (!isAdmin) return;
+
+        // Listen to draft status to find active picker
+        const unsub = onSnapshot(doc(db, "status", "draftStatus"), (doc) => {
+            if (doc.exists() && doc.data().activePicker) {
+                setMasqueradeTarget(doc.data().activePicker);
+            } else {
+                setMasqueradeTarget(null);
+            }
+        });
+        return () => unsub();
+    }, [isAdmin]);
+
+    const viewAsLink = masqueradeTarget
+        ? `/?masquerade=${encodeURIComponent(masqueradeTarget)}`
+        : '/';
 
     return (
         <>
@@ -57,7 +80,7 @@ export function Header() {
                                                 Admin
                                             </Link>
                                             <Link
-                                                to="/"
+                                                to={viewAsLink}
                                                 className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${!location.pathname.startsWith('/admin')
                                                     ? 'bg-white text-slate-900 shadow-sm'
                                                     : 'text-slate-500 hover:text-slate-900'
