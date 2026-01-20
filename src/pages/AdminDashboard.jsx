@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { version } from '../../package.json';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
@@ -1060,7 +1061,13 @@ export function AdminDashboard() {
                 )}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Admin Dashboard</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
+                            Admin Dashboard
+                            <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                v{version}
+                            </span>
+                        </h1>
+
                         <p className="text-muted-foreground mt-1">Overview of resort performance and bookings.</p>
                     </div>
                     <div className="flex gap-3">
