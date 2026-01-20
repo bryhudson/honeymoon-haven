@@ -541,6 +541,23 @@ export function Dashboard() {
             {/* Tour Guide */}
             <OnboardingTour currentUser={currentUser} />
 
+            {/* MASQUERADE BANNER */}
+            {masqueradeAs && (
+                <div className="bg-purple-100 border-l-4 border-purple-600 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2 mb-2">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-200 rounded-full text-purple-700">
+                            <User className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-purple-900 text-lg">Viewing as Shareholder ({masqueradeAs})</h3>
+                            <p className="text-sm text-purple-800/80 font-medium">
+                                You are seeing the dashboard exactly as {masqueradeAs} sees it. This is a read-only admin preview.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {isSystemFrozen && (
                 <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r shadow-sm animate-in slide-in-from-top-2">
                     <div className="flex items-center gap-3">
@@ -867,7 +884,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.250 - Wipe Fix</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.251 - Wipe Fix</p>
 
 
             </div>
