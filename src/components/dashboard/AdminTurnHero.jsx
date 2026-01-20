@@ -8,6 +8,13 @@ export function AdminTurnHero({
     isTestMode = false,
     isSystemFrozen = false
 }) {
+    const [now, setNow] = React.useState(new Date());
+
+    // Update timer every minute to keep countdown alive
+    React.useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
     // 1. System Maintenance Overlay (Highest Priority)
     if (isSystemFrozen) {
         return (
@@ -91,7 +98,7 @@ export function AdminTurnHero({
                                 </div>
                                 <div>
                                     <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
-                                        Turn Deadline
+                                        Complete Selection By
                                     </div>
                                     <div className="text-xl font-bold text-white tabular-nums tracking-tight">
                                         {format(new Date(activeTurn.end), 'MMM d, h:mm a')}
@@ -101,7 +108,7 @@ export function AdminTurnHero({
                                         <span className="text-white font-bold">
                                             {(() => {
                                                 const end = new Date(activeTurn.end);
-                                                const now = new Date();
+                                                // Used 'now' from state
                                                 if (end <= now) return 'Ended';
                                                 const diff = intervalToDuration({ start: now, end });
                                                 const parts = [];
