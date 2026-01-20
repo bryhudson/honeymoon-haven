@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.273 - Fix: Close modal when finalizing</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.275 - Feat: Pulse animation for active schedule states</p>
                 </p>
             </div>
         </div>

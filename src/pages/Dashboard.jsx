@@ -271,6 +271,11 @@ export function Dashboard() {
                     triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
                 }
 
+                // Force cleanup of all modal states on success to prevent stuck modals
+                setViewingBooking(null);
+                setIsBooking(false);
+                setEditingBooking(null);
+
                 if (onSuccess) onSuccess();
             } catch (err) {
                 console.error(err);
@@ -874,7 +879,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.273 - Fix: Close modal when finalizing</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.275 - Feat: Pulse animation for active schedule states</p>
 
 
             </div>

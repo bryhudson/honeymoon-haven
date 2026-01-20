@@ -110,10 +110,10 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                             cellBg = "bg-gray-100 text-gray-500 line-through";
                                             badge = "Passed";
                                         } else if (entry.status === 'ACTIVE') {
-                                            cellBg = "bg-blue-100 text-blue-900 font-bold ring-2 ring-blue-500 ring-inset";
+                                            cellBg = "bg-blue-100 text-blue-900 font-bold ring-2 ring-blue-500 ring-inset animate-pulse";
                                             badge = "Active Now";
                                         } else if (entry.status === 'GRACE_PERIOD') {
-                                            cellBg = "bg-amber-50 text-amber-900 font-bold ring-2 ring-amber-500 ring-inset";
+                                            cellBg = "bg-amber-50 text-amber-900 font-bold ring-2 ring-amber-500 ring-inset animate-pulse";
                                             badge = "Early Access";
                                         } else if (entry.status === 'SKIPPED') {
                                             cellBg = "bg-red-50 text-red-400";
@@ -175,8 +175,8 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                 let statusText = "Pending";
 
                                 if (entry.status === 'COMPLETED') { statusColor = "text-green-600 font-medium"; statusText = "✓ Done"; }
-                                else if (entry.status === 'ACTIVE') { statusColor = "text-blue-600 font-bold"; statusText = "Active Now"; }
-                                else if (entry.status === 'GRACE_PERIOD') { statusColor = "text-amber-600 font-bold"; statusText = "Early Access"; }
+                                else if (entry.status === 'ACTIVE') { statusColor = "text-blue-600 font-bold animate-pulse"; statusText = "Active Now"; }
+                                else if (entry.status === 'GRACE_PERIOD') { statusColor = "text-amber-600 font-bold animate-pulse"; statusText = "Early Access"; }
                                 else if (entry.status === 'PASSED') { statusColor = "text-slate-400 line-through"; statusText = "Passed"; }
 
                                 return (
