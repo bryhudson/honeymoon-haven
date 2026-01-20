@@ -367,23 +367,27 @@ export function ShareholderHero({
                                     </div>
                                     <div>
                                         <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
-                                            Time Remaining
+                                            Complete Request By
                                         </div>
                                         <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
-                                            {(() => {
-                                                const end = new Date(status.windowEnds);
-                                                const now = new Date();
-                                                if (end <= now) return 'Ending soon...';
-                                                const diff = intervalToDuration({ start: now, end });
-                                                const parts = [];
-                                                if (diff.days > 0) parts.push(`${diff.days}d`);
-                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                return parts.join(' ') || '< 1m';
-                                            })()}
+                                            {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                         </div>
-                                        <div className="text-sm text-indigo-200 mt-1 font-medium">
-                                            Must complete by <span className="text-white font-bold">{format(new Date(status.windowEnds), 'MMM d, h:mm a')}</span>
+                                        <div className="text-sm text-indigo-200 mt-1 font-medium flex items-center gap-1.5">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            <span>Time remaining:</span>
+                                            <span className="text-white font-bold">
+                                                {(() => {
+                                                    const end = new Date(status.windowEnds);
+                                                    const now = new Date();
+                                                    if (end <= now) return 'Ending soon...';
+                                                    const diff = intervalToDuration({ start: now, end });
+                                                    const parts = [];
+                                                    if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                    if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                    if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                    return parts.join(' ') || '< 1m';
+                                                })()}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

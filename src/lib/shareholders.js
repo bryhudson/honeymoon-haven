@@ -94,7 +94,9 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     const fullTurnOrder = [...round1Order, ...round2Order];
 
     // If we are before the start date and no bookings exist, it is PRE_DRAFT.
-    // We enforce a hard start for the first person.
+    // RELAXED RULE: We allow the first person to have "Early Access" (Active Loop) even before DRAFT_START.
+    // The loop below will correctly set their windowEnds to DRAFT_START + 48h using currentWindowStart.
+    /* 
     if (bookings.length === 0 && now < DRAFT_START) {
         return {
             phase: 'PRE_DRAFT',
@@ -108,6 +110,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
             debugPhase: 'PRE_DRAFT_HARD_LOCK'
         };
     }
+    */
 
     let currentWindowStart = new Date(DRAFT_START);
     let activePicker = null;
