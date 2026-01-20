@@ -31,7 +31,7 @@ export const TEMPLATE_DEFINITIONS = [
     {
         id: "turnPassedCurrent",
         name: "Turn Passed (You Passed)",
-        variables: ["name", "dashboard_url"],
+        variables: ["name", "dashboard_url", "next_opportunity_title", "next_opportunity_text"],
         description: "Confirmation sent to the user who chose to pass."
     },
     {
@@ -43,7 +43,7 @@ export const TEMPLATE_DEFINITIONS = [
     {
         id: "autoPassCurrent",
         name: "Auto-Pass (Expired - You)",
-        variables: ["name", "deadline_date", "deadline_time", "next_shareholder", "dashboard_url"],
+        variables: ["name", "deadline_date", "deadline_time", "next_shareholder", "dashboard_url", "next_opportunity_title", "next_opportunity_text"],
         description: "Sent to the user who missed their deadline."
     },
     {

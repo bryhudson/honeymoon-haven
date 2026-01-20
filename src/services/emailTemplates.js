@@ -241,8 +241,8 @@ export const emailTemplates = {
       <p>Thank you for passing your turn!</p>
       <p>Your turn has been successfully passed to the next shareholder in the rotation.</p>
 
-      <h3>OPEN SEASON BOOKING</h3>
-      <p>Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis.</p>
+      <h3>${data.next_opportunity_title || "OPEN SEASON BOOKING"}</h3>
+      <p>${data.next_opportunity_text || "Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis."}</p>
 
       <div style="margin: 25px 0;">
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
@@ -282,7 +282,7 @@ export const emailTemplates = {
       <p><strong>WHAT THIS MEANS</strong><br>
       • Your turn for this rotation is complete<br>
       • The next shareholder can now book their dates<br>
-      • You can still book during open season (first-come, first-served)</p>
+      • ${data.next_opportunity_text || "You can still book during open season (first-come, first-served)"}</p>
 
       <div style="margin: 25px 0;">
         <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>

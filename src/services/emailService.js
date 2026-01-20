@@ -137,7 +137,19 @@ export const emailService = {
     // --- Legacy / Missing Templates (Reuse ID 1 or Fallback) ---
 
     sendTurnPassedCurrent: async (recipient, data) => {
-        const { subject, htmlContent } = await getEffectiveTemplate('turnPassedCurrent', emailTemplates.turnPassedCurrent, data);
+        // Logic for Next Opportunity Message
+        const isRound1 = data.phase === 'ROUND_1' || data.round === 1;
+        const nextTitle = isRound1 ? "ROUND 2 (SNAKE DRAFT)" : "OPEN SEASON BOOKING";
+        const nextText = isRound1
+            ? "Your next opportunity to book will be in Round 2 (Snake Draft), which begins after Round 1 concludes. The order will be reversed for the second round."
+            : "Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis.";
+
+        const enrichedData = {
+            ...data,
+            next_opportunity_title: nextTitle,
+            next_opportunity_text: nextText
+        };
+        const { subject, htmlContent } = await getEffectiveTemplate('turnPassedCurrent', emailTemplates.turnPassedCurrent, enrichedData);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 
@@ -147,9 +159,19 @@ export const emailService = {
     },
 
     sendAutoPassCurrent: async (recipient, data) => {
-        // No template for "You missed your turn" yet? 
-        // Fallback to text for now.
-        const { subject, htmlContent } = await getEffectiveTemplate('autoPassCurrent', emailTemplates.autoPassCurrent, data);
+        // Logic for Next Opportunity Message
+        const isRound1 = data.phase === 'ROUND_1' || data.round === 1;
+        const nextTitle = isRound1 ? "ROUND 2 (SNAKE DRAFT)" : "OPEN SEASON BOOKING";
+        const nextText = isRound1
+            ? "Your next opportunity to book will be in Round 2 (Snake Draft), which begins after Round 1 concludes."
+            : "Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis.";
+
+        const enrichedData = {
+            ...data,
+            next_opportunity_title: nextTitle,
+            next_opportunity_text: nextText
+        };
+        const { subject, htmlContent } = await getEffectiveTemplate('autoPassCurrent', emailTemplates.autoPassCurrent, enrichedData);
         return sendEmail({ to: recipient, subject, htmlContent });
     },
 

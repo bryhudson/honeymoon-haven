@@ -338,7 +338,9 @@ export function Dashboard() {
                                 email: "bryan.m.hudson@gmail.com" // OVERRIDE
                             }, {
                                 name: passData.name,
-                                dashboard_url: "https://hhr-trailer-booking.web.app/"
+                                dashboard_url: "https://hhr-trailer-booking.web.app/",
+                                phase: status?.phase,
+                                round: status?.round
                             });
                         } catch (e) {
                             console.error("Pass email failed", e);
@@ -879,7 +881,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.278 - Feat: Dynamic Email Notifications Editor in Admin Dashboard</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.279 - Feat: Context-aware Turn Passed emails (Round 1 vs Open Season)</p>
 
 
             </div>
