@@ -717,12 +717,7 @@ export function ShareholderHero({
                                 <p>
                                     Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking. You are next.
                                 </p>
-                            ) : (
-                                <p>
-                                    Current Turn: <span className="font-bold text-white border-b border-indigo-400/30 pb-0.5">{status.activePicker}</span>
-                                    <span className="block text-base opacity-70 mt-1">Waiting for them to finish their selection...</span>
-                                </p>
-                            )}
+                            ) : null}
                         </div>
                     </div>
 
@@ -741,31 +736,41 @@ export function ShareholderHero({
                             </div>
                         </div>
 
-                        {/* Active Turn Deadline (Observer View) */}
-                        {status.windowEnds && !isJustPassed && (
-                            <div className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 md:p-5 backdrop-blur-md w-full md:w-fit min-w-[300px]">
-                                <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    {status.activePicker}'s Turn Ends
-                                </div>
-                                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
-                                    <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
-                                        {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                        {/* Unified Active Turn Card (Observer View) */}
+                        {!isJustPassed && (
+                            <div className="bg-indigo-900/40 border border-indigo-500/30 rounded-xl p-4 md:p-5 backdrop-blur-md flex-1 min-w-[300px]">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    {/* Left: Who is Picking */}
+                                    <div>
+                                        <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Current Turn</div>
+                                        <div className="text-xl font-bold text-white">{status.activePicker}</div>
+                                        <div className="text-sm text-indigo-200/70 mt-1">Is making their selection...</div>
                                     </div>
-                                    <div className="bg-indigo-900/50 px-2 py-1 rounded-lg border border-indigo-500/30 text-indigo-200 text-xs font-bold w-fit">
-                                        Time left: <span className="text-white">
-                                            {(() => {
-                                                const end = new Date(status.windowEnds);
-                                                if (end <= now) return 'Ending...';
-                                                const diff = intervalToDuration({ start: now, end });
-                                                const parts = [];
-                                                if (diff.days > 0) parts.push(`${diff.days}d`);
-                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                return parts.join(' ') || '< 1m';
-                                            })()}
-                                        </span>
-                                    </div>
+
+                                    {/* Right: Timer (if active) */}
+                                    {status.windowEnds && (
+                                        <div className="md:text-right border-t md:border-t-0 md:border-l border-indigo-500/20 pt-3 md:pt-0 md:pl-6">
+                                            <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center md:justify-end gap-2">
+                                                <Clock className="w-4 h-4" />
+                                                Turn Ends In
+                                            </div>
+                                            <div className="bg-indigo-950/50 px-3 py-1.5 rounded-lg border border-indigo-500/30 text-white font-mono text-lg font-bold w-fit md:ml-auto">
+                                                {(() => {
+                                                    const end = new Date(status.windowEnds);
+                                                    if (end <= now) return 'Ending...';
+                                                    const diff = intervalToDuration({ start: now, end });
+                                                    const parts = [];
+                                                    if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                    if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                    if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                    return parts.join(' ') || '< 1m';
+                                                })()}
+                                            </div>
+                                            <div className="text-xs text-indigo-300/50 mt-1">
+                                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
