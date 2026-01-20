@@ -46,7 +46,7 @@ export function AdminTurnHero({
                         {activeDraft ? (
                             <div className="flex items-center justify-center lg:justify-start gap-2 text-indigo-300 font-medium">
                                 <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
-                                Draft in progress ({activeDraft.cabinNumber}, {format(activeDraft.from.toDate(), 'MMM d')} - {format(activeDraft.to.toDate(), 'MMM d')})
+                                Draft in progress ({activeDraft.cabinNumber}, {format(activeDraft.from?.toDate ? activeDraft.from.toDate() : new Date(activeDraft.from), 'MMM d')} - {format(activeDraft.to?.toDate ? activeDraft.to.toDate() : new Date(activeDraft.to), 'MMM d')})
                             </div>
                         ) : (
                             <p>Current active shareholder. Waiting for selection.</p>
