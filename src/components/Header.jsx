@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tent, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { CABIN_OWNERS } from '../lib/shareholders';
 import { db } from '../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
