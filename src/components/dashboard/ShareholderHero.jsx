@@ -23,6 +23,11 @@ export function ShareholderHero({
     const queueInfo = React.useMemo(() => {
         if (!currentOrder || !status || !shareholderName) return null;
 
+        // ADMIN OVERRIDE: If name is Admin/Bryan but they are not in the list, return a mock object
+        // so they can see the "Active Turn" or "Waiting" UI without crashing or return null
+        const isAdminPersona = shareholderName === 'HHR Admin' || shareholderName === 'Bryan';
+        // Note: 'Bryan' might actually be in the list if he's playing. 'HHR Admin' is definitely not.
+
         const fullTurnOrder = [...currentOrder, ...[...currentOrder].reverse()];
         let activeIndex = -1;
 
@@ -49,7 +54,13 @@ export function ShareholderHero({
             }
         }
 
-        if (myNextIndex === -1) return null;
+        if (myNextIndex === -1) {
+            if (isAdminPersona) {
+                // Return a mock object so the rest of the component renders "Waiting" state
+                return { diff: 99, round: 1 };
+            }
+            return null;
+        }
 
         // Determine which round the next slot belongs to
         // If myNextIndex is within the first half of the full order (which is length * 2), it's Round 1

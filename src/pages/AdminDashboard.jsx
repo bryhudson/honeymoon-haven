@@ -523,11 +523,11 @@ export function AdminDashboard() {
     };
 
     const toggleTestMode = async () => {
-        // 1. Strict Email Check
-        if (currentUser?.email !== 'bryan.m.hudson@gmail.com') {
-            triggerAlert("Access Denied", "Only the site owner (bryan.m.hudson@gmail.com) can toggle Test Mode.");
-            return;
-        }
+        // 1. Strict Email Check - Removed strict check for HHR Admin
+        // if (currentUser?.email !== 'bryan.m.hudson@gmail.com') {
+        //     triggerAlert("Access Denied", "Only the site owner (bryan.m.hudson@gmail.com) can toggle Test Mode.");
+        //     return;
+        // }
 
         // 2. Require Re-Auth (Password Check)
         requireAuth(
@@ -1167,53 +1167,54 @@ export function AdminDashboard() {
 
 
 
-                            {/* Danger Zone - Site Owner Only */}
-                            {IS_SITE_OWNER && (
-                                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-4 text-red-600">
-                                        <AlertTriangle className="w-5 h-5" />
-                                        <h3 className="font-bold">Site Config</h3>
+                            {/* Danger Zone - Restricted Actions */}
+                            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-2 mb-4 text-red-600">
+                                    <AlertTriangle className="w-5 h-5" />
+                                    <h3 className="font-bold">Site Config</h3>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {/* Test Mode Toggle - Allowed for Admins */}
+                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                        <div>
+                                            <div className="font-bold text-slate-800 flex items-center gap-2">
+                                                Test Mode (Redirect Emails)
+                                                {isTestMode && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
+                                            </div>
+                                            <div className="text-xs text-slate-500 mt-1">
+                                                {isTestMode
+                                                    ? "ON: All emails are redirected to 'bryan.m.hudson@gmail.com'."
+                                                    : "OFF: Emails assume PRODUCTION and go to real users."}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={toggleTestMode}
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isTestMode
+                                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            {isTestMode ? 'DISABLE TEST MODE' : 'ENABLE TEST MODE'}
+                                        </button>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        {/* Test Mode Toggle */}
-                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                            <div>
-                                                <div className="font-bold text-slate-800 flex items-center gap-2">
-                                                    Test Mode (Redirect Emails)
-                                                    {isTestMode && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
-                                                </div>
-                                                <div className="text-xs text-slate-500 mt-1">
-                                                    {isTestMode
-                                                        ? "ON: All emails are redirected to 'bryan.m.hudson@gmail.com'."
-                                                        : "OFF: Emails assume PRODUCTION and go to real users."}
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={toggleTestMode}
-                                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isTestMode
-                                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                                                    }`}
-                                            >
-                                                {isTestMode ? 'DISABLE TEST MODE' : 'ENABLE TEST MODE'}
-                                            </button>
+                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                        <div>
+                                            <div className="font-bold text-slate-800">Maintenance Mode</div>
+                                            <div className="text-xs text-slate-500">Prevent all non-admin access.</div>
                                         </div>
+                                        <button
+                                            onClick={toggleSystemFreeze}
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isSystemFrozen ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            {isSystemFrozen ? 'END MAINTENANCE' : 'START MAINTENANCE'}
+                                        </button>
+                                    </div>
 
-                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                            <div>
-                                                <div className="font-bold text-slate-800">Maintenance Mode</div>
-                                                <div className="text-xs text-slate-500">Prevent all non-admin access.</div>
-                                            </div>
-                                            <button
-                                                onClick={toggleSystemFreeze}
-                                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isSystemFrozen ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                                                    }`}
-                                            >
-                                                {isSystemFrozen ? 'END MAINTENANCE' : 'START MAINTENANCE'}
-                                            </button>
-                                        </div>
-
+                                    {/* WIPE DB: Only Site Owner */}
+                                    {IS_SITE_OWNER && (
                                         <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
                                             <div>
                                                 <div className="font-bold text-red-900 text-sm">Wipe Database</div>
@@ -1226,9 +1227,9 @@ export function AdminDashboard() {
                                                 Wipe DB
                                             </button>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 )}
