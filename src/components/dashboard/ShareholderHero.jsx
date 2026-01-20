@@ -15,7 +15,8 @@ export function ShareholderHero({
     onViewDetails,
     onEmail,
     onViewSchedule,
-    currentOrder
+    currentOrder,
+    isReadOnly = false
 }) {
     const [now, setNow] = React.useState(new Date());
 
@@ -338,11 +339,16 @@ export function ShareholderHero({
                             Review Booking Details
                         </button>
                         <button
+                            disabled={isReadOnly}
                             onClick={() => onFinalize(activeDraft.id, shareholderName)}
-                            className="flex-1 lg:flex-none px-8 py-3 bg-green-600 text-white text-lg font-bold rounded-xl shadow-lg hover:bg-green-700 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 animate-pulse"
+                            className={`flex-1 lg:flex-none px-8 py-3 text-white text-lg font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all 
+                                ${isReadOnly
+                                    ? 'bg-slate-600 cursor-not-allowed opacity-70'
+                                    : 'bg-green-600 hover:bg-green-700 hover:shadow-xl hover:-translate-y-0.5 animate-pulse'
+                                }`}
                         >
                             <CheckCircle className="w-5 h-5" />
-                            Finalize Booking
+                            {isReadOnly ? 'Finalize (Disabled)' : 'Finalize Booking'}
                         </button>
                     </div>
                 </div>
@@ -430,13 +436,18 @@ export function ShareholderHero({
                             className="w-full sm:w-64 px-8 py-4 bg-white text-slate-900 text-lg font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:bg-blue-50 hover:scale-105 transition-all flex items-center justify-center gap-3"
                         >
                             <PlayCircle className="w-6 h-6 text-blue-600" />
-                            Start Booking
+                            {isReadOnly ? 'Booking Disabled' : 'Start Booking'}
                         </button>
                         <button
                             onClick={onPass}
-                            className="w-full sm:w-64 px-8 py-3 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2"
+                            disabled={isReadOnly}
+                            className={`w-full sm:w-64 px-8 py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2
+                                ${isReadOnly
+                                    ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                                }`}
                         >
-                            Pass Turn
+                            {isReadOnly ? 'Pass (Disabled)' : 'Pass Turn'}
                         </button>
                     </div>
                 </div >
