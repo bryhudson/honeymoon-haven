@@ -127,8 +127,8 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                                 <div className="text-xs font-semibold uppercase tracking-wider mb-0.5 opacity-70">
                                                     {badge || label}
                                                 </div>
-                                                <div>
-                                                    {format(entry.start, 'MMM d, h:mm a')}
+                                                <div className="text-xs text-slate-500">
+                                                    {format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}
                                                 </div>
                                             </div>
                                         );
@@ -184,7 +184,9 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{roundLabel}</span>
                                         <div className="text-right">
                                             <div className={`text-xs ${statusColor}`}>{statusText}</div>
-                                            <div className="text-sm text-slate-700">{format(entry.start, 'MMM d, h:mm a')}</div>
+                                            <div className="text-sm text-slate-700">
+                                                {format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}
+                                            </div>
                                         </div>
                                     </div>
                                 );
