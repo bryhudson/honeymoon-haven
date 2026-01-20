@@ -255,7 +255,7 @@ export function ShareholderHero({
     // Only show if windowEnds is defined AND (it's my turn OR I'm up next)
     // --- TIMER LOGIC (Unified) ---
     // Only show if windowEnds is defined AND (it's my turn OR I'm up next OR I'm an admin)
-    const isAdminView = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+    const isAdminView = isSuperAdmin || currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
     const showTimer = status.windowEnds && (isYourTurn || queueInfo?.diff === 1 || isAdminView);
 
     const TimerComponent = showTimer ? (
