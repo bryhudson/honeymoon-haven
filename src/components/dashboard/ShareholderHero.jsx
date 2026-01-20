@@ -752,22 +752,26 @@ export function ShareholderHero({
                                         <div className="md:text-right border-t md:border-t-0 md:border-l border-indigo-500/20 pt-3 md:pt-0 md:pl-6">
                                             <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center md:justify-end gap-2">
                                                 <Clock className="w-4 h-4" />
-                                                Turn Ends In
+                                                Turn Ends
                                             </div>
-                                            <div className="bg-indigo-950/50 px-3 py-1.5 rounded-lg border border-indigo-500/30 text-white font-mono text-lg font-bold w-fit md:ml-auto">
-                                                {(() => {
-                                                    const end = new Date(status.windowEnds);
-                                                    if (end <= now) return 'Ending...';
-                                                    const diff = intervalToDuration({ start: now, end });
-                                                    const parts = [];
-                                                    if (diff.days > 0) parts.push(`${diff.days}d`);
-                                                    if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                                    if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                    return parts.join(' ') || '< 1m';
-                                                })()}
-                                            </div>
-                                            <div className="text-xs text-indigo-300/50 mt-1">
+                                            <div className="text-xl md:text-2xl font-black text-white tracking-tight">
                                                 {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                            </div>
+                                            <div className="mt-1 flex md:justify-end">
+                                                <div className="bg-indigo-950/50 px-2 py-1 rounded text-indigo-200 font-mono text-xs font-bold w-fit border border-indigo-500/30">
+                                                    Time left: <span className="text-white">
+                                                        {(() => {
+                                                            const end = new Date(status.windowEnds);
+                                                            if (end <= now) return 'Ending...';
+                                                            const diff = intervalToDuration({ start: now, end });
+                                                            const parts = [];
+                                                            if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                            if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                            return parts.join(' ') || '< 1m';
+                                                        })()}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
