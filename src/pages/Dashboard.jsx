@@ -224,7 +224,7 @@ export function Dashboard() {
 
     // ...
 
-    const handleFinalize = async (bookingId, name, skipConfirm = false) => {
+    const handleFinalize = async (bookingId, name, skipConfirm = false, onSuccess = null) => {
         const executeFinalize = async () => {
             try {
                 await updateDoc(doc(db, "bookings", bookingId), {
@@ -270,6 +270,8 @@ export function Dashboard() {
                 if (!skipConfirm) {
                     triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
                 }
+
+                if (onSuccess) onSuccess();
             } catch (err) {
                 console.error(err);
                 if (!skipConfirm) {
@@ -809,7 +811,7 @@ export function Dashboard() {
                             setIsBooking(true);
                         }}
                         onFinalize={() => {
-                            handleFinalize(viewingBooking.id, viewingBooking.shareholderName);
+                            handleFinalize(viewingBooking.id, viewingBooking.shareholderName, false, () => setViewingBooking(null));
                         }}
                         onEmail={() => handleEmailGuest(viewingBooking)}
 
@@ -872,7 +874,7 @@ export function Dashboard() {
 
             <div className="mt-12 pt-8 border-t text-center space-y-2">
                 <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                <p className="text-[10px] text-muted-foreground/60">v2.68.272 - Feat: Standardize Hero Timer Display</p>
+                <p className="text-[10px] text-muted-foreground/60">v2.68.273 - Fix: Close modal when finalizing</p>
 
 
             </div>
