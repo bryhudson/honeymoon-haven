@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail, DollarSign } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail, DollarSign, User } from 'lucide-react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 
 export function ShareholderHero({
