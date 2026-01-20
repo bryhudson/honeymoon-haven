@@ -597,62 +597,90 @@ export function ShareholderHero({
                 </div>
 
                 {/* Status Card */}
-                {/* Status Card */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm shadow-inner min-h-[160px] flex flex-col justify-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                    {isJustCancelled ? (
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                                Booking Cancelled
-                            </h2>
-                            <p className="text-lg text-indigo-200/80 leading-relaxed max-w-2xl">
-                                You have cancelled your booking. No worries! You can rejoin the action when the next round opens or if another spot becomes available.
-                            </p>
-                        </div>
-                    ) : isJustPassed ? (
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                                Turn Passed
-                            </h2>
-                            <p className="text-lg text-indigo-200/80 leading-relaxed max-w-2xl">
-                                You have passed your turn for this round. We'll let you know when the next round begins!
-                            </p>
-                        </div>
-                    ) : status.phase === 'PRE_DRAFT' ? (
-                        <div className="space-y-3">
-                            <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2">
-                                <Clock className="w-4 h-4" />
-                                Draft Starts Soon
-                            </h2>
-                            <div className="text-3xl font-bold text-white">
-                                {status.draftStart ? format(status.draftStart, 'MMMM do') : 'March 1st'}
+                    {/* PRIMARY: MY STATUS */}
+                    <div className="bg-white/10 border border-white/10 rounded-xl p-5 md:p-6 backdrop-blur-sm flex flex-col justify-center">
+                        {isJustCancelled ? (
+                            <div className="space-y-2">
+                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                    Booking Cancelled
+                                </h2>
+                                <p className="text-sm text-indigo-200/80 leading-relaxed">
+                                    You'll rejoin next round.
+                                </p>
                             </div>
-                            <p className="text-indigo-200/80">
-                                First up: <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded">{status.nextPicker}</span>
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
-                                Current Booking Status
-                            </h2>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-2xl md:text-3xl font-bold text-white tracking-tight">
-                                <span className="opacity-60 text-indigo-300 font-light">Waiting for</span>
-                                <span className="text-indigo-100 border-b-2 border-indigo-500/30 pb-1">{status.activePicker}</span>
+                        ) : isJustPassed ? (
+                            <div className="space-y-2">
+                                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                                    Turn Passed
+                                </h2>
+                                <p className="text-sm text-indigo-200/80 leading-relaxed">
+                                    See you next round!
+                                </p>
                             </div>
-                            <p className="text-indigo-200/60 text-lg">
-                                to finish their turn.
-                            </p>
+                        ) : status.phase === 'PRE_DRAFT' ? (
+                            <div className="space-y-2">
+                                <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest">Next Up</h2>
+                                <div className="text-3xl font-bold text-white">
+                                    Season Draft
+                                </div>
+                                <p className="text-sm text-indigo-200/80">
+                                    Starts {status.draftStart ? format(status.draftStart, 'MMM do') : 'March 1st'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest flex items-center gap-2">
+                                    <User className="w-3 h-3" />
+                                    Your Position
+                                </h2>
+                                <div className="text-4xl md:text-5xl font-black text-white tracking-tight">
+                                    {queueInfo?.diff === 1 ? (
+                                        <span className="text-green-400">Up Next!</span>
+                                    ) : queueInfo?.diff ? (
+                                        <span>#{queueInfo.diff} <span className="text-lg font-medium text-indigo-300 ml-1">in Line</span></span>
+                                    ) : (
+                                        <span>Standby</span>
+                                    )}
+                                </div>
+                                <p className="text-sm text-indigo-200/60 font-medium">
+                                    Round {currentOrder?.round || 1} Queue
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* SECONDARY: CURRENT ACTIVITY */}
+                    {!isJustCancelled && !isJustPassed && (
+                        <div className="bg-indigo-900/20 border border-indigo-500/10 rounded-xl p-5 md:p-6 flex flex-col justify-center">
+                            {status.phase === 'PRE_DRAFT' ? (
+                                <div className="space-y-2">
+                                    <h2 className="text-xs font-bold text-indigo-400 uppercase tracking-widest">First Pick</h2>
+                                    <div className="text-2xl font-bold text-white">{status.nextPicker}</div>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <h2 className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                                        Current Turn
+                                    </h2>
+                                    <div className="text-2xl font-bold text-white">
+                                        {status.activePicker}
+                                    </div>
+                                    <div className="text-xs text-indigo-300/60 pt-2 border-t border-indigo-500/10 mt-2">
+                                        Waiting for them to finish...
+                                    </div>
+                                    {/* Timer Component (Injected here) */}
+                                    <div className="mt-2">
+                                        {TimerComponent}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
-
-                    {/* Timer Component (Injected if relevant) */}
-                    <div className="mt-6">
-                        {TimerComponent}
-                    </div>
                 </div>
 
                 {/* Footer Actions */}
