@@ -18,8 +18,11 @@ const BASE_STYLES = `
 const HEADER_STYLES = `
   color: #1a365d;
   border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: -0.5px;
 `;
 
 const CTA_BUTTON_STYLES = `
@@ -62,11 +65,15 @@ const wrapHtml = (title, bodyContent) => `
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc;">
   <div style="${BASE_STYLES}">
-    <h1 style="${HEADER_STYLES}">HHR Trailer Booking</h1>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h1 style="${HEADER_STYLES}">🚐 Honeymoon Haven Resort</h1>
+      <p style="margin-top: -15px; color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Trailer Booking App</p>
+    </div>
     ${bodyContent}
     <div style="${FOOTER_STYLES}">
       <p>Questions? Reply to this email or contact honeymoonhavenresort.lc@gmail.com</p>
-      <p>Honeymoon Haven Resort - 2026 Season</p>
+      <p>Honeymoon Haven Resort • 2026 Season</p>
+      <p style="font-size: 11px; margin-top: 10px;">Login at <a href="https://hhr-trailer-booking.web.app" style="color: #64748b; text-decoration: underline;">hhr-trailer-booking.web.app</a></p>
     </div>
   </div>
 </body>
