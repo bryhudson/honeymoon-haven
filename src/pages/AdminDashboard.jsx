@@ -1290,16 +1290,16 @@ export function AdminDashboard() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Season Schedule Table (New) */}
-                            <div className="mb-8">
-                                <SeasonSchedule
-                                    currentOrder={getShareholderOrder(2026)}
-                                    allDraftRecords={allBookings}
-                                    status={draftStatus || { phase: 'PRE_DRAFT' }}
-                                    startDateOverride={currentSimDate}
-                                />
-                            </div>
+                        {/* Season Schedule Table (New) - Force full width */}
+                        <div className="mb-8 mt-8 w-full col-span-1 md:col-span-2 lg:col-span-4">
+                            <SeasonSchedule
+                                currentOrder={getShareholderOrder(2026)}
+                                allDraftRecords={allBookings}
+                                status={draftStatus || { phase: 'PRE_DRAFT' }}
+                                startDateOverride={currentSimDate}
+                            />
                         </div>
 
 
