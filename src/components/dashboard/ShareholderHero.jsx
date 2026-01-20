@@ -746,7 +746,7 @@ export function ShareholderHero({
                             <div className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 md:p-5 backdrop-blur-md w-full md:w-fit min-w-[300px]">
                                 <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-2">
                                     <Clock className="w-4 h-4" />
-                                    Active Turn Ends
+                                    {status.activePicker}'s Turn Ends
                                 </div>
                                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
                                     <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
