@@ -356,27 +356,42 @@ export function ShareholderHero({
                                 </div>
                             </div>
                             {/* TIMER INJECTED HERE (Text color handled in component definition) */}
-                            {showTimer && (
-                                <div className="mt-1 text-sm font-bold text-blue-200 flex items-center justify-center lg:justify-start gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    Your turn ends in: {(() => {
-                                        if (!status.windowEnds) return '--';
-                                        const end = new Date(status.windowEnds);
-                                        const now = new Date();
-                                        if (end <= now) return 'Ending soon...';
-
-                                        const diff = intervalToDuration({ start: now, end });
-                                        const parts = [];
-                                        if (diff.days > 0) parts.push(`${diff.days}d`);
-                                        if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                        if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-
-                                        return parts.join(' ') || '< 1m';
-                                    })()}
-                                </div>
-                            )}
                         </div>
-                        <h2 className="text-2xl font-bold text-blue-100">
+
+                        {/* HIGH PRIORITY DEADLINE TIMER */}
+                        {showTimer && status.windowEnds && (
+                            <div className="mt-6 bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 max-w-md">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2 bg-indigo-500/30 rounded-lg animate-pulse">
+                                        <Clock className="w-5 h-5 text-indigo-200" />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
+                                            Time Remaining
+                                        </div>
+                                        <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                            {(() => {
+                                                const end = new Date(status.windowEnds);
+                                                const now = new Date();
+                                                if (end <= now) return 'Ending soon...';
+                                                const diff = intervalToDuration({ start: now, end });
+                                                const parts = [];
+                                                if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                return parts.join(' ') || '< 1m';
+                                            })()}
+                                        </div>
+                                        <div className="text-sm text-indigo-200 mt-1 font-medium">
+                                            Must complete by <span className="text-white font-bold">{format(new Date(status.windowEnds), 'MMM d, h:mm a')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+
+                        <h2 className="text-2xl font-bold text-blue-100 mt-6">
                             It's Your Turn
                         </h2>
                         <p className="text-lg text-slate-300 leading-relaxed">
@@ -399,8 +414,8 @@ export function ShareholderHero({
                             Pass Turn
                         </button>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
         );
     }
 

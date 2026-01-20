@@ -9,7 +9,7 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon, Download, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon, Download, ArrowRight, ArrowLeft, List as ListIcon } from 'lucide-react';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { UserActionsDropdown } from '../components/UserActionsDropdown';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
@@ -91,7 +91,7 @@ export function AdminDashboard() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // View State for Bookings Tab
-    const [bookingViewMode, setBookingViewMode] = useState('schedule'); // 'schedule' | 'list'
+    const [bookingViewMode, setBookingViewMode] = useState('list'); // 'list' | 'calendar'
 
     // Fetch Settings & Bookings
     useEffect(() => {
@@ -1107,13 +1107,13 @@ export function AdminDashboard() {
                         onClick={() => setActiveTab('bookings')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
-                        Bookings & Schedule
+                        Booking Management
                     </button>
                     <button
-                        onClick={() => setActiveTab('calendar')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'calendar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('schedule')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'schedule' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
-                        Calendar View
+                        2026 Season Schedule
                     </button>
                     <button
                         onClick={() => setActiveTab('users')}
@@ -1131,10 +1131,6 @@ export function AdminDashboard() {
                         </div>
                     </button>
                 </div>
-
-                {activeTab === 'calendar' && (
-                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} />
-                )}
 
                 {/* System Tab Content */}
                 {activeTab === 'system' && (
@@ -1239,6 +1235,18 @@ export function AdminDashboard() {
                     </div>
                 )}
 
+                {/* 2026 Season Schedule Tab Content */}
+                {activeTab === 'schedule' && (
+                    <div className="mt-8 col-span-1 md:col-span-2 lg:col-span-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <SeasonSchedule
+                            currentOrder={getShareholderOrder(2026)}
+                            allDraftRecords={allBookings}
+                            status={draftStatus || { phase: 'PRE_DRAFT' }}
+                            startDateOverride={currentSimDate}
+                        />
+                    </div>
+                )}
+
                 {activeTab === 'bookings' && (
                     <>
                         {/* Stats Grid */}
@@ -1295,366 +1303,369 @@ export function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Toggleable Views */}
-                        {
-                            bookingViewMode === 'schedule' ? (
-                                // Season Schedule View
-                                <div className="mb-8 mt-8 w-full col-span-1 md:col-span-2 lg:col-span-4">
-                                    <SeasonSchedule
-                                        currentOrder={getShareholderOrder(2026)}
-                                        allDraftRecords={allBookings}
-                                        status={draftStatus || { phase: 'PRE_DRAFT' }}
-                                        startDateOverride={currentSimDate}
-                                        onAction={
-                                            <button
-                                                onClick={() => setBookingViewMode('list')}
-                                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
-                                            >
-                                                <span>View All Bookings</span>
-                                                <ArrowRight className="w-4 h-4" />
-                                            </button>
-                                        }
-                                    />
+
+
+                        {/* Toggleable Views in Bookings Tab */}
+                        <div className="flex justify-between items-center mb-6 mt-6">
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+                                {bookingViewMode === 'list' ? 'Booking Management' : 'Calendar View'}
+                            </h2>
+                            <div className="flex space-x-2">
+                                <button
+                                    onClick={() => setBookingViewMode('list')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border ${bookingViewMode === 'list'
+                                        ? 'bg-slate-900 text-white border-slate-900'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <ListIcon className="w-4 h-4" />
+                                    <span>List</span>
+                                </button>
+                                <button
+                                    onClick={() => setBookingViewMode('calendar')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border ${bookingViewMode === 'calendar'
+                                        ? 'bg-slate-900 text-white border-slate-900'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <Calendar className="w-4 h-4" />
+                                    <span>Calendar</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {bookingViewMode === 'calendar' ? (
+                            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} />
+                            </div>
+                        ) : (
+                            // Detailed List View
+                            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                {/* Desktop Utility Bar - Moved inside List View */}
+                                <div className="hidden md:flex justify-end gap-6 mb-4 px-1">
+                                    <button
+                                        onClick={handleEmailBookingReport}
+                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
+                                    >
+                                        <Mail className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
+                                        Email Report
+                                    </button>
+                                    <button
+                                        onClick={handleDownloadCSV}
+                                        className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
+                                    >
+                                        <Download className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
+                                        Download CSV
+                                    </button>
                                 </div>
-                            ) : (
-                                // Detailed List View
-                                <div className="mb-8 mt-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Booking Management</h2>
-                                        <button
-                                            onClick={() => setBookingViewMode('schedule')}
-                                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
-                                        >
-                                            <ArrowLeft className="w-4 h-4" />
-                                            <span>Back to Schedule</span>
-                                        </button>
-                                    </div>
 
-                                    {/* Desktop Utility Bar - Moved inside List View */}
-                                    <div className="hidden md:flex justify-end gap-6 mb-4 px-1">
-                                        <button
-                                            onClick={handleEmailBookingReport}
-                                            className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
-                                        >
-                                            <Mail className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
-                                            Email Report
-                                        </button>
-                                        <button
-                                            onClick={handleDownloadCSV}
-                                            className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors group"
-                                        >
-                                            <Download className="w-4 h-4 text-slate-400 group-hover:text-slate-900" />
-                                            Download CSV
-                                        </button>
-                                    </div>
+                                {/* Mobile Action Links (Above Table/Cards) */}
+                                <div className="md:hidden flex justify-end gap-4 mb-4">
+                                    <button
+                                        onClick={handleEmailBookingReport}
+                                        className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
+                                    >
+                                        <Mail className="w-3.5 h-3.5" />
+                                        Email Report
+                                    </button>
+                                    <button
+                                        onClick={handleDownloadCSV}
+                                        className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
+                                    >
+                                        <Download className="w-3.5 h-3.5" />
+                                        CSV
+                                    </button>
+                                </div>
 
-                                    {/* Mobile Action Links (Above Table/Cards) */}
-                                    <div className="md:hidden flex justify-end gap-4 mb-4">
-                                        <button
-                                            onClick={handleEmailBookingReport}
-                                            className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
-                                        >
-                                            <Mail className="w-3.5 h-3.5" />
-                                            Email Report
-                                        </button>
-                                        <button
-                                            onClick={handleDownloadCSV}
-                                            className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5"
-                                        >
-                                            <Download className="w-3.5 h-3.5" />
-                                            CSV
-                                        </button>
-                                    </div>
+                                {/* Mobile Card View (Bookings) */}
+                                <div className="md:hidden space-y-4 mb-8">
+                                    {(() => {
+                                        const currentOrder = getShareholderOrder(2026);
+                                        const schedule = mapOrderToSchedule(currentOrder, allBookings);
 
-                                    {/* Mobile Card View (Bookings) */}
-                                    <div className="md:hidden space-y-4 mb-8">
-                                        {(() => {
-                                            const currentOrder = getShareholderOrder(2026);
-                                            const schedule = mapOrderToSchedule(currentOrder, allBookings);
+                                        const renderCard = (slot) => {
+                                            const booking = slot.booking;
+                                            const isSlotBooked = !!booking;
 
-                                            const renderCard = (slot) => {
-                                                const booking = slot.booking;
-                                                const isSlotBooked = !!booking;
-
-                                                // Helper for payment status style
-                                                const paymentClass = booking?.isPaid
-                                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                                                    : 'bg-white text-slate-500 border-slate-200';
-
-                                                return (
-                                                    <div key={`${slot.name}-${slot.round}`} className="bg-white p-5 rounded-xl border shadow-sm space-y-4 relative overflow-hidden">
-                                                        {/* Status Stripe */}
-                                                        {isSlotBooked && (
-                                                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${booking.isFinalized ? 'bg-green-500' : 'bg-amber-400'}`}></div>
-                                                        )}
-
-                                                        {/* Header */}
-                                                        <div className="flex justify-between items-start pl-2">
-                                                            <div>
-                                                                <h3 className="font-bold text-slate-900 text-lg">{slot.name}</h3>
-                                                                <div className="flex items-center gap-2 mt-1">
-                                                                    <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                                                                        Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
-                                                                    </span>
-                                                                    {isSlotBooked && booking.guests && (
-                                                                        <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                                                            <Users className="w-3 h-3" />
-                                                                            {booking.guests}
-                                                                        </span>
-                                                                    )}
-                                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                                                        Round {slot.round}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            {isSlotBooked ? (
-                                                                <div className={`px-2 py-1 rounded text-[10px] font-bold border ${booking.isFinalized
-                                                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                                                    : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                                                                    {booking.isFinalized ? "FINALIZED" : "DRAFT"}
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-xs text-slate-400 font-medium italic pr-2">Pending</span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Content */}
-                                                        {isSlotBooked ? (
-                                                            <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100 space-y-3 ml-2">
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div>
-                                                                        <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Dates</div>
-                                                                        <div className="text-sm font-medium text-slate-900">
-                                                                            {(booking.type === 'pass' || booking.type === 'auto-pass') ? 'Pass' :
-                                                                                (booking.from && booking.to ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d')}` : 'Invalid')}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-right">
-                                                                        <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Payment</div>
-                                                                        {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
-                                                                            <span className="text-slate-400 text-sm">—</span>
-                                                                        ) : (
-                                                                            <span
-                                                                                className={`px-3 py-1 rounded text-xs font-bold border ${paymentClass}`}
-                                                                            >
-                                                                                {booking.isPaid ? "PAID" : "UNPAID"}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="ml-2 py-4 text-center border-2 border-dashed border-slate-100 rounded-lg text-slate-300 text-xs">
-                                                                No booking dates selected
-                                                            </div>
-                                                        )}
-
-                                                        {/* Actions Footer */}
-                                                        {isSlotBooked && (
-                                                            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 ml-2">
-                                                                <ActionsDropdown
-                                                                    onEdit={(booking.type !== 'cancelled' && booking.type !== 'pass' && booking.type !== 'auto-pass') ? () => handleEditClick(booking) : undefined}
-                                                                    onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
-                                                                    isCancelled={booking.type === 'cancelled'}
-                                                                    onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                                    isFinalized={booking.isFinalized}
-                                                                    onTogglePaid={() => handleTogglePaid(booking)}
-                                                                    isPaid={booking.isPaid}
-                                                                    onSendReminder={() => handleSendPaymentReminder(booking)}
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            };
+                                            // Helper for payment status style
+                                            const paymentClass = booking?.isPaid
+                                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                                : 'bg-white text-slate-500 border-slate-200';
 
                                             return (
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    {schedule.map(renderCard)}
+                                                <div key={`${slot.name}-${slot.round}`} className="bg-white p-5 rounded-xl border shadow-sm space-y-4 relative overflow-hidden">
+                                                    {/* Status Stripe */}
+                                                    {isSlotBooked && (
+                                                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${booking.isFinalized ? 'bg-green-500' : 'bg-amber-400'}`}></div>
+                                                    )}
+
+                                                    {/* Header */}
+                                                    <div className="flex justify-between items-start pl-2">
+                                                        <div>
+                                                            <h3 className="font-bold text-slate-900 text-lg">{slot.name}</h3>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                                                                    Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
+                                                                </span>
+                                                                {isSlotBooked && booking.guests && (
+                                                                    <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                                        <Users className="w-3 h-3" />
+                                                                        {booking.guests}
+                                                                    </span>
+                                                                )}
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                                                    Round {slot.round}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {isSlotBooked ? (
+                                                            <div className={`px-2 py-1 rounded text-[10px] font-bold border ${booking.isFinalized
+                                                                ? 'bg-green-50 text-green-700 border-green-200'
+                                                                : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                                                                {booking.isFinalized ? "FINALIZED" : "DRAFT"}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400 font-medium italic pr-2">Pending</span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    {isSlotBooked ? (
+                                                        <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100 space-y-3 ml-2">
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Dates</div>
+                                                                    <div className="text-sm font-medium text-slate-900">
+                                                                        {(booking.type === 'pass' || booking.type === 'auto-pass') ? 'Pass' :
+                                                                            (booking.from && booking.to ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d')}` : 'Invalid')}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Payment</div>
+                                                                    {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                                        <span className="text-slate-400 text-sm">—</span>
+                                                                    ) : (
+                                                                        <span
+                                                                            className={`px-3 py-1 rounded text-xs font-bold border ${paymentClass}`}
+                                                                        >
+                                                                            {booking.isPaid ? "PAID" : "UNPAID"}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="ml-2 py-4 text-center border-2 border-dashed border-slate-100 rounded-lg text-slate-300 text-xs">
+                                                            No booking dates selected
+                                                        </div>
+                                                    )}
+
+                                                    {/* Actions Footer */}
+                                                    {isSlotBooked && (
+                                                        <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 ml-2">
+                                                            <ActionsDropdown
+                                                                onEdit={(booking.type !== 'cancelled' && booking.type !== 'pass' && booking.type !== 'auto-pass') ? () => handleEditClick(booking) : undefined}
+                                                                onCancel={booking.type !== 'cancelled' ? () => handleCancelBooking(booking) : undefined}
+                                                                isCancelled={booking.type === 'cancelled'}
+                                                                onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                                isFinalized={booking.isFinalized}
+                                                                onTogglePaid={() => handleTogglePaid(booking)}
+                                                                isPaid={booking.isPaid}
+                                                                onSendReminder={() => handleSendPaymentReminder(booking)}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
-                                        })()}
-                                    </div>
+                                        };
 
-                                    <div className="overflow-x-auto hidden md:block">
-                                        <table className="w-full text-sm text-left">
-                                            <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                                        return (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {schedule.map(renderCard)}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+
+                                <div className="overflow-x-auto hidden md:block">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                                            <tr>
+                                                <th className="px-6 py-4">Shareholder</th>
+                                                <th className="px-6 py-4">Guests</th>
+                                                <th className="px-6 py-4">Dates</th>
+                                                <th className="px-6 py-4 text-center">Status</th>
+                                                <th className="px-6 py-4 text-center">Payment</th>
+                                                <th className="px-6 py-4 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y text-slate-600">
+                                            {loading ? (
                                                 <tr>
-                                                    <th className="px-6 py-4">Shareholder</th>
-                                                    <th className="px-6 py-4">Guests</th>
-                                                    <th className="px-6 py-4">Dates</th>
-                                                    <th className="px-6 py-4 text-center">Status</th>
-                                                    <th className="px-6 py-4 text-center">Payment</th>
-                                                    <th className="px-6 py-4 text-right">Actions</th>
+                                                    <td colSpan="5" className="px-6 py-10 text-center text-muted-foreground italic">
+                                                        Loading bookings...
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody className="divide-y text-slate-600">
-                                                {loading ? (
-                                                    <tr>
-                                                        <td colSpan="5" className="px-6 py-10 text-center text-muted-foreground italic">
-                                                            Loading bookings...
-                                                        </td>
-                                                    </tr>
-                                                ) : (() => {
-                                                    // GENERATE SCHEDULE VIEW
-                                                    const currentOrder = getShareholderOrder(2026); // Default 2026 Year
-                                                    const schedule = mapOrderToSchedule(currentOrder, allBookings);
+                                            ) : (() => {
+                                                // GENERATE SCHEDULE VIEW
+                                                const currentOrder = getShareholderOrder(2026); // Default 2026 Year
+                                                const schedule = mapOrderToSchedule(currentOrder, allBookings);
 
-                                                    // Helper to Render a Row
-                                                    const renderRow = (slot) => {
-                                                        const booking = slot.booking; // Full Booking Object
-                                                        const isSlotBooked = !!booking;
+                                                // Helper to Render a Row
+                                                const renderRow = (slot) => {
+                                                    const booking = slot.booking; // Full Booking Object
+                                                    const isSlotBooked = !!booking;
 
-                                                        // If not booked, show placeholder
-                                                        if (!isSlotBooked) {
-                                                            return (
-                                                                <tr key={`${slot.name}-${slot.round}`} className="bg-slate-50/30">
-                                                                    <td className="px-6 py-5">
-                                                                        <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
-                                                                        <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">
-                                                                            Cabin #{CABIN_OWNERS.find(o => o.name === slot.name)?.cabin || "?"}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-6 py-5 text-slate-400">—</td>
-                                                                    <td className="px-6 py-5 text-slate-400">—</td>
-                                                                    <td className="px-6 py-5 text-center">
-                                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
-                                                                            Pending
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="px-6 py-5 text-center text-slate-300">—</td>
-                                                                    <td className="px-6 py-5 text-right text-slate-300">—</td>
-                                                                </tr>
-                                                            );
-                                                        }
-
-                                                        // If booked, show existing row logic
+                                                    // If not booked, show placeholder
+                                                    if (!isSlotBooked) {
                                                         return (
-                                                            <tr key={booking.id} className="hover:bg-muted/10 transition-colors bg-white">
+                                                            <tr key={`${slot.name}-${slot.round}`} className="bg-slate-50/30">
                                                                 <td className="px-6 py-5">
-                                                                    <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
-                                                                    <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                                                                        Cabin #{booking.cabinNumber || CABIN_OWNERS.find(o => o.name === booking.shareholderName)?.cabin || "?"}
+                                                                    <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
+                                                                    <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">
+                                                                        Cabin #{CABIN_OWNERS.find(o => o.name === slot.name)?.cabin || "?"}
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-6 py-5">
-                                                                    {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
-                                                                        <span className="text-slate-400">—</span>
-                                                                    ) : (
-                                                                        <div className="flex items-center gap-1.5 font-medium text-slate-600">
-                                                                            <Users className="w-4 h-4 text-slate-400" />
-                                                                            {booking.guests || 1}
-                                                                        </div>
-                                                                    )}
-                                                                </td>
-                                                                <td className="px-6 py-5">
-                                                                    <div className="flex flex-col">
-                                                                        <span className="font-medium text-slate-900">
-                                                                            {(booking.type === 'pass' || booking.type === 'auto-pass')
-                                                                                ? '—'
-                                                                                : (booking.from && booking.to
-                                                                                    ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
-                                                                                    : 'Invalid Dates')
-                                                                            }
-                                                                        </span>
-                                                                        <span className="text-[11px] text-muted-foreground mt-0.5">
-                                                                            Created: {booking.createdAt ? format(booking.createdAt, 'MMM d, HH:mm') : 'N/A'}
-                                                                        </span>
-                                                                    </div>
-                                                                </td>
-
+                                                                <td className="px-6 py-5 text-slate-400">—</td>
+                                                                <td className="px-6 py-5 text-slate-400">—</td>
                                                                 <td className="px-6 py-5 text-center">
-                                                                    {booking.type === 'pass' || booking.type === 'auto-pass' ? (
-                                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default">
-                                                                            <XCircle className="w-3 h-3 mr-1.5" />
-                                                                            Passed
-                                                                        </span>
-                                                                    ) : booking.type === 'cancelled' ? (
-                                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default">
-                                                                            <Ban className="w-3 h-3 mr-1.5" />
-                                                                            Cancelled
-                                                                        </span>
-                                                                    ) : (
-                                                                        /* Static Badge - Interaction moved to Actions Menu */
-                                                                        <span
-                                                                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${booking.isFinalized
-                                                                                ? 'bg-green-50 text-green-700 border-green-200'
-                                                                                : 'bg-amber-50 text-amber-700 border-amber-200'
-                                                                                }`}
-                                                                        >
-                                                                            {booking.isFinalized ? (
-                                                                                <>
-                                                                                    <CheckCircle className="w-3 h-3 mr-1.5" />
-                                                                                    Finalized
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <Clock className="w-3 h-3 mr-1.5" />
-                                                                                    Draft
-                                                                                </>
-                                                                            )}
-                                                                        </span>
-                                                                    )}
+                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
+                                                                        Pending
+                                                                    </span>
                                                                 </td>
-
-                                                                <td className="px-6 py-5 text-center">
-                                                                    {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
-                                                                        <span className="text-slate-400">—</span>
-                                                                    ) : (
-                                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${booking.isPaid
-                                                                            ? 'bg-green-100 text-green-800 border-green-200'
-                                                                            : 'bg-white text-slate-500 border-slate-200'
-                                                                            }`}>
-                                                                            {booking.isPaid ? 'PAID' : 'UNPAID'}
-                                                                            {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
-                                                                        </span>
-                                                                    )}
-                                                                </td>
-
-                                                                <td className="px-6 py-5 text-right">
-                                                                    {booking.type !== 'pass' && booking.type !== 'auto-pass' && booking.type !== 'cancelled' ? (
-                                                                        <ActionsDropdown
-                                                                            onEdit={booking.type !== 'cancelled' ? () => handleEditClick(booking) : undefined}
-                                                                            onCancel={() => handleCancelBooking(booking)}
-                                                                            isCancelled={booking.type === 'cancelled'}
-                                                                            onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                                            isFinalized={booking.isFinalized}
-                                                                            onTogglePaid={() => handleTogglePaid(booking)}
-                                                                            isPaid={booking.isPaid}
-                                                                            onSendReminder={() => handleSendPaymentReminder(booking)}
-                                                                        />
-                                                                    ) : null}
-                                                                </td>
+                                                                <td className="px-6 py-5 text-center text-slate-300">—</td>
+                                                                <td className="px-6 py-5 text-right text-slate-300">—</td>
                                                             </tr>
                                                         );
-                                                    };
+                                                    }
 
+                                                    // If booked, show existing row logic
                                                     return (
-                                                        <>
-                                                            {/* ROUND 1 */}
-                                                            <tr className="bg-slate-100 border-b border-t border-slate-200">
-                                                                <td colSpan="5" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase">
-                                                                    Round 1 - Shareholder Rotation
-                                                                </td>
-                                                            </tr>
-                                                            {schedule.filter(s => s.round === 1).map(renderRow)}
+                                                        <tr key={booking.id} className="hover:bg-muted/10 transition-colors bg-white">
+                                                            <td className="px-6 py-5">
+                                                                <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
+                                                                <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                                                                    Cabin #{booking.cabinNumber || CABIN_OWNERS.find(o => o.name === booking.shareholderName)?.cabin || "?"}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                                    <span className="text-slate-400">—</span>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-1.5 font-medium text-slate-600">
+                                                                        <Users className="w-4 h-4 text-slate-400" />
+                                                                        {booking.guests || 1}
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-medium text-slate-900">
+                                                                        {(booking.type === 'pass' || booking.type === 'auto-pass')
+                                                                            ? '—'
+                                                                            : (booking.from && booking.to
+                                                                                ? `${format(booking.from, 'MMM d')} - ${format(booking.to, 'MMM d, yyyy')}`
+                                                                                : 'Invalid Dates')
+                                                                        }
+                                                                    </span>
+                                                                    <span className="text-[11px] text-muted-foreground mt-0.5">
+                                                                        Created: {booking.createdAt ? format(booking.createdAt, 'MMM d, HH:mm') : 'N/A'}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
 
-                                                            {/* ROUND 2 */}
-                                                            <tr className="bg-slate-100 border-b border-t border-slate-200">
-                                                                <td colSpan="5" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase mt-4">
-                                                                    Round 2 - Snake Draft
-                                                                </td>
-                                                            </tr>
-                                                            {schedule.filter(s => s.round === 2).map(renderRow)}
-                                                        </>
+                                                            <td className="px-6 py-5 text-center">
+                                                                {booking.type === 'pass' || booking.type === 'auto-pass' ? (
+                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default">
+                                                                        <XCircle className="w-3 h-3 mr-1.5" />
+                                                                        Passed
+                                                                    </span>
+                                                                ) : booking.type === 'cancelled' ? (
+                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default">
+                                                                        <Ban className="w-3 h-3 mr-1.5" />
+                                                                        Cancelled
+                                                                    </span>
+                                                                ) : (
+                                                                    /* Static Badge - Interaction moved to Actions Menu */
+                                                                    <span
+                                                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${booking.isFinalized
+                                                                            ? 'bg-green-50 text-green-700 border-green-200'
+                                                                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                                                                            }`}
+                                                                    >
+                                                                        {booking.isFinalized ? (
+                                                                            <>
+                                                                                <CheckCircle className="w-3 h-3 mr-1.5" />
+                                                                                Finalized
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <Clock className="w-3 h-3 mr-1.5" />
+                                                                                Draft
+                                                                            </>
+                                                                        )}
+                                                                    </span>
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-6 py-5 text-center">
+                                                                {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
+                                                                    <span className="text-slate-400">—</span>
+                                                                ) : (
+                                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${booking.isPaid
+                                                                        ? 'bg-green-100 text-green-800 border-green-200'
+                                                                        : 'bg-white text-slate-500 border-slate-200'
+                                                                        }`}>
+                                                                        {booking.isPaid ? 'PAID' : 'UNPAID'}
+                                                                        {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
+                                                                    </span>
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-6 py-5 text-right">
+                                                                {booking.type !== 'pass' && booking.type !== 'auto-pass' && booking.type !== 'cancelled' ? (
+                                                                    <ActionsDropdown
+                                                                        onEdit={booking.type !== 'cancelled' ? () => handleEditClick(booking) : undefined}
+                                                                        onCancel={() => handleCancelBooking(booking)}
+                                                                        isCancelled={booking.type === 'cancelled'}
+                                                                        onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
+                                                                        isFinalized={booking.isFinalized}
+                                                                        onTogglePaid={() => handleTogglePaid(booking)}
+                                                                        isPaid={booking.isPaid}
+                                                                        onSendReminder={() => handleSendPaymentReminder(booking)}
+                                                                    />
+                                                                ) : null}
+                                                            </td>
+                                                        </tr>
                                                     );
-                                                })()}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                };
+
+                                                return (
+                                                    <>
+                                                        {/* ROUND 1 */}
+                                                        <tr className="bg-slate-100 border-b border-t border-slate-200">
+                                                            <td colSpan="5" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase">
+                                                                Round 1 - Shareholder Rotation
+                                                            </td>
+                                                        </tr>
+                                                        {schedule.filter(s => s.round === 1).map(renderRow)}
+
+                                                        {/* ROUND 2 */}
+                                                        <tr className="bg-slate-100 border-b border-t border-slate-200">
+                                                            <td colSpan="5" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase mt-4">
+                                                                Round 2 - Snake Draft
+                                                            </td>
+                                                        </tr>
+                                                        {schedule.filter(s => s.round === 2).map(renderRow)}
+                                                    </>
+                                                );
+                                            })()}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            )}
+                            </div>
+                        )}
                     </>
                 )
                 }
