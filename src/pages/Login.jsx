@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.283 - Feat: Add rich UI for Cancelled Shareholder Banner</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.284 - Fix: Remove Check Schedule button from Cancelled Banner</p>
                 </p>
             </div>
         </div>
