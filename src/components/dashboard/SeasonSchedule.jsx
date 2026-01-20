@@ -3,11 +3,14 @@ import { Info, RotateCw, Clock, Sunrise, Zap, CalendarCheck } from 'lucide-react
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
-export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride }) {
+export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride, onAction }) {
     return (
         <div id="tour-schedule" className="">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold tracking-tight">2026 Season Booking Schedule</h2>
+                {onAction && (
+                    <div>{onAction}</div>
+                )}
             </div>
 
             <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
