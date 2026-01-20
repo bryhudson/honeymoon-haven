@@ -246,7 +246,10 @@ export function ShareholderHero({
 
     // --- TIMER LOGIC (Unified) ---
     // Only show if windowEnds is defined AND (it's my turn OR I'm up next)
-    const showTimer = status.windowEnds && (isYourTurn || queueInfo?.diff === 1);
+    // --- TIMER LOGIC (Unified) ---
+    // Only show if windowEnds is defined AND (it's my turn OR I'm up next OR I'm an admin)
+    const isAdminView = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+    const showTimer = status.windowEnds && (isYourTurn || queueInfo?.diff === 1 || isAdminView);
 
     const TimerComponent = showTimer ? (
         <div className={`mt-2 text-sm font-bold flex items-center justify-center lg:justify-start gap-2 ${isYourTurn ? 'text-blue-300' : 'text-indigo-300'}`}>
@@ -367,7 +370,7 @@ export function ShareholderHero({
                                     </div>
                                     <div>
                                         <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
-                                            Complete Request By
+                                            {isYourTurn ? "Complete Request By" : "Turn Deadline"}
                                         </div>
                                         <div className="text-2xl font-bold text-white tabular-nums tracking-tight">
                                             {format(new Date(status.windowEnds), 'MMM d, h:mm a')}

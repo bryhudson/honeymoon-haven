@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail, DollarSign, Bell } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, intervalToDuration } from 'date-fns';
 
 export function AdminTurnHero({
     activeTurn,
@@ -81,7 +81,41 @@ export function AdminTurnHero({
                 </div>
 
                 <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
-                    {/* No manual remind button - automated emails handled by system */}
+
+                    {/* DEADLINE TIMER CARD */}
+                    {activeTurn.end && (
+                        <div className="bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 min-w-[300px] text-center lg:text-left">
+                            <div className="flex flex-col md:flex-row items-center justify-center lg:justify-start gap-4">
+                                <div className="p-2 bg-indigo-500/30 rounded-lg shrink-0">
+                                    <Clock className="w-5 h-5 text-indigo-200" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
+                                        Turn Deadline
+                                    </div>
+                                    <div className="text-xl font-bold text-white tabular-nums tracking-tight">
+                                        {format(new Date(activeTurn.end), 'MMM d, h:mm a')}
+                                    </div>
+                                    <div className="text-sm text-indigo-200 mt-1 font-medium flex items-center justify-center lg:justify-start gap-1.5">
+                                        <span>Time remaining:</span>
+                                        <span className="text-white font-bold">
+                                            {(() => {
+                                                const end = new Date(activeTurn.end);
+                                                const now = new Date();
+                                                if (end <= now) return 'Ended';
+                                                const diff = intervalToDuration({ start: now, end });
+                                                const parts = [];
+                                                if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                return parts.join(' ') || '< 1m';
+                                            })()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
