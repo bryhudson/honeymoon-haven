@@ -5,8 +5,8 @@ import { db } from '../../lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Loader2, Mail, RefreshCw, Undo, Save, Info } from 'lucide-react';
 
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 export function NotificationsTab({ triggerAlert, triggerConfirm }) {
     const [templates, setTemplates] = useState({});
