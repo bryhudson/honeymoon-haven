@@ -34,54 +34,18 @@ export function NotificationsTab({ triggerAlert, triggerConfirm }) {
         fetchTemplates();
     }, []);
 
-    const generateDefaultContent = (id) => {
-        // Attempt to reverse-engineer the default template
-        // by passing {{key}} placeholders as data
-        const def = TEMPLATE_DEFINITIONS.find(d => d.id === id);
-        if (!def) return { subject: "", body: "" };
-
-        const mockData = {};
-        def.variables.forEach(v => {
-            mockData[v] = `{{${v}}}`;
-        });
-
-        // Specific mocks for logic branches
-        if (id === 'reminder') mockData.type = 'morning';
-        if (id === 'bookingCancelled') mockData.within_turn_window = true;
-
-        try {
-            const { subject, htmlContent } = emailTemplates[id](mockData);
-            // htmlContent is the FULL HTML. We only want the BODY (inner content).
-            // But wrapHtml puts it inside ...
-            // Wait, wrapping is done inside emailTemplates functions.
-            // We need to extract the inner content if possible, or allow full HTML editing?
-            // "wrapHtml(subject, body)"
-            // The template functions return wrapHtml(...) result.
-            // We can't cleanly extract body.
-
-            // ALTERNATIVE: Just assume the user will rewrite it, 
-            // OR regex match the body content?
-            // The body is inside <div style="${BASE_STYLES}"> ... </div>
-            // This is brittle.
-
-            // Let's just output it as guidance.
-            return { subject, body: "Default code content (complex to extract). Please rewrite or reference the existing emails." };
-        } catch (e) {
-            return { subject: "", body: "" };
-        }
-    };
-
     const handleEdit = (id) => {
         const existing = templates[id];
+        const def = TEMPLATE_DEFINITIONS.find(d => d.id === id);
+
         if (existing) {
             setEditForm({ ...existing });
         } else {
-            // New Override
-            // Try to generate meaningful defaults?
-            // Actually, we can't easily extract the BODY from the formatted HTML returned by emailTemplates.
-            // So we will leave Body empty but show a tip.
-            const defaults = generateDefaultContent(id);
-            setEditForm({ subject: defaults.subject, body: "" });
+            // New Override: Pre-fill with default context
+            setEditForm({
+                subject: def?.defaultSubject || "",
+                body: def?.defaultBody?.trim() || ""
+            });
         }
         setEditingId(id);
     };
