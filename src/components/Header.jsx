@@ -17,6 +17,7 @@ export function Header() {
     const loggedInShareholder = React.useMemo(() => {
         if (!currentUser?.email) return null;
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
+        if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
         const owner = CABIN_OWNERS.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
     }, [currentUser]);
@@ -40,7 +41,7 @@ export function Header() {
                             <>
                                 <div className="flex flex-col items-end md:flex-row md:items-center md:gap-4">
                                     <span className="text-muted-foreground hidden sm:inline">
-                                        {loggedInShareholder ? `Welcome, ${loggedInShareholder}` : currentUser.email}
+                                        {loggedInShareholder ? `Hi, ${loggedInShareholder}` : currentUser.email}
                                     </span>
 
                                     {isAdmin && (
