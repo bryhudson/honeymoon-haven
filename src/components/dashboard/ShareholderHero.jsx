@@ -293,67 +293,78 @@ export function ShareholderHero({
     // --- CASE A: Your Turn + Has Draft ---
     if (isYourTurn && activeDraft) {
         return (
-            <div className="bg-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+            <div className="bg-slate-900 text-white rounded-xl p-5 md:p-6 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
                 {/* Abstract Background Shapes */}
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-purple-900 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
 
-                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                    <div className="space-y-4 text-center lg:text-left w-full lg:w-auto">
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
-                            Welcome, {shareholderName}
+                <div className="relative z-10 flex flex-col gap-4">
+                    {/* Header Row */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h1 className="text-xl md:text-2xl font-medium text-blue-200">
+                            Welcome, <span className="text-white font-bold">{shareholderName}</span>
                         </h1>
-                        <div id="tour-status" className="flex flex-col items-center lg:items-start gap-1">
-                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-2">
-                                {/* Phase Badge */}
-                                {phaseLabel && (
-                                    <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
-                                        {phaseLabel}
-                                    </span>
-                                )}
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                                    </span>
-                                    It's Your Turn
-                                </div>
+                        <div className="flex items-center gap-2">
+                            {/* Phase Badge */}
+                            {phaseLabel && (
+                                <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-600/30">
+                                    {phaseLabel}
+                                </span>
+                            )}
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 text-blue-200 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
+                                <Clock className="w-3 h-3 animate-pulse text-blue-400" />
+                                Action Required
                             </div>
-                            {/* TIMER INJECTED HERE */}
-                            {TimerComponent}
                         </div>
-                        <h2 className="text-2xl font-bold text-blue-100">
+                    </div>
+
+                    {/* Hero Message */}
+                    <div className="space-y-2">
+                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">
                             Draft Selection Saved
                         </h2>
-                        <p className="text-lg text-slate-300">
+                        <p className="text-lg text-blue-100/90 font-light leading-relaxed max-w-3xl">
                             You have selected dates. Please <span className="font-bold text-white">finalize</span> to lock them in.
                         </p>
                     </div>
 
-                    <div id="tour-actions" className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
-                        <button
-                            onClick={() => onViewDetails(activeDraft)}
-                            className="flex-1 lg:flex-none px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
-                        >
-                            <Info className="w-5 h-5" />
-                            Review Booking Details
-                        </button>
-                        <button
-                            disabled={isReadOnly}
-                            onClick={() => onFinalize(activeDraft.id, shareholderName)}
-                            className={`flex-1 lg:flex-none px-8 py-3 text-white text-lg font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all 
-                                ${isReadOnly
-                                    ? 'bg-slate-600 cursor-not-allowed opacity-70'
-                                    : 'bg-green-600 hover:bg-green-700 hover:shadow-xl hover:-translate-y-0.5 animate-pulse'
-                                }`}
-                        >
-                            <CheckCircle className="w-5 h-5" />
-                            {isReadOnly ? 'Finalize (Disabled)' : 'Finalize Booking'}
-                        </button>
+                    {/* Action Bar */}
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm mt-1">
+                        <div className="flex flex-col xl:flex-row gap-4 xl:items-end justify-between">
+
+                            {/* Draft Timer / Info */}
+                            <div className="flex-1">
+                                {TimerComponent}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                                <button
+                                    onClick={() => onViewDetails(activeDraft)}
+                                    className="px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
+                                >
+                                    <Info className="w-5 h-5" />
+                                    Review Details
+                                </button>
+                                <button
+                                    disabled={isReadOnly}
+                                    onClick={() => onFinalize(activeDraft.id, shareholderName)}
+                                    className={`px-8 py-3 text-white text-lg font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all 
+                                        ${isReadOnly
+                                            ? 'bg-slate-600 cursor-not-allowed opacity-70'
+                                            : 'bg-green-600 hover:bg-green-700 hover:shadow-xl hover:-translate-y-0.5 animate-pulse'
+                                        }`}
+                                >
+                                    <CheckCircle className="w-5 h-5" />
+                                    {isReadOnly ? 'Finalize (Disabled)' : 'Finalize Booking'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         );
+
     }
 
     // --- CASE B: Your Turn (No Draft) ---
@@ -481,49 +492,50 @@ export function ShareholderHero({
 
         const isPaid = paymentStatus === 'paid';
 
+
         return (
             <div className={`
-                rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white
+                rounded-xl p-5 md:p-6 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white
                 ${isPassed ? 'bg-slate-900' : 'bg-slate-900'}
             `}>
                 {/* Abstract Background Shapes */}
                 <div className={`absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none ${isPassed ? 'bg-amber-500' : 'bg-green-500'}`}></div>
                 <div className={`absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none ${isPassed ? 'bg-amber-600' : 'bg-green-600'}`}></div>
 
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="space-y-4 text-center md:text-left max-w-2xl">
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
-                            Welcome, {shareholderName}
+                <div className="relative z-10 flex flex-col gap-4">
+                    {/* Header Row */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h1 className="text-xl md:text-2xl font-medium text-white/90">
+                            Welcome, <span className="text-white font-bold">{shareholderName}</span>
                         </h1>
-
                         <div id="tour-status">
                             {renderBadges()}
                         </div>
+                    </div>
 
-                        <h2 className="text-2xl font-bold text-white/90">
-                            {isPassed ? "" : "You're All Set!"}
+                    {/* Hero Message */}
+                    <div className="space-y-2">
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                            {isPassed ? "Turn Passed" : "You're All Set!"}
                         </h2>
-
                         <div className="text-lg text-slate-300 leading-relaxed">
                             {isPassed ? (
                                 <span className="text-slate-200">
                                     You have passed your turn for this round. We'll let you know when the next round begins!
-                                    <br />
-                                    <span className="text-sm opacity-70 mt-1 block">Enjoy the break!</span>
                                 </span>
                             ) : (
                                 <div className="space-y-1">
                                     <p>
-                                        booked for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
+                                        Booking confirmed for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
                                         <span className="opacity-60 ml-2">({nights} nights)</span>
                                     </p>
                                     {isPaid ? (
-                                        <p className="text-green-400 text-sm font-bold flex items-center justify-center md:justify-start gap-2">
+                                        <p className="text-green-400 text-sm font-bold flex items-center gap-2">
                                             <CheckCircle className="w-4 h-4" />
                                             Payment Completed
                                         </p>
                                     ) : (
-                                        <p className="text-amber-400 text-sm font-bold flex items-center justify-center md:justify-start gap-2">
+                                        <p className="text-amber-400 text-sm font-bold flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
                                             Payment Outstanding
                                         </p>
@@ -535,7 +547,7 @@ export function ShareholderHero({
 
                     {/* Actions */}
                     {!isPassed && lastAction && (
-                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm mt-1 flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                             <button
                                 onClick={() => onViewDetails(lastAction)}
                                 className="px-6 py-3 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
@@ -554,12 +566,10 @@ export function ShareholderHero({
                             )}
                         </div>
                     )}
-                    {/* For Passed, simply show nothing or a "View Schedule" if we had one. Currently just the banner is enough notification. */}
-                    {/* For Passed, show View Schedule to match Cancelled state visual balance */}
-
                 </div>
             </div>
         );
+
     }
 
     // --- CASE D: Waiting (or Cancelled) ---
