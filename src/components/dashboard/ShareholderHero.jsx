@@ -406,7 +406,7 @@ export function ShareholderHero({
 
                     {/* Hero Message */}
                     <div className="space-y-2">
-                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 tracking-tight drop-shadow-md">
+                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 tracking-tight drop-shadow-md pb-2">
                             Draft Saved
                         </h2>
                         <p className="text-lg text-blue-100/90 font-light leading-relaxed max-w-3xl">
@@ -480,7 +480,7 @@ export function ShareholderHero({
 
                     {/* MAIN HERO MESSAGE */}
                     <div className="space-y-2">
-                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 tracking-tight drop-shadow-md">
+                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 tracking-tight drop-shadow-md pb-2">
                             It's Your Turn
                         </h2>
                         <p className="text-lg text-blue-100/90 font-light leading-relaxed max-w-3xl">
@@ -601,7 +601,7 @@ export function ShareholderHero({
 
                     {/* Hero Message */}
                     <div className="space-y-2">
-                        <h2 className={`text-5xl md:text-6xl font-black tracking-tight drop-shadow-md text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-300 to-orange-400' : 'from-emerald-300 to-green-400'}`}>
+                        <h2 className={`text-5xl md:text-6xl font-black tracking-tight drop-shadow-md pb-2 text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-300 to-orange-400' : 'from-emerald-300 to-green-400'}`}>
                             {isPassed ? "Turn Passed" : "You're All Set!"}
                         </h2>
                         <div className="text-lg text-slate-300 leading-relaxed">
@@ -685,13 +685,59 @@ export function ShareholderHero({
                     {/* Hero Message */}
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-5xl md:text-6xl font-black tracking-tight drop-shadow-md text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500">
+                            <h2 className="text-5xl md:text-6xl font-black tracking-tight drop-shadow-md pb-2 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500">
                                 Booking Cancelled
                             </h2>
                         </div>
                         <p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
                             Your previous booking was cancelled. You have returned to the queue and will be able to book again when your turn comes up in the next available round or open season.
                         </p>
+                    </div>
+
+                    {/* Main Status - Clean Flow (Copied from Case E) */}
+                    <div className="space-y-4 mt-2">
+                        {/* Currently Picking Status Card */}
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-md">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                                <div className="flex-1">
+                                    <p className="text-red-200/80 text-sm mb-2">Draft Status</p>
+                                    <h2 className="text-3xl md:text-4xl font-bold text-white">
+                                        Waiting for Next Turn
+                                    </h2>
+                                    <p className="text-base text-red-100/80 mt-3 leading-relaxed">
+                                        We'll email you as soon as your turn comes up again. In the meantime, you can track the live progress here.
+                                    </p>
+                                </div>
+
+                                {/* Right: Current Turn - Integrated */}
+                                <div className="md:border-l md:border-red-500/20 md:pl-6 border-t md:border-t-0 pt-4 md:pt-0 min-w-[280px]">
+                                    <div className="text-xs font-bold text-red-300 uppercase tracking-widest mb-2">Currently Picking</div>
+                                    <div className="text-2xl font-bold text-white mb-1">{status.activePicker}</div>
+                                    {status.windowEnds && (
+                                        <div className="mt-3">
+                                            <div className="text-xs text-red-200/70 mb-1">Turn Ends</div>
+                                            <div className="text-lg font-bold text-white">
+                                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                            </div>
+                                            <div className="mt-2 bg-red-950/50 px-2 py-1 rounded text-red-200 font-mono text-xs font-bold w-fit border border-red-500/30">
+                                                Time left: <span className="text-white">
+                                                    {(() => {
+                                                        const end = new Date(status.windowEnds);
+                                                        if (end <= now) return 'Ending...';
+                                                        const diff = intervalToDuration({ start: now, end });
+                                                        const parts = [];
+                                                        if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                        if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                        if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                        return parts.join(' ') || '< 1m';
+                                                    })()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Actions */}
