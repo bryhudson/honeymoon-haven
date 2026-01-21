@@ -938,7 +938,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.317 - feat: Add Fast Testing Mode for 10-minute turn windows</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.318 - fix: Pass fastTestingMode to calculateDraftSchedule for turn windows</p>
 
 
                     </div>

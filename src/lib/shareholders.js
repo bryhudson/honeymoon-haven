@@ -84,9 +84,13 @@ export function getOfficialStart(finishTime) {
     }
 }
 
-export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null) {
+
+export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, fastTestingMode = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
-    const PICK_DURATION_MS = DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000;
+    const PICK_DURATION_MS = fastTestingMode
+        ? (10 * 60 * 1000) // Fast mode: 10 minutes
+        : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
+
 
     // Build the full turn order (Round 1 + Round 2 Snake)
     const round1Order = [...shareholders];

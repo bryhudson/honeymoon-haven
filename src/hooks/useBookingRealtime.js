@@ -58,8 +58,10 @@ export function useBookingRealtime() {
         };
     }, []);
 
+
     const currentOrder = getShareholderOrder(2026);
-    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), startDateOverride);
+    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), startDateOverride, fastTestingMode);
+
 
     return {
         allDraftRecords,
