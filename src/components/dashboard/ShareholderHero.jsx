@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail, DollarSign, User } from 'lucide-react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
+import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
     currentUser,
@@ -17,7 +18,8 @@ export function ShareholderHero({
     onViewSchedule,
     currentOrder,
     isReadOnly = false,
-    onOpenFeedback
+    onOpenFeedback,
+    onCelebrated
 }) {
     const [now, setNow] = React.useState(new Date());
 
@@ -26,6 +28,44 @@ export function ShareholderHero({
         const timer = setInterval(() => setNow(new Date()), 60000);
         return () => clearInterval(timer);
     }, []);
+
+    // --- CONFETTI CELEBRATION ---
+    React.useEffect(() => {
+        // Find the most recent finalized, paid, but uncelebrated booking
+        const paidBooking = drafts?.find(b =>
+            b.shareholderName === shareholderName &&
+            b.isFinalized &&
+            b.isPaid &&
+            !b.celebrated &&
+            b.type !== 'cancelled' &&
+            b.type !== 'pass'
+        );
+
+        if (paidBooking && onCelebrated) {
+            // FIRE CONFETTI!
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(function () {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                // since particles fall down, start a bit higher than random
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+
+            // Mark as celebrated in Firestore
+            onCelebrated(paidBooking.id);
+        }
+    }, [drafts, shareholderName, onCelebrated]);
     if (!shareholderName) return null;
 
     // Helper to convert number to ordinal (1st, 2nd, 3rd, etc.)

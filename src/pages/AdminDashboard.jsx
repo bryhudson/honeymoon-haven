@@ -667,7 +667,7 @@ export function AdminDashboard() {
                 `Are you sure you want to revert the payment status for ${booking.shareholderName}?`,
                 async () => {
                     try {
-                        await updateDoc(doc(db, "bookings", booking.id), { isPaid: false });
+                        await updateDoc(doc(db, "bookings", booking.id), { isPaid: false, celebrated: false });
                         triggerAlert("Success", "Marked as Unpaid.");
                     } catch (err) {
                         triggerAlert("Error", err.message);
@@ -689,7 +689,7 @@ export function AdminDashboard() {
                 async () => {
                     try {
                         // 1. Update DB
-                        await updateDoc(doc(db, "bookings", booking.id), { isPaid: true });
+                        await updateDoc(doc(db, "bookings", booking.id), { isPaid: true, celebrated: false });
 
                         // 2. Send Email
                         // Find email address
@@ -785,7 +785,8 @@ export function AdminDashboard() {
                         type: 'cancelled',
                         cancelledAt: new Date(),
                         isFinalized: false,
-                        isPaid: false
+                        isPaid: false,
+                        celebrated: false
                     });
 
                     // 2. Send "Booking Cancelled" Email (Non-Blocking)

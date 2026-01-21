@@ -109,6 +109,17 @@ export function Dashboard() {
     // Using Custom Hook for Realtime Data
     const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, fastTestingMode, bypassTenAM } = useBookingRealtime();
 
+    const handleCelebrated = async (bookingId) => {
+        if (!bookingId) return;
+        try {
+            await updateDoc(doc(db, "bookings", bookingId), {
+                celebrated: true
+            });
+        } catch (err) {
+            console.error("Failed to update celebrated status:", err);
+        }
+    };
+
     const [isBooking, setIsBooking] = useState(false);
     const [passStep, setPassStep] = useState(0); // 0=Closed, 1=Init, 2=Warn
     const [showPreDraftModal, setShowPreDraftModal] = useState(false);
@@ -231,7 +242,8 @@ export function Dashboard() {
             try {
                 await updateDoc(doc(db, "bookings", bookingId), {
                     isFinalized: true,
-                    createdAt: new Date() // Reset clock to now
+                    createdAt: new Date(), // Reset clock to now
+                    celebrated: false
                 });
 
                 // 1. Notify CURRENT user (Confirmation) - HANDLED IN BookingSection.jsx NOW.
@@ -511,7 +523,8 @@ export function Dashboard() {
                                 type: 'cancelled',
                                 cancelledAt: new Date(),
                                 isFinalized: true, // Keep finalized so it's not a draft
-                                isPaid: false
+                                isPaid: false,
+                                celebrated: false
                             });
 
                             // 2. Send "Booking Cancelled" Email
@@ -657,6 +670,7 @@ export function Dashboard() {
                         onEmail={(booking) => setEmailingBooking(booking)}
                         onViewSchedule={() => setActiveTab('schedule')}
                         onOpenFeedback={() => setIsFeedbackOpen(true)}
+                        onCelebrated={handleCelebrated}
                     />
 
                     {/* --- TAB NAVIGATION --- */}
@@ -927,7 +941,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.330 - Unify email timing logic and refactor pick duration</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.331 - Implement confetti celebration for paid bookings</p>
 
 
                     </div>
