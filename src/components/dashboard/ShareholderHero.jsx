@@ -547,7 +547,7 @@ export function ShareholderHero({
                     {/* Header Row */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h1 className="text-xl md:text-2xl font-medium text-white/90">
-                            Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                            Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                         </h1>
                         <div id="tour-status">
                             {renderBadges()}
