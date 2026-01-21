@@ -731,7 +731,7 @@ export function ShareholderHero({
                                             Get your dates ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking, and then it's your turn.
                                         </p>
                                     ) : (
-                                        <p>Sit tight! We'll send you an email the moment it's your turn to pick.</p>
+                                        <p>No rush! We'll email you as soon as it's your turn to pick your dates.</p>
                                     )}
                                 </div>
                             </div>

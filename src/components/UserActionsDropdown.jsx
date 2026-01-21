@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreVertical, Edit, Key, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, Key, Trash2, Eye } from 'lucide-react';
 
 export function UserActionsDropdown({ user, onEdit, onPassword, onDelete }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +39,11 @@ export function UserActionsDropdown({ user, onEdit, onPassword, onDelete }) {
         return () => window.removeEventListener('scroll', handleScroll, true);
     }, [isOpen]);
 
+    const handleViewAs = () => {
+        setIsOpen(false);
+        window.location.href = `/?masquerade=${encodeURIComponent(user.name)}`;
+    };
+
     return (
         <>
             <button
@@ -57,6 +62,14 @@ export function UserActionsDropdown({ user, onEdit, onPassword, onDelete }) {
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="py-1" role="menu">
+                        <button
+                            onClick={handleViewAs}
+                            className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-purple-50 hover:text-purple-600 flex items-center gap-2"
+                        >
+                            <Eye className="w-4 h-4" />
+                            View as Shareholder
+                        </button>
+                        <div className="border-t border-slate-100"></div>
                         <button
                             onClick={() => { setIsOpen(false); onEdit(user); }}
                             className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2"
