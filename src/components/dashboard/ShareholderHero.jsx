@@ -717,9 +717,15 @@ export function ShareholderHero({
                             ) : isJustPassed ? (
                                 <span>Turn Passed</span>
                             ) : (
-                                <span>
-                                    You are <span className="text-2xl md:text-3xl font-medium text-indigo-300">{getOrdinal(queueInfo?.diff || 1)} in Line</span>
-                                </span>
+                                <div className="flex flex-col">
+                                    <span className="text-white">You are</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
+                                            {getOrdinal(queueInfo?.diff || 1)}
+                                        </span>
+                                        <span className="text-2xl md:text-3xl font-medium text-indigo-300">in Line</span>
+                                    </div>
+                                </div>
                             )}
                         </h2>
 

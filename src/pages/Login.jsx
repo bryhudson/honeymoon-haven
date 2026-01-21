@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.305 - feat: Clickable Feedback link and ordinal queue positions (1st, 2nd, 3rd)</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.306 - feat: Emphasize queue position with larger ordinal display</p>
                 </p>
             </div>
         </div>

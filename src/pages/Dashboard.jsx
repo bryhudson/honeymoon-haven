@@ -927,7 +927,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.305 - feat: Clickable Feedback link and ordinal queue positions (1st, 2nd, 3rd)</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.306 - feat: Emphasize queue position with larger ordinal display</p>
 
 
                     </div>
