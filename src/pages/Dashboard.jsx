@@ -22,6 +22,7 @@ import { BookingSection } from '../components/BookingSection';
 import { OnboardingTour } from '../components/OnboardingTour';
 import { EmailGuestModal } from '../components/dashboard/EmailGuestModal';
 import { ShareholderCalendarView } from '../components/dashboard/ShareholderCalendarView';
+import { FeedbackModal } from '../components/FeedbackModal';
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
@@ -119,6 +120,7 @@ export function Dashboard() {
     const [editingBooking, setEditingBooking] = useState(null);
     const [viewingBooking, setViewingBooking] = useState(null);
     const [emailingBooking, setEmailingBooking] = useState(null);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [showBookingForm, setShowBookingForm] = useState(false);
 
     // UI Layout State
@@ -656,6 +658,7 @@ export function Dashboard() {
                         currentOrder={currentOrder}
                         onEmail={(booking) => setEmailingBooking(booking)}
                         onViewSchedule={() => setActiveTab('schedule')}
+                        onOpenFeedback={() => setIsFeedbackOpen(true)}
                     />
 
                     {/* --- TAB NAVIGATION --- */}
@@ -924,12 +927,18 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.304 - fix: Add line break to welcome text to prevent badge wrapping</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.305 - feat: Clickable Feedback link and ordinal queue positions (1st, 2nd, 3rd)</p>
 
 
                     </div>
                 </>
             )}
+
+            <FeedbackModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
+                shareholderName={loggedInShareholder}
+            />
         </div >
     );
 }

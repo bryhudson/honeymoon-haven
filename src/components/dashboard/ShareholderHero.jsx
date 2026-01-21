@@ -16,7 +16,8 @@ export function ShareholderHero({
     onEmail,
     onViewSchedule,
     currentOrder,
-    isReadOnly = false
+    isReadOnly = false,
+    onOpenFeedback
 }) {
     const [now, setNow] = React.useState(new Date());
 
@@ -26,6 +27,13 @@ export function ShareholderHero({
         return () => clearInterval(timer);
     }, []);
     if (!shareholderName) return null;
+
+    // Helper to convert number to ordinal (1st, 2nd, 3rd, etc.)
+    const getOrdinal = (n) => {
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    };
 
     // --- QUEUE CALCULATION (Moved to top to avoid ReferenceError) ---
     // Define Admin Persona Check at top-level so it can be used in Timer logic too
@@ -685,7 +693,7 @@ export function ShareholderHero({
                             Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                         </h1>
                         <p className="text-indigo-200/70 text-sm md:text-base mt-2 leading-relaxed">
-                            We hope you like the new HHR Trailer Booking App. <br />If you have any questions or need help, just click <span className="font-semibold text-white">Feedback</span> and let us know.
+                            We hope you like the new HHR Trailer Booking App. <br />If you have any questions or need help, just click <button onClick={onOpenFeedback} className="font-semibold text-white underline hover:text-indigo-100 transition-colors">Feedback</button> and let us know.
                         </p>
                     </div>
                     <div id="tour-status">
@@ -710,7 +718,7 @@ export function ShareholderHero({
                                 <span>Turn Passed</span>
                             ) : (
                                 <span>
-                                    You are #{queueInfo?.diff || "?"} <span className="text-2xl md:text-3xl font-medium text-indigo-300">in Line</span>
+                                    You are <span className="text-2xl md:text-3xl font-medium text-indigo-300">{getOrdinal(queueInfo?.diff || 1)} in Line</span>
                                 </span>
                             )}
                         </h2>
