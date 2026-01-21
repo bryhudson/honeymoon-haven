@@ -216,6 +216,11 @@ export function ShareholderHero({
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
 
+    // Get the absolute most recent action (including cancellations) for generic state detection
+    const latestAction = drafts
+        .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled'))
+        .sort((a, b) => b.createdAt - a.createdAt)[0];
+
     // Helper: Render Split Round Badges
     const renderBadges = () => {
         // Filter for cancellations
