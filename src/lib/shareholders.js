@@ -85,7 +85,7 @@ export function getOfficialStart(finishTime) {
 }
 
 
-export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, fastTestingMode = false) {
+export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
     const PICK_DURATION_MS = fastTestingMode
         ? (10 * 60 * 1000) // Fast mode: 10 minutes
@@ -117,8 +117,8 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     */
 
     // STRICT RULE: The calculation cycle must effectively start from an Official 10 AM block.
-    // RELAXED RULE: In fastTestingMode, we bypass the 10 AM rounding for immediate testing.
-    const startAnchor = (time) => fastTestingMode ? new Date(time) : getOfficialStart(time);
+    // RELAXED RULE: In fastTestingMode OR if bypassTenAM is specified, we bypass the 10 AM rounding for immediate testing.
+    const startAnchor = (time) => (fastTestingMode || bypassTenAM) ? new Date(time) : getOfficialStart(time);
     let currentWindowStart = startAnchor(DRAFT_START);
 
     let activePicker = null;
@@ -230,9 +230,11 @@ export function adjustForCourtesy(date) {
     return getOfficialStart(date);
 }
 
-export function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null) {
+export function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
-    const PICK_DURATION_MS = DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000;
+    const PICK_DURATION_MS = fastTestingMode
+        ? (10 * 60 * 1000) // Fast mode: 10 minutes
+        : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
 
     const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];
     const schedule = [];
@@ -243,8 +245,11 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
 
 
 
-    // Mirror calculateDraftSchedule logic: Start cursor aligned to Official 10 AM rule
-    let currentWindowStart = getOfficialStart(DRAFT_START);
+    // RELAXED RULE: In fastTestingMode OR bypassTenAM, we bypass the 10 AM rounding
+    const startAnchor = (time) => (fastTestingMode || bypassTenAM) ? new Date(time) : getOfficialStart(time);
+
+    // Mirror calculateDraftSchedule logic: Start cursor aligned to Official rule
+    let currentWindowStart = startAnchor(DRAFT_START);
     let hasFoundActive = false;
 
     for (let i = 0; i < fullTurnOrder.length; i++) {
@@ -280,7 +285,7 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
             const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
             windowEnd = pTime instanceof Date && !isNaN(pTime) ? pTime : new Date();
 
-            currentWindowStart = adjustForCourtesy(windowEnd);
+            currentWindowStart = startAnchor(windowEnd);
         } else {
             // Not completed. Check if this is the ACTIVE window or GRACE PERIOD
             const now = new Date();
@@ -289,7 +294,7 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
                 // Past / Timed Out
                 status = 'SKIPPED';
                 windowEnd = projectedLimit;
-                currentWindowStart = getOfficialStart(projectedLimit);
+                currentWindowStart = startAnchor(projectedLimit);
             } else if (!hasFoundActive) {
                 // This is the first person who isn't done.
                 hasFoundActive = true;
@@ -297,12 +302,12 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
                 // If first person, force ACTIVE (Early Access), otherwise check grace period
                 status = (isFirst || now >= windowStart) ? 'ACTIVE' : 'GRACE_PERIOD';
                 windowEnd = projectedLimit;
-                currentWindowStart = getOfficialStart(projectedLimit);
+                currentWindowStart = startAnchor(projectedLimit);
             } else {
                 // Future
                 status = 'FUTURE';
                 windowEnd = projectedLimit;
-                currentWindowStart = getOfficialStart(projectedLimit);
+                currentWindowStart = startAnchor(projectedLimit);
             }
         }
 

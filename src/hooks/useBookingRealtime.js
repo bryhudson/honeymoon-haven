@@ -61,9 +61,10 @@ export function useBookingRealtime() {
 
 
     const currentOrder = getShareholderOrder(2026);
+    const bypassTenAM = settings?.bypassTenAM || false;
     // In Fast Testing Mode, ignore simulation date and use real current time for accurate deadline display
     const effectiveStartDate = fastTestingMode ? null : startDateOverride;
-    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), effectiveStartDate, fastTestingMode);
+    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), effectiveStartDate, fastTestingMode, bypassTenAM);
 
 
 
@@ -74,6 +75,7 @@ export function useBookingRealtime() {
         currentOrder,
         startDateOverride,
         isSystemFrozen,
-        fastTestingMode
+        fastTestingMode,
+        bypassTenAM
     };
 }

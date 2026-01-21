@@ -87,6 +87,7 @@ export function AdminDashboard() {
     const [isSystemFrozen, setIsSystemFrozen] = useState(false);
     const [isTestMode, setIsTestMode] = useState(true); // Default to true for safety
     const [fastTestingMode, setFastTestingMode] = useState(false); // Fast testing mode (10min windows)
+    const [bypassTenAM, setBypassTenAM] = useState(false); // Bypass 10am rule (Simulation mode)
     const [draftStatus, setDraftStatus] = useState(null);
 
     // Editing State
@@ -106,11 +107,13 @@ export function AdminDashboard() {
                 setSimStartDate(format(d, "yyyy-MM-dd'T'HH:mm"));
                 setIsSystemFrozen(doc.data().isSystemFrozen || false);
                 setFastTestingMode(doc.data().fastTestingMode || false);
+                setBypassTenAM(doc.data().bypassTenAM || false);
             } else {
                 setCurrentSimDate(null);
                 setSimStartDate("");
                 setIsSystemFrozen(doc.data()?.isSystemFrozen || false);
                 setFastTestingMode(doc.data()?.fastTestingMode || false);
+                setBypassTenAM(doc.data()?.bypassTenAM || false);
             }
         });
 
@@ -179,6 +182,7 @@ export function AdminDashboard() {
         await setDoc(doc(db, "settings", "general"), {
             draftStartDate: defaultStart,
             isSystemFrozen: false,
+            bypassTenAM: false, // Reset to production default
             season: 2026 // Updated to 2026 explicitly
         }, { merge: true });
 
@@ -546,7 +550,8 @@ export function AdminDashboard() {
                                 const count = await performWipe(now);
                                 await setDoc(doc(db, "settings", "general"), {
                                     fastTestingMode: true,
-                                    draftStartDate: now
+                                    draftStartDate: now,
+                                    bypassTenAM: true // Also bypass 10am rule in fast mode
                                 }, { merge: true });
                                 setFastTestingMode(true);
                                 triggerAlert("Fast Testing Mode Enabled", `Database wiped (${count} records). Turn windows are now 10 minutes.`);
@@ -568,7 +573,8 @@ export function AdminDashboard() {
                 async () => {
                     try {
                         await setDoc(doc(db, "settings", "general"), {
-                            fastTestingMode: false
+                            fastTestingMode: false,
+                            bypassTenAM: false // Return to 10am rule
                         }, { merge: true });
                         setFastTestingMode(false);
                         triggerAlert("Fast Testing Mode Disabled", "Turn windows restored to normal (48 hours).");
@@ -857,7 +863,7 @@ export function AdminDashboard() {
     // --- Derived Schedule & Active Turn ---
     const { schedule, activeTurn } = React.useMemo(() => {
         const currentOrder = getShareholderOrder(2026);
-        const sched = mapOrderToSchedule(currentOrder, allBookings, currentSimDate);
+        const sched = mapOrderToSchedule(currentOrder, allBookings, currentSimDate, fastTestingMode, bypassTenAM);
 
         // Use drafted status OR fallback to schedule calculation
         let active = null;
@@ -871,7 +877,7 @@ export function AdminDashboard() {
         }
 
         return { schedule: sched, activeTurn: active };
-    }, [allBookings, draftStatus, currentSimDate]);
+    }, [allBookings, draftStatus, currentSimDate, fastTestingMode, bypassTenAM]);
 
 
 
@@ -1198,12 +1204,17 @@ export function AdminDashboard() {
                                                     "Security Check: Set Production Date",
                                                     "You are about to set the system to Production mode (March 1, 2026). Please verify your password.",
                                                     async () => {
+                                                        const now = new Date();
                                                         const productionDate = new Date(2026, 2, 1, 10, 0, 0);
                                                         setSimStartDate(format(productionDate, "yyyy-MM-dd'T'HH:mm"));
+                                                        const count = await performWipe(productionDate);
                                                         await setDoc(doc(db, "settings", "general"), {
-                                                            draftStartDate: productionDate
+                                                            draftStartDate: productionDate,
+                                                            bypassTenAM: false,
+                                                            fastTestingMode: false
                                                         }, { merge: true });
-                                                        triggerAlert("Production Mode", "System set to March 1, 2026 (Official Start)");
+                                                        setFastTestingMode(false);
+                                                        triggerAlert("Production Mode", `System reset to March 1, 2026 (Official Start). Database wiped (${count} records).`);
                                                     }
                                                 );
                                             }}
@@ -1222,10 +1233,14 @@ export function AdminDashboard() {
                                                         const today = new Date();
                                                         today.setHours(6, 0, 0, 0);
                                                         setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
+                                                        const count = await performWipe(today);
                                                         await setDoc(doc(db, "settings", "general"), {
-                                                            draftStartDate: today
+                                                            draftStartDate: today,
+                                                            bypassTenAM: false, // 6 AM testing still uses the 10 AM buffer rule
+                                                            fastTestingMode: false
                                                         }, { merge: true });
-                                                        triggerAlert("Staging Mode", "System set to Today at 6:00 AM (48-hour windows)");
+                                                        setFastTestingMode(false);
+                                                        triggerAlert("Staging Mode", `System reset to Today @ 6:00 AM. 48-hour windows + 10 AM buffer. Database wiped (${count} records).`);
                                                     }
                                                 );
                                             }}
@@ -1482,7 +1497,7 @@ export function AdminDashboard() {
                                     </div>
                                     {(() => {
                                         const currentOrder = getShareholderOrder(2026);
-                                        const schedule = mapOrderToSchedule(currentOrder, allBookings);
+                                        const schedule = mapOrderToSchedule(currentOrder, allBookings, currentSimDate, fastTestingMode, bypassTenAM);
 
                                         const renderCard = (slot) => {
                                             const booking = slot.booking;
@@ -1629,7 +1644,7 @@ export function AdminDashboard() {
                                             ) : (() => {
                                                 // GENERATE SCHEDULE VIEW
                                                 const currentOrder = getShareholderOrder(2026); // Default 2026 Year
-                                                const schedule = mapOrderToSchedule(currentOrder, allBookings);
+                                                const schedule = mapOrderToSchedule(currentOrder, allBookings, currentSimDate, fastTestingMode, bypassTenAM);
 
                                                 // Helper to Render a Row
                                                 const renderRow = (slot) => {

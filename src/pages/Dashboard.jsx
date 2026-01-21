@@ -107,7 +107,7 @@ export function Dashboard() {
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
-    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, fastTestingMode } = useBookingRealtime();
+    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, fastTestingMode, bypassTenAM } = useBookingRealtime();
 
     const [isBooking, setIsBooking] = useState(false);
     const [passStep, setPassStep] = useState(0); // 0=Closed, 1=Init, 2=Warn
@@ -713,6 +713,8 @@ export function Dashboard() {
                                     allDraftRecords={allDraftRecords}
                                     status={status}
                                     startDateOverride={startDateOverride}
+                                    fastTestingMode={fastTestingMode}
+                                    bypassTenAM={bypassTenAM}
                                 />
                             </div>
                         )}
@@ -938,7 +940,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.326 - fix: Bypass 10am rule in Fast Mode and start draft immediately now</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.327 - fix: Finalize Testing Mode logic (Prod/6am use 10am rule, Fast mode bypasses it, all wipe DB)</p>
 
 
                     </div>

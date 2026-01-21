@@ -3,7 +3,7 @@ import { Info, RotateCw, Clock, Sunrise, Zap, CalendarCheck } from 'lucide-react
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
-export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride, onAction }) {
+export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride, onAction, fastTestingMode = false, bypassTenAM = false }) {
     return (
         <div id="tour-schedule" className="">
             <div className="flex justify-between items-center mb-4">
@@ -84,7 +84,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                         <tbody className="divide-y">
                             {(() => {
                                 // Pre-calculate full schedule history/projection
-                                const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords, startDateOverride);
+                                const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords, startDateOverride, fastTestingMode, bypassTenAM);
 
                                 return currentOrder.map((name, index) => {
                                     const owner = CABIN_OWNERS.find(o => o.name === name);
@@ -160,7 +160,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                 {/* Mobile Card View */}
                 <div className="md:hidden space-y-4 p-4 bg-slate-50/50">
                     {(() => {
-                        const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords, startDateOverride);
+                        const fullSchedule = mapOrderToSchedule(currentOrder, allDraftRecords, startDateOverride, fastTestingMode, bypassTenAM);
                         return currentOrder.map((name, index) => {
                             const owner = CABIN_OWNERS.find(o => o.name === name);
                             const cabinNumber = owner ? owner.cabin : "-";
