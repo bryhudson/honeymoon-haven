@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.311 - fix: Correctly calculate queue position when masquerading as shareholder</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.312 - fix: Use correct HashRouter URL format for masquerade navigation</p>
                 </p>
             </div>
         </div>

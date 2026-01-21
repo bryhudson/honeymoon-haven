@@ -41,7 +41,7 @@ export function UserActionsDropdown({ user, onEdit, onPassword, onDelete }) {
 
     const handleViewAs = () => {
         setIsOpen(false);
-        window.location.href = `/?masquerade=${encodeURIComponent(user.name)}#/`;
+        window.location.href = `#/?masquerade=${encodeURIComponent(user.name)}`;
     };
 
     return (
