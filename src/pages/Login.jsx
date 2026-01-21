@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.315 - fix: Standardize welcome message in Done/Passed banner state</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.317 - feat: Add Fast Testing Mode for 10-minute turn windows</p>
                 </p>
             </div>
         </div>

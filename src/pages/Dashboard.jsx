@@ -107,7 +107,7 @@ export function Dashboard() {
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
-    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen } = useBookingRealtime();
+    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, fastTestingMode } = useBookingRealtime();
 
     const [isBooking, setIsBooking] = useState(false);
     const [passStep, setPassStep] = useState(0); // 0=Closed, 1=Init, 2=Warn
@@ -242,12 +242,18 @@ export function Dashboard() {
                     const nextOwner = shareholders.find(o => o.name === status.nextPicker);
                     if (nextOwner && nextOwner.email) {
                         try {
-                            // Logic: Next Day 10 AM + 48 Hours
-                            const tomorrow10am = new Date();
-                            tomorrow10am.setDate(tomorrow10am.getDate() + 1);
-                            tomorrow10am.setHours(10, 0, 0, 0);
-
-                            const deadline = addHours(tomorrow10am, 48);
+                            // Deadline calculation: Fast testing mode or normal
+                            let deadline;
+                            if (fastTestingMode) {
+                                // Fast Testing Mode: 10 minutes from NOW
+                                deadline = new Date(Date.now() + 10 * 60 * 1000);
+                            } else {
+                                // Normal Mode: Next Day 10 AM + 48 Hours
+                                const tomorrow10am = new Date();
+                                tomorrow10am.setDate(tomorrow10am.getDate() + 1);
+                                tomorrow10am.setHours(10, 0, 0, 0);
+                                deadline = addHours(tomorrow10am, 48);
+                            }
 
                             // Detect Phase Transition for Notification Context
                             // If current user is the LAST one in Round 1, the next turn is Round 2.
@@ -370,13 +376,18 @@ export function Dashboard() {
                             const nextOwner = shareholders.find(o => o.name === status.nextPicker);
                             if (nextOwner && nextOwner.email) {
                                 try {
-                                    // Logic: Next Day 10 AM + 48 Hours
-                                    // "Account for the 10 next day early access start period"
-                                    const tomorrow10am = new Date();
-                                    tomorrow10am.setDate(tomorrow10am.getDate() + 1);
-                                    tomorrow10am.setHours(10, 0, 0, 0);
-
-                                    const deadline = addHours(tomorrow10am, 48);
+                                    // Deadline calculation: Fast testing mode or normal
+                                    let deadline;
+                                    if (fastTestingMode) {
+                                        // Fast Testing Mode: 10 minutes from NOW
+                                        deadline = new Date(Date.now() + 10 * 60 * 1000);
+                                    } else {
+                                        // Normal Mode: Next Day 10 AM + 48 Hours
+                                        const tomorrow10am = new Date();
+                                        tomorrow10am.setDate(tomorrow10am.getDate() + 1);
+                                        tomorrow10am.setHours(10, 0, 0, 0);
+                                        deadline = addHours(tomorrow10am, 48);
+                                    }
 
                                     // Detect Phase Transition for Notification Context
                                     const order = getShareholderOrder(2026);
@@ -927,7 +938,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.315 - fix: Standardize welcome message in Done/Passed banner state</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.317 - feat: Add Fast Testing Mode for 10-minute turn windows</p>
 
 
                     </div>

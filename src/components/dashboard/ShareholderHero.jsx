@@ -556,7 +556,7 @@ export function ShareholderHero({
 
                     {/* Hero Message */}
                     <div className="space-y-2">
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                        <h2 className={`text-5xl md:text-6xl font-black tracking-tight drop-shadow-md text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-300 to-orange-400' : 'from-emerald-300 to-green-400'}`}>
                             {isPassed ? "Turn Passed" : "You're All Set!"}
                         </h2>
                         <div className="text-lg text-slate-300 leading-relaxed">

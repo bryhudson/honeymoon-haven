@@ -11,6 +11,7 @@ export function useBookingRealtime() {
     const [loading, setLoading] = useState(true);
     const [startDateOverride, setStartDateOverride] = useState(null);
     const [isSystemFrozen, setIsSystemFrozen] = useState(false);
+    const [fastTestingMode, setFastTestingMode] = useState(false);
 
     useEffect(() => {
         // Fetch Settings
@@ -23,9 +24,11 @@ export function useBookingRealtime() {
                     setStartDateOverride(null);
                 }
                 setIsSystemFrozen(data.isSystemFrozen || false);
+                setFastTestingMode(data.fastTestingMode || false);
             } else {
                 setStartDateOverride(null);
                 setIsSystemFrozen(false);
+                setFastTestingMode(false);
             }
         });
 
@@ -64,6 +67,7 @@ export function useBookingRealtime() {
         status,
         currentOrder,
         startDateOverride,
-        isSystemFrozen
+        isSystemFrozen,
+        fastTestingMode
     };
 }

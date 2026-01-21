@@ -86,6 +86,7 @@ export function AdminDashboard() {
     const [currentSimDate, setCurrentSimDate] = useState(null);
     const [isSystemFrozen, setIsSystemFrozen] = useState(false);
     const [isTestMode, setIsTestMode] = useState(true); // Default to true for safety
+    const [fastTestingMode, setFastTestingMode] = useState(false); // Fast testing mode (10min windows)
     const [draftStatus, setDraftStatus] = useState(null);
 
     // Editing State
@@ -104,10 +105,12 @@ export function AdminDashboard() {
                 setCurrentSimDate(d);
                 setSimStartDate(format(d, "yyyy-MM-dd'T'HH:mm"));
                 setIsSystemFrozen(doc.data().isSystemFrozen || false);
+                setFastTestingMode(doc.data().fastTestingMode || false);
             } else {
                 setCurrentSimDate(null);
                 setSimStartDate("");
                 setIsSystemFrozen(doc.data()?.isSystemFrozen || false);
+                setFastTestingMode(doc.data()?.fastTestingMode || false);
             }
         });
 
@@ -518,6 +521,21 @@ export function AdminDashboard() {
             }
         );
     };
+
+    const toggleFastTestingMode = async () => {
+        try {
+            const newValue = !fastTestingMode;
+            await setDoc(doc(db, "settings", "general"), {
+                fastTestingMode: newValue
+            }, { merge: true });
+            setFastTestingMode(newValue);
+            triggerAlert("Success", `Fast Testing Mode is now ${newValue ? 'ACTIVE (10-minute windows)' : 'DISABLED (Normal 48-hour windows)'}`);
+        } catch (err) {
+            console.error("Failed to toggle fast testing mode:", err);
+            triggerAlert("Error", "Failed to update fast testing mode settings.");
+        }
+    };
+
 
     const handleAddAdmin = () => {
         requireAuth(
@@ -1140,6 +1158,36 @@ export function AdminDashboard() {
                                             className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800"
                                         >
                                             Set
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Fast Testing Mode */}
+                                <div className="border-t pt-4 mt-4">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                                                Fast Testing Mode
+                                                {fastTestingMode && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
+                                            </h4>
+                                            <p className="text-sm text-slate-600 mt-1">
+                                                Enable 10-minute turn windows for rapid testing. Turns start immediately without next-day buffer.
+                                            </p>
+                                            {fastTestingMode && (
+                                                <p className="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1">
+                                                    <AlertTriangle className="w-3 h-3" />
+                                                    Active: Turn windows are 10 minutes
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={toggleFastTestingMode}
+                                            className={`px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap ml-4 ${fastTestingMode
+                                                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            {fastTestingMode ? 'DISABLE FAST MODE' : 'ENABLE FAST MODE'}
                                         </button>
                                     </div>
                                 </div>
