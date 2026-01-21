@@ -169,11 +169,14 @@ export function ShareholderHero({
                                 Open Season
                             </span>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
-                            Welcome to the 2026 Season, {shareholderName}!
+                        <p className="text-xl md:text-2xl font-medium text-white/90">
+                            Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
+                        </p>
+                        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-400 drop-shadow-md">
+                            Booking is Open
                         </h1>
                         <p className="text-lg text-slate-300 max-w-xl">
-                            Booking is now <span className="font-bold text-green-400">Open Season</span>. Reservations are first-come, first-served.
+                            Reservations are now first-come, first-served for all available dates.
                         </p>
                     </div>
 
@@ -403,8 +406,8 @@ export function ShareholderHero({
 
                     {/* Hero Message */}
                     <div className="space-y-2">
-                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">
-                            Draft Selection Saved
+                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 tracking-tight drop-shadow-md">
+                            Draft Saved
                         </h2>
                         <p className="text-lg text-blue-100/90 font-light leading-relaxed max-w-3xl">
                             You have selected dates. Please <span className="font-bold text-white">finalize</span> to lock them in.
@@ -671,8 +674,8 @@ export function ShareholderHero({
                 <div className="relative z-10 flex flex-col gap-4">
                     {/* Header Row */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <h1 className="text-xl md:text-2xl font-medium text-red-200">
-                            Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                        <h1 className="text-xl md:text-2xl font-medium text-white/90">
+                            Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                         </h1>
                         <div id="tour-status">
                             {renderBadges()}
@@ -682,8 +685,7 @@ export function ShareholderHero({
                     {/* Hero Message */}
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <XCircle className="w-8 h-8 text-red-500" />
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                            <h2 className="text-5xl md:text-6xl font-black tracking-tight drop-shadow-md text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500">
                                 Booking Cancelled
                             </h2>
                         </div>
