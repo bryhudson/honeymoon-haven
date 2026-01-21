@@ -685,7 +685,7 @@ export function ShareholderHero({
                             Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                         </h1>
                         <p className="text-indigo-200/70 text-sm md:text-base mt-2 leading-relaxed">
-                            We hope you like the new HHR Trailer Booking App. If you have any questions or need help, just click <span className="font-semibold text-white">Feedback</span> and let us know.
+                            We hope you like the new HHR Trailer Booking App. <br />If you have any questions or need help, just click <span className="font-semibold text-white">Feedback</span> and let us know.
                         </p>
                     </div>
                     <div id="tour-status">
