@@ -12,6 +12,7 @@ export function useBookingRealtime() {
     const [startDateOverride, setStartDateOverride] = useState(null);
     const [isSystemFrozen, setIsSystemFrozen] = useState(false);
     const [fastTestingMode, setFastTestingMode] = useState(false);
+    const [bypassTenAM, setBypassTenAM] = useState(false);
 
     useEffect(() => {
         // Fetch Settings
@@ -25,10 +26,12 @@ export function useBookingRealtime() {
                 }
                 setIsSystemFrozen(data.isSystemFrozen || false);
                 setFastTestingMode(data.fastTestingMode || false);
+                setBypassTenAM(data.bypassTenAM || false);
             } else {
                 setStartDateOverride(null);
                 setIsSystemFrozen(false);
                 setFastTestingMode(false);
+                setBypassTenAM(false);
             }
         });
 
@@ -61,7 +64,6 @@ export function useBookingRealtime() {
 
 
     const currentOrder = getShareholderOrder(2026);
-    const bypassTenAM = settings?.bypassTenAM || false;
     // In Fast Testing Mode, ignore simulation date and use real current time for accurate deadline display
     const effectiveStartDate = fastTestingMode ? null : startDateOverride;
     const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), effectiveStartDate, fastTestingMode, bypassTenAM);

@@ -1367,6 +1367,8 @@ export function AdminDashboard() {
                             allDraftRecords={allBookings}
                             status={draftStatus || { phase: 'PRE_DRAFT' }}
                             startDateOverride={currentSimDate}
+                            fastTestingMode={fastTestingMode}
+                            bypassTenAM={bypassTenAM}
                         />
                     </div>
                 )}

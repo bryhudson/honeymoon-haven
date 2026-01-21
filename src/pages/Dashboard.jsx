@@ -940,7 +940,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.327 - fix: Finalize Testing Mode logic (Prod/6am use 10am rule, Fast mode bypasses it, all wipe DB)</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.328 - Fix ReferenceError and align draft timing modes</p>
 
 
                     </div>
