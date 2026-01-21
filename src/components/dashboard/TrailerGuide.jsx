@@ -109,18 +109,6 @@ export function TrailerGuide({ shareholderName, booking }) {
                     <LogOut className="w-4 h-4 md:w-4 md:h-4" />
                     Check Out
                 </button>
-
-                {/* Email Guest Button - Integrated into layout */}
-                <div className="flex items-center px-2 md:px-4 bg-slate-50 border-l border-slate-200">
-                    <button
-                        onClick={() => setIsEmailModalOpen(true)}
-                        className="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 p-2 md:px-3 md:py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 shadow-sm group whitespace-nowrap"
-                        title="Email Guide to Guest"
-                    >
-                        <Send className="w-4 h-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
-                        <span className="hidden md:inline font-bold text-xs uppercase tracking-wider">Email Guest</span>
-                    </button>
-                </div>
             </div>
 
             <div className="p-4 md:p-8">

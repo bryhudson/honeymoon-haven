@@ -130,7 +130,7 @@ export function ShareholderHero({
                             </span>
                         </div>
                         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
-                            Welcome, {shareholderName}
+                            Welcome to the 2026 Season, {shareholderName}!
                         </h1>
                         <p className="text-lg text-slate-300 max-w-xl">
                             Booking is now <span className="font-bold text-green-400">Open Season</span>. Reservations are first-come, first-served.
@@ -345,7 +345,7 @@ export function ShareholderHero({
                     {/* Header Row */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h1 className="text-xl md:text-2xl font-medium text-blue-200">
-                            Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                            Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                         </h1>
                         <div className="flex items-center gap-2">
                             {/* Phase Badge */}
@@ -421,7 +421,7 @@ export function ShareholderHero({
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-1">
                             <h1 className="text-xl md:text-2xl font-medium text-blue-200">
-                                Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                                Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
@@ -437,7 +437,7 @@ export function ShareholderHero({
 
                     {/* MAIN HERO MESSAGE */}
                     <div className="space-y-2">
-                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">
+                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 tracking-tight drop-shadow-md">
                             It's Your Turn
                         </h2>
                         <p className="text-lg text-blue-100/90 font-light leading-relaxed max-w-3xl">
