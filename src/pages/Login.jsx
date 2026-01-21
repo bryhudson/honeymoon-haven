@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.328 - Fix ReferenceError and align draft timing modes</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.329 - Refine timer display and fix Fast Mode start date anchor</p>
                 </p>
             </div>
         </div>

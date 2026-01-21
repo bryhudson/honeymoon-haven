@@ -468,6 +468,8 @@ export function ShareholderHero({
                                                     if (end <= now) return 'Ending soon...';
                                                     const diff = intervalToDuration({ start: now, end });
                                                     const parts = [];
+                                                    if (diff.years > 0) parts.push(`${diff.years}y`);
+                                                    if (diff.months > 0) parts.push(`${diff.months}mo`);
                                                     if (diff.days > 0) parts.push(`${diff.days}d`);
                                                     if (diff.hours > 0) parts.push(`${diff.hours}h`);
                                                     if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
