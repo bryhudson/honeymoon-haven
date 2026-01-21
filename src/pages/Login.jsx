@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.318 - fix: Pass fastTestingMode to calculateDraftSchedule for turn windows</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.319 - feat: Auto-wipe database when enabling Fast Testing Mode</p>
                 </p>
             </div>
         </div>

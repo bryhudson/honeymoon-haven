@@ -523,16 +523,39 @@ export function AdminDashboard() {
     };
 
     const toggleFastTestingMode = async () => {
-        try {
-            const newValue = !fastTestingMode;
-            await setDoc(doc(db, "settings", "general"), {
-                fastTestingMode: newValue
-            }, { merge: true });
-            setFastTestingMode(newValue);
-            triggerAlert("Success", `Fast Testing Mode is now ${newValue ? 'ACTIVE (10-minute windows)' : 'DISABLED (Normal 48-hour windows)'}`);
-        } catch (err) {
-            console.error("Failed to toggle fast testing mode:", err);
-            triggerAlert("Error", "Failed to update fast testing mode settings.");
+        const newValue = !fastTestingMode;
+
+        if (newValue) {
+            triggerConfirm(
+                "Enable Fast Testing Mode",
+                "This will:\n- Change turn windows from 48 hours to 10 minutes\n- Start turns immediately (no next-day buffer)\n- WIPE THE DATABASE for a clean testing slate\n\nAre you sure?",
+                async () => {
+                    try {
+                        const count = await performWipe();
+                        await setDoc(doc(db, "settings", "general"), {
+                            fastTestingMode: true
+                        }, { merge: true });
+                        setFastTestingMode(true);
+                        triggerAlert("Fast Testing Mode Enabled", `Database wiped (${count} records). Turn windows are now 10 minutes.`);
+                    } catch (err) {
+                        console.error("Failed to enable fast testing mode:", err);
+                        triggerAlert("Error", "Failed to enable fast testing mode: " + err.message);
+                    }
+                },
+                true,
+                "Enable & Wipe"
+            );
+        } else {
+            try {
+                await setDoc(doc(db, "settings", "general"), {
+                    fastTestingMode: false
+                }, { merge: true });
+                setFastTestingMode(false);
+                triggerAlert("Fast Testing Mode Disabled", "Turn windows restored to normal (48 hours).");
+            } catch (err) {
+                console.error("Failed to disable fast testing mode:", err);
+                triggerAlert("Error", "Failed to update fast testing mode settings.");
+            }
         }
     };
 
@@ -1182,9 +1205,9 @@ export function AdminDashboard() {
                                         </div>
                                         <button
                                             onClick={toggleFastTestingMode}
-                                            className={`px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap ml-4 ${fastTestingMode
-                                                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${fastTestingMode
+                                                ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'
+                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
                                                 }`}
                                         >
                                             {fastTestingMode ? 'DISABLE FAST MODE' : 'ENABLE FAST MODE'}
