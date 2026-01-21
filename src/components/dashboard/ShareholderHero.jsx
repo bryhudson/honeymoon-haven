@@ -37,7 +37,8 @@ export function ShareholderHero({
 
     // --- QUEUE CALCULATION (Moved to top to avoid ReferenceError) ---
     // Define Admin Persona Check at top-level so it can be used in Timer logic too
-    const isAdminPersona = shareholderName === 'HHR Admin' || shareholderName === 'Bryan';
+    // IMPORTANT: Don't treat as admin persona if in read-only masquerade mode
+    const isAdminPersona = !isReadOnly && (shareholderName === 'HHR Admin' || shareholderName === 'Bryan');
 
     const queueInfo = React.useMemo(() => {
         if (!currentOrder || !status || !shareholderName) return null;
@@ -88,7 +89,7 @@ export function ShareholderHero({
         const round = myNextIndex < currentOrder.length ? 1 : 2;
 
         return { diff: myNextIndex - activeIndex, round };
-    }, [currentOrder, status, shareholderName]);
+    }, [currentOrder, status, shareholderName, isReadOnly, isAdminPersona]);
 
     // 1. System Maintenance (Highest Priority)
     if (isSystemFrozen && !isSuperAdmin) {
