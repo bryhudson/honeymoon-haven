@@ -701,90 +701,71 @@ export function ShareholderHero({
                     </div>
                 </div>
 
-                {/* Status Card */}
-                {/* Hero Message & Status */}
-                <div className="space-y-6 mt-2">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-indigo-300 font-bold uppercase tracking-widest text-xs mb-1">
-                            <Clock className="w-4 h-4" />
-                            Status
-                        </div>
-                        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-lg">
-                            {queueInfo?.diff === 1 ? (
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-emerald-400">
-                                    You are Up Next!
-                                </span>
-                            ) : isJustPassed ? (
-                                <span>Turn Passed</span>
-                            ) : (
-                                <div className="flex flex-col">
-                                    <span className="text-white">You are</span>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
+                {/* Main Status - Clean Flow */}
+                <div className="space-y-4 mt-6">
+                    {/* Queue Position - Integrated Design */}
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-md">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                            {/* Left: Your Position */}
+                            <div className="flex-1">
+                                <p className="text-indigo-200/80 text-sm mb-2">Your Position in the Queue</p>
+                                {queueInfo?.diff === 1 ? (
+                                    <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-emerald-400">
+                                        You're Up Next!
+                                    </h2>
+                                ) : isJustPassed ? (
+                                    <h2 className="text-4xl md:text-5xl font-black text-white">Turn Passed</h2>
+                                ) : (
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
                                             {getOrdinal(queueInfo?.diff || 1)}
                                         </span>
-                                        <span className="text-2xl md:text-3xl font-medium text-indigo-300">in Line</span>
+                                        <span className="text-2xl md:text-3xl font-medium text-indigo-200">in Line</span>
                                     </div>
+                                )}
+                                <div className="text-base text-indigo-100/80 mt-3 leading-relaxed">
+                                    {isJustPassed ? (
+                                        <p>Thanks for making your selection! Enjoy the break until the next round.</p>
+                                    ) : queueInfo?.diff === 1 ? (
+                                        <p>
+                                            Get your dates ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking, and then it's your turn.
+                                        </p>
+                                    ) : (
+                                        <p>Sit tight! We'll send you an email the moment it's your turn to pick.</p>
+                                    )}
                                 </div>
-                            )}
-                        </h2>
+                            </div>
 
-                        <div className="text-xl text-indigo-100/90 font-light leading-relaxed max-w-2xl">
-                            {isJustPassed ? (
-                                <p>Thanks for making your selection! Enjoy the break until the next round.</p>
-                            ) : queueInfo?.diff === 1 ? (
-                                <p>
-                                    Get your dates ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking, and then it's your turn.
-                                </p>
-                            ) : null}
-                        </div>
-                    </div>
-
-                    {/* Progress / Info Bar */}
-                    <div className="flex flex-col md:flex-row gap-4 items-stretch">
-
-                        {/* Unified Active Turn Card (Observer View) */}
-                        {!isJustPassed && (
-                            <div className="bg-indigo-900/40 border border-indigo-500/30 rounded-xl p-4 md:p-5 backdrop-blur-md flex-[2] min-w-[300px]">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    {/* Left: Who is Picking */}
-                                    <div>
-                                        <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Current Turn</div>
-                                        <div className="text-xl font-bold text-white">{status.activePicker}</div>
-                                        <div className="text-sm text-indigo-200/70 mt-1">Is making their selection...</div>
-                                    </div>
-
-                                    {/* Right: Timer (if active) */}
+                            {/* Right: Current Turn - Integrated */}
+                            {!isJustPassed && (
+                                <div className="md:border-l md:border-indigo-500/20 md:pl-6 border-t md:border-t-0 pt-4 md:pt-0 min-w-[280px]">
+                                    <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Currently Picking</div>
+                                    <div className="text-2xl font-bold text-white mb-1">{status.activePicker}</div>
                                     {status.windowEnds && (
-                                        <div className="md:text-right border-t md:border-t-0 md:border-l border-indigo-500/20 pt-3 md:pt-0 md:pl-6">
-                                            <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center md:justify-end gap-2">
-                                                <Clock className="w-4 h-4" />
-                                                Turn Ends
-                                            </div>
-                                            <div className="text-xl md:text-2xl font-black text-white tracking-tight">
+                                        <div className="mt-3">
+                                            <div className="text-xs text-indigo-200/70 mb-1">Turn Ends</div>
+                                            <div className="text-lg font-bold text-white">
                                                 {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                             </div>
-                                            <div className="mt-1 flex md:justify-end">
-                                                <div className="bg-indigo-950/50 px-2 py-1 rounded text-indigo-200 font-mono text-xs font-bold w-fit border border-indigo-500/30">
-                                                    Time left: <span className="text-white">
-                                                        {(() => {
-                                                            const end = new Date(status.windowEnds);
-                                                            if (end <= now) return 'Ending...';
-                                                            const diff = intervalToDuration({ start: now, end });
-                                                            const parts = [];
-                                                            if (diff.days > 0) parts.push(`${diff.days}d`);
-                                                            if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                                            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                            return parts.join(' ') || '< 1m';
-                                                        })()}
-                                                    </span>
-                                                </div>
+                                            <div className="mt-2 bg-indigo-950/50 px-2 py-1 rounded text-indigo-200 font-mono text-xs font-bold w-fit border border-indigo-500/30">
+                                                Time left: <span className="text-white">
+                                                    {(() => {
+                                                        const end = new Date(status.windowEnds);
+                                                        if (end <= now) return 'Ending...';
+                                                        const diff = intervalToDuration({ start: now, end });
+                                                        const parts = [];
+                                                        if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                        if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                        if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                        return parts.join(' ') || '< 1m';
+                                                    })()}
+                                                </span>
                                             </div>
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
 
