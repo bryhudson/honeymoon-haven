@@ -59,8 +59,12 @@ export function useBookingRealtime() {
     }, []);
 
 
+
     const currentOrder = getShareholderOrder(2026);
-    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), startDateOverride, fastTestingMode);
+    // In Fast Testing Mode, ignore simulation date and use real current time for accurate deadline display
+    const effectiveStartDate = fastTestingMode ? null : startDateOverride;
+    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), effectiveStartDate, fastTestingMode);
+
 
 
     return {
