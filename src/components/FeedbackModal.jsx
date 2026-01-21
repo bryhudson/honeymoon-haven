@@ -101,7 +101,7 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
                     {step === 'select' && (
                         <div className="flex flex-col gap-4 flex-1 justify-center animate-in slide-in-from-right-4 duration-300">
                             <p className="text-center text-muted-foreground mb-4">
-                                Help us make Honeymoon Haven better! <br />What would you like to do?
+                                Help us make the Honeymoon Haven Trailer Booking App better! <br />What would you like to do?
                             </p>
 
                             <button

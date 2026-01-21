@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.302 - feat: Enhanced welcome message in Shareholder Hero</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.303 - chore: Update feedback modal text to reference Trailer Booking App</p>
                 </p>
             </div>
         </div>
