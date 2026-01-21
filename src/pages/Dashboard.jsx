@@ -938,7 +938,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.319 - feat: Auto-wipe database when enabling Fast Testing Mode</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.320 - feat: Add 'Today 6 AM' quick-set button for simulation date</p>
 
 
                     </div>

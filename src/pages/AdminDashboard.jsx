@@ -1169,19 +1169,31 @@ export function AdminDashboard() {
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
                                         Simulation Date
                                     </label>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col sm:flex-row gap-2">
                                         <input
                                             type="datetime-local"
                                             value={simStartDate}
                                             onChange={(e) => setSimStartDate(e.target.value)}
                                             className="flex-1 p-2 border rounded-lg text-sm"
                                         />
-                                        <button
-                                            onClick={handleUpdateStartDate}
-                                            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800"
-                                        >
-                                            Set
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const today = new Date();
+                                                    today.setHours(6, 0, 0, 0);
+                                                    setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
+                                                }}
+                                                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 border border-slate-300"
+                                            >
+                                                Today 6 AM
+                                            </button>
+                                            <button
+                                                onClick={handleUpdateStartDate}
+                                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800"
+                                            >
+                                                Set
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 

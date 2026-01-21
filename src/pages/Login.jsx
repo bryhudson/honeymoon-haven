@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.319 - feat: Auto-wipe database when enabling Fast Testing Mode</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.320 - feat: Add 'Today 6 AM' quick-set button for simulation date</p>
                 </p>
             </div>
         </div>
