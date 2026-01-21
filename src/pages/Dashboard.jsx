@@ -941,7 +941,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.334 - Global Hero Banner Unification - Unified Status & Design</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.335 - Refined Hero Design - Clean Modern Style</p>
 
 
                     </div>
