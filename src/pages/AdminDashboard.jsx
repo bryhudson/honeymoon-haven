@@ -144,7 +144,7 @@ export function AdminDashboard() {
         };
     }, []);
 
-    const performWipe = async () => {
+    const performWipe = async (overrideStartDate = null) => {
         setActionLog("Resetting database...");
         const querySnapshot = await getDocs(collection(db, "bookings"));
         const totalDocs = querySnapshot.size;
@@ -174,7 +174,7 @@ export function AdminDashboard() {
 
         // 2. Reset Settings to Default
         // Must match DRAFT_CONFIG.START_DATE from shareholders.js (March 1, 2026)
-        const defaultStart = new Date(2026, 2, 1, 10, 0, 0); // March 1, 10 AM
+        const defaultStart = overrideStartDate || new Date(2026, 2, 1, 10, 0, 0); // March 1, 10 AM
 
         await setDoc(doc(db, "settings", "general"), {
             draftStartDate: defaultStart,
@@ -542,9 +542,11 @@ export function AdminDashboard() {
                         "This will:\n- Change turn windows from 48 hours to 10 minutes\n- Start turns immediately (no next-day buffer)\n- WIPE THE DATABASE for a clean testing slate\n\nAre you sure?",
                         async () => {
                             try {
-                                const count = await performWipe();
+                                const now = new Date();
+                                const count = await performWipe(now);
                                 await setDoc(doc(db, "settings", "general"), {
-                                    fastTestingMode: true
+                                    fastTestingMode: true,
+                                    draftStartDate: now
                                 }, { merge: true });
                                 setFastTestingMode(true);
                                 triggerAlert("Fast Testing Mode Enabled", `Database wiped (${count} records). Turn windows are now 10 minutes.`);

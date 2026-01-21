@@ -117,10 +117,9 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     */
 
     // STRICT RULE: The calculation cycle must effectively start from an Official 10 AM block.
-    // If DRAFT_START is set to "Jan 20, 9:00 AM", it effectively means the first 10am slot is Jan 20, 10:00 AM.
-    // If DRAFT_START is set to "Jan 20, 11:00 AM", it effectively means the first 10am slot is Jan 21, 10:00 AM.
-    // This assumes the admin's 'Start Date' is just a trigger, and the clock respects the 10am rule.
-    let currentWindowStart = getOfficialStart(DRAFT_START);
+    // RELAXED RULE: In fastTestingMode, we bypass the 10 AM rounding for immediate testing.
+    const startAnchor = (time) => fastTestingMode ? new Date(time) : getOfficialStart(time);
+    let currentWindowStart = startAnchor(DRAFT_START);
 
     let activePicker = null;
     let nextPicker = null;
@@ -165,7 +164,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                 }
 
                 if (!isNaN(pTime.getTime())) {
-                    currentWindowStart = getOfficialStart(pTime);
+                    currentWindowStart = startAnchor(pTime);
                 }
             } else {
                 // Booking exists but is NOT finalized (Draft Mode).
@@ -173,7 +172,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
                 if (now > windowLimit) {
                     // TIMEOUT implies Finalization and move to next 10 AM
-                    currentWindowStart = getOfficialStart(windowLimit);
+                    currentWindowStart = startAnchor(windowLimit);
                 } else {
                     // Still active and within window
                     activePicker = shareholderName;
@@ -192,7 +191,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
             if (now > windowLimit) {
                 // TIMEOUT / IMPLICIT PASS
-                currentWindowStart = getOfficialStart(windowLimit);
+                currentWindowStart = startAnchor(windowLimit);
             } else {
                 // THEY ARE ACTIVE
                 activePicker = shareholderName;
