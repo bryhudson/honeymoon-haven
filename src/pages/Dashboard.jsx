@@ -14,7 +14,7 @@ import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
-import { CABIN_OWNERS } from '../lib/shareholders';
+import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS } from '../lib/shareholders';
 import { BookingDetailsModal } from '../components/dashboard/BookingDetailsModal';
 import { TrailerGuide } from '../components/dashboard/TrailerGuide';
 import { ShareholderHero } from '../components/dashboard/ShareholderHero';
@@ -242,18 +242,11 @@ export function Dashboard() {
                     const nextOwner = shareholders.find(o => o.name === status.nextPicker);
                     if (nextOwner && nextOwner.email) {
                         try {
-                            // Deadline calculation: Fast testing mode or normal
-                            let deadline;
-                            if (fastTestingMode) {
-                                // Fast Testing Mode: 10 minutes from NOW
-                                deadline = new Date(Date.now() + 10 * 60 * 1000);
-                            } else {
-                                // Normal Mode: Next Day 10 AM + 48 Hours
-                                const tomorrow10am = new Date();
-                                tomorrow10am.setDate(tomorrow10am.getDate() + 1);
-                                tomorrow10am.setHours(10, 0, 0, 0);
-                                deadline = addHours(tomorrow10am, 48);
-                            }
+                            // Deadline calculation: Unified using shared logic
+                            const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
+
+                            const nextStart = (fastTestingMode || bypassTenAM) ? new Date() : getOfficialStart(new Date());
+                            deadline = new Date(nextStart.getTime() + PICK_DURATION_MS);
 
                             // Detect Phase Transition for Notification Context
                             // If current user is the LAST one in Round 1, the next turn is Round 2.
@@ -377,17 +370,11 @@ export function Dashboard() {
                             if (nextOwner && nextOwner.email) {
                                 try {
                                     // Deadline calculation: Fast testing mode or normal
-                                    let deadline;
-                                    if (fastTestingMode) {
-                                        // Fast Testing Mode: 10 minutes from NOW
-                                        deadline = new Date(Date.now() + 10 * 60 * 1000);
-                                    } else {
-                                        // Normal Mode: Next Day 10 AM + 48 Hours
-                                        const tomorrow10am = new Date();
-                                        tomorrow10am.setDate(tomorrow10am.getDate() + 1);
-                                        tomorrow10am.setHours(10, 0, 0, 0);
-                                        deadline = addHours(tomorrow10am, 48);
-                                    }
+                                    // Deadline calculation: Unified using shared logic
+                                    const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
+
+                                    const nextStart = (fastTestingMode || bypassTenAM) ? new Date() : getOfficialStart(new Date());
+                                    deadline = new Date(nextStart.getTime() + PICK_DURATION_MS);
 
                                     // Detect Phase Transition for Notification Context
                                     const order = getShareholderOrder(2026);
@@ -940,7 +927,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.329 - Refine timer display and fix Fast Mode start date anchor</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.68.330 - Unify email timing logic and refactor pick duration</p>
 
 
                     </div>

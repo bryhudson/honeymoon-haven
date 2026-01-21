@@ -84,12 +84,16 @@ export function getOfficialStart(finishTime) {
     }
 }
 
+export function getPickDurationMS(fastTestingMode) {
+    return fastTestingMode
+        ? (10 * 60 * 1000) // Fast mode: 10 minutes
+        : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
+}
+
 
 export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
-    const PICK_DURATION_MS = fastTestingMode
-        ? (10 * 60 * 1000) // Fast mode: 10 minutes
-        : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
+    const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
 
 
     // Build the full turn order (Round 1 + Round 2 Snake)
@@ -232,9 +236,7 @@ export function adjustForCourtesy(date) {
 
 export function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
-    const PICK_DURATION_MS = fastTestingMode
-        ? (10 * 60 * 1000) // Fast mode: 10 minutes
-        : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
+    const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
 
     const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];
     const schedule = [];
