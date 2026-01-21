@@ -680,9 +680,14 @@ export function ShareholderHero({
             <div className="relative z-10 flex flex-col gap-4">
                 {/* Header Row */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h1 className="text-xl md:text-2xl font-medium text-indigo-200">
-                        Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
-                    </h1>
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-medium text-indigo-200">
+                            Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
+                        </h1>
+                        <p className="text-indigo-200/70 text-sm md:text-base mt-2 leading-relaxed">
+                            We hope you like the new HHR Trailer Booking App. If you have any questions or need help, just click <span className="font-semibold text-white">Feedback</span> and let us know.
+                        </p>
+                    </div>
                     <div id="tour-status">
                         {renderBadges()}
                     </div>
@@ -723,17 +728,6 @@ export function ShareholderHero({
 
                     {/* Progress / Info Bar */}
                     <div className="flex flex-col md:flex-row gap-4 items-stretch">
-                        {/* Friendly Message (Replacing Stats Card) */}
-                        {!isJustPassed && (
-                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-md flex-1 flex items-center justify-center">
-                                <div className="text-center md:text-left">
-                                    <h3 className="text-lg font-bold text-white mb-1">Glad you're here!</h3>
-                                    <p className="text-indigo-200/80 text-sm leading-relaxed">
-                                        While you wait, feel free to browse the calendar or review the rules. We'll send you an email the moment it's your turn to pick.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
 
                         {/* Unified Active Turn Card (Observer View) */}
                         {!isJustPassed && (
