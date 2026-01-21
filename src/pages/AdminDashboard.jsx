@@ -1167,63 +1167,64 @@ export function AdminDashboard() {
                                 <p className="text-sm text-slate-500">Fast-forward the system time to test time-based rules (e.g. Turn Windows).</p>
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                                        Simulation Date
+                                        Quick Setup
                                     </label>
-                                    <div className="flex flex-col sm:flex-row gap-2">
-                                        <input
-                                            type="datetime-local"
-                                            value={simStartDate}
-                                            onChange={(e) => setSimStartDate(e.target.value)}
-                                            className="flex-1 p-2 border rounded-lg text-sm"
-                                        />
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    const today = new Date();
-                                                    today.setHours(6, 0, 0, 0);
-                                                    setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
-                                                }}
-                                                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 border border-slate-300"
-                                            >
-                                                Today 6 AM
-                                            </button>
-                                            <button
-                                                onClick={handleUpdateStartDate}
-                                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800"
-                                            >
-                                                Set
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <button
+                                            onClick={async () => {
+                                                const productionDate = new Date(2026, 2, 1, 10, 0, 0);
+                                                setSimStartDate(format(productionDate, "yyyy-MM-dd'T'HH:mm"));
+                                                await setDoc(doc(db, "settings", "general"), {
+                                                    draftStartDate: productionDate
+                                                }, { merge: true });
+                                                triggerAlert("Production Mode", "System set to March 1, 2026 (Official Start)");
+                                            }}
+                                            className="px-4 py-3 bg-white text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 border-2 border-slate-300 transition-all"
+                                        >
+                                            <div className="text-xs text-slate-500 mb-1">Production</div>
+                                            <div>Mar 1, 2026</div>
+                                        </button>
 
-                                {/* Fast Testing Mode */}
-                                <div className="border-t pt-4 mt-4">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                                                Fast Testing Mode
-                                                {fastTestingMode && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
-                                            </h4>
-                                            <p className="text-sm text-slate-600 mt-1">
-                                                Enable 10-minute turn windows for rapid testing. Turns start immediately without next-day buffer.
-                                            </p>
-                                            {fastTestingMode && (
-                                                <p className="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1">
-                                                    <AlertTriangle className="w-3 h-3" />
-                                                    Active: Turn windows are 10 minutes
-                                                </p>
-                                            )}
-                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                const today = new Date();
+                                                today.setHours(6, 0, 0, 0);
+                                                setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
+                                                await setDoc(doc(db, "settings", "general"), {
+                                                    draftStartDate: today
+                                                }, { merge: true });
+                                                triggerAlert("Staging Mode", "System set to Today at 6:00 AM (48-hour windows)");
+                                            }}
+                                            className="px-4 py-3 bg-white text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 border-2 border-blue-300 transition-all"
+                                        >
+                                            <div className="text-xs text-slate-500 mb-1">Normal Testing</div>
+                                            <div>Today 6 AM</div>
+                                        </button>
+
                                         <button
                                             onClick={toggleFastTestingMode}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${fastTestingMode
-                                                ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'
-                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                            className={`px-4 py-3 rounded-lg text-sm font-bold transition-all border-2 ${fastTestingMode
+                                                    ? 'bg-amber-50 text-amber-700 border-amber-400 hover:bg-amber-100'
+                                                    : 'bg-white text-slate-700 border-amber-300 hover:bg-amber-50'
                                                 }`}
                                         >
-                                            {fastTestingMode ? 'DISABLE FAST MODE' : 'ENABLE FAST MODE'}
+                                            <div className="text-xs text-slate-500 mb-1">Fast Testing</div>
+                                            <div>{fastTestingMode ? '10 Min Active' : 'Enable 10 Min'}</div>
                                         </button>
+                                    </div>
+                                    {fastTestingMode && (
+                                        <p className="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1">
+                                            <AlertTriangle className="w-3 h-3" />
+                                            Fast Mode Active: Turn windows are 10 minutes
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Current Setting Display */}
+                                <div className="border-t pt-3 mt-3">
+                                    <div className="text-xs text-slate-500 mb-1">Current Setting</div>
+                                    <div className="text-sm font-mono bg-slate-50 p-2 rounded border">
+                                        {simStartDate || 'Not set (using production default)'}
                                     </div>
                                 </div>
                             </div>
