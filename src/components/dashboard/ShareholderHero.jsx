@@ -681,7 +681,7 @@ export function ShareholderHero({
                 {/* Header Row */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h1 className="text-xl md:text-2xl font-medium text-indigo-200">
-                        Welcome, <span className="text-white font-bold">{shareholderName}</span>
+                        Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>!
                     </h1>
                     <div id="tour-status">
                         {renderBadges()}
@@ -699,46 +699,45 @@ export function ShareholderHero({
                         <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-lg">
                             {queueInfo?.diff === 1 ? (
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-emerald-400">
-                                    Up Next!
+                                    You are Up Next!
                                 </span>
                             ) : isJustPassed ? (
                                 <span>Turn Passed</span>
                             ) : (
                                 <span>
-                                    #{queueInfo?.diff || "?"} <span className="text-2xl md:text-3xl font-medium text-indigo-300">in Line</span>
+                                    You are #{queueInfo?.diff || "?"} <span className="text-2xl md:text-3xl font-medium text-indigo-300">in Line</span>
                                 </span>
                             )}
                         </h2>
 
                         <div className="text-xl text-indigo-100/90 font-light leading-relaxed max-w-2xl">
                             {isJustPassed ? (
-                                <p>You have passed your turn for this round. We'll let you know when the next round begins!</p>
+                                <p>Thanks for making your selection! Enjoy the break until the next round.</p>
                             ) : queueInfo?.diff === 1 ? (
                                 <p>
-                                    Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking. You are next.
+                                    Get your dates ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking, and then it's your turn.
                                 </p>
                             ) : null}
                         </div>
                     </div>
 
                     {/* Progress / Info Bar */}
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-md w-full md:w-fit min-w-[300px]">
-                            <div className="flex items-center justify-between gap-8">
-                                <div>
-                                    <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Current Round</div>
-                                    <div className="text-lg font-bold text-white">Round {currentOrder?.round || 1}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Queue Size</div>
-                                    <div className="text-lg font-bold text-white">{currentOrder?.length || 0} Shareholders</div>
+                    <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                        {/* Friendly Message (Replacing Stats Card) */}
+                        {!isJustPassed && (
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-md flex-1 flex items-center justify-center">
+                                <div className="text-center md:text-left">
+                                    <h3 className="text-lg font-bold text-white mb-1">Glad you're here!</h3>
+                                    <p className="text-indigo-200/80 text-sm leading-relaxed">
+                                        While you wait, feel free to browse the calendar or review the rules. We'll send you an email the moment it's your turn to pick.
+                                    </p>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Unified Active Turn Card (Observer View) */}
                         {!isJustPassed && (
-                            <div className="bg-indigo-900/40 border border-indigo-500/30 rounded-xl p-4 md:p-5 backdrop-blur-md flex-1 min-w-[300px]">
+                            <div className="bg-indigo-900/40 border border-indigo-500/30 rounded-xl p-4 md:p-5 backdrop-blur-md flex-[2] min-w-[300px]">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     {/* Left: Who is Picking */}
                                     <div>
