@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.321 - refactor: Simplify Staging Environment with three preset buttons</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.324 - security: Add password protection to Fast Testing Mode toggle</p>
                 </p>
             </div>
         </div>

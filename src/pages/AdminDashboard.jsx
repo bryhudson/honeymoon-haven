@@ -230,17 +230,23 @@ export function AdminDashboard() {
     };
 
     const handleToggleFreeze = async () => {
-        try {
-            const settingsRef = doc(db, "settings", "general");
-            const snap = await getDoc(settingsRef);
-            const current = snap.exists() ? snap.data().isSystemFrozen : false;
+        requireAuth(
+            "Security Check: Toggle Maintenance Mode",
+            "You are about to change the system maintenance state. Please verify your password.",
+            async () => {
+                try {
+                    const settingsRef = doc(db, "settings", "general");
+                    const snap = await getDoc(settingsRef);
+                    const current = snap.exists() ? snap.data().isSystemFrozen : false;
 
-            await setDoc(settingsRef, { isSystemFrozen: !current }, { merge: true });
-            triggerAlert("Success", `System is now ${!current ? 'in MAINTENANCE MODE' : 'ACTIVE'}.`);
-        } catch (e) {
-            console.error(e);
-            triggerAlert("Error", "Failed to update system state.");
-        }
+                    await setDoc(settingsRef, { isSystemFrozen: !current }, { merge: true });
+                    triggerAlert("Success", `System is now ${!current ? 'in MAINTENANCE MODE' : 'ACTIVE'}.`);
+                } catch (e) {
+                    console.error(e);
+                    triggerAlert("Error", "Failed to update system state.");
+                }
+            }
+        );
     };
 
     const handleDownloadCSV = () => {
@@ -526,36 +532,50 @@ export function AdminDashboard() {
         const newValue = !fastTestingMode;
 
         if (newValue) {
-            triggerConfirm(
-                "Enable Fast Testing Mode",
-                "This will:\n- Change turn windows from 48 hours to 10 minutes\n- Start turns immediately (no next-day buffer)\n- WIPE THE DATABASE for a clean testing slate\n\nAre you sure?",
-                async () => {
-                    try {
-                        const count = await performWipe();
-                        await setDoc(doc(db, "settings", "general"), {
-                            fastTestingMode: true
-                        }, { merge: true });
-                        setFastTestingMode(true);
-                        triggerAlert("Fast Testing Mode Enabled", `Database wiped (${count} records). Turn windows are now 10 minutes.`);
-                    } catch (err) {
-                        console.error("Failed to enable fast testing mode:", err);
-                        triggerAlert("Error", "Failed to enable fast testing mode: " + err.message);
-                    }
-                },
-                true,
-                "Enable & Wipe"
+            // Enabling - requires password and confirmation
+            requireAuth(
+                "Security Check: Enable Fast Testing Mode",
+                "You are about to enable Fast Testing Mode (10-minute windows + database wipe). Please verify your password.",
+                () => {
+                    triggerConfirm(
+                        "Enable Fast Testing Mode",
+                        "This will:\n- Change turn windows from 48 hours to 10 minutes\n- Start turns immediately (no next-day buffer)\n- WIPE THE DATABASE for a clean testing slate\n\nAre you sure?",
+                        async () => {
+                            try {
+                                const count = await performWipe();
+                                await setDoc(doc(db, "settings", "general"), {
+                                    fastTestingMode: true
+                                }, { merge: true });
+                                setFastTestingMode(true);
+                                triggerAlert("Fast Testing Mode Enabled", `Database wiped (${count} records). Turn windows are now 10 minutes.`);
+                            } catch (err) {
+                                console.error("Failed to enable fast testing mode:", err);
+                                triggerAlert("Error", "Failed to enable fast testing mode: " + err.message);
+                            }
+                        },
+                        true,
+                        "Enable & Wipe"
+                    );
+                }
             );
         } else {
-            try {
-                await setDoc(doc(db, "settings", "general"), {
-                    fastTestingMode: false
-                }, { merge: true });
-                setFastTestingMode(false);
-                triggerAlert("Fast Testing Mode Disabled", "Turn windows restored to normal (48 hours).");
-            } catch (err) {
-                console.error("Failed to disable fast testing mode:", err);
-                triggerAlert("Error", "Failed to update fast testing mode settings.");
-            }
+            // Disabling - requires password
+            requireAuth(
+                "Security Check: Disable Fast Testing Mode",
+                "You are about to disable Fast Testing Mode and restore normal 48-hour windows. Please verify your password.",
+                async () => {
+                    try {
+                        await setDoc(doc(db, "settings", "general"), {
+                            fastTestingMode: false
+                        }, { merge: true });
+                        setFastTestingMode(false);
+                        triggerAlert("Fast Testing Mode Disabled", "Turn windows restored to normal (48 hours).");
+                    } catch (err) {
+                        console.error("Failed to disable fast testing mode:", err);
+                        triggerAlert("Error", "Failed to update fast testing mode settings.");
+                    }
+                }
+            );
         }
     };
 
@@ -1171,13 +1191,19 @@ export function AdminDashboard() {
                                     </label>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                         <button
-                                            onClick={async () => {
-                                                const productionDate = new Date(2026, 2, 1, 10, 0, 0);
-                                                setSimStartDate(format(productionDate, "yyyy-MM-dd'T'HH:mm"));
-                                                await setDoc(doc(db, "settings", "general"), {
-                                                    draftStartDate: productionDate
-                                                }, { merge: true });
-                                                triggerAlert("Production Mode", "System set to March 1, 2026 (Official Start)");
+                                            onClick={() => {
+                                                requireAuth(
+                                                    "Security Check: Set Production Date",
+                                                    "You are about to set the system to Production mode (March 1, 2026). Please verify your password.",
+                                                    async () => {
+                                                        const productionDate = new Date(2026, 2, 1, 10, 0, 0);
+                                                        setSimStartDate(format(productionDate, "yyyy-MM-dd'T'HH:mm"));
+                                                        await setDoc(doc(db, "settings", "general"), {
+                                                            draftStartDate: productionDate
+                                                        }, { merge: true });
+                                                        triggerAlert("Production Mode", "System set to March 1, 2026 (Official Start)");
+                                                    }
+                                                );
                                             }}
                                             className="px-4 py-3 bg-white text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 border-2 border-slate-300 transition-all"
                                         >
@@ -1186,14 +1212,20 @@ export function AdminDashboard() {
                                         </button>
 
                                         <button
-                                            onClick={async () => {
-                                                const today = new Date();
-                                                today.setHours(6, 0, 0, 0);
-                                                setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
-                                                await setDoc(doc(db, "settings", "general"), {
-                                                    draftStartDate: today
-                                                }, { merge: true });
-                                                triggerAlert("Staging Mode", "System set to Today at 6:00 AM (48-hour windows)");
+                                            onClick={() => {
+                                                requireAuth(
+                                                    "Security Check: Set Testing Date",
+                                                    "You are about to set the system to Today at 6:00 AM for testing. Please verify your password.",
+                                                    async () => {
+                                                        const today = new Date();
+                                                        today.setHours(6, 0, 0, 0);
+                                                        setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
+                                                        await setDoc(doc(db, "settings", "general"), {
+                                                            draftStartDate: today
+                                                        }, { merge: true });
+                                                        triggerAlert("Staging Mode", "System set to Today at 6:00 AM (48-hour windows)");
+                                                    }
+                                                );
                                             }}
                                             className="px-4 py-3 bg-white text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 border-2 border-blue-300 transition-all"
                                         >
@@ -1204,8 +1236,8 @@ export function AdminDashboard() {
                                         <button
                                             onClick={toggleFastTestingMode}
                                             className={`px-4 py-3 rounded-lg text-sm font-bold transition-all border-2 ${fastTestingMode
-                                                    ? 'bg-amber-50 text-amber-700 border-amber-400 hover:bg-amber-100'
-                                                    : 'bg-white text-slate-700 border-amber-300 hover:bg-amber-50'
+                                                ? 'bg-amber-50 text-amber-700 border-amber-400 hover:bg-amber-100'
+                                                : 'bg-white text-slate-700 border-amber-300 hover:bg-amber-50'
                                                 }`}
                                         >
                                             <div className="text-xs text-slate-500 mb-1">Fast Testing</div>
