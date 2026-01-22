@@ -100,7 +100,7 @@ export function AdminDashboard() {
     // Fetch Settings & Bookings
     useEffect(() => {
         // 1. Settings
-        const unsubSettings = onSnapshot(doc(db, "settings", "general"), (doc) => {
+        const unsubSettings = onSnapshot(doc(db, "settings", "general"), async (doc) => {
             if (doc.exists() && doc.data().draftStartDate) {
                 const d = doc.data().draftStartDate.toDate();
                 setCurrentSimDate(d);
@@ -109,11 +109,44 @@ export function AdminDashboard() {
                 setFastTestingMode(doc.data().fastTestingMode || false);
                 setBypassTenAM(doc.data().bypassTenAM || false);
             } else {
-                setCurrentSimDate(null);
-                setSimStartDate("");
-                setIsSystemFrozen(doc.data()?.isSystemFrozen || false);
-                setFastTestingMode(doc.data()?.fastTestingMode || false);
-                setBypassTenAM(doc.data()?.bypassTenAM || false);
+                // AUTO-DEFAULT: Set to Normal Testing until Feb 15, 2026, then Production
+                const now = new Date();
+                const feb15_2026 = new Date(2026, 1, 15); // Month is 0-indexed, so 1 = February
+
+                let defaultDate;
+                let defaultBypassTenAM;
+                let defaultMessage;
+
+                if (now < feb15_2026) {
+                    // Before Feb 15: Use Normal Testing (Today @ 6 AM)
+                    defaultDate = new Date();
+                    defaultDate.setHours(6, 0, 0, 0);
+                    defaultBypassTenAM = false;
+                    defaultMessage = "Auto-initialized to Normal Testing (Today @ 6 AM)";
+                } else {
+                    // After Feb 15: Use Production (March 1, 2026 @ 10 AM)
+                    defaultDate = new Date(2026, 2, 1, 10, 0, 0); // March 1, 2026
+                    defaultBypassTenAM = false;
+                    defaultMessage = "Auto-initialized to Production (March 1, 2026)";
+                }
+
+                // Initialize settings in Firestore
+                await setDoc(doc(db, "settings", "general"), {
+                    draftStartDate: defaultDate,
+                    bypassTenAM: defaultBypassTenAM,
+                    fastTestingMode: false,
+                    isSystemFrozen: false,
+                    isTestMode: now < feb15_2026 ? true : false, // Auto-enable test mode until Feb 15 for email safety
+                    autoInitialized: true,
+                    autoInitMessage: defaultMessage
+                }, { merge: true });
+
+                console.log(defaultMessage);
+                setCurrentSimDate(defaultDate);
+                setSimStartDate(format(defaultDate, "yyyy-MM-dd'T'HH:mm"));
+                setIsSystemFrozen(false);
+                setFastTestingMode(false);
+                setBypassTenAM(defaultBypassTenAM);
             }
         });
 
@@ -1301,6 +1334,19 @@ export function AdminDashboard() {
                                                     ? "ON: All emails are redirected to 'bryan.m.hudson@gmail.com'."
                                                     : "OFF: Emails assume PRODUCTION and go to real users."}
                                             </div>
+                                            {(() => {
+                                                const now = new Date();
+                                                const feb15_2026 = new Date(2026, 1, 15);
+                                                if (now < feb15_2026 && isTestMode) {
+                                                    return (
+                                                        <div className="mt-2 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded border border-blue-200 inline-flex items-center gap-2">
+                                                            <AlertTriangle className="w-3 h-3" />
+                                                            <span className="font-semibold">Auto-enabled until Feb 15, 2026 for safety during testing period</span>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
                                         </div>
                                         <button
                                             onClick={toggleTestMode}
