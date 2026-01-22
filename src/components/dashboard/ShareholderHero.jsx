@@ -486,7 +486,7 @@ export function ShareholderHero({
                                             : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600 hover:text-white'
                                         }`}
                                 >
-                                    {isReadOnly ? 'Pass (Disabled)' : 'Pass Turn'}
+                                    Pass Turn
                                 </button>
                                 <button
                                     onClick={onOpenBooking}
@@ -498,7 +498,7 @@ export function ShareholderHero({
                                         }`}
                                 >
                                     <PlayCircle className={`w-5 h-5 ${isReadOnly ? 'text-slate-500' : 'text-blue-600'}`} />
-                                    {isReadOnly ? 'Booking Disabled' : 'Start Booking'}
+                                    Start Booking
                                 </button>
                             </div>
                         </div>
