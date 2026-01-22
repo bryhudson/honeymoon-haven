@@ -22,6 +22,7 @@ import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { Users, UserPlus } from 'lucide-react';
 import { NotificationsTab } from '../components/admin/NotificationsTab';
+import { SystemTab } from '../components/admin/SystemTab';
 
 export function AdminDashboard() {
     const { currentUser } = useAuth();
@@ -1216,182 +1217,26 @@ export function AdminDashboard() {
 
                 {/* System Tab Content */}
                 {activeTab === 'system' && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-                        <div className="flex items-center gap-3 mb-6">
-                            <Settings className="w-8 h-8 text-slate-800" />
-                            <h2 className="text-2xl font-bold text-slate-900">System Configuration</h2>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Simulation Card */}
-                            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                                <h3 className="font-bold text-slate-700">Staging Environment</h3>
-                                <p className="text-sm text-slate-500">Fast-forward the system time to test time-based rules (e.g. Turn Windows).</p>
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                                        Quick Setup
-                                    </label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                        <button
-                                            onClick={() => {
-                                                requireAuth(
-                                                    "Security Check: Set Production Date",
-                                                    "You are about to set the system to Production mode (March 1, 2026). Please verify your password.",
-                                                    async () => {
-                                                        const now = new Date();
-                                                        const productionDate = new Date(2026, 2, 1, 10, 0, 0);
-                                                        setSimStartDate(format(productionDate, "yyyy-MM-dd'T'HH:mm"));
-                                                        const count = await performWipe(productionDate);
-                                                        await setDoc(doc(db, "settings", "general"), {
-                                                            draftStartDate: productionDate,
-                                                            bypassTenAM: false,
-                                                            fastTestingMode: false
-                                                        }, { merge: true });
-                                                        setFastTestingMode(false);
-                                                        triggerAlert("Production Mode", `System reset to March 1, 2026 (Official Start). Database wiped (${count} records).`);
-                                                    }
-                                                );
-                                            }}
-                                            className="px-4 py-3 bg-white text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 border-2 border-slate-300 transition-all"
-                                        >
-                                            <div className="text-xs text-slate-500 mb-1">Production</div>
-                                            <div>Mar 1, 2026</div>
-                                        </button>
-
-                                        <button
-                                            onClick={() => {
-                                                requireAuth(
-                                                    "Security Check: Set Testing Date",
-                                                    "You are about to set the system to Today at 6:00 AM for testing. Please verify your password.",
-                                                    async () => {
-                                                        const today = new Date();
-                                                        today.setHours(6, 0, 0, 0);
-                                                        setSimStartDate(format(today, "yyyy-MM-dd'T'HH:mm"));
-                                                        const count = await performWipe(today);
-                                                        await setDoc(doc(db, "settings", "general"), {
-                                                            draftStartDate: today,
-                                                            bypassTenAM: false, // 6 AM testing still uses the 10 AM buffer rule
-                                                            fastTestingMode: false
-                                                        }, { merge: true });
-                                                        setFastTestingMode(false);
-                                                        triggerAlert("Staging Mode", `System reset to Today @ 6:00 AM. 48-hour windows + 10 AM buffer. Database wiped (${count} records).`);
-                                                    }
-                                                );
-                                            }}
-                                            className="px-4 py-3 bg-white text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 border-2 border-blue-300 transition-all"
-                                        >
-                                            <div className="text-xs text-slate-500 mb-1">Normal Testing</div>
-                                            <div>Today 6 AM</div>
-                                        </button>
-
-                                        <button
-                                            onClick={toggleFastTestingMode}
-                                            className={`px-4 py-3 rounded-lg text-sm font-bold transition-all border-2 ${fastTestingMode
-                                                ? 'bg-amber-50 text-amber-700 border-amber-400 hover:bg-amber-100'
-                                                : 'bg-white text-slate-700 border-amber-300 hover:bg-amber-50'
-                                                }`}
-                                        >
-                                            <div className="text-xs text-slate-500 mb-1">Fast Testing</div>
-                                            <div>{fastTestingMode ? '10 Min Active' : 'Enable 10 Min'}</div>
-                                        </button>
-                                    </div>
-                                    {fastTestingMode && (
-                                        <p className="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1">
-                                            <AlertTriangle className="w-3 h-3" />
-                                            Fast Mode Active: Turn windows are 10 minutes
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Current Setting Display */}
-                                <div className="border-t pt-3 mt-3">
-                                    <div className="text-xs text-slate-500 mb-1">Current Setting</div>
-                                    <div className="text-sm font-mono bg-slate-50 p-2 rounded border">
-                                        {simStartDate || 'Not set (using production default)'}
-                                    </div>
-                                </div>
-                            </div>
-
-
-
-                            {/* Danger Zone - Restricted Actions */}
-                            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                                <div className="flex items-center gap-2 mb-4 text-red-600">
-                                    <AlertTriangle className="w-5 h-5" />
-                                    <h3 className="font-bold">Site Config</h3>
-                                </div>
-
-                                <div className="space-y-4">
-                                    {/* Test Mode Toggle - Allowed for Admins */}
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                        <div>
-                                            <div className="font-bold text-slate-800 flex items-center gap-2">
-                                                Test Mode (Redirect Emails)
-                                                {isTestMode && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>}
-                                            </div>
-                                            <div className="text-xs text-slate-500 mt-1">
-                                                {isTestMode
-                                                    ? "ON: All emails are redirected to 'bryan.m.hudson@gmail.com'."
-                                                    : "OFF: Emails assume PRODUCTION and go to real users."}
-                                            </div>
-                                            {(() => {
-                                                const now = new Date();
-                                                const feb15_2026 = new Date(2026, 1, 15);
-                                                if (now < feb15_2026 && isTestMode) {
-                                                    return (
-                                                        <div className="mt-2 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded border border-blue-200 inline-flex items-center gap-2">
-                                                            <AlertTriangle className="w-3 h-3" />
-                                                            <span className="font-semibold">Auto-enabled until Feb 15, 2026 for safety during testing period</span>
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            })()}
-                                        </div>
-                                        <button
-                                            onClick={toggleTestMode}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isTestMode
-                                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                                                }`}
-                                        >
-                                            {isTestMode ? 'DISABLE TEST MODE' : 'ENABLE TEST MODE'}
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                        <div>
-                                            <div className="font-bold text-slate-800">Maintenance Mode</div>
-                                            <div className="text-xs text-slate-500">Prevent all non-admin access.</div>
-                                        </div>
-                                        <button
-                                            onClick={toggleSystemFreeze}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isSystemFrozen ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                                                }`}
-                                        >
-                                            {isSystemFrozen ? 'END MAINTENANCE' : 'START MAINTENANCE'}
-                                        </button>
-                                    </div>
-
-                                    {/* WIPE DB: Only Site Owner */}
-                                    {IS_SITE_OWNER && (
-                                        <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
-                                            <div>
-                                                <div className="font-bold text-red-900 text-sm">Wipe Database</div>
-                                                <div className="text-xs text-red-700/70">Delete ALL bookings & resets.</div>
-                                            </div>
-                                            <button
-                                                onClick={handleWipeDatabase}
-                                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-bold uppercase tracking-wider"
-                                            >
-                                                Wipe DB
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <SystemTab
+                        simStartDate={simStartDate}
+                        setSimStartDate={setSimStartDate}
+                        fastTestingMode={fastTestingMode}
+                        setFastTestingMode={setFastTestingMode}
+                        isTestMode={isTestMode}
+                        isSystemFrozen={isSystemFrozen}
+                        toggleTestMode={toggleTestMode}
+                        toggleSystemFreeze={toggleSystemFreeze}
+                        toggleFastTestingMode={toggleFastTestingMode}
+                        handleWipeDatabase={handleWipeDatabase}
+                        requireAuth={requireAuth}
+                        triggerAlert={triggerAlert}
+                        performWipe={performWipe}
+                        IS_SITE_OWNER={IS_SITE_OWNER}
+                        db={db}
+                        doc={doc}
+                        setDoc={setDoc}
+                        format={format}
+                    />
                 )}
 
                 {/* Notifications Tab Content */}

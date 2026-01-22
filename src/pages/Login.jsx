@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.344 - Simplify Notifications to reference-only (no editing UI)</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.345 - Simplify System tab with modern UI and clear mode indicators</p>
                 </p>
             </div>
         </div>
