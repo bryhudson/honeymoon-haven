@@ -119,15 +119,15 @@ export function ShareholderHero({
     // 1. System Maintenance (Highest Priority)
     if (isSystemFrozen && !isSuperAdmin) {
         return (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-xl">
-                <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-                    <div className="p-5 bg-amber-100 rounded-2xl text-amber-600 shrink-0 shadow-md">
-                        <AlertTriangle className="w-12 h-12" />
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-lg">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-amber-100 rounded-xl text-amber-600 shrink-0">
+                        <AlertTriangle className="w-6 h-6" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-3xl md:text-4xl font-black text-amber-900 tracking-tight">System Maintenance</h2>
-                        <p className="text-amber-800/80 text-lg leading-relaxed">
-                            We're performing important system updates. Booking actions are temporarily paused. Please check back shortly.
+                        <h2 className="text-2xl md:text-3xl font-black text-amber-900 tracking-tight">System Maintenance</h2>
+                        <p className="text-amber-800/80 text-base leading-relaxed">
+                            We're performing important system updates. Booking actions are temporarily paused.
                         </p>
                     </div>
                 </div>
@@ -140,23 +140,20 @@ export function ShareholderHero({
     // 2. Open Season
     if (status.phase === 'OPEN_SEASON') {
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-8 md:p-12 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+                {renderBackground('green')}
 
-                <div className="relative z-10 space-y-8">
+                <div className="relative z-10 space-y-6">
+                    {renderHeader()}
+
                     <div className="space-y-4">
-                        <span className="inline-flex px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-bold uppercase tracking-wider border border-green-500/30">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-bold uppercase tracking-wider border border-green-500/30">
                             🎉 Open Season
-                        </span>
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-green-400 to-emerald-300">
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
                             Booking is Open
-                        </h1>
-                        <p className="text-xl md:text-2xl text-white/60 font-medium">
-                            Welcome, <span className="text-white font-bold">{shareholderName}</span>!
-                        </p>
-                        <p className="text-lg text-slate-300 max-w-2xl leading-relaxed">
+                        </h2>
+                        <p className="text-base text-slate-300 leading-relaxed">
                             Reservations are now first-come, first-served for all available dates.
                         </p>
                     </div>
@@ -164,9 +161,9 @@ export function ShareholderHero({
                     <div>
                         <button
                             onClick={onOpenBooking}
-                            className="group px-10 py-5 bg-green-600 hover:bg-green-500 text-white text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
+                            className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            <Calendar className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                            <Calendar className="w-5 h-5" />
                             Book Dates Now
                         </button>
                     </div>
@@ -317,130 +314,16 @@ export function ShareholderHero({
 
 
     // --- SHARED UI COMPONENTS ---
-    const renderStatusCard = (customTheme = 'indigo') => {
-        const isJustPassed = lastAction && lastAction.type === 'pass';
-        const isUpNext = queueInfo?.diff === 1;
 
-        // Theme mapping
-        const themes = {
-            indigo: {
-                accentFrom: 'from-indigo-400',
-                accentTo: 'to-purple-500',
-                textColor: 'text-indigo-200',
-                labelColor: 'text-indigo-300/70',
-                cardBg: 'bg-white/5'
-            },
-            blue: {
-                accentFrom: 'from-blue-400',
-                accentTo: 'to-cyan-400',
-                textColor: 'text-blue-200',
-                labelColor: 'text-blue-300/70',
-                cardBg: 'bg-white/5'
-            },
-            red: {
-                accentFrom: 'from-red-400',
-                accentTo: 'to-rose-500',
-                textColor: 'text-red-200',
-                labelColor: 'text-red-300/70',
-                cardBg: 'bg-white/5'
-            },
-            green: {
-                accentFrom: 'from-emerald-400',
-                accentTo: 'to-green-500',
-                textColor: 'text-emerald-200',
-                labelColor: 'text-emerald-300/70',
-                cardBg: 'bg-white/5'
-            }
-        };
-
-        const t = themes[customTheme] || themes.indigo;
-
-        return (
-            <div className={`${t.cardBg} border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md`}>
-                <div className="grid md:grid-cols-2 gap-8">
-                    {/* Left: Your Position */}
-                    <div className="space-y-4">
-                        <p className={`text-xs font-bold ${t.labelColor} uppercase tracking-widest`}>Your Position</p>
-
-                        {isUpNext ? (
-                            <>
-                                <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight`}>
-                                    You're Up Next!
-                                </h2>
-                                <p className={`text-sm ${t.textColor} leading-relaxed`}>
-                                    Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking.
-                                </p>
-                            </>
-                        ) : isJustPassed ? (
-                            <>
-                                <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Turn Passed</h2>
-                                <p className={`text-sm ${t.textColor} leading-relaxed`}>Thanks for your selection! Relax until the next round.</p>
-                            </>
-                        ) : isYourTurn ? (
-                            <>
-                                <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r ${t.accentFrom} ${t.accentTo} tracking-tight`}>
-                                    Your Turn
-                                </h2>
-                                <p className={`text-sm ${t.textColor} leading-relaxed`}>The clock is ticking! Select your dates before the deadline.</p>
-                            </>
-                        ) : (
-                            <>
-                                <div className="flex items-baseline gap-3">
-                                    <span className={`text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r ${t.accentFrom} ${t.accentTo} tracking-tighter`}>
-                                        {getOrdinal(queueInfo?.diff || 1)}
-                                    </span>
-                                    <span className={`text-2xl font-bold ${t.textColor}`}>in Line</span>
-                                </div>
-                                <p className={`text-sm ${t.textColor} leading-relaxed`}>Sit tight! We'll email you when it's your turn.</p>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Right: Active Picker Info */}
-                    {!isYourTurn && !isJustPassed && (
-                        <div className="space-y-4 md:border-l md:border-white/10 md:pl-8">
-                            <p className={`text-xs font-bold ${t.labelColor} uppercase tracking-widest`}>Currently Picking</p>
-                            <h3 className="text-2xl md:text-3xl font-bold text-white">{status.activePicker}</h3>
-
-                            {status.windowEnds && (
-                                <div className="space-y-3">
-                                    <div className="space-y-1">
-                                        <div className={`text-xs font-bold ${t.labelColor} uppercase tracking-wide`}>Turn Ends</div>
-                                        <div className="text-lg font-bold text-white">
-                                            {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
-                                        </div>
-                                    </div>
-
-                                    <div className="inline-flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10 text-xs font-semibold text-white">
-                                        <Clock className="w-4 h-4" />
-                                        {(() => {
-                                            const end = new Date(status.windowEnds);
-                                            if (end <= now) return 'Ending...';
-                                            const diff = intervalToDuration({ start: now, end });
-                                            const parts = [];
-                                            if (diff.days > 0) parts.push(`${diff.days}d`);
-                                            if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                            return parts.join(' ') || '< 1m';
-                                        })()}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    };
 
 
 
     const renderHeader = () => (
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <h1 className="text-2xl md:text-3xl font-light text-white/60">
-                Welcome, <span className="text-white font-bold">{shareholderName}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-lg font-normal text-white/80">
+                Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>
             </h1>
-            <div id="tour-status">
+            <div id="tour-status" className="flex-shrink-0">
                 {renderBadges()}
             </div>
         </div>
@@ -467,51 +350,73 @@ export function ShareholderHero({
 
     // --- CASE A: Your Turn + Has Draft ---
     if (isYourTurn && activeDraft) {
+        // Calculate time remaining
+        const timeRemaining = status.windowEnds ? (() => {
+            const end = new Date(status.windowEnds);
+            if (end <= now) return 'Ending...';
+            const diff = intervalToDuration({ start: now, end });
+            const parts = [];
+            if (diff.days > 0) parts.push(`${diff.days}d`);
+            if (diff.hours > 0) parts.push(`${diff.hours}h`);
+            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+            return parts.join(' ') || '< 1m';
+        })() : null;
+
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('blue')}
 
-                <div className="relative z-10 space-y-8">
+                <div className="relative z-10 space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
+                        <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
                             Draft Saved
                         </h2>
-                        <p className="text-lg md:text-xl text-blue-100/60 font-medium leading-relaxed max-w-2xl">
+                        <p className="text-base text-white/60 leading-relaxed">
                             You've selected dates. Please <span className="text-white font-bold">finalize</span> your booking to lock them in.
                         </p>
                     </div>
 
-                    {renderStatusCard('blue')}
-
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md flex flex-col lg:flex-row gap-6 items-center justify-between">
-                        <div className="space-y-2 text-center lg:text-left">
-                            <p className="text-xs font-bold text-blue-300 uppercase tracking-widest opacity-70">Complete By</p>
-                            <div className="text-2xl md:text-3xl font-black text-white">
-                                {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <Clock className="w-5 h-5 text-blue-400" />
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Request By</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <span className="text-xl font-bold text-white">
+                                            {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                        </span>
+                                        {timeRemaining && (
+                                            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-lg border border-blue-500/30">
+                                                Time remaining: {timeRemaining}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                            <button
-                                onClick={() => onViewDetails(activeDraft)}
-                                className="px-6 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Info className="w-5 h-5" />
-                                Review Details
-                            </button>
-                            <button
-                                disabled={isReadOnly}
-                                onClick={() => onFinalize(activeDraft.id, shareholderName)}
-                                className={`px-10 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all 
-                                    ${isReadOnly
-                                        ? 'bg-slate-700 cursor-not-allowed opacity-50'
-                                        : 'bg-green-600 hover:bg-green-500 hover:scale-105 active:scale-95'
-                                    }`}
-                            >
-                                <CheckCircle className="w-5 h-5" />
-                                {isReadOnly ? 'Disabled' : 'Finalize Booking'}
-                            </button>
+
+                            <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
+                                <button
+                                    onClick={() => onViewDetails(activeDraft)}
+                                    className="px-5 py-3 bg-slate-700/70 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all"
+                                >
+                                    Review Details
+                                </button>
+                                <button
+                                    disabled={isReadOnly}
+                                    onClick={() => onFinalize(activeDraft.id, shareholderName)}
+                                    className={`px-6 py-3 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all 
+                                        ${isReadOnly
+                                            ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                                            : 'bg-green-600 hover:bg-green-500 text-white hover:scale-105 active:scale-95'
+                                        }`}
+                                >
+                                    <CheckCircle className="w-5 h-5" />
+                                    {isReadOnly ? 'Disabled' : 'Finalize Booking'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -521,61 +426,85 @@ export function ShareholderHero({
 
 
 
+
     // --- CASE B: Your Turn (No Draft) ---
     if (isYourTurn) {
+        // Calculate time remaining
+        const timeRemaining = status.windowEnds ? (() => {
+            const end = new Date(status.windowEnds);
+            if (end <= now) return 'Ending...';
+            const diff = intervalToDuration({ start: now, end });
+            const parts = [];
+            if (diff.days > 0) parts.push(`${diff.days}d`);
+            if (diff.hours > 0) parts.push(`${diff.hours}h`);
+            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+            return parts.join(' ') || '< 1m';
+        })() : null;
+
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('blue')}
 
-                <div className="relative z-10 space-y-8">
+                <div className="relative z-10 space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
+                        <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
                             It's Your Turn
                         </h2>
-                        <p className="text-lg md:text-xl text-blue-100/60 font-medium leading-relaxed max-w-2xl">
-                            The calendar is yours! Select your dates or pass your turn to the next shareholder.
+                        <p className="text-base text-white/60 leading-relaxed">
+                            The calendar is yours! Please select your dates or pass your turn to the next shareholder.
                         </p>
                     </div>
 
-                    {renderStatusCard('blue')}
-
-                    <div id="tour-actions" className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md flex flex-col lg:flex-row gap-6 items-center justify-between">
-                        <div className="space-y-2 text-center lg:text-left">
-                            <p className="text-xs font-bold text-blue-300 uppercase tracking-widest opacity-70">Complete By</p>
-                            <div className="text-2xl md:text-3xl font-black text-white">
-                                {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                    <div id="tour-actions" className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <Clock className="w-5 h-5 text-blue-400" />
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Request By</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <span className="text-xl font-bold text-white">
+                                            {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                        </span>
+                                        {timeRemaining && (
+                                            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-lg border border-blue-500/30">
+                                                Time remaining: {timeRemaining}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                            <button
-                                onClick={onPass}
-                                disabled={isReadOnly}
-                                className={`px-6 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 border 
-                                    ${isReadOnly
-                                        ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed border-transparent'
-                                        : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border-white/10'
-                                    }`}
-                            >
-                                {isReadOnly ? 'Pass (Disabled)' : 'Pass Turn'}
-                            </button>
-                            <button
-                                onClick={onOpenBooking}
-                                disabled={isReadOnly}
-                                className={`px-10 py-4 text-xl font-bold rounded-xl shadow-lg flex items-center justify-center gap-3 transition-all
-                                    ${isReadOnly
-                                        ? 'bg-slate-700 text-slate-400 cursor-not-allowed border border-slate-600'
-                                        : 'bg-white text-slate-900 hover:bg-blue-50 hover:scale-105 active:scale-95 shadow-white/10'
-                                    }`}
-                            >
-                                <PlayCircle className={`w-6 h-6 ${isReadOnly ? 'text-slate-500' : 'text-blue-600'}`} />
-                                {isReadOnly ? 'Disabled' : 'Start Booking'}
-                            </button>
+
+                            <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
+                                <button
+                                    onClick={onPass}
+                                    disabled={isReadOnly}
+                                    className={`px-5 py-3 font-semibold rounded-lg transition-all 
+                                        ${isReadOnly
+                                            ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                                            : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                >
+                                    {isReadOnly ? 'Pass (Disabled)' : 'Pass Turn'}
+                                </button>
+                                <button
+                                    onClick={onOpenBooking}
+                                    disabled={isReadOnly}
+                                    className={`px-6 py-3 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all
+                                        ${isReadOnly
+                                            ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                                            : 'bg-white text-slate-900 hover:bg-blue-50 hover:scale-105 active:scale-95'
+                                        }`}
+                                >
+                                    <PlayCircle className={`w-5 h-5 ${isReadOnly ? 'text-slate-500' : 'text-blue-600'}`} />
+                                    {isReadOnly ? 'Booking Disabled' : 'Start Booking'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
         );
     }
 
@@ -672,29 +601,26 @@ export function ShareholderHero({
     // --- CASE D: Booking Cancelled ---
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('red')}
 
-                <div className="relative z-10 space-y-8">
+                <div className="relative z-10 space-y-6">
                     {renderHeader()}
 
-                    <div className="space-y-4">
-                        <h2 className="text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500">
+                    <div className="space-y-3">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500">
                             Booking Cancelled
                         </h2>
-                        <p className="text-lg md:text-xl text-slate-300 font-medium leading-relaxed max-w-2xl">
+                        <p className="text-base text-slate-300 leading-relaxed">
                             Your previous booking was cancelled. You've returned to the queue and will be able to book again in the next available round.
                         </p>
                     </div>
 
-                    {renderStatusCard('red')}
-
                     <div className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(latestAction)}
-                            className="px-6 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                            className="px-5 py-3 bg-slate-700/70 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all"
                         >
-                            <Info className="w-5 h-5" />
                             View Cancelled Details
                         </button>
                     </div>
@@ -708,30 +634,93 @@ export function ShareholderHero({
         .filter(b => b.shareholderName === shareholderName && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
+    const isUpNext = queueInfo?.diff === 1;
+
     return (
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
             {renderBackground('indigo')}
 
-            <div className="relative z-10 space-y-8">
+            <div className="relative z-10 space-y-6">
                 {renderHeader()}
 
-                <div className="space-y-6">
-                    <p className="text-lg md:text-xl text-indigo-100/40 font-medium leading-relaxed max-w-3xl">
+                <div className="space-y-2">
+                    <p className="text-sm text-white/50">
                         Thanks for using the new HHR Trailer Booking App!
-                        <br />
-                        Have questions or feedback? Click <button onClick={onOpenFeedback} className="font-bold text-white hover:text-indigo-300 underline decoration-indigo-500/50 underline-offset-4 transition-colors">here</button> to let us know.
+                    </p>
+                    <p className="text-sm text-white/50">
+                        Have questions or feedback? Click <button onClick={onOpenFeedback} className="font-semibold text-white hover:text-indigo-300 underline decoration-indigo-500/50 underline-offset-2 transition-colors">here</button> to let us know.
                     </p>
                 </div>
 
-                {renderStatusCard('indigo')}
+                <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {/* Left: Your Position */}
+                        <div className="space-y-3">
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Your Position</p>
+
+                            {isUpNext ? (
+                                <>
+                                    <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
+                                        You're Up Next!
+                                    </div>
+                                    <p className="text-sm text-white/60">
+                                        Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking.
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                                            {getOrdinal(queueInfo?.diff || 1)}
+                                        </span>
+                                        <span className="text-xl font-bold text-white/60">in Line</span>
+                                    </div>
+                                    <p className="text-sm text-white/60">Sit tight! We'll email you when it's your turn.</p>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Right: Currently Picking */}
+                        {!isYourTurn && status.activePicker && (
+                            <div className="space-y-3 md:border-l md:border-white/10 md:pl-6">
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Currently Picking</p>
+                                <h3 className="text-2xl font-bold text-white">{status.activePicker}</h3>
+
+                                {status.windowEnds && (
+                                    <div className="space-y-2">
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Turn Ends</div>
+                                            <div className="text-base font-bold text-white mt-1">
+                                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                            </div>
+                                        </div>
+
+                                        <div className="inline-flex items-center gap-2 bg-slate-700/40 px-3 py-1.5 rounded-lg border border-white/10 text-xs font-semibold text-white">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            {(() => {
+                                                const end = new Date(status.windowEnds);
+                                                if (end <= now) return 'Ending...';
+                                                const diff = intervalToDuration({ start: now, end });
+                                                const parts = [];
+                                                if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                return parts.join(' ') || '< 1m';
+                                            })()}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 {upcomingBooking && (
                     <div id="tour-actions" className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(upcomingBooking)}
-                            className="px-6 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                            className="px-5 py-3 bg-slate-700/70 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all"
                         >
-                            <Info className="w-5 h-5" />
                             View Details
                         </button>
                     </div>
