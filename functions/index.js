@@ -21,6 +21,7 @@ const { emailTemplates } = require("./helpers/emailTemplates");
 const { onBookingChangeTrigger, checkDailyReminders, sendGuestGuideEmail } = require("./triggers/emailTriggers");
 const { createAccount, deleteAccount } = require("./triggers/userManagement");
 const { turnReminderScheduler } = require("./triggers/turnReminderScheduler");
+const { sendTestEmail } = require("./triggers/manualTestEmail");
 
 /**
  * Sends an email via Gmail SMTP.
@@ -88,6 +89,7 @@ exports.onBookingChangeTrigger = onBookingChangeTrigger;
 exports.checkDailyReminders = checkDailyReminders;
 exports.sendGuestGuideEmail = sendGuestGuideEmail;
 exports.turnReminderScheduler = turnReminderScheduler;
+exports.sendTestEmail = sendTestEmail;
 
 // User Management
 exports.createAccount = createAccount;

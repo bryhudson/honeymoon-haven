@@ -271,6 +271,93 @@ export function NotificationsTab({ triggerAlert, triggerConfirm, currentUser, re
                 </p>
             </div>
 
+            {/* Manual Test Email Section */}
+            <div className="bg-white border-2 border-purple-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                        <Mail className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-slate-900">📧 Manual Test Emails</h3>
+                        <p className="text-sm text-slate-500">Send test emails to verify notifications (redirects to your email in test mode)</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button
+                        onClick={async () => {
+                            try {
+                                const { functions } = await import('../../lib/firebase');
+                                const { httpsCallable } = await import('firebase/functions');
+                                const testFn = httpsCallable(functions, 'sendTestEmail');
+                                await testFn({ emailType: 'turnStarted' });
+                                triggerAlert("Test Email Sent", "Turn Started email sent!");
+                            } catch (err) {
+                                triggerAlert("Error", err.message);
+                            }
+                        }}
+                        className="px-4 py-3 bg-green-50 hover:bg-green-100 text-green-700 border-2 border-green-300 rounded-lg font-bold text-sm transition-all"
+                    >
+                        Turn Start
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                            try {
+                                const { functions } = await import('../../lib/firebase');
+                                const { httpsCallable } = await import('firebase/functions');
+                                const testFn = httpsCallable(functions, 'sendTestEmail');
+                                await testFn({ emailType: 'reminder' });
+                                triggerAlert("Test Email Sent", "Reminder email sent!");
+                            } catch (err) {
+                                triggerAlert("Error", err.message);
+                            }
+                        }}
+                        className="px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 border-2 border-blue-300 rounded-lg font-bold text-sm transition-all"
+                    >
+                        Reminder
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                            try {
+                                const { functions } = await import('../../lib/firebase');
+                                const { httpsCallable } = await import('firebase/functions');
+                                const testFn = httpsCallable(functions, 'sendTestEmail');
+                                await testFn({ emailType: 'finalWarning' });
+                                triggerAlert("Test Email Sent", "Urgent warning email sent!");
+                            } catch (err) {
+                                triggerAlert("Error", err.message);
+                            }
+                        }}
+                        className="px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-700 border-2 border-orange-300 rounded-lg font-bold text-sm transition-all"
+                    >
+                        Urgent
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                            try {
+                                const { functions } = await import('../../lib/firebase');
+                                const { httpsCallable } = await import('firebase/functions');
+                                const testFn = httpsCallable(functions, 'sendTestEmail');
+                                await testFn({ emailType: 'bonusTime' });
+                                triggerAlert("Test Email Sent", "Bonus Time email sent!");
+                            } catch (err) {
+                                triggerAlert("Error", err.message);
+                            }
+                        }}
+                        className="px-4 py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border-2 border-purple-300 rounded-lg font-bold text-sm transition-all"
+                    >
+                        🎁 Bonus Time
+                    </button>
+                </div>
+
+                <p className="text-xs text-slate-500 mt-3">
+                    ⚠️ Emails send to active picker or bryan.m.hudson@gmail.com if no active turn
+                </p>
+            </div>
+
             <div className="grid grid-cols-1 gap-4">
                 {TEMPLATE_DEFINITIONS.map(def => {
                     const isCustomized = !!templates[def.id];
