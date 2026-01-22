@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.68.342 - Fun, friendly email makeover with emojis</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.68.343 - Add email schedule reference table to Notifications</p>
                 </p>
             </div>
         </div>

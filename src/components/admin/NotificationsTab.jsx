@@ -3,7 +3,7 @@ import { TEMPLATE_DEFINITIONS } from '../../services/emailTemplateDefinitions';
 import { emailTemplates } from '../../services/emailTemplates';
 import { db } from '../../lib/firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
-import { Loader2, Mail, RefreshCw, Undo, Save, Info } from 'lucide-react';
+import { Loader2, Mail, RefreshCw, Undo, Save, Info, Calendar } from 'lucide-react';
 
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -269,6 +269,98 @@ export function NotificationsTab({ triggerAlert, triggerConfirm, currentUser, re
                     <strong>Templates saved here override the system defaults.</strong>
                     You can reset them at any time.
                 </p>
+            </div>
+
+            {/* Email Schedule Reference Table */}
+            <div className="bg-white border-2 border-slate-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-slate-100 rounded-lg">
+                        <Calendar className="w-5 h-5 text-slate-600" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-slate-900">📅 Email Schedule Reference</h3>
+                        <p className="text-sm text-slate-500">When each email gets sent automatically</p>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b-2 border-slate-200">
+                                <th className="text-left p-3 font-bold text-slate-700">Email Type</th>
+                                <th className="text-left p-3 font-bold text-slate-700">When Sent</th>
+                                <th className="text-left p-3 font-bold text-slate-700">Mode</th>
+                                <th className="text-left p-3 font-bold text-slate-700">Trigger</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">🎉 Turn Started</td>
+                                <td className="p-3">Immediately when turn begins</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Both</span></td>
+                                <td className="p-3 text-xs text-slate-600">Scheduler detects new turn</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">🌅 Evening Reminder</td>
+                                <td className="p-3">7:00 PM same day</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Normal</span></td>
+                                <td className="p-3 text-xs text-slate-600">Time-based (48h mode)</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">☕ Next Day Reminder</td>
+                                <td className="p-3">9:00 AM next day</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Normal</span></td>
+                                <td className="p-3 text-xs text-slate-600">Time-based (day 2)</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">🌅 Last Day Reminder</td>
+                                <td className="p-3">9:00 AM deadline day</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Normal</span></td>
+                                <td className="p-3 text-xs text-slate-600">Time-based (day 3)</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">⏰ Final Warning</td>
+                                <td className="p-3">2 hours before deadline</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Normal</span></td>
+                                <td className="p-3 text-xs text-slate-600">Time-based (urgent)</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">⚡ 5min Warning</td>
+                                <td className="p-3">5 minutes before deadline</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs">Fast</span></td>
+                                <td className="p-3 text-xs text-slate-600">Time remaining (10min mode)</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50">
+                                <td className="p-3 font-medium">🚨 2min Warning</td>
+                                <td className="p-3">2 minutes before deadline</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs">Fast</span></td>
+                                <td className="p-3 text-xs text-slate-600">Time remaining (urgent)</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50 bg-slate-50">
+                                <td className="p-3 font-medium">✅ Booking Confirmed</td>
+                                <td className="p-3">When user finalizes</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Both</span></td>
+                                <td className="p-3 text-xs text-slate-600">Action-triggered</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50 bg-slate-50">
+                                <td className="p-3 font-medium">👋 Turn Passed</td>
+                                <td className="p-3">When user passes turn</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Both</span></td>
+                                <td className="p-3 text-xs text-slate-600">Action-triggered</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50 bg-slate-50">
+                                <td className="p-3 font-medium">💰 Payment Reminder</td>
+                                <td className="p-3">Manual only</td>
+                                <td className="p-3"><span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">Manual</span></td>
+                                <td className="p-3 text-xs text-slate-600">Admin-triggered</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="mt-4 p-3 bg-slate-50 rounded-lg text-xs text-slate-600">
+                    <strong>Note:</strong> Scheduler runs every 5 minutes to check for reminder times. All scheduled emails respect the current testing mode and send to bryan.m.hudson@gmail.com when test mode is active.
+                </div>
             </div>
 
             {/* Manual Test Email Section */}
