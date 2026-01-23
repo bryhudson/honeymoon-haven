@@ -957,14 +957,15 @@ export function AdminDashboard() {
         const currentOrder = getShareholderOrder(2026);
         const sched = mapOrderToSchedule(currentOrder, allBookings, currentSimDate, fastTestingMode, bypassTenAM);
 
-        // PRIORITY 1: use drafted status from Firestore (Synced by Cloud Function)
-        let active = null;
-        if (draftStatus?.activePicker) {
-            // Try to find the exact match in our calculated schedule
-            active = sched.find(s => s.name === draftStatus.activePicker && s.round == draftStatus.round); // Loose equality for round safety
+        // PRIORITY 1: Local Calculation (Instant UI updates)
+        // If the local math says someone is Active or in Grace Period, trust that immediately.
+        let active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD');
 
-            // If not found (maybe strictly because mapOrderToSchedule is out of sync), force create a temporary active object
-            // This ensures the Hero matches the Monitor even if local Calc is lagging
+        // PRIORITY 2: Fallback to Firestore Draft Status (if local calc is ambiguous or empty)
+        if (!active && draftStatus?.activePicker) {
+            active = sched.find(s => s.name === draftStatus.activePicker && s.round == draftStatus.round);
+
+            // Absolute Fallback: Create object from draftStatus if not found in schedule
             if (!active) {
                 active = {
                     name: draftStatus.activePicker,
@@ -974,11 +975,6 @@ export function AdminDashboard() {
                     end: draftStatus.windowEnds ? safeDate(draftStatus.windowEnds) : new Date()
                 };
             }
-        }
-
-        // PRIORITY 2: Fallback to local calculation only if Firestore is empty
-        if (!active && !draftStatus) {
-            active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD');
         }
 
         return { schedule: sched, activeTurn: active };
