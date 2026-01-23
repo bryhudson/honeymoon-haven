@@ -96,6 +96,15 @@ export function AdminDashboard() {
 
     // View State for Bookings Tab
     const [bookingViewMode, setBookingViewMode] = useState('list'); // 'list' | 'calendar'
+    const [tick, setTick] = useState(0); // Periodic update trigger
+
+    // Force re-calculate schedule every minute to ensure "Active" status moves to next person
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTick(t => t + 1);
+        }, 60000); // 1 minute
+        return () => clearInterval(interval);
+    }, []);
 
     // Fetch Settings & Bookings
     useEffect(() => {
