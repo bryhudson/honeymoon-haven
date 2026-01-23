@@ -948,14 +948,27 @@ export function AdminDashboard() {
         const currentOrder = getShareholderOrder(2026);
         const sched = mapOrderToSchedule(currentOrder, allBookings, currentSimDate, fastTestingMode, bypassTenAM);
 
-        // Use drafted status OR fallback to schedule calculation
+        // PRIORITY 1: use drafted status from Firestore (Synced by Cloud Function)
         let active = null;
         if (draftStatus?.activePicker) {
-            active = sched.find(s => s.name === draftStatus.activePicker && s.round === draftStatus.round);
+            // Try to find the exact match in our calculated schedule
+            active = sched.find(s => s.name === draftStatus.activePicker && s.round == draftStatus.round); // Loose equality for round safety
+
+            // If not found (maybe strictly because mapOrderToSchedule is out of sync), force create a temporary active object
+            // This ensures the Hero matches the Monitor even if local Calc is lagging
+            if (!active) {
+                active = {
+                    name: draftStatus.activePicker,
+                    round: draftStatus.round,
+                    status: 'ACTIVE',
+                    start: draftStatus.windowStarts ? safeDate(draftStatus.windowStarts) : new Date(),
+                    end: draftStatus.windowEnds ? safeDate(draftStatus.windowEnds) : new Date()
+                };
+            }
         }
 
-        // Fallback if draftStatus not fully sync/migrated
-        if (!active) {
+        // PRIORITY 2: Fallback to local calculation only if Firestore is empty
+        if (!active && !draftStatus) {
             active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD');
         }
 
@@ -1577,10 +1590,21 @@ export function AdminDashboard() {
 
                                                     // If not booked, show placeholder
                                                     if (!isSlotBooked) {
+                                                        let statusBadge;
+                                                        if (slot.status === 'SKIPPED') {
+                                                            statusBadge = <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 border border-red-200">Skipped</span>;
+                                                        } else if (slot.status === 'ACTIVE') {
+                                                            statusBadge = <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 border border-green-200 animate-pulse">Active Now</span>;
+                                                        } else if (slot.status === 'FUTURE') {
+                                                            statusBadge = <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 ml-2">Waiting</span>;
+                                                        } else {
+                                                            statusBadge = <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">Pending</span>;
+                                                        }
+
                                                         return (
-                                                            <tr key={`${slot.name}-${slot.round}`} className="bg-slate-50/30">
+                                                            <tr key={`${slot.name}-${slot.round}`} className={`bg-slate-50/30 ${slot.status === 'ACTIVE' ? 'bg-green-50/50' : ''}`}>
                                                                 <td className="px-6 py-5">
-                                                                    <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
+                                                                    <div className={`font-semibold text-base ${slot.status === 'ACTIVE' ? 'text-green-700' : 'text-slate-400'}`}>{slot.name}</div>
                                                                     <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">
                                                                         Cabin #{CABIN_OWNERS.find(o => o.name === slot.name)?.cabin || "?"}
                                                                     </div>
@@ -1588,9 +1612,7 @@ export function AdminDashboard() {
                                                                 <td className="px-6 py-5 text-slate-400">—</td>
                                                                 <td className="px-6 py-5 text-slate-400">—</td>
                                                                 <td className="px-6 py-5 text-center">
-                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
-                                                                        Pending
-                                                                    </span>
+                                                                    {statusBadge}
                                                                 </td>
                                                                 <td className="px-6 py-5 text-center text-slate-300">—</td>
                                                                 <td className="px-6 py-5 text-right text-slate-300">—</td>

@@ -18,7 +18,7 @@ const { calculateDraftSchedule, getShareholderOrder } = require("../helpers/shar
  */
 exports.autosyncDraftStatus = onSchedule(
     {
-        schedule: "*/5 * * * *", // Every 5 minutes
+        schedule: "* * * * *", // Every 1 minute for precise draft windows
         timeZone: "America/Los_Angeles"
     },
     async (event) => {

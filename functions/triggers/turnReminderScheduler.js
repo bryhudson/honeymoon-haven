@@ -17,7 +17,7 @@ const db = admin.firestore();
  */
 exports.turnReminderScheduler = onSchedule(
     {
-        schedule: "*/5 * * * *", // Every 5 minutes
+        schedule: "* * * * *", // Every 1 minute for precision
         secrets: gmailSecrets
     },
     async (event) => {
@@ -93,6 +93,7 @@ exports.turnReminderScheduler = onSchedule(
                 await notificationLogRef.set({
                     shareholderName: activePicker,
                     round: round,
+                    phase: phase, // Store phase for robustness
                     turnStartTime: admin.firestore.Timestamp.fromDate(turnStart),
                     lastTurnStartSent: admin.firestore.Timestamp.now()
                 }, { merge: true });
@@ -132,16 +133,16 @@ async function handleFastModeReminders(
     const minutesRemaining = (turnEnd - now) / (1000 * 60);
     logger.info(`Fast Mode: ${minutesRemaining.toFixed(1)} minutes remaining`);
 
-    // 2-minute urgent warning
-    if (minutesRemaining <= 2 && minutesRemaining > 0 && !notificationLog.last2minSent) {
+    // 2-minute urgent warning (Catch anything between 0 and 2.5 mins)
+    if (minutesRemaining <= 2.5 && minutesRemaining > 0 && !notificationLog.last2minSent) {
         logger.info("Sending 2-minute urgent reminder");
         await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 minutes", true, isTestMode);
         await notificationLogRef.update({
             last2minSent: admin.firestore.Timestamp.now()
         });
     }
-    // 5-minute warning
-    else if (minutesRemaining <= 5 && !notificationLog.last5minSent) {
+    // 5-minute warning (Catch anything between 2.5 and 6 mins)
+    else if (minutesRemaining <= 6 && minutesRemaining > 2.5 && !notificationLog.last5minSent) {
         logger.info("Sending 5-minute reminder");
         await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "5 minutes", false, isTestMode);
         await notificationLogRef.update({
