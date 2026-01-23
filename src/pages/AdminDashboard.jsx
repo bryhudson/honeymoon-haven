@@ -982,7 +982,7 @@ export function AdminDashboard() {
         }
 
         return { schedule: sched, activeTurn: active };
-    }, [allBookings, draftStatus, currentSimDate, fastTestingMode, bypassTenAM]);
+    }, [allBookings, draftStatus, currentSimDate, fastTestingMode, bypassTenAM, tick]);
 
 
 
