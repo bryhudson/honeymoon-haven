@@ -155,52 +155,7 @@ export function SystemTab({
         }
     };
 
-    // Helper to render shareholder list
-    const renderShareholderList = () => {
-        const shareholders = getShareholderOrder(2026);
-        const fullOrder = [...shareholders, ...[...shareholders].reverse()];
 
-        return (
-            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                {fullOrder.map((name, index) => {
-                    const isRound2 = index >= 12;
-                    const round = isRound2 ? 2 : 1;
-                    const isActive = monitorData?.activePicker === name && monitorData?.round === round;
-
-                    // Determine status based on monitorData (approximated for UI)
-                    // In a real implementation we'd map this perfectly from the schedule
-                    const isCompleted = bookings.some(b => b.shareholderName === name && b.round === round);
-
-                    let statusColor = "bg-slate-50 border-slate-200 text-slate-500"; // Future
-                    let icon = <div className="w-5 h-5 rounded-full bg-slate-200 text-xs flex items-center justify-center font-mono">{index + 1}</div>;
-
-                    if (isActive) {
-                        statusColor = "bg-green-50 border-green-300 text-green-900 shadow-sm ring-1 ring-green-200";
-                        icon = <div className="w-5 h-5 relative flex items-center justify-center">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </div>;
-                    } else if (isCompleted) {
-                        statusColor = "bg-blue-50 border-blue-200 text-blue-700 opacity-70";
-                        icon = <CheckCircle className="w-5 h-5 text-blue-500" />;
-                    }
-
-                    return (
-                        <div key={`${name}-${round}`} className={`flex items-center justify-between p-3 rounded-lg border ${statusColor} transition-all`}>
-                            <div className="flex items-center gap-3">
-                                {icon}
-                                <div>
-                                    <div className="font-semibold text-sm">{name}</div>
-                                    <div className="text-xs opacity-75">Round {round}</div>
-                                </div>
-                            </div>
-                            {isActive && <div className="text-xs font-bold bg-green-200 text-green-800 px-2 py-1 rounded">ACTIVE</div>}
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -226,9 +181,9 @@ export function SystemTab({
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-8">
                 {/* Left Column: Controls */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-6">
 
                     {/* Status Banner */}
                     {isBeforeFeb15 && (
@@ -421,44 +376,8 @@ export function SystemTab({
                         )}
                     </div>
                 </div>
-
-                {/* Right Column: Schedule Monitor */}
-                <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-xl overflow-hidden flex flex-col h-[700px]">
-                    <div className="bg-slate-900 p-4 border-b border-slate-800 flex items-center justify-between">
-                        <h3 className="font-bold text-white flex items-center gap-2">
-                            <Users className="w-5 h-5 text-green-400" />
-                            Schedule Monitor
-                        </h3>
-                        {monitorData && (
-                            <div className="text-xs font-mono text-slate-400">
-                                {monitorData.phase}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="p-4 bg-slate-100 border-b border-slate-200">
-                        <div className="flex justify-between items-center text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                            <span>Shareholder</span>
-                            <span>Status</span>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-hidden bg-slate-50 p-4">
-                        {renderShareholderList()}
-                    </div>
-
-                    <div className="p-4 bg-white border-t border-slate-200 text-xs text-center text-slate-500">
-                        Shows calculated state based on live bookings. <br />
-                        <span className="flex items-center justify-center gap-2 mt-1">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                            </span>
-                            Live Updates: {lastSyncTime}
-                        </span>
-                    </div>
-                </div>
             </div>
         </div>
+        </div >
     );
 }
