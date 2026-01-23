@@ -1606,9 +1606,22 @@ export function AdminDashboard() {
                                                                 <td className="px-6 py-5 text-slate-400">—</td>
                                                                 <td className="px-6 py-5 text-slate-400">—</td>
                                                                 <td className="px-6 py-5 text-center">
-                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
-                                                                        Pending
-                                                                    </span>
+                                                                    {(() => {
+                                                                        const statusConfig = {
+                                                                            'ACTIVE': { label: 'Active Now', className: 'bg-emerald-100 text-emerald-700 border-emerald-200 animate-pulse' },
+                                                                            'GRACE_PERIOD': { label: 'Grace Period', className: 'bg-amber-100 text-amber-700 border-amber-200' },
+                                                                            'SKIPPED': { label: 'Skipped', className: 'bg-rose-100 text-rose-700 border-rose-200' },
+                                                                            'FUTURE': { label: 'Pending', className: 'bg-slate-100 text-slate-400 border-slate-200' },
+                                                                            'PASSED': { label: 'Passed', className: 'bg-slate-100 text-slate-500 border-slate-200' },
+                                                                            'CANCELLED': { label: 'Cancelled', className: 'bg-rose-50 text-rose-500 border-rose-100 line-through' }
+                                                                        };
+                                                                        const config = statusConfig[slot.status] || statusConfig['FUTURE'];
+                                                                        return (
+                                                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${config.className}`}>
+                                                                                {config.label}
+                                                                            </span>
+                                                                        );
+                                                                    })()}
                                                                 </td>
                                                                 <td className="px-6 py-5 text-center text-slate-300">—</td>
                                                                 <td className="px-6 py-5 text-right text-slate-300">—</td>
