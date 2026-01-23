@@ -20,37 +20,34 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         throw new HttpsError('permission-denied', 'Only the Super Admin can send test emails.');
     }
 
-    const { emailType, targetShareholder } = request.data;
+    const { emailType, targetShareholder, testEmail } = request.data;
 
     if (!emailType) {
         throw new HttpsError('invalid-argument', 'Email type is required.');
     }
 
     try {
-        // 2. Get target shareholder or use current active picker
+        // 2. Use default test target (Super Admin) if no specific target provided
         let shareholderName = targetShareholder;
         let shareholderEmail;
 
         if (!shareholderName) {
-            // Get current active picker
-            const statusDoc = await db.collection("status").doc("draftStatus").get();
-            if (!statusDoc.exists || !statusDoc.data().activePicker) {
-                throw new HttpsError('failed-precondition', 'No active picker and no target specified.');
+            // Use Super Admin as default test target
+            shareholderName = "Bryan Hudson";
+            shareholderEmail = testEmail || "bryan.m.hudson@gmail.com";
+        } else {
+            // 3. Get shareholder email from database
+            const shareholderQuery = await db.collection("shareholders")
+                .where("name", "==", shareholderName)
+                .limit(1)
+                .get();
+
+            if (shareholderQuery.empty) {
+                throw new HttpsError('not-found', `Shareholder not found: ${shareholderName}`);
             }
-            shareholderName = statusDoc.data().activePicker;
+
+            shareholderEmail = shareholderQuery.docs[0].data().email;
         }
-
-        // 3. Get shareholder email
-        const shareholderQuery = await db.collection("shareholders")
-            .where("name", "==", shareholderName)
-            .limit(1)
-            .get();
-
-        if (shareholderQuery.empty) {
-            throw new HttpsError('not-found', `Shareholder not found: ${shareholderName}`);
-        }
-
-        shareholderEmail = shareholderQuery.docs[0].data().email;
 
         // 4. Get test mode setting
         const settingsDoc = await db.collection("settings").doc("general").get();
@@ -87,6 +84,52 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
             case 'finalWarning':
                 ({ subject, htmlContent } = emailTemplates.finalWarning(testData));
                 break;
+            case 'bookingConfirmed':
+                ({ subject, htmlContent } = emailTemplates.bookingConfirmed({
+                    ...testData,
+                    check_in: "June 15, 2026",
+                    check_out: "June 22, 2026",
+                    nights: 7,
+                    cabin_number: 3,
+                    guests: 4,
+                    total_price: 875
+                }));
+                break;
+            case 'bookingCancelled':
+                ({ subject, htmlContent } = emailTemplates.bookingCancelled({
+                    ...testData,
+                    check_in: "June 15, 2026",
+                    check_out: "June 22, 2026",
+                    cabin_number: 3,
+                    within_turn_window: false,
+                    next_shareholder: "Next Person"
+                }));
+                break;
+            case 'turnPassedNext':
+                ({ subject, htmlContent } = emailTemplates.turnPassedNext({
+                    ...testData,
+                    previous_shareholder: "Previous Person",
+                    deadline_date: "Jan 25",
+                    deadline_time: "10:00 AM"
+                }));
+                break;
+            case 'paymentReminder':
+                ({ subject, htmlContent } = emailTemplates.paymentReminder({
+                    ...testData,
+                    total_price: 875,
+                    cabin_number: 3,
+                    check_in: "June 15, 2026"
+                }));
+                break;
+            case 'paymentReceived':
+                ({ subject, htmlContent } = emailTemplates.paymentReceived({
+                    ...testData,
+                    amount: 875,
+                    check_in: "June 15, 2026",
+                    check_out: "June 22, 2026",
+                    cabin_number: 3
+                }));
+                break;
             case 'bonusTime':
                 // Bonus time template (will create if needed)
                 subject = "🎁 Bonus Time! Early Access to Your Turn";
@@ -104,8 +147,8 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                 throw new HttpsError('invalid-argument', `Unknown email type: ${emailType}`);
         }
 
-        // 7. Apply test mode override
-        const recipient = isTestMode ? "bryan.m.hudson@gmail.com" : shareholderEmail;
+        // 7. Use testEmail if provided, otherwise apply test mode override
+        const recipient = testEmail || (isTestMode ? "bryan.m.hudson@gmail.com" : shareholderEmail);
         const finalSubject = `[TEST EMAIL] ${subject}`;
 
         await sendGmail({
@@ -126,5 +169,108 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
     } catch (error) {
         logger.error("Failed to send test email:", error);
         throw new HttpsError('internal', `Failed to send test email: ${error.message}`);
+    }
+});
+
+/**
+ * Send Test Reminder Email
+ * Instantly sends a reminder email for testing purposes
+ */
+exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => {
+    // Security: Only Super Admin
+    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
+        throw new HttpsError('permission-denied', 'Only the Super Admin can send test reminders.');
+    }
+
+    const { reminderType } = request.data; // 'evening', 'day2', 'final', 'urgent'
+
+    if (!reminderType) {
+        throw new HttpsError('invalid-argument', 'Reminder type is required.');
+    }
+
+    try {
+        // Get active picker from draftStatus
+        const statusDoc = await db.collection("status").doc("draftStatus").get();
+
+        if (!statusDoc.exists) {
+            throw new HttpsError('failed-precondition', 'Draft status not found. Run sync first.');
+        }
+
+        const { activePicker, round, phase, windowEnds } = statusDoc.data();
+
+        if (!activePicker) {
+            throw new HttpsError('failed-precondition', 'No active picker. Draft may not have started.');
+        }
+
+        // Get shareholder email
+        const shareholderQuery = await db.collection("shareholders")
+            .where("name", "==", activePicker)
+            .limit(1)
+            .get();
+
+        if (shareholderQuery.empty) {
+            throw new HttpsError('not-found', `Shareholder not found: ${activePicker}`);
+        }
+
+        const shareholderEmail = shareholderQuery.docs[0].data().email;
+        const deadline = windowEnds ? windowEnds.toDate() : new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+        // Define reminder messages
+        const reminderMessages = {
+            evening: { timeRemaining: "evening check-in", isUrgent: false },
+            day2: { timeRemaining: "day 2", isUrgent: false },
+            final: { timeRemaining: "final day", isUrgent: false },
+            urgent: { timeRemaining: "2 hours", isUrgent: true }
+        };
+
+        const config = reminderMessages[reminderType];
+        if (!config) {
+            throw new HttpsError('invalid-argument', `Unknown reminder type: ${reminderType}`);
+        }
+
+        // Prepare email data
+        const testData = {
+            name: activePicker,
+            round: round || 1,
+            phase: phase || 'ROUND_1',
+            deadline: deadline.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            }),
+            status_message: `You have ${config.timeRemaining} remaining to make your selection.`,
+            urgency_message: config.isUrgent ? '⚠️ URGENT: Your booking window is about to expire!' : 'Friendly reminder to complete your booking.',
+            dashboard_url: "https://hhr-trailer-booking.web.app/"
+        };
+
+        // Select appropriate template
+        const emailFunction = config.isUrgent ? emailTemplates.finalWarning : emailTemplates.reminder;
+        const { subject, htmlContent } = emailFunction(testData);
+
+        // Always send to Super Admin for test emails
+        const recipient = "bryan.m.hudson@gmail.com";
+        const finalSubject = `[TEST REMINDER - ${reminderType.toUpperCase()}] ${subject}`;
+
+        await sendGmail({
+            to: { name: activePicker, email: recipient },
+            subject: finalSubject,
+            htmlContent: htmlContent
+        });
+
+        logger.info(`Test reminder sent: ${reminderType} for ${activePicker} to ${recipient}`);
+
+        return {
+            success: true,
+            message: `Test ${reminderType} reminder sent for ${activePicker}`,
+            recipient: recipient,
+            reminderType: reminderType
+        };
+
+    } catch (error) {
+        logger.error("Failed to send test reminder:", error);
+        throw new HttpsError('internal', `Failed to send test reminder: ${error.message}`);
     }
 });

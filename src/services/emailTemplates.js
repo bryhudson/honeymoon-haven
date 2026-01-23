@@ -81,30 +81,43 @@ export const wrapHtml = (title, bodyContent) => `
 export const emailTemplates = {
   // 1. Turn Started 🎉
   turnStarted: (data) => {
-    const subject = `It's YOUR Turn to Book! 🎉`;
+    const subject = `HHR Trailer Booking: It's YOUR Turn! 🎉`;
+
+    // Determine round display text
+    const roundText = data.phase === 'ROUND_1' ? 'Round 1' :
+      data.phase === 'ROUND_2' ? 'Round 2' :
+        'Open Season';
+
     const body = `
-      <p>Hey ${data.name}! 🎉</p>
-      <p>Exciting news - it's <strong>YOUR turn</strong> to book the lake house!</p>
+      <p>Hey ${data.name}! 👋</p>
       
-      <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <strong>⏰ Your Deadline:</strong> ${data.deadline_date} at ${data.deadline_time}
+      <p><strong>Welcome to the 2026 booking season!</strong> You're receiving this because it's officially <em>your turn</em> to pick your dates for the trailer.</p>
+
+      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong>🆕 What's this all about?</strong><br>
+        <p style="margin: 10px 0 0 0;">We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place! You can pick your dates, see what's available, and track your bookings all from your personal dashboard.</p>
       </div>
 
-      <p>You've got 48 hours to:</p>
-      <ul>
-        <li>🌊 Snag your perfect summer dates</li>
-        <li>💾 Save a draft if you need more time</li>
-        <li>👋 Or pass to the next person</li>
-      </ul>
+      <p><strong>📍 You're booking for:</strong> <span style="background-color: #dbeafe; padding: 4px 12px; border-radius: 4px; font-weight: bold;">${roundText}</span></p>
 
-      <p>Can't wait to see which weeks you pick!</p>
+      <p><strong>Your booking window:</strong></p>
+      <p style="margin: 10px 0;">You have until <strong>${data.deadline_date} at ${data.deadline_time}</strong> to make your selection. That's plenty of time, but don't forget!</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">Book My Dates!</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">Check Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
-      
-      <p><small>Not ready yet? No stress - you can always <a href="${data.pass_turn_url}">pass from the dashboard</a>.</small></p>
+
+      <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+        <strong>🔐 Login Credentials:</strong><br>
+        <p style="margin: 10px 0 0 0;">
+          • <strong>Username:</strong> Your email (the one receiving this)<br>
+          • <strong>Password:</strong> cabin# (all lowercase, e.g., "cabin7")
+        </p>
+      </div>
+
+      <p><strong>Need help or have suggestions?</strong> We'd love to hear from you! Hit the <strong>Feedback</strong> button in the app anytime to share your thoughts, report issues, or suggest improvements. We're here to make this work for everyone. 💙</p>
+
+      <p>Happy booking!</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -112,26 +125,37 @@ export const emailTemplates = {
   // 2. Daily Reminder ☕
   reminder: (data) => {
     const isMorning = data.type === 'morning';
-    const subject = isMorning ? `Morning Check-In ☕` : `Evening Reminder 🌅`;
+    const subject = `HHR Trailer Booking: ${isMorning ? 'Morning Check-In ☕' : 'Evening Reminder 🌅'}`;
+
+    const roundText = data.phase === 'ROUND_1' ? 'Round 1' :
+      data.phase === 'ROUND_2' ? 'Round 2' :
+        'Open Season';
 
     const body = `
       <p>${isMorning ? 'Morning' : 'Hey there'}, ${data.name}! ${isMorning ? '☕' : '🌅'}</p>
-      <p>Quick check-in - you've got <strong>${data.hours_remaining} hours</strong> left to lock in your lake time!</p>
+      <p>Quick check-in - you've got <strong>${data.hours_remaining} hours</strong> left to lock in your trailer dates for <strong>${roundText}</strong>!</p>
 
       <div style="background-color: #fffbeb; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <strong>Deadline:</strong> ${data.deadline_date} at ${data.deadline_time}
       </div>
 
       ${data.has_draft ? `
-        <p>✓ Draft saved: ${data.check_in} - ${data.check_out}<br>
+        <p>✓ Selection saved: ${data.check_in} - ${data.check_out}<br>
         Ready to finalize? Hit the button below!</p>
       ` : `
         <p>Still deciding? No worries - there's time! 🤔</p>
       `}
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">${data.has_draft ? 'Finalize Booking' : 'Pick My Dates'}</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
+      </div>
+
+      <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+        <strong>🔐 Login Credentials:</strong><br>
+        <p style="margin: 10px 0 0 0;">
+          • <strong>Username:</strong> Your email<br>
+          • <strong>Password:</strong> cabin# (all lowercase, e.g., "cabin7")
+        </p>
       </div>
 
       <p>Hope you're as excited as we are for summer 2026! 🏖️</p>
@@ -141,10 +165,15 @@ export const emailTemplates = {
 
   // 3. Final Warning ⏰
   finalWarning: (data) => {
-    const subject = `Heads Up! ⏰ 6 Hours Left`;
+    const subject = `HHR Trailer Booking: Heads Up! ⏰ 6 Hours Left`;
+
+    const roundText = data.phase === 'ROUND_1' ? 'Round 1' :
+      data.phase === 'ROUND_2' ? 'Round 2' :
+        'Open Season';
+
     const body = `
       <p>Hey ${data.name}! ⏰</p>
-      <p>Just a heads up - your booking window closes in <strong>6 hours</strong> (today at ${data.deadline_time}).</p>
+      <p>Just a heads up - your booking window for <strong>${roundText}</strong> closes in <strong>6 hours</strong> (today at ${data.deadline_time}).</p>
 
       ${data.has_draft ? `
         <div style="background-color: #fff7ed; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f97316;">
@@ -153,14 +182,21 @@ export const emailTemplates = {
           Just needs to be finalized to secure your dates! 🎯
         </div>
       ` : `
-        <p>No booking selected yet - but now's the time if you want those lake vibes this summer! 🌅</p>
+        <p>No booking selected yet - but now's the time to grab your perfect dates! 🌅</p>
       `}
 
       <p><strong>FYI:</strong> If you don't book or pass by the deadline, your turn automatically goes to ${data.next_shareholder}.</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">BOOK NOW</a>
-        ${!data.has_draft ? `<a href="${data.pass_turn_url}" style="${SECONDARY_STYLES}">Pass Turn</a>` : ''}
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
+      </div>
+      
+      <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+        <strong>🔐 Login Credentials:</strong><br>
+        <p style="margin: 10px 0 0 0;">
+          • <strong>Username:</strong> Your email<br>
+          • <strong>Password:</strong> cabin# (all lowercase, e.g., "cabin7")
+        </p>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -168,10 +204,10 @@ export const emailTemplates = {
 
   // 4. Booking Confirmed 🎊
   bookingConfirmed: (data) => {
-    const subject = `Woohoo! Your Lake Vacation is Booked! 🎊`;
+    const subject = `HHR Trailer Booking: Woohoo! Your Booking is Confirmed! 🎊`;
     const body = `
       <p>Woohoo, ${data.name}! 🎊</p>
-      <p>Your lake vacation is <strong>LOCKED IN!</strong> Start packing those swim trunks! 🩳</p>
+      <p>Your trailer booking is <strong>LOCKED IN!</strong> Your guests are going to love it! 🎉</p>
 
       <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #86efac;">
         <h3 style="margin-top: 0; color: #166534;">Your Summer Plans 🌞</h3>
@@ -192,11 +228,10 @@ export const emailTemplates = {
       </div>
 
       <div style="margin: 25px 0;">
-        <a href="mailto:honeymoonhavenresort.lc@gmail.com?subject=Payment for Cabin ${data.cabin_number} - ${data.check_in}&body=Sending e-transfer for $${data.total_price}" style="${CTA_BUTTON_STYLES}">Send E-Transfer</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
 
-      <p>Can't wait to see you at the lake! 🌊</p>
+      <p>Can't wait to welcome your guests! 🌞</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -214,7 +249,7 @@ export const emailTemplates = {
       </div>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
 
       <p>Enjoy your summer! 🌞</p>
@@ -234,11 +269,10 @@ export const emailTemplates = {
         Deadline: ${data.deadline_date} at ${data.deadline_time}
       </div>
 
-      <p>Time to grab those perfect lake weeks! 🏖️</p>
+      <p>Time to grab your perfect dates! 🌞</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">BOOK NOW</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">Check Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
 
       <p style="font-size: 0.9em; color: #64748b;">Lucky you! 😊</p>
@@ -261,7 +295,7 @@ export const emailTemplates = {
       </div>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
 
       <p>Life gets busy - we get it! 💙</p>
@@ -280,11 +314,11 @@ export const emailTemplates = {
         <strong>Your Deadline:</strong> ${data.deadline_date} at ${data.deadline_time}
       </div>
 
-      <p>Time to pick your perfect lake weeks! 🌊</p>
+      <p>Time to pick your perfect dates! 🌞</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">BOOK NOW</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">Check Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -309,7 +343,7 @@ export const emailTemplates = {
       `}
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -355,10 +389,10 @@ export const emailTemplates = {
       <p>Everything's locked in. Now the hard part... waiting until summer! 😅</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View My Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
 
-      <p>See you at the lake! 🌊🏖️</p>
+      <p>Hope to welcome your guests soon! 🌞</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   }

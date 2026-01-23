@@ -69,7 +69,8 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
     const mailOptions = {
         from: from,
         to: recipient,
-        subject: isTestMode ? `[TEST] ${subject}` : subject, // Prefix subject in test mode
+        // Only add [TEST] prefix if not already prefixed with [TEST EMAIL]
+        subject: (isTestMode && !subject.startsWith('[TEST EMAIL]')) ? `[TEST] ${subject}` : subject,
         html: htmlContent,
     };
 

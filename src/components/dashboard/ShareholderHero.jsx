@@ -320,7 +320,7 @@ export function ShareholderHero({
 
     const renderHeader = () => (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-lg font-normal text-white/80">
+            <h1 className="text-xl md:text-2xl font-normal text-white/80">
                 Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>
             </h1>
             <div id="tour-status" className="flex-shrink-0">
@@ -544,7 +544,7 @@ export function ShareholderHero({
                             {isPassed ? (
                                 <p>You've passed your turn for this round. We'll notify you when the next round begins!</p>
                             ) : isSkipped ? (
-                                <p>Your turn expired without action. Don't worry—you'll get another chance in the next round!</p>
+                                <p>Your turn expired without action. Don't worry - you'll get another chance in the next round!</p>
                             ) : (
                                 <div className="space-y-3">
                                     <p>
@@ -568,8 +568,6 @@ export function ShareholderHero({
                             )}
                         </div>
                     </div>
-
-                    {renderStatusCard(theme)}
 
                     {!isPassed && !isSkipped && lastAction && (
                         <div className="flex flex-col sm:flex-row gap-4 justify-end">

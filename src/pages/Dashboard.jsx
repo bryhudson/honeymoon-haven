@@ -150,6 +150,19 @@ export function Dashboard() {
         }
     }, [currentUser, isSuperAdmin, loading]);
 
+    // Auto-redirect admins to Admin Dashboard (unless masquerading as shareholder)
+    useEffect(() => {
+        if (!loading && currentUser && !masqueradeAs) {
+            const isAdmin = currentUser.email === 'bryan.m.hudson@gmail.com' ||
+                currentUser.email === 'honeymoonhavenresort.lc@gmail.com';
+
+            if (isAdmin) {
+                console.log("Auto-redirecting admin to /admin dashboard");
+                navigate('/admin', { replace: true });
+            }
+        }
+    }, [currentUser, masqueradeAs, loading, navigate]);
+
     // Reset Booking Form visibility when turn changes
     useEffect(() => {
         setShowBookingForm(false);
@@ -648,6 +661,7 @@ export function Dashboard() {
                     </div>
 
                     <ShareholderHero
+                        key={`hero-${masqueradeAs || loggedInShareholder || 'default'}`}
                         currentUser={currentUser}
                         status={status}
                         shareholderName={loggedInShareholder}
@@ -941,7 +955,7 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.68.347 - Fix shareholder view: remove disabled text, just disable buttons</p>
+                        <p className="text-[10px] text-muted-foreground/60">v2.69.0</p>
 
 
                     </div>

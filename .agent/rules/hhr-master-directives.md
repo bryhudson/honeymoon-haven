@@ -40,3 +40,18 @@ If I report a bug or issue, **STOP** and ask for evidence before guessing a fix:
 1. "Can you show me the Console Errors?"
 2. "Do you have a screenshot?"
 3. "Check the Network tab—what did the API return?"
+
+# Typography Rules
+- **Never use em dash (—):** Always use regular hyphen (-) instead in text, emails, code comments, or UI content.
+  - ❌ Wrong: `everything's in one place—you can pick`
+  - ✅ Correct: `everything's in one place - you can pick`
+
+# Admin Navigation & Masquerade
+- **Admin Auto-Redirect:** When admins (Bryan or HHR Admin) land on `/` from email links, they auto-redirect to `/admin` dashboard.
+- **View as Shareholder:** Admins MUST have the ability to masquerade as any shareholder via "View as Shareholder" button in header.
+  - Navigates to `/?masquerade=ShareholderName`
+  - Shows purple "Viewing as Shareholder" banner
+  - Displays read-only shareholder view exactly as that shareholder sees it
+  - Auto-redirect is bypassed when masquerade parameter is present
+  - Critical for testing, support, and verifying shareholder experiences
+

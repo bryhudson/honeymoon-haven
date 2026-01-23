@@ -183,54 +183,103 @@ export function AdminDashboard() {
 
     const performWipe = async (overrideStartDate = null) => {
         setActionLog("Resetting database...");
+
+        // 1. Delete all bookings
         const querySnapshot = await getDocs(collection(db, "bookings"));
         const totalDocs = querySnapshot.size;
 
-        if (totalDocs === 0) {
-            setActionLog("Database is already empty.");
-            return 0;
+        if (totalDocs > 0) {
+            const CHUNK_SIZE = 500;
+            const chunks = [];
+            for (let i = 0; i < totalDocs; i += CHUNK_SIZE) {
+                chunks.push(querySnapshot.docs.slice(i, i + CHUNK_SIZE));
+            }
+
+            let deletedCount = 0;
+            for (const chunk of chunks) {
+                const batch = writeBatch(db);
+                chunk.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                deletedCount += chunk.length;
+                console.log(`Deleted chunk of ${chunk.length} bookings. Total: ${deletedCount}`);
+            }
         }
 
-        // Chunk into batches of 500 (Firestore limit)
-        const CHUNK_SIZE = 500;
-        const chunks = [];
-        for (let i = 0; i < totalDocs; i += CHUNK_SIZE) {
-            chunks.push(querySnapshot.docs.slice(i, i + CHUNK_SIZE));
-        }
-
-        let deletedCount = 0;
-        for (const chunk of chunks) {
+        // 2. Clear notification_log (critical for email system reset)
+        const notificationSnapshot = await getDocs(collection(db, "notification_log"));
+        if (notificationSnapshot.size > 0) {
             const batch = writeBatch(db);
-            chunk.forEach(doc => {
+            notificationSnapshot.docs.forEach(doc => {
                 batch.delete(doc.ref);
             });
             await batch.commit();
-            deletedCount += chunk.length;
-            console.log(`Deleted chunk of ${chunk.length} items. Total: ${deletedCount}`);
+            console.log(`Deleted ${notificationSnapshot.size} notification log entries`);
         }
 
-        // 2. Reset Settings to Default
-        // Must match DRAFT_CONFIG.START_DATE from shareholders.js (March 1, 2026)
-        const defaultStart = overrideStartDate || new Date(2026, 2, 1, 10, 0, 0); // March 1, 10 AM
+        // 3. Reset draftStatus (so scheduler knows to start fresh)
+        await setDoc(doc(db, "status", "draftStatus"), {
+            activePicker: null,
+            windowStarts: null,
+            windowEnds: null,
+            round: 1,
+            phase: 'ROUND_1'
+        });
+        console.log("Draft status reset");
+
+        // 4. Reset Settings
+        const defaultStart = overrideStartDate || new Date(2026, 2, 1, 10, 0, 0);
 
         await setDoc(doc(db, "settings", "general"), {
             draftStartDate: defaultStart,
             isSystemFrozen: false,
-            bypassTenAM: false, // Reset to production default
-            season: 2026 // Updated to 2026 explicitly
+            bypassTenAM: false,
+            season: 2026
         }, { merge: true });
 
-        console.log("[DEBUG] performWipe: Settings reset command sent for March 1, 2026");
+        console.log("[DEBUG] performWipe: Settings reset command sent");
 
-        // Verify Write
         const verifySnap = await getDoc(doc(db, "settings", "general"));
         const verifyDate = verifySnap.data()?.draftStartDate?.toDate ? verifySnap.data().draftStartDate.toDate() : verifySnap.data().draftStartDate;
         console.log("[DEBUG] performWipe: Verified DB Value: ", verifyDate);
 
-        // Hard Clean
+        // 5. CRITICAL: Send turn start email immediately
+        try {
+            const order2026 = getShareholderOrder(2026);
+            const firstShareholderName = order2026[0];
+
+            const shareholdersSnapshot = await getDocs(collection(db, "shareholders"));
+            const firstShareholder = shareholdersSnapshot.docs.map(d => d.data()).find(s => s.name === firstShareholderName);
+
+            if (firstShareholder && firstShareholder.email) {
+                const PICK_DURATION_MS = fastTestingMode ? (10 * 60 * 1000) : (48 * 60 * 60 * 1000);
+                const deadline = new Date(defaultStart.getTime() + PICK_DURATION_MS);
+
+                await emailService.sendTurnStarted(
+                    { name: firstShareholderName, email: firstShareholder.email },
+                    {
+                        name: firstShareholderName,
+                        deadline_date: format(deadline, 'PPP'),
+                        deadline_time: format(deadline, 'p'),
+                        booking_url: window.location.origin,
+                        dashboard_url: window.location.origin,
+                        pass_turn_url: window.location.origin,
+                        phase: 'ROUND_1',
+                        round: 1
+                    }
+                );
+                console.log("Turn start email sent immediately to " + firstShareholderName);
+            }
+        } catch (emailError) {
+            console.error("Failed to send turn start email:", emailError);
+        }
+
         localStorage.clear();
         sessionStorage.clear();
-        return deletedCount;
+
+        setActionLog(`Database wiped! ${totalDocs} bookings deleted, notification log cleared, draft status reset.`);
+        return totalDocs;
     };
 
     // Helper to trigger password check

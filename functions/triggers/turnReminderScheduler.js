@@ -109,7 +109,7 @@ exports.turnReminderScheduler = onSchedule(
             } else {
                 await handleNormalModeReminders(
                     now, turnStart, turnEnd, shareholderEmail, activePicker,
-                    notificationLog, notificationLogRef, round, phase, isTestMode
+                    notificationLog, notificationLogRef, round, phase, isTestMode, fastTestingMode
                 );
             }
 
@@ -153,25 +153,37 @@ async function handleFastModeReminders(
 /**
  * Handle Normal Mode Reminders (48-hour windows)
  * Send at: 7pm same day, 9am next day, 9am last day, 2h before deadline
+ * In Fast Mode: 2min, 5min, 8min, 2min before deadline
  */
 async function handleNormalModeReminders(
     now, turnStart, turnEnd, email, shareholderName,
-    notificationLog, notificationLogRef, round, phase, isTestMode
+    notificationLog, notificationLogRef, round, phase, isTestMode, fastMode
 ) {
     // Calculate specific reminder times
-    const sameDayEvening = new Date(turnStart);
-    sameDayEvening.setHours(19, 0, 0, 0); // 7pm same day
+    let sameDayEvening, nextDayMorning, lastDayMorning, twoHourWarning;
 
-    const nextDayMorning = new Date(turnStart);
-    nextDayMorning.setDate(nextDayMorning.getDate() + 1);
-    nextDayMorning.setHours(9, 0, 0, 0); // 9am next day
+    if (fastMode) {
+        // Fast Mode: Compressed schedule for 10-minute testing
+        sameDayEvening = new Date(turnStart.getTime() + 2 * 60 * 1000); // 2 min after start
+        nextDayMorning = new Date(turnStart.getTime() + 5 * 60 * 1000); // 5 min after start
+        lastDayMorning = new Date(turnStart.getTime() + 8 * 60 * 1000); // 8 min after start
+        twoHourWarning = new Date(turnEnd.getTime() - 2 * 60 * 1000); // 2 min before end
+    } else {
+        // Normal Mode: Standard 48h schedule
+        sameDayEvening = new Date(turnStart);
+        sameDayEvening.setHours(19, 0, 0, 0); // 7pm same day
 
-    const lastDayMorning = new Date(turnStart);
-    lastDayMorning.setDate(lastDayMorning.getDate() + 2);
-    lastDayMorning.setHours(9, 0, 0, 0); // 9am last day
+        nextDayMorning = new Date(turnStart);
+        nextDayMorning.setDate(nextDayMorning.getDate() + 1);
+        nextDayMorning.setHours(9, 0, 0, 0); // 9am next day
 
-    const twoHourWarning = new Date(turnEnd);
-    twoHourWarning.setHours(twoHourWarning.getHours() - 2); // 2h before deadline
+        lastDayMorning = new Date(turnStart);
+        lastDayMorning.setDate(lastDayMorning.getDate() + 2);
+        lastDayMorning.setHours(9, 0, 0, 0); // 9am last day
+
+        twoHourWarning = new Date(turnEnd);
+        twoHourWarning.setHours(twoHourWarning.getHours() - 2); // 2h before deadline
+    }
 
     logger.info(`Normal Mode - Checking reminders at ${now.toISOString()}`);
 

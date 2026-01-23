@@ -243,7 +243,7 @@ export function TrailerGuide({ shareholderName, booking }) {
                                 <div>
                                     <h4 className="font-bold text-slate-900 text-base">Community</h4>
                                     <ul className="text-sm text-slate-600 mt-1 space-y-1">
-                                        <li>• <strong>Quiet Time:</strong> 11:00 PM — 8:00 AM.</li>
+                                        <li>• <strong>Quiet Time:</strong> 11:00 PM - 8:00 AM.</li>
                                         <li>• Speed Limit: <strong>10 km/h</strong> max.</li>
                                         <li>• Park in assigned spots only.</li>
                                         <li>• Be considerate of neighbors!</li>

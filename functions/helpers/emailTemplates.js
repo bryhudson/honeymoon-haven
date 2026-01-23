@@ -75,33 +75,43 @@ const wrapHtml = (title, bodyContent) => `
 const emailTemplates = {
   // 1. Turn Started
   turnStarted: (data) => {
-    const subject = `Your Honeymoon Haven Booking Turn Has Started`;
+    const subject = `HHR Trailer Booking: It's YOUR Turn! 🎉`;
+
+    // Determine round display text
+    const roundText = data.phase === 'ROUND_1' ? 'Round 1' :
+      data.phase === 'ROUND_2' ? 'Round 2' :
+        'Open Season';
+
     const body = `
-      <p>Hi ${data.name},</p>
-      <p>Great news! Your 48-hour booking window for Honeymoon Haven Resort has officially started.</p>
+      <p>Hey ${data.name}! 👋</p>
       
-      <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
-        <strong>Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
+      <p><strong>Welcome to the 2026 booking season!</strong> You're receiving this because it's officially <em>your turn</em> to pick your dates for the trailer.</p>
+
+      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong>🆕 What's this all about?</strong><br>
+        <p style="margin: 10px 0 0 0;">We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place! You can pick your dates, see what's available, and track your bookings all from your personal dashboard.</p>
       </div>
 
-      <p>You have until the deadline above to:</p>
-      <ul>
-        <li>Book your preferred dates for the 2026 season</li>
-        <li>Save a draft and finalize later</li>
-        <li>Pass your turn to the next shareholder</li>
-      </ul>
+      <p><strong>📍 You're booking for:</strong> <span style="background-color: #dbeafe; padding: 4px 12px; border-radius: 4px; font-weight: bold;">${roundText}</span></p>
 
-      <p><strong>What happens if you don't take action?</strong><br>
-      If no action is taken by the deadline, your turn will automatically pass to the next shareholder in the rotation.</p>
-
-      <p>Ready to book your lakeside getaway?</p>
+      <p><strong>Your booking window:</strong></p>
+      <p style="margin: 10px 0;">You have until <strong>${data.deadline_date} at ${data.deadline_time}</strong> to make your selection. That's plenty of time, but don't forget!</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">Book Now</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Start Booking Now</a>
       </div>
-      
-      <p><small><a href="${data.pass_turn_url}">Pass Turn</a></small></p>
+
+      <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+        <strong>🔐 Login Credentials:</strong><br>
+        <p style="margin: 10px 0 0 0;">
+          • <strong>Username:</strong> Your email (the one receiving this)<br>
+          • <strong>Password:</strong> cabin# (all lowercase, e.g., "cabin7")
+        </p>
+      </div>
+
+      <p><strong>Need help or have suggestions?</strong> We'd love to hear from you! Hit the <strong>Feedback</strong> button in the app anytime to share your thoughts, report issues, or suggest improvements. We're here to make this work for everyone. 💙</p>
+
+      <p>Happy booking!</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -117,7 +127,7 @@ const emailTemplates = {
     if (data.has_draft) {
       statusSection = `
         <div style="background-color: #fff7ed; padding: 15px; border-radius: 6px; border-left: 4px solid #f97316;">
-          <strong>Current Status: Draft saved</strong><br>
+          <strong>Current Status: Selection saved</strong><br>
           Your dates (${data.check_in} - ${data.check_out}) are being held. Don't forget to finalize when you're ready!
         </div>
       `;
@@ -140,8 +150,7 @@ const emailTemplates = {
       ${statusSection}
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">Finalize Booking</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -174,7 +183,7 @@ const emailTemplates = {
       If no action is taken by ${data.deadline_time}, your turn will automatically pass to the next shareholder (${data.next_shareholder}).</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">FINALIZE NOW</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">FINALIZE NOW</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -218,7 +227,7 @@ const emailTemplates = {
       </ul>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Booking</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -236,7 +245,7 @@ const emailTemplates = {
       <p>Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis.</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -255,8 +264,8 @@ const emailTemplates = {
       </div>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">Book Now</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Book Now</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -276,7 +285,7 @@ const emailTemplates = {
       • You can still book during open season (first-come, first-served)</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -295,8 +304,8 @@ const emailTemplates = {
       </div>
 
       <div style="margin: 25px 0;">
-        <a href="${data.booking_url}" style="${CTA_BUTTON_STYLES}">Book Now</a>
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Book Now</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -323,7 +332,7 @@ const emailTemplates = {
       `}
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -373,7 +382,7 @@ const emailTemplates = {
       <p>Your booking is now fully secured. We look forward to seeing you at the lake!</p>
 
       <div style="margin: 25px 0;">
-        <a href="${data.dashboard_url}" style="${SECONDARY_STYLES}">View Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Booking</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };

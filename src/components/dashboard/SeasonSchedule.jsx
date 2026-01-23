@@ -17,7 +17,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                 <div className="p-6 bg-slate-50 border-b">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <Info className="w-4 h-4 text-slate-500" />
-                        How the Draft Works
+                        How the Schedule Works
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="flex items-start gap-3">
@@ -178,6 +178,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                 else if (entry.status === 'ACTIVE') { statusColor = "text-blue-600 font-bold animate-pulse"; statusText = "Active Now"; }
                                 else if (entry.status === 'GRACE_PERIOD') { statusColor = "text-amber-600 font-bold animate-pulse"; statusText = "Early Access"; }
                                 else if (entry.status === 'PASSED') { statusColor = "text-slate-400 line-through"; statusText = "Passed"; }
+                                else if (entry.status === 'SKIPPED') { statusColor = "text-red-400 line-through"; statusText = "Skipped"; }
 
                                 return (
                                     <div className="flex justify-between items-center py-2 border-b last:border-0 border-slate-100">

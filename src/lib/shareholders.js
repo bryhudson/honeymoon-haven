@@ -15,6 +15,24 @@ export const SHAREHOLDERS_2025 = [
 ];
 
 export function getShareholderOrder(year) {
+    // TESTING OVERRIDE: For 2026, start with Julia, Mandy & Bryan
+    if (year === 2026) {
+        return [
+            "Julia, Mandy & Bryan",
+            "Jeff & Lori",
+            "David & Gayla",
+            "Barb",
+            "Steve & Kate",
+            "Ernest & Sandy",
+            "Gerry & Georgina",
+            "Saurabh & Jessica",
+            "Dom & Melanie",
+            "Mike & Janelle",
+            "Brian & Sam",
+            "Brian & Monique"
+        ];
+    }
+
     const baseYear = 2025;
     const diff = year - baseYear;
 
