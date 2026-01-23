@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.69.4 - add auto-refresh to admin dashboard</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.69.5 - restore local calc priority for hero</p>
                 </p>
             </div>
         </div>
