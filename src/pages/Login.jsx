@@ -142,7 +142,7 @@ export function Login() {
 
                 <p className="text-center mt-8 text-xs text-muted-foreground uppercase tracking-widest font-semibold">
                     &copy; {new Date().getFullYear()} Honeymoon Haven Resort
-                    <p className="text-[10px] text-muted-foreground/60">v2.69.8 - final sync fix for admin hero</p>
+                    <p className="text-[10px] text-muted-foreground/60">v2.69.9 - final sync fix attempt 2</p>
                 </p>
             </div>
         </div>
