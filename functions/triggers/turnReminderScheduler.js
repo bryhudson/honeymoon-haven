@@ -231,7 +231,9 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
         name: shareholderName,
         round: round,
         phase: phase,
-        deadline: formatDeadline(deadline),
+        phase: phase,
+        deadline_date: formatDeadlineDate(deadline),
+        deadline_time: formatDeadlineTime(deadline),
         dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
     };
 
@@ -264,7 +266,9 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
         name: shareholderName,
         round: round,
         phase: phase,
-        deadline: formatDeadline(deadline),
+        phase: phase,
+        deadline_date: formatDeadlineDate(deadline),
+        deadline_time: formatDeadlineTime(deadline),
         status_message: statusMessage,
         urgency_message: urgencyMessage,
         dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
@@ -287,13 +291,23 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
 }
 
 /**
- * Format deadline for email display
+ * Format deadline date
  */
-function formatDeadline(date) {
+function formatDeadlineDate(date) {
+    if (!date) return "Unknown Date";
     return date.toLocaleString('en-US', {
         weekday: 'short',
         month: 'short',
-        day: 'numeric',
+        day: 'numeric'
+    });
+}
+
+/**
+ * Format deadline time
+ */
+function formatDeadlineTime(date) {
+    if (!date) return "Unknown Time";
+    return date.toLocaleString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true

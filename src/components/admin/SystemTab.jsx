@@ -57,12 +57,16 @@ export function SystemTab({
             // Assuming simStartDate and fastTestingMode reflect current DB state roughly or are the inputs
 
             const schedule = calculateDraftSchedule(
-                bookings,
-                simStartDate ? new Date(simStartDate) : undefined,
-                false, // bypassTenAM - usually false unless explicitly set
-                fastTestingMode
+                getShareholderOrder(2026), // shareholders
+                bookings, // bookings
+                new Date(), // now
+                simStartDate ? new Date(simStartDate) : undefined, // startDateOverride
+                fastTestingMode, // fastTestingMode
+                !!simStartDate // bypassTenAM (if custom date set, assume true to allow mid-day start)
             );
             setMonitorData(schedule);
+            // Update sync time to show liveliness
+            setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         };
         runCalculation();
         const interval = setInterval(runCalculation, 60000); // Update every minute for timers
@@ -86,10 +90,12 @@ export function SystemTab({
             const settings = settingsDoc.data() || {};
 
             const calculatedStatus = calculateDraftSchedule(
+                getShareholderOrder(2026), // shareholders
                 currentBookings,
+                new Date(), // now
                 settings.draftStartDate?.toDate(),
-                settings.bypassTenAM,
-                settings.fastTestingMode
+                settings.fastTestingMode,
+                settings.bypassTenAM
             );
 
             await setDoc(doc(db, "status", "draftStatus"), {
@@ -277,6 +283,7 @@ export function SystemTab({
                                 <div>
                                     <div className="font-semibold text-slate-900">Production Mode</div>
                                     <div className="text-sm text-slate-600">Start: March 1, 2026 @ 10:00 AM</div>
+                                    <div className="text-xs text-slate-400 mt-1">Standard 48h windows. Real emails sent to shareholders.</div>
                                 </div>
                             </label>
 
@@ -290,7 +297,8 @@ export function SystemTab({
                                 />
                                 <div className="flex-1">
                                     <div className="font-semibold text-slate-900">Testing Mode (Custom Date)</div>
-                                    <div className="text-sm text-slate-600 mb-2">Simulate draft start date</div>
+                                    <div className="text-sm text-slate-600 mb-1">Simulate draft start date</div>
+                                    <div className="text-xs text-slate-400 mb-2">Redirects all emails to you. Allows time travel.</div>
                                     <input
                                         type="datetime-local"
                                         value={simStartDate || format(new Date(2026, 0, 22, 6, 0), "yyyy-MM-dd'T'HH:mm")}
@@ -317,12 +325,20 @@ export function SystemTab({
                         </div>
                     </div>
 
-                    {/* Simulation Tools */}
+                    {/* Communication & Simulation */}
                     <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
-                        <h3 className="font-bold text-slate-900 flex items-center gap-2 mb-4 text-indigo-700">
-                            <TestTube className="w-5 h-5" />
-                            Simulation Tools
-                        </h3>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                <TestTube className="w-5 h-5 text-indigo-700" />
+                                <span className="text-indigo-900">Communication & Simulation</span>
+                            </h3>
+                            <button
+                                onClick={() => setShowQuickTest(!showQuickTest)}
+                                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
+                            >
+                                {showQuickTest ? 'Hide Controls' : 'Show Controls'}
+                            </button>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button
@@ -334,57 +350,74 @@ export function SystemTab({
                                 <span className="text-xs text-indigo-700 mt-1">Runs compressed schedule (2min intervals)</span>
                             </button>
 
-                            <button
-                                onClick={() => setShowQuickTest(!showQuickTest)}
-                                className="flex flex-col items-center justify-center p-6 border-2 border-purple-100 bg-purple-50 rounded-xl hover:border-purple-300 hover:shadow-md transition-all group text-center"
-                            >
-                                <Zap className="w-8 h-8 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="font-bold text-purple-900">Quick Email Test</span>
-                                <span className="text-xs text-purple-700 mt-1">{showQuickTest ? 'Hide Buttons' : 'Show Manual Triggers'}</span>
-                            </button>
-                        </div>
-
-                        {showQuickTest && (
-                            <div className="mt-4 grid grid-cols-2 gap-3 animate-in slide-in-from-top-2">
-                                {['evening', 'day2', 'final', 'urgent'].map(type => (
+                            {showQuickTest ? (
+                                <div className="flex flex-col gap-2 animate-in slide-in-from-top-2 fade-in duration-300">
+                                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Manual Email Triggers</h4>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['evening', 'day2', 'final', 'urgent'].map(type => (
+                                            <button
+                                                key={type}
+                                                onClick={() => sendTestReminder(type)}
+                                                className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-50 hover:border-indigo-200 transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                <Zap className="w-3 h-3 text-slate-400" />
+                                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-1 text-center">
+                                        Sends template immediately to {isTestMode ? 'admin (you)' : 'shareholder'}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-100 rounded-xl text-center">
+                                    <p className="text-sm text-slate-400 italic">Manual triggers hidden</p>
                                     <button
-                                        key={type}
-                                        onClick={() => sendTestReminder(type)}
-                                        className="px-3 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-colors"
+                                        onClick={() => setShowQuickTest(true)}
+                                        className="text-xs text-indigo-500 hover:text-indigo-700 font-medium mt-1"
                                     >
-                                        Send {type} email
+                                        Show Controls
                                     </button>
-                                ))}
-                            </div>
-                        )}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Advanced Actions */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button
-                            onClick={handleSyncDraftStatus}
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                            Refresh Schedule
-                        </button>
+                        <div className="flex flex-col gap-1">
+                            <button
+                                onClick={handleSyncDraftStatus}
+                                className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                Force Sync Status
+                            </button>
+                            <span className="text-[10px] text-center text-slate-400">Fixes "stuck" states by recalculating schedule</span>
+                        </div>
 
-                        <button
-                            onClick={toggleSystemFreeze}
-                            className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl font-medium transition-all text-sm ${isSystemFrozen ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
-                        >
-                            <AlertTriangle className="w-4 h-4" />
-                            {isSystemFrozen ? 'Maintenance ON' : 'Maintenance Mode'}
-                        </button>
+                        <div className="flex flex-col gap-1">
+                            <button
+                                onClick={toggleSystemFreeze}
+                                className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl font-medium transition-all text-sm ${isSystemFrozen ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
+                            >
+                                <AlertTriangle className="w-4 h-4" />
+                                {isSystemFrozen ? 'Maintenance ON' : 'Maintenance Mode'}
+                            </button>
+                            <span className="text-[10px] text-center text-slate-400">Blocks all users from making changes</span>
+                        </div>
 
                         {IS_SITE_OWNER && (
-                            <button
-                                onClick={handleWipeDatabase}
-                                className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl font-medium hover:bg-red-100 transition-all text-sm"
-                            >
-                                <Users className="w-4 h-4" />
-                                Wipe Data
-                            </button>
+                            <div className="flex flex-col gap-1">
+                                <button
+                                    onClick={handleWipeDatabase}
+                                    className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl font-medium hover:bg-red-100 transition-all text-sm"
+                                >
+                                    <Users className="w-4 h-4" />
+                                    Wipe Data
+                                </button>
+                                <span className="text-[10px] text-center text-red-400/60">⚠️ Delete all bookings & reset</span>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -416,7 +449,13 @@ export function SystemTab({
 
                     <div className="p-4 bg-white border-t border-slate-200 text-xs text-center text-slate-500">
                         Shows calculated state based on live bookings. <br />
-                        Last synced: {lastSyncTime}
+                        <span className="flex items-center justify-center gap-2 mt-1">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Live Updates: {lastSyncTime}
+                        </span>
                     </div>
                 </div>
             </div>

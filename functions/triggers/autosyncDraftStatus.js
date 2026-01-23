@@ -9,7 +9,7 @@ if (admin.apps.length === 0) {
 const db = admin.firestore();
 
 // Import shared logic
-const { calculateDraftSchedule } = require("../helpers/shareholders");
+const { calculateDraftSchedule, getShareholderOrder } = require("../helpers/shareholders");
 
 /**
  * Auto-Sync Draft Status Scheduler
@@ -40,10 +40,12 @@ exports.autosyncDraftStatus = onSchedule(
 
             // 3. Calculate current draft status
             const calculatedStatus = calculateDraftSchedule(
+                getShareholderOrder(2026), // shareholders
                 bookings,
+                new Date(), // now
                 settings.draftStartDate?.toDate(),
-                settings.bypassTenAM,
-                settings.fastTestingMode
+                settings.fastTestingMode,
+                settings.bypassTenAM
             );
 
             // 4. Write to Firestore

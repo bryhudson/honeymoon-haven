@@ -235,6 +235,8 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         phase = 'PRE_DRAFT';
     }
 
+    const currentRound = phase === 'ROUND_1' ? 1 : phase === 'ROUND_2' ? 2 : (phase === 'OPEN_SEASON' ? 3 : 1);
+
     return {
         phase,
         activePicker,
@@ -244,7 +246,8 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         isGracePeriod,
         isSeasonStart,
         officialStart: currentWindowStart,
-        debugPhase: phase // Helper for debugging
+        debugPhase: phase, // Helper for debugging
+        round: currentRound
     };
 }
 
