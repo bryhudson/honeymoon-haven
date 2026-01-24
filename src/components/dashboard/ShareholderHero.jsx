@@ -137,6 +137,40 @@ export function ShareholderHero({
 
 
 
+    // 1b. Pre-Draft / Waiting for Start (Null Active Picker)
+    if (status.phase === 'PRE_DRAFT' || (!status.activePicker && status.phase !== 'OPEN_SEASON')) {
+        return (
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+                {renderBackground('indigo')}
+
+                <div className="relative z-10 space-y-6">
+                    {renderHeader()}
+
+                    <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold uppercase tracking-wider border border-indigo-500/30">
+                            ⏳ Coming Soon
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                            Draft Hasn't Started
+                        </h2>
+                        <p className="text-base text-slate-300 leading-relaxed">
+                            The 2026 booking season hasn't officially begun yet. Sit tight, we'll notify you when the draft kicks off!
+                        </p>
+                    </div>
+
+                    {status.windowStarts && (
+                        <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm inline-block">
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Draft Starts</p>
+                            <div className="text-xl font-bold text-white mt-1">
+                                {format(new Date(status.windowStarts), 'MMMM d, yyyy @ h:mm a')}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     // 2. Open Season
     if (status.phase === 'OPEN_SEASON') {
         return (
@@ -216,6 +250,21 @@ export function ShareholderHero({
                     const isR1Queue = queueInfo && queueInfo.round === 1;
                     const isR1Turn = status.phase === 'ROUND_1' && isYourTurn;
 
+                    // Implicit Skip Detection (Round 1)
+                    // If no action taken, and we are past Round 1 (or past my turn in Round 1), it's a skip
+                    let isR1SkippedImplicitly = false;
+                    if (!r1Action && !r1Cancelled) {
+                        if (['ROUND_2', 'OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
+                            isR1SkippedImplicitly = true;
+                        } else if (status.phase === 'ROUND_1') {
+                            const myIndex = currentOrder.indexOf(shareholderName);
+                            const activeIndex = currentOrder.indexOf(status.activePicker);
+                            if (myIndex !== -1 && activeIndex !== -1 && myIndex < activeIndex) {
+                                isR1SkippedImplicitly = true;
+                            }
+                        }
+                    }
+
                     let badgeClass = 'bg-slate-800/50 text-slate-400 border-slate-600/50';
                     let icon = <Clock className="w-4 h-4" />;
                     let text = "Waiting";
@@ -239,6 +288,10 @@ export function ShareholderHero({
                         badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
                         icon = <XCircle className="w-4 h-4" />;
                         text = "Cancelled";
+                    } else if (isR1SkippedImplicitly) {
+                        badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
+                        icon = <XCircle className="w-4 h-4" />;
+                        text = "Skipped";
                     } else if (isR1Turn) {
                         badgeClass = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
                         icon = <Clock className="w-4 h-4 animate-pulse" />;
@@ -266,6 +319,22 @@ export function ShareholderHero({
                     const isR2Queue = queueInfo && queueInfo.round === 2;
                     const isR2Turn = status.phase === 'ROUND_2' && isYourTurn;
 
+                    // Implicit Skip Detection (Round 2)
+                    let isR2SkippedImplicitly = false;
+                    if (!r2Action && !isR2Cancelled) {
+                        if (['OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
+                            isR2SkippedImplicitly = true;
+                        } else if (status.phase === 'ROUND_2') {
+                            // Round 2 is reversed order
+                            const r2Order = [...currentOrder].reverse();
+                            const myIndex = r2Order.indexOf(shareholderName);
+                            const activeIndex = r2Order.indexOf(status.activePicker);
+                            if (myIndex !== -1 && activeIndex !== -1 && myIndex < activeIndex) {
+                                isR2SkippedImplicitly = true;
+                            }
+                        }
+                    }
+
                     let badgeClass = 'bg-slate-800/50 text-slate-400 border-slate-600/50';
                     let icon = <Clock className="w-4 h-4" />;
                     let text = "Waiting";
@@ -289,6 +358,10 @@ export function ShareholderHero({
                         badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
                         icon = <XCircle className="w-4 h-4" />;
                         text = "Cancelled";
+                    } else if (isR2SkippedImplicitly) {
+                        badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
+                        icon = <XCircle className="w-4 h-4" />;
+                        text = "Skipped";
                     } else if (isR2Turn) {
                         badgeClass = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
                         icon = <Clock className="w-4 h-4 animate-pulse" />;
@@ -450,7 +523,7 @@ export function ShareholderHero({
 
                     <div className="space-y-3">
                         <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
-                            It's Your Turn
+                            It's Your Turn ({status.phase === 'ROUND_2' ? 'Round 2' : 'Round 1'})
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
                             The calendar is yours! Please select your dates or pass your turn to the next shareholder.
@@ -659,7 +732,7 @@ export function ShareholderHero({
                             {isUpNext ? (
                                 <>
                                     <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
-                                        You're Up Next!
+                                        You're Up Next for {queueInfo?.round === 1 ? 'Round 1' : 'Round 2'}!
                                     </div>
                                     <p className="text-sm text-white/60">
                                         Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking.
@@ -671,7 +744,9 @@ export function ShareholderHero({
                                         <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
                                             {getOrdinal(queueInfo?.diff || 1)}
                                         </span>
-                                        <span className="text-xl font-bold text-white/60">in Line</span>
+                                        <span className="text-xl font-bold text-white/60">
+                                            in Line ({queueInfo?.round === 1 ? 'Round 1' : 'Round 2'})
+                                        </span>
                                     </div>
                                     <p className="text-sm text-white/60">Sit tight! We'll email you when it's your turn.</p>
                                 </>

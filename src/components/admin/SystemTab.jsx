@@ -23,10 +23,11 @@ export function SystemTab({
     setDoc,
     format
 }) {
-    const [showQuickTest, setShowQuickTest] = useState(false);
+
     const [lastSyncTime, setLastSyncTime] = useState('Never');
     const [monitorData, setMonitorData] = useState(null);
     const [bookings, setBookings] = useState([]);
+    const [showTimeTravel, setShowTimeTravel] = useState(false); // Toggle for advanced date picker
 
     // Calculate if we're before Feb 15, 2026
     const now = new Date();
@@ -120,6 +121,33 @@ export function SystemTab({
         }
     };
 
+    // Send transactional test email
+    const sendTestTransaction = async (type) => {
+        try {
+            const { httpsCallable } = await import('firebase/functions');
+            const { functions } = await import('../../lib/firebase');
+            const sendTestEmailFn = httpsCallable(functions, 'sendTestEmail');
+
+            // Map UI types to backend types
+            const typeMap = {
+                'turnStarted': 'turnStarted',
+                'turnPassed': 'turnPassedNext', // Testing the "Next Person" notification
+                'bookingConfirmed': 'bookingConfirmed',
+                'paymentReceived': 'paymentReceived',
+                'bookingCancelled': 'bookingCancelled',
+                'paymentReminder': 'paymentReminder'
+            };
+
+            const backendType = typeMap[type] || type;
+            await sendTestEmailFn({ emailType: backendType });
+
+            triggerAlert('Success', `Test email (${type}) sent to your Gmail!`);
+        } catch (error) {
+            console.error(error);
+            triggerAlert('Error', `Failed: ${error.message}`);
+        }
+    };
+
     // Send test reminder function
     const sendTestReminder = async (type) => {
         try {
@@ -141,19 +169,7 @@ export function SystemTab({
     };
 
     // Start full test (Fast Mode + Sync)
-    const startFullTest = async () => {
-        try {
-            // Enable fast mode
-            await toggleFastTestingMode();
-            // Wait a bit then sync
-            setTimeout(async () => {
-                await handleSyncDraftStatus();
-                triggerAlert('Success', '10-minute test started! Watch your Gmail for 4 reminder emails.');
-            }, 500);
-        } catch (error) {
-            triggerAlert('Error', `Failed to start test: ${error.message}`);
-        }
-    };
+    // REMOVED: Legacy 10-minute test logic removed in v2.69.19 favor of production-mirror testing.
 
 
 
@@ -168,189 +184,18 @@ export function SystemTab({
                         <p className="text-sm text-slate-500">Manage testing, schedule, and system status</p>
                     </div>
                 </div>
-                {monitorData?.activePicker && (
-                    <div className="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full border border-green-200">
-                        <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </span>
-                        <span className="text-sm font-bold text-green-800">
-                            Active: {monitorData.activePicker} (Round {monitorData.round})
-                        </span>
-                    </div>
-                )}
+                {/* Redundant Badge Removed */}
             </div>
 
-            <div className="grid grid-cols-1 gap-8">
-                {/* Left Column: Controls */}
-                <div className="space-y-6">
-
-                    {/* Status Banner */}
-                    {isBeforeFeb15 && (
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6">
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-blue-100 rounded-xl">
-                                    <Shield className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-blue-900 text-lg mb-1">🧪 Testing Mode Active</h3>
-                                    <p className="text-blue-700 text-sm leading-relaxed">
-                                        All emails redirect to <strong>bryan.m.hudson@gmail.com</strong>.
-                                        <br />Switches to production automatically <strong>Feb 15, 2026</strong>.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Mode Selection */}
-                    <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
-                        <h3 className="font-bold text-slate-900 flex items-center gap-2 mb-4">
-                            <Calendar className="w-5 h-5" />
-                            Schedule Settings & Mode
-                        </h3>
-
-                        <div className="space-y-3">
-                            <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${simStartDate === '' ? 'border-green-500 bg-green-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                                <input
-                                    type="radio"
-                                    name="draftMode"
-                                    checked={simStartDate === ''}
-                                    onChange={() => {
-                                        setSimStartDate('');
-                                        requireAuth(
-                                            "Set to Production",
-                                            "Reset to March 1, 2026?",
-                                            async () => {
-                                                const productionDate = new Date(2026, 2, 1, 10, 0, 0);
-                                                await performWipe(productionDate);
-                                                await setDoc(doc(db, "settings", "general"), {
-                                                    draftStartDate: productionDate,
-                                                    bypassTenAM: false,
-                                                    fastTestingMode: false
-                                                }, { merge: true });
-                                                await handleSyncDraftStatus();
-                                            }
-                                        );
-                                    }}
-                                    className="mt-1"
-                                />
-                                <div>
-                                    <div className="font-semibold text-slate-900">Production Mode</div>
-                                    <div className="text-sm text-slate-600">Start: March 1, 2026 @ 10:00 AM</div>
-                                    <div className="text-xs text-slate-400 mt-1">Standard 48h windows. Real emails sent to shareholders.</div>
-                                </div>
-                            </label>
-
-                            <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${simStartDate !== '' ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                                <input
-                                    type="radio"
-                                    name="draftMode"
-                                    checked={simStartDate !== ''}
-                                    onChange={() => { }}
-                                    className="mt-1"
-                                />
-                                <div className="flex-1">
-                                    <div className="font-semibold text-slate-900">Testing Mode (Custom Date)</div>
-                                    <div className="text-sm text-slate-600 mb-1">Simulate draft start date</div>
-                                    <div className="text-xs text-slate-400 mb-2">Redirects all emails to you. Allows time travel.</div>
-                                    <input
-                                        type="datetime-local"
-                                        value={simStartDate || format(new Date(2026, 0, 22, 6, 0), "yyyy-MM-dd'T'HH:mm")}
-                                        onChange={(e) => {
-                                            setSimStartDate(e.target.value);
-                                            requireAuth(
-                                                "Update Draft Start",
-                                                `Set draft start to ${e.target.value}?`,
-                                                async () => {
-                                                    const newDate = new Date(e.target.value);
-                                                    await performWipe(newDate);
-                                                    await setDoc(doc(db, "settings", "general"), {
-                                                        draftStartDate: newDate,
-                                                        bypassTenAM: true
-                                                    }, { merge: true });
-                                                    await handleSyncDraftStatus();
-                                                }
-                                            );
-                                        }}
-                                        className="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full max-w-xs bg-white"
-                                    />
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Communication & Simulation */}
-                    <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                <TestTube className="w-5 h-5 text-indigo-700" />
-                                <span className="text-indigo-900">Communication & Simulation</span>
-                            </h3>
-                            <button
-                                onClick={() => setShowQuickTest(!showQuickTest)}
-                                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
-                            >
-                                {showQuickTest ? 'Hide Controls' : 'Show Controls'}
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button
-                                onClick={startFullTest}
-                                className="flex flex-col items-center justify-center p-6 border-2 border-indigo-100 bg-indigo-50 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all group text-center"
-                            >
-                                <Play className="w-8 h-8 text-indigo-600 mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="font-bold text-indigo-900">Start 10-Minute Test</span>
-                                <span className="text-xs text-indigo-700 mt-1">Runs compressed schedule (2min intervals)</span>
-                            </button>
-
-                            {showQuickTest ? (
-                                <div className="flex flex-col gap-2 animate-in slide-in-from-top-2 fade-in duration-300">
-                                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Manual Email Triggers</h4>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {['evening', 'day2', 'final', 'urgent'].map(type => (
-                                            <button
-                                                key={type}
-                                                onClick={() => sendTestReminder(type)}
-                                                className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-50 hover:border-indigo-200 transition-colors flex items-center justify-center gap-1"
-                                            >
-                                                <Zap className="w-3 h-3 text-slate-400" />
-                                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p className="text-[10px] text-slate-400 mt-1 text-center">
-                                        Sends template immediately to {isTestMode ? 'admin (you)' : 'shareholder'}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-100 rounded-xl text-center">
-                                    <p className="text-sm text-slate-400 italic">Manual triggers hidden</p>
-                                    <button
-                                        onClick={() => setShowQuickTest(true)}
-                                        className="text-xs text-indigo-500 hover:text-indigo-700 font-medium mt-1"
-                                    >
-                                        Show Controls
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Advanced Actions */}
+            <div className="space-y-8">
+                {/* 1. Maintenance & Troubleshooting Zone */}
+                <div>
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        Troubleshooting Zone
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex flex-col gap-1">
-                            <button
-                                onClick={handleSyncDraftStatus}
-                                className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm"
-                            >
-                                <RefreshCw className="w-4 h-4" />
-                                Force Sync Status
-                            </button>
-                            <span className="text-[10px] text-center text-slate-400">Fixes "stuck" states by recalculating schedule</span>
-                        </div>
-
+                        {/* Maintenance Mode */}
                         <div className="flex flex-col gap-1">
                             <button
                                 onClick={toggleSystemFreeze}
@@ -362,6 +207,19 @@ export function SystemTab({
                             <span className="text-[10px] text-center text-slate-400">Blocks all users from making changes</span>
                         </div>
 
+                        {/* Reset Schedule State */}
+                        <div className="flex flex-col gap-1">
+                            <button
+                                onClick={handleSyncDraftStatus}
+                                className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                Reset Schedule State
+                            </button>
+                            <span className="text-[10px] text-center text-slate-400">Fixes "stuck" states by recalculating schedule</span>
+                        </div>
+
+                        {/* Wipe Data (Owner Only) */}
                         {IS_SITE_OWNER && (
                             <div className="flex flex-col gap-1">
                                 <button
@@ -376,6 +234,288 @@ export function SystemTab({
                         )}
                     </div>
                 </div>
+
+                {/* 2. Schedule Settings (Top Priority) */}
+                <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
+                    <h3 className="font-bold text-slate-900 flex items-center gap-2 mb-4">
+                        <Calendar className="w-5 h-5" />
+                        Schedule Settings & Mode
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Production Mde Card */}
+                        <div
+                            onClick={() => {
+                                if (simStartDate === '') return; // Already in prod
+                                requireAuth(
+                                    "Switch to Production",
+                                    "Reset to March 1, 2026? This clears all test data.",
+                                    async () => {
+                                        const productionDate = new Date(2026, 2, 1, 10, 0, 0);
+                                        await performWipe(productionDate);
+                                        setSimStartDate('');
+                                        await setDoc(doc(db, "settings", "general"), {
+                                            draftStartDate: productionDate,
+                                            bypassTenAM: false,
+                                            fastTestingMode: false,
+                                            isTestMode: false // Live Emails!
+                                        }, { merge: true });
+                                        await handleSyncDraftStatus();
+                                    }
+                                );
+                            }}
+                            className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${simStartDate === ''
+                                ? 'border-green-500 bg-green-50 ring-1 ring-green-500'
+                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                        >
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="p-2 bg-white rounded-lg shadow-sm">
+                                    <Shield className={`w-5 h-5 ${simStartDate === '' ? 'text-green-600' : 'text-slate-400'}`} />
+                                </div>
+                                {simStartDate === '' && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
+                            </div>
+                            <h4 className={`font-bold text-lg ${simStartDate === '' ? 'text-green-900' : 'text-slate-700'}`}>Production Mode</h4>
+                            <p className="text-sm text-slate-500 mt-1">
+                                Start: March 1, 2026 @ 10:00 AM<br />
+                                <span className="text-slate-400 text-xs">Real emails sent to shareholders.</span>
+                            </p>
+                        </div>
+
+                        {/* Test Simulation Card */}
+                        <div
+                            onClick={() => {
+                                const today = new Date();
+                                today.setHours(10, 0, 0, 0); // Default to today 10am
+                                const dateStr = format(today, "yyyy-MM-dd'T'HH:mm");
+
+                                requireAuth(
+                                    "Start Test Simulation",
+                                    "Start simulation from Today @ 10am? Safe Mode (Emails -> You).",
+                                    async () => {
+                                        await performWipe(today);
+                                        setSimStartDate(dateStr);
+                                        await setDoc(doc(db, "settings", "general"), {
+                                            draftStartDate: today,
+                                            bypassTenAM: true,
+                                            fastTestingMode: false,
+                                            isTestMode: true // Safe Mode
+                                        }, { merge: true });
+                                        await handleSyncDraftStatus();
+                                    }
+                                );
+                            }}
+                            className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${simStartDate !== ''
+                                ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
+                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                        >
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="p-2 bg-white rounded-lg shadow-sm">
+                                    <TestTube className={`w-5 h-5 ${simStartDate !== '' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                </div>
+                                {simStartDate !== '' && <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
+                            </div>
+                            <h4 className={`font-bold text-lg ${simStartDate !== '' ? 'text-indigo-900' : 'text-slate-700'}`}>Test Simulation</h4>
+                            <div className="text-sm text-slate-500 mt-1 mb-3">
+                                Start: Today @ 10:00 AM<br />
+                                <span className="text-indigo-600 font-medium text-xs">Safe Mode On (Emails -&gt; Admin only)</span>
+                            </div>
+
+                            {/* Time Travel Toggle & Picker */}
+                            {simStartDate !== '' && (
+                                <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-indigo-100">
+                                    {!showTimeTravel ? (
+                                        <button
+                                            onClick={() => setShowTimeTravel(true)}
+                                            className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider hover:text-indigo-600 flex items-center gap-1"
+                                        >
+                                            <Clock className="w-3 h-3" /> Show Time Travel Controls
+                                        </button>
+                                    ) : (
+                                        <div className="animate-in fade-in slide-in-from-top-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Custom Start Date</label>
+                                                <button
+                                                    onClick={() => setShowTimeTravel(false)}
+                                                    className="text-[10px] text-slate-400 hover:text-slate-600"
+                                                >
+                                                    Hide
+                                                </button>
+                                            </div>
+                                            <input
+                                                type="datetime-local"
+                                                value={simStartDate}
+                                                onChange={(e) => {
+                                                    setSimStartDate(e.target.value);
+                                                    // Auto-update on change (debounce in real app, here simple)
+                                                    const newDate = new Date(e.target.value);
+                                                    performWipe(newDate).then(() => {
+                                                        setDoc(doc(db, "settings", "general"), {
+                                                            draftStartDate: newDate,
+                                                            bypassTenAM: true
+                                                        }, { merge: true }).then(() => handleSyncDraftStatus());
+                                                    });
+                                                }}
+                                                className="w-full px-2 py-1.5 border border-indigo-200 rounded text-xs text-indigo-700 bg-white"
+                                            />
+                                            <p className="text-[10px] text-indigo-400 mt-1 italic">
+                                                Fast-forward time to test deadlines & expiration logic.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Email System Visibility (Always On) */}
+                <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                            <TestTube className="w-5 h-5 text-indigo-700" />
+                            <span className="text-indigo-900">Email System Overview</span>
+                        </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* LEFT: Timed Reminders (Testable) */}
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-amber-100 rounded-lg">
+                                    <Clock className="w-5 h-5 text-amber-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Timed Reminders (48h Window)</h4>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        These run automatically on a set schedule relative to the turn start.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Timeline Visualization */}
+                            <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 ml-2">
+                                {/* Evening */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Evening Reminder: Your Honeymoon Haven Booking Awaits</div>
+                                            <div className="text-xs font-bold text-slate-700">Day 1 @ 7:00 PM</div>
+                                            <div className="text-[10px] text-slate-400">Evening Check-in</div>
+                                        </div>
+                                        <button
+                                            onClick={() => sendTestReminder('evening')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Day 2 */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
+                                            <div className="text-xs font-bold text-slate-700">Day 2 @ 9:00 AM</div>
+                                            <div className="text-[10px] text-slate-400">Mid-point Reminder</div>
+                                        </div>
+                                        <button
+                                            onClick={() => sendTestReminder('day2')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Day 3 / Final */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
+                                            <div className="text-xs font-bold text-slate-700">Day 3 @ 9:00 AM</div>
+                                            <div className="text-[10px] text-slate-400">Final Morning Warning</div>
+                                        </div>
+                                        <button
+                                            onClick={() => sendTestReminder('final')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Urgent */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white animate-pulse"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-[10px] font-bold text-amber-600 mb-0.5">Subject: URGENT: 6 Hours Left to Complete Your Booking</div>
+                                            <div className="text-xs font-bold text-slate-700">2 Hours Before End</div>
+                                            <div className="text-[10px] text-slate-400">Urgent Deadline Alert</div>
+                                        </div>
+                                        <button
+                                            onClick={() => sendTestReminder('urgent')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT: Transactional Events (Testable) */}
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-indigo-100 rounded-lg">
+                                    <Zap className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Transactional Events</h4>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Triggered by <span className="font-semibold text-slate-700">Actions</span>. Sent instantly when users interact.
+                                        <br />Click to simulate and send a test to yourself.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-2">
+                                {[
+                                    { id: "turnStarted", name: "Turn Started", desc: "When active status begins", subject: "It's YOUR Turn! 🎉" },
+                                    { id: "turnPassed", name: "Turn Passed (Next)", desc: "Notify next user", subject: "It's Your Turn! (Passed)" },
+                                    { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
+                                    { id: "paymentReminder", name: "Payment Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
+                                    { id: "paymentReceived", name: "Payment Received", desc: "Admin marks as Paid", subject: "Payment Received" },
+                                    { id: "bookingCancelled", name: "Booking Cancelled", desc: "Admin cancels booking", subject: "Booking Cancelled" }
+                                ].map((event) => (
+                                    <div key={event.id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg group hover:border-indigo-200 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-slate-50 rounded-md text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                                                <Zap className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-slate-700">{event.name}</div>
+                                                <div className="text-[10px] text-slate-400">"{event.subject}"</div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => sendTestTransaction(event.id)}
+                                            className="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-100 transition-all"
+                                        >
+                                            Test
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
         </div>
 

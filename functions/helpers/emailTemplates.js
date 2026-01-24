@@ -75,7 +75,22 @@ const wrapHtml = (title, bodyContent) => `
 const emailTemplates = {
   // 1. Turn Started
   turnStarted: (data) => {
-    const subject = `HHR Trailer Booking: It's YOUR Turn! 🎉`;
+    const isRound1 = data.round === 1 || data.phase === 'ROUND_1';
+    const subject = isRound1
+      ? `HHR Trailer Booking: It's YOUR Turn! 🎉`
+      : `Round 2: It's Your Turn to Book! 🎯`;
+
+    // Round 1: Full Welcome Context
+    const welcomeSection = isRound1 ? `
+      <p><strong>Welcome to the 2026 booking season!</strong> You're receiving this because it's officially <em>your turn</em> to pick your dates for the trailer.</p>
+
+      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong>🆕 What's this all about?</strong><br>
+        <p style="margin: 10px 0 0 0;">We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place! You can pick your dates, see what's available, and track your bookings all from your personal dashboard.</p>
+      </div>
+    ` : `
+      <p>It's officially <strong>your turn</strong> for Round 2! The snake draft order has reversed, and you can now make your second selection.</p>
+    `;
 
     // Determine round display text
     const roundText = data.phase === 'ROUND_1' ? 'Round 1' :
@@ -85,22 +100,18 @@ const emailTemplates = {
     const body = `
       <p>Hey ${data.name}! 👋</p>
       
-      <p><strong>Welcome to the 2026 booking season!</strong> You're receiving this because it's officially <em>your turn</em> to pick your dates for the trailer.</p>
-
-      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <strong>🆕 What's this all about?</strong><br>
-        <p style="margin: 10px 0 0 0;">We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place! You can pick your dates, see what's available, and track your bookings all from your personal dashboard.</p>
-      </div>
+      ${welcomeSection}
 
       <p><strong>📍 You're booking for:</strong> <span style="background-color: #dbeafe; padding: 4px 12px; border-radius: 4px; font-weight: bold;">${roundText}</span></p>
 
       <p><strong>Your booking window:</strong></p>
-      <p style="margin: 10px 0;">You have until <strong>${data.deadline_date} at ${data.deadline_time}</strong> to make your selection. That's plenty of time, but don't forget!</p>
+      <p style="margin: 10px 0;">You have until <strong>${data.deadline_date} at ${data.deadline_time}</strong> to make your selection.</p>
 
       <div style="margin: 25px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Start Booking Now</a>
       </div>
 
+      ${isRound1 ? `
       <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
         <strong>🔐 Login Credentials:</strong><br>
         <p style="margin: 10px 0 0 0;">
@@ -108,9 +119,10 @@ const emailTemplates = {
           • <strong>Password:</strong> cabin# (all lowercase, e.g., "cabin7")
         </p>
       </div>
-
+      
       <p><strong>Need help or have suggestions?</strong> We'd love to hear from you! Hit the <strong>Feedback</strong> button in the app anytime to share your thoughts, report issues, or suggest improvements. We're here to make this work for everyone. 💙</p>
-
+      ` : ''}
+      
       <p>Happy booking!</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -253,11 +265,25 @@ const emailTemplates = {
 
   // 7. Turn Passed (Next Shareholder - It's Your Turn)
   turnPassedNext: (data) => {
-    const subject = `It's Your Turn! Honeymoon Haven Booking Window Open`;
+    const isRound1 = data.round === 1 || data.phase === 'ROUND_1';
+    const subject = isRound1
+      ? `It's Your Turn! (Previous User Passed)`
+      : `Round 2: It's Your Turn! (Previous User Passed)`;
+
+    const welcomeSection = isRound1 ? `
+      <p><strong>Welcome to the 2026 booking season!</strong></p>
+      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong>🆕 What's this all about?</strong><br>
+        <p style="margin: 10px 0 0 0;">We've built a brand new web app to make booking easier. No more spreadsheets! You can pick your dates and track everything from your dashboard.</p>
+      </div>
+    ` : '';
+
     const body = `
       <p>Hi ${data.name},</p>
       <p>Exciting news! It's now your turn to book at Honeymoon Haven Resort!</p>
-      <p>The previous shareholder (${data.previous_shareholder}) has passed their turn, which means your 48-hour booking window has started early.</p>
+      <p>The previous shareholder (${data.previous_shareholder}) has passed their turn, so your booking window has started early.</p>
+
+      ${welcomeSection}
 
       <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
         <strong>Your Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
@@ -267,6 +293,12 @@ const emailTemplates = {
         <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Book Now</a>
         <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
+
+      ${isRound1 ? `
+      <p style="font-size: 0.9em; color: #64748b; margin-top: 20px;">
+        <strong>Login:</strong> Your email & password "cabin#" (e.g. cabin7)
+      </p>
+      ` : ''}
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -293,11 +325,25 @@ const emailTemplates = {
 
   // 9. Automatic Pass (Next Shareholder)
   autoPassNext: (data) => {
-    const subject = `It's Your Turn! Honeymoon Haven Booking Window Open`;
+    const isRound1 = data.round === 1 || data.phase === 'ROUND_1';
+    const subject = isRound1
+      ? `It's Your Turn! (Previous User Timed Out)`
+      : `Round 2: It's Your Turn!`;
+
+    const welcomeSection = isRound1 ? `
+      <p><strong>Welcome to the 2026 booking season!</strong></p>
+      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong>🆕 New Web App</strong><br>
+        <p style="margin: 10px 0 0 0;">We've replaced the spreadsheets with a new app! Login to pick your dates.</p>
+      </div>
+    ` : '';
+
     const body = `
       <p>Hi ${data.name},</p>
       <p>Good news! It's now your turn to book at Honeymoon Haven Resort!</p>
       <p>The previous shareholder's booking window has expired, which means your 48-hour window has started.</p>
+
+      ${welcomeSection}
 
       <div style="background-color: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
         <strong>Your Deadline: ${data.deadline_date} at ${data.deadline_time}</strong>
@@ -307,6 +353,12 @@ const emailTemplates = {
         <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Book Now</a>
         <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
+      
+      ${isRound1 ? `
+      <p style="font-size: 0.9em; color: #64748b; margin-top: 20px;">
+        <strong>Login:</strong> Your email & password "cabin#" (e.g. cabin7)
+      </p>
+      ` : ''}
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },

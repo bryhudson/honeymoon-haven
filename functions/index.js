@@ -23,6 +23,7 @@ const { createAccount, deleteAccount } = require("./triggers/userManagement");
 const { turnReminderScheduler } = require("./triggers/turnReminderScheduler");
 const { autosyncDraftStatus } = require("./triggers/autosyncDraftStatus");
 const { sendTestEmail, sendTestReminder } = require("./triggers/manualTestEmail");
+const { debugShareholder } = require("./triggers/debugTools");
 
 /**
  * Sends an email via Gmail SMTP.
@@ -86,14 +87,14 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 });
 
 // Export triggers
-// DISABLED: onBookingChangeTrigger - Action-based emails now sent immediately from frontend
-// exports.onBookingChangeTrigger = onBookingChangeTrigger;
+exports.onBookingChangeTrigger = onBookingChangeTrigger;
 exports.checkDailyReminders = checkDailyReminders;
 exports.sendGuestGuideEmail = sendGuestGuideEmail;
 exports.turnReminderScheduler = turnReminderScheduler;
 exports.autosyncDraftStatus = autosyncDraftStatus;
 exports.sendTestEmail = sendTestEmail;
 exports.sendTestReminder = sendTestReminder;
+exports.debugShareholder = debugShareholder;
 
 // User Management
 exports.createAccount = createAccount;

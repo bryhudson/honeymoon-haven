@@ -291,11 +291,18 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
     logger.info(`Reminder email (${timeRemaining}) sent to: ${recipient}`);
 }
 
-/**
- * Format deadline date
- */
-function formatDeadlineDate(date) {
-    if (!date) return "Unknown Date";
+// Simple Formatters
+function toDate(input) {
+    if (!input) return null;
+    if (input.toDate) return input.toDate(); // Firestore Timestamp
+    if (typeof input === 'string') return new Date(input);
+    return input; // Already a Date or something else
+}
+
+function formatDeadlineDate(input) {
+    const date = toDate(input);
+    if (!date || isNaN(date.getTime())) return "Unknown Date";
+
     return date.toLocaleString('en-US', {
         weekday: 'short',
         month: 'short',
@@ -303,11 +310,10 @@ function formatDeadlineDate(date) {
     });
 }
 
-/**
- * Format deadline time
- */
-function formatDeadlineTime(date) {
-    if (!date) return "Unknown Time";
+function formatDeadlineTime(input) {
+    const date = toDate(input);
+    if (!date || isNaN(date.getTime())) return "Unknown Time";
+
     return date.toLocaleString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
