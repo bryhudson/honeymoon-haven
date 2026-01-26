@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, where, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Clock, CheckCircle, XCircle, Search, Mail, Filter } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Search, Mail, Filter, Trash2 } from 'lucide-react';
+import { ConfirmationModal } from '../ConfirmationModal';
 
 export function EmailHistoryTab() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'sent', 'failed'
+
+    // Delete State
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, logId: null, subject: '' });
 
     const fetchLogs = async () => {
         setLoading(true);
@@ -33,9 +36,31 @@ export function EmailHistoryTab() {
 
     useEffect(() => {
         fetchLogs();
-        // Optional: Set up real-time listener if needed, but manual refresh is often better for logs
-        // to avoid jumping UI.
     }, []);
+
+    const handleDeleteClick = (log) => {
+        setDeleteModal({
+            isOpen: true,
+            logId: log.id,
+            subject: log.subject
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteModal.logId) return;
+
+        try {
+            await deleteDoc(doc(db, "email_logs", deleteModal.logId));
+
+            // Optimistic update
+            setLogs(prev => prev.filter(l => l.id !== deleteModal.logId));
+
+            setDeleteModal({ isOpen: false, logId: null, subject: '' });
+        } catch (err) {
+            console.error("Failed to delete log:", err);
+            alert("Failed to delete log: " + err.message);
+        }
+    };
 
     const filteredLogs = logs.filter(log => {
         const matchesSearch =
@@ -98,7 +123,7 @@ export function EmailHistoryTab() {
                                 <th className="px-6 py-3 w-24">Status</th>
                                 <th className="px-6 py-3">To</th>
                                 <th className="px-6 py-3">Subject</th>
-                                <th className="px-6 py-3 w-24 text-right">Details</th>
+                                <th className="px-6 py-3 w-24 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -131,7 +156,7 @@ export function EmailHistoryTab() {
                                     } catch (e) { }
 
                                     return (
-                                        <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                                        <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
                                             <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
                                                 {log.timestamp ? log.timestamp.toLocaleString() : 'N/A'}
                                             </td>
@@ -149,7 +174,13 @@ export function EmailHistoryTab() {
                                                 {log.subject}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                {/* Details button could go here if we expand rows */}
+                                                <button
+                                                    onClick={() => handleDeleteClick(log)}
+                                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                    title="Delete Log"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
                                             </td>
                                         </tr>
                                     );
@@ -159,6 +190,17 @@ export function EmailHistoryTab() {
                     </table>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={confirmDelete}
+                title="Delete Email Log"
+                message={`Are you sure you want to delete this log entry?\n\nSubject: "${deleteModal.subject}"\n\nThis cannot be undone.`}
+                isDanger={true}
+                confirmText="Delete Log"
+                requireTyping="delete"
+            />
         </div>
     );
 }
