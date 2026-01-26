@@ -17,7 +17,6 @@ export function EmailHistoryTab() {
         setLoading(true);
         try {
             // Initial fetch - get last 100 logs
-            // Ideally we'd implement pagination, but 100 is good for recent history
             const logsRef = collection(db, "email_logs");
             const q = query(logsRef, orderBy("timestamp", "desc"), limit(100));
             const snapshot = await getDocs(q);
@@ -52,10 +51,7 @@ export function EmailHistoryTab() {
 
         try {
             await deleteDoc(doc(db, "email_logs", deleteModal.logId));
-
-            // Optimistic update
             setLogs(prev => prev.filter(l => l.id !== deleteModal.logId));
-
             setDeleteModal({ isOpen: false, logId: null, subject: '' });
         } catch (err) {
             console.error("Failed to delete log:", err);
@@ -63,10 +59,36 @@ export function EmailHistoryTab() {
         }
     };
 
-    const filteredLogs = logs.filter(log => {
+    // Pre-process logs for easier filtering and rendering
+    const processedLogs = logs.map(log => {
+        let recipientName = log.to;
+        let recipientEmail = log.to;
+        let cabinNumber = log.cabinNumber || "-";
+
+        try {
+            if (log.original_to) {
+                const parsed = JSON.parse(log.original_to);
+                if (parsed.name) recipientName = parsed.name;
+                if (parsed.email) recipientEmail = parsed.email;
+                if (parsed.cabinNumber) cabinNumber = parsed.cabinNumber;
+            }
+        } catch (e) { }
+
+        return {
+            ...log,
+            recipientName,
+            recipientEmail,
+            cabinNumber
+        };
+    });
+
+    const filteredLogs = processedLogs.filter(log => {
+        const searchLower = searchTerm.toLowerCase();
         const matchesSearch =
-            (log.to && log.to.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (log.subject && log.subject.toLowerCase().includes(searchTerm.toLowerCase()));
+            (log.recipientName && log.recipientName.toLowerCase().includes(searchLower)) ||
+            (log.recipientEmail && log.recipientEmail.toLowerCase().includes(searchLower)) ||
+            (log.cabinNumber && String(log.cabinNumber).toLowerCase().includes(searchLower)) ||
+            (log.subject && log.subject.toLowerCase().includes(searchLower));
 
         const matchesStatus = filterStatus === 'all' || log.status === filterStatus;
 
@@ -91,12 +113,12 @@ export function EmailHistoryTab() {
                     <p className="text-sm text-slate-500">View recent outgoing system emails</p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <div className="relative">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative flex-1">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Search email or subject..."
+                            placeholder="Search name, cabin, email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full md:w-64"
@@ -114,96 +136,124 @@ export function EmailHistoryTab() {
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                            <tr>
-                                <th className="px-6 py-3 w-48">Timestamp</th>
-                                <th className="px-6 py-3 w-24">Status</th>
-                                <th className="px-6 py-3 w-24">Cabin #</th>
-                                <th className="px-6 py-3">Name</th>
-                                <th className="px-6 py-3">Email</th>
-                                <th className="px-6 py-3">Subject</th>
-                                <th className="px-6 py-3 w-24 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
-                                        Loading logs...
-                                    </td>
-                                </tr>
-                            ) : filteredLogs.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
-                                        No logs found matching your filters.
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredLogs.map((log) => {
-                                    const { icon, bg, text } = getStatusParams(log.status);
-
-                                    // Format recipient nicely if it's an object string or simple string
-                                    // Format recipient
-                                    let recipientName = log.to;
-                                    let recipientEmail = log.to;
-                                    let cabinNumber = log.cabinNumber || "-";
-
-                                    try {
-                                        // If stored as JSON string from the backend update
-                                        if (log.original_to) {
-                                            const parsed = JSON.parse(log.original_to);
-                                            if (parsed.name) recipientName = parsed.name;
-                                            if (parsed.email) recipientEmail = parsed.email;
-                                            if (parsed.cabinNumber) cabinNumber = parsed.cabinNumber;
-                                        }
-                                        // If 'to' is just an email string, keep it as both for now
-                                    } catch (e) { }
-
-                                    return (
-                                        <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
-                                            <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
-                                                {log.timestamp ? log.timestamp.toLocaleString() : 'N/A'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${bg} ${text}`}>
-                                                    {icon}
-                                                    <span className="capitalize">{log.status}</span>
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-slate-600 font-bold">
-                                                {cabinNumber}
-                                            </td>
-                                            <td className="px-6 py-4 font-bold text-slate-900 truncate max-w-[150px]" title={recipientName}>
-                                                {recipientName}
-                                            </td>
-                                            <td className="px-6 py-4 text-slate-500 font-mono text-xs truncate max-w-[200px]" title={recipientEmail}>
-                                                {recipientEmail}
-                                            </td>
-                                            <td className="px-6 py-4 text-slate-600 truncate max-w-[300px]" title={log.subject}>
-                                                {log.isTestMode && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-2">TEST</span>}
-                                                {log.subject}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => handleDeleteClick(log)}
-                                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                                    title="Delete Log"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
+            {/* Content Area */}
+            {loading ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+                    Loading logs...
                 </div>
-            </div>
+            ) : filteredLogs.length === 0 ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+                    No logs found matching your filters.
+                </div>
+            ) : (
+                <>
+                    {/* DESKTOP VIEW: Table */}
+                    <div className="hidden md:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+                                    <tr>
+                                        <th className="px-6 py-3 w-48">Timestamp</th>
+                                        <th className="px-6 py-3 w-24">Status</th>
+                                        <th className="px-6 py-3 w-24">Cabin #</th>
+                                        <th className="px-6 py-3">Name</th>
+                                        <th className="px-6 py-3">Email</th>
+                                        <th className="px-6 py-3">Subject</th>
+                                        <th className="px-6 py-3 w-24 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredLogs.map((log) => {
+                                        const { icon, bg, text } = getStatusParams(log.status);
+                                        return (
+                                            <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
+                                                <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
+                                                    {log.timestamp ? log.timestamp.toLocaleString() : 'N/A'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${bg} ${text}`}>
+                                                        {icon}
+                                                        <span className="capitalize">{log.status}</span>
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-slate-600 font-bold">
+                                                    {log.cabinNumber}
+                                                </td>
+                                                <td className="px-6 py-4 font-bold text-slate-900 truncate max-w-[150px]" title={log.recipientName}>
+                                                    {log.recipientName}
+                                                </td>
+                                                <td className="px-6 py-4 text-slate-500 font-mono text-xs truncate max-w-[200px]" title={log.recipientEmail}>
+                                                    {log.recipientEmail}
+                                                </td>
+                                                <td className="px-6 py-4 text-slate-600 truncate max-w-[300px]" title={log.subject}>
+                                                    {log.isTestMode && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-2">TEST</span>}
+                                                    {log.subject}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => handleDeleteClick(log)}
+                                                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                        title="Delete Log"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* MOBILE VIEW: Cards */}
+                    <div className="md:hidden space-y-4">
+                        {filteredLogs.map((log) => {
+                            const { icon, bg, text } = getStatusParams(log.status);
+                            return (
+                                <div key={log.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-3">
+                                    {/* Card Header: Subject & Status */}
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="font-medium text-slate-900 text-sm line-clamp-2">
+                                            {log.isTestMode && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-1.5 align-middle">TEST</span>}
+                                            {log.subject}
+                                        </div>
+                                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${bg} ${text}`}>
+                                            {icon}
+                                            <span className="capitalize">{log.status}</span>
+                                        </span>
+                                    </div>
+
+                                    {/* Card Details: Name | Cabin | Time */}
+                                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                                        <span className="font-bold text-slate-800">{log.recipientName}</span>
+                                        <span className="text-slate-300">•</span>
+                                        <span>Cabin {log.cabinNumber}</span>
+                                        <span className="text-slate-300">•</span>
+                                        <span>{log.timestamp ? log.timestamp.toLocaleString(undefined, {
+                                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                                        }) : 'N/A'}</span>
+                                    </div>
+
+                                    {/* Card Footer: Email & Actions */}
+                                    <div className="flex items-center justify-between pt-3 border-t border-slate-50 mt-1">
+                                        <div className="text-xs text-slate-400 font-mono truncate max-w-[200px]">
+                                            {log.recipientEmail}
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteClick(log)}
+                                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                            title="Delete Log"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
 
             <ConfirmationModal
                 isOpen={deleteModal.isOpen}
