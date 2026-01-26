@@ -224,7 +224,7 @@ export function LiveTurnMonitor() {
                                 {pickerDetails && (
                                     <span className="flex items-center gap-3 text-slate-400">
                                         <span className="hidden md:inline">|</span>
-                                        <span>Cabin: <strong>{pickerDetails.cabinNumber || pickerDetails.defaultCabin || "?"}</strong></span>
+                                        <span>Cabin: <strong>{pickerDetails.cabin || pickerDetails.cabinNumber || pickerDetails.defaultCabin || "?"}</strong></span>
                                         <span className="hidden md:inline">|</span>
                                         <span>{pickerDetails.email}</span>
                                     </span>

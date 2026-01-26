@@ -47,6 +47,9 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
             }
 
             shareholderEmail = shareholderQuery.docs[0].data().email;
+            // Try to get cabin number from various possible fields
+            const sData = shareholderQuery.docs[0].data();
+            var cabinNumber = sData.cabin || sData.cabinNumber || sData.defaultCabin;
         }
 
         // 4. Get test mode setting
@@ -153,7 +156,7 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         const finalSubject = subject;
 
         await sendGmail({
-            to: { name: shareholderName, email: recipient },
+            to: { name: shareholderName, email: recipient, cabinNumber: cabinNumber },
             subject: finalSubject,
             htmlContent: htmlContent
         });
@@ -213,7 +216,9 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
             throw new HttpsError('not-found', `Shareholder not found: ${activePicker}`);
         }
 
-        const shareholderEmail = shareholderQuery.docs[0].data().email;
+        const sData = shareholderQuery.docs[0].data();
+        const shareholderEmail = sData.email;
+        const cabinNumber = sData.cabin || sData.cabinNumber || sData.defaultCabin;
         const deadline = windowEnds ? windowEnds.toDate() : new Date(Date.now() + 48 * 60 * 60 * 1000);
 
         // Define reminder messages
@@ -256,7 +261,7 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
         const finalSubject = subject;
 
         await sendGmail({
-            to: { name: activePicker, email: recipient },
+            to: { activePicker, email: recipient, cabinNumber: cabinNumber },
             subject: finalSubject,
             htmlContent: htmlContent
         });

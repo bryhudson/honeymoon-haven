@@ -60,6 +60,7 @@ exports.turnReminderScheduler = onSchedule(
 
             const shareholder = shareholderDoc.docs[0].data();
             const shareholderEmail = shareholder.email;
+            const cabinNumber = shareholder.cabin || shareholder.cabinNumber || shareholder.defaultCabin;
 
             if (!shareholderEmail) {
                 logger.error(`No email for shareholder: ${activePicker}`);
@@ -87,7 +88,7 @@ exports.turnReminderScheduler = onSchedule(
 
             if (isNewTurn) {
                 logger.info("New turn detected, sending turn start notification");
-                await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, isTestMode);
+                await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, isTestMode, cabinNumber);
 
                 // Update notification log
                 await notificationLogRef.set({
@@ -105,12 +106,12 @@ exports.turnReminderScheduler = onSchedule(
             if (fastTestingMode) {
                 await handleFastModeReminders(
                     now, turnEnd, shareholderEmail, activePicker,
-                    notificationLog, notificationLogRef, round, phase, isTestMode
+                    notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
                 );
             } else {
                 await handleNormalModeReminders(
                     now, turnStart, turnEnd, shareholderEmail, activePicker,
-                    notificationLog, notificationLogRef, round, phase, isTestMode, fastTestingMode
+                    notificationLog, notificationLogRef, round, phase, isTestMode, fastTestingMode, cabinNumber
                 );
             }
 
@@ -128,7 +129,7 @@ exports.turnReminderScheduler = onSchedule(
  */
 async function handleFastModeReminders(
     now, turnEnd, email, shareholderName,
-    notificationLog, notificationLogRef, round, phase, isTestMode
+    notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
 ) {
     const minutesRemaining = (turnEnd - now) / (1000 * 60);
     logger.info(`Fast Mode: ${minutesRemaining.toFixed(1)} minutes remaining`);
@@ -136,7 +137,7 @@ async function handleFastModeReminders(
     // 2-minute urgent warning (Catch anything between 0 and 2.5 mins)
     if (minutesRemaining <= 2.5 && minutesRemaining > 0 && !notificationLog.last2minSent) {
         logger.info("Sending 2-minute urgent reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 minutes", true, isTestMode, 'evening');
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 minutes", true, isTestMode, 'evening', cabinNumber);
         await notificationLogRef.update({
             last2minSent: admin.firestore.Timestamp.now()
         });
@@ -144,7 +145,7 @@ async function handleFastModeReminders(
     // 5-minute warning (Catch anything between 2.5 and 6 mins)
     else if (minutesRemaining <= 6 && minutesRemaining > 2.5 && !notificationLog.last5minSent) {
         logger.info("Sending 5-minute reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "5 minutes", false, isTestMode, 'morning');
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "5 minutes", false, isTestMode, 'morning', cabinNumber);
         await notificationLogRef.update({
             last5minSent: admin.firestore.Timestamp.now()
         });
@@ -158,7 +159,7 @@ async function handleFastModeReminders(
  */
 async function handleNormalModeReminders(
     now, turnStart, turnEnd, email, shareholderName,
-    notificationLog, notificationLogRef, round, phase, isTestMode, fastMode
+    notificationLog, notificationLogRef, round, phase, isTestMode, fastMode, cabinNumber
 ) {
     // Calculate specific reminder times
     let sameDayEvening, nextDayMorning, lastDayMorning, twoHourWarning;
@@ -203,7 +204,7 @@ async function handleNormalModeReminders(
     // 2h before deadline - URGENT
     if (now >= twoHourWarning && now < turnEnd && !notificationLog.twoHourWarningSent) {
         logger.info("Sending 2-hour urgent reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 hours", true, isTestMode, 'evening');
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 hours", true, isTestMode, 'evening', cabinNumber);
         await notificationLogRef.update({
             twoHourWarningSent: admin.firestore.Timestamp.now()
         });
@@ -211,7 +212,7 @@ async function handleNormalModeReminders(
     // 9am on last day
     else if (now >= lastDayMorning && !notificationLog.lastDayMorningSent) {
         logger.info("Sending last day 9am reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "final day", false, isTestMode, 'morning');
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "final day", false, isTestMode, 'morning', cabinNumber);
         await notificationLogRef.update({
             lastDayMorningSent: admin.firestore.Timestamp.now()
         });
@@ -219,7 +220,7 @@ async function handleNormalModeReminders(
     // 9am on next day
     else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
         logger.info("Sending next day 9am reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning');
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
         await notificationLogRef.update({
             nextDayMorningSent: admin.firestore.Timestamp.now()
         });
@@ -227,7 +228,7 @@ async function handleNormalModeReminders(
     // 7pm same day
     else if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
         logger.info("Sending same day 7pm reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening');
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
         await notificationLogRef.update({
             sameDayEveningSent: admin.firestore.Timestamp.now()
         });
@@ -237,7 +238,7 @@ async function handleNormalModeReminders(
 /**
  * Send Turn Start Email
  */
-async function sendTurnStartEmail(email, shareholderName, deadline, round, phase, isTestMode) {
+async function sendTurnStartEmail(email, shareholderName, deadline, round, phase, isTestMode, cabinNumber) {
     const templateData = {
         name: shareholderName,
         round: round,
@@ -266,7 +267,7 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
 /**
  * Send Reminder Email
  */
-async function sendReminderEmail(email, shareholderName, deadline, round, phase, timeRemaining, isUrgent, isTestMode, reminderType = 'morning') {
+async function sendReminderEmail(email, shareholderName, deadline, round, phase, timeRemaining, isUrgent, isTestMode, reminderType = 'morning', cabinNumber) {
     const urgencyMessage = isUrgent
         ? "⚠️ URGENT: Your booking window is about to expire!"
         : "Friendly reminder to complete your booking.";
