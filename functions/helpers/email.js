@@ -106,6 +106,7 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
                 isTestMode: isTestMode,
                 templateId: null, // Basic logging doesn't know template ID unless passed. 
                 // We rely on 'subject' to identify type for now, or could pass metadata later.
+                cabinNumber: to?.cabinNumber || null // Capture cabin number if available
             });
         } catch (logErr) {
             // Non-blocking error - don't fail the email if logging fails

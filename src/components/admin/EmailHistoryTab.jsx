@@ -122,7 +122,9 @@ export function EmailHistoryTab() {
                             <tr>
                                 <th className="px-6 py-3 w-48">Timestamp</th>
                                 <th className="px-6 py-3 w-24">Status</th>
-                                <th className="px-6 py-3">To</th>
+                                <th className="px-6 py-3 w-24">Cabin #</th>
+                                <th className="px-6 py-3">Name</th>
+                                <th className="px-6 py-3">Email</th>
                                 <th className="px-6 py-3">Subject</th>
                                 <th className="px-6 py-3 w-24 text-right">Actions</th>
                             </tr>
@@ -145,15 +147,20 @@ export function EmailHistoryTab() {
                                     const { icon, bg, text } = getStatusParams(log.status);
 
                                     // Format recipient nicely if it's an object string or simple string
-                                    let recipientDisplay = log.to;
+                                    // Format recipient
+                                    let recipientName = log.to;
+                                    let recipientEmail = log.to;
+                                    let cabinNumber = log.cabinNumber || "-";
+
                                     try {
                                         // If stored as JSON string from the backend update
                                         if (log.original_to) {
                                             const parsed = JSON.parse(log.original_to);
-                                            if (parsed.name && parsed.email) {
-                                                recipientDisplay = `${parsed.name} <${parsed.email}>`;
-                                            }
+                                            if (parsed.name) recipientName = parsed.name;
+                                            if (parsed.email) recipientEmail = parsed.email;
+                                            if (parsed.cabinNumber) cabinNumber = parsed.cabinNumber;
                                         }
+                                        // If 'to' is just an email string, keep it as both for now
                                     } catch (e) { }
 
                                     return (
@@ -167,8 +174,14 @@ export function EmailHistoryTab() {
                                                     <span className="capitalize">{log.status}</span>
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 font-medium text-slate-900 truncate max-w-[200px]" title={recipientDisplay}>
-                                                {recipientDisplay}
+                                            <td className="px-6 py-4 text-slate-600 font-bold">
+                                                {cabinNumber}
+                                            </td>
+                                            <td className="px-6 py-4 font-bold text-slate-900 truncate max-w-[150px]" title={recipientName}>
+                                                {recipientName}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500 font-mono text-xs truncate max-w-[200px]" title={recipientEmail}>
+                                                {recipientEmail}
                                             </td>
                                             <td className="px-6 py-4 text-slate-600 truncate max-w-[300px]" title={log.subject}>
                                                 {log.isTestMode && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-2">TEST</span>}
