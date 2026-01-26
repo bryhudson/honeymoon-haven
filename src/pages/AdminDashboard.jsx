@@ -22,7 +22,7 @@ import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { Users, UserPlus } from 'lucide-react';
 import { SystemTab } from '../components/admin/SystemTab';
-import { EmailHistoryTab } from '../components/admin/EmailHistoryTab';
+import { NotificationsTab } from '../components/admin/NotificationsTab';
 
 export function AdminDashboard() {
     const { currentUser } = useAuth();
@@ -1267,10 +1267,10 @@ export function AdminDashboard() {
                         </div>
                     </button>
                     <button
-                        onClick={() => setActiveTab('history')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('notifications')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'notifications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
-                        History
+                        Notifications
                     </button>
                 </div>
 
@@ -1298,11 +1298,9 @@ export function AdminDashboard() {
                     />
                 )}
 
-                {/* Email History Tab Content */}
-                {activeTab === 'history' && (
-                    <div className="mt-8 col-span-1 md:col-span-2 lg:col-span-4">
-                        <EmailHistoryTab />
-                    </div>
+                {/* Notifications Tab Content */}
+                {activeTab === 'notifications' && (
+                    <NotificationsTab triggerAlert={triggerAlert} />
                 )}
 
                 {/* 2026 Season Schedule Tab Content */}
