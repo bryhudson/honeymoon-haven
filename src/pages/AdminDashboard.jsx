@@ -22,10 +22,14 @@ import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
 import { Users, UserPlus } from 'lucide-react';
 import { SystemTab } from '../components/admin/SystemTab';
+import { EmailHistoryTab } from '../components/admin/EmailHistoryTab';
 
 export function AdminDashboard() {
     const { currentUser } = useAuth();
     const IS_SITE_OWNER = currentUser?.email === 'bryan.m.hudson@gmail.com';
+
+    // Tab State: 'system', 'bookings', 'history'
+    const [activeTab, setActiveTab] = useState('system');
 
     const [actionLog, setActionLog] = useState("");
     const [allBookings, setAllBookings] = useState([]);
@@ -1172,8 +1176,7 @@ export function AdminDashboard() {
         }
     };
 
-    // --- TABS ---
-    const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'users'
+    // --- TABS (Managed at top level) ---
 
     // Render Loading
     if (loading) {
@@ -1263,6 +1266,12 @@ export function AdminDashboard() {
                             {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
                         </div>
                     </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                    >
+                        History
+                    </button>
                 </div>
 
                 {/* System Tab Content */}
@@ -1287,6 +1296,13 @@ export function AdminDashboard() {
                         setDoc={setDoc}
                         format={format}
                     />
+                )}
+
+                {/* Email History Tab Content */}
+                {activeTab === 'history' && (
+                    <div className="mt-8 col-span-1 md:col-span-2 lg:col-span-4">
+                        <EmailHistoryTab />
+                    </div>
                 )}
 
                 {/* 2026 Season Schedule Tab Content */}

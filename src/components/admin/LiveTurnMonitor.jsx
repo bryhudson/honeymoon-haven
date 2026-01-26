@@ -175,6 +175,37 @@ export function LiveTurnMonitor() {
         );
     };
 
+    const [pickerDetails, setPickerDetails] = useState(null);
+
+    // Fetch Picker Details
+    useEffect(() => {
+        if (!activePicker) {
+            setPickerDetails(null);
+            return;
+        }
+
+        const fetchDetails = async () => {
+            try {
+                // Find shareholder by name (Assuming 'shareholders' collection exists and has 'name', 'email', 'defaultCabin')
+                // Since activePicker is just the name string, we need to query.
+                // NOTE: 'shareholders' collection might be keyed by UID or ID.
+                // Let's try querying by name field.
+                const { collection, query, where, getDocs } = await import('firebase/firestore');
+                const q = query(collection(db, "shareholders"), where("name", "==", activePicker));
+                const snap = await getDocs(q);
+
+                if (!snap.empty) {
+                    setPickerDetails(snap.docs[0].data());
+                } else {
+                    setPickerDetails(null);
+                }
+            } catch (err) {
+                console.error("Failed to fetch picker details", err);
+            }
+        };
+        fetchDetails();
+    }, [activePicker]);
+
     if (!activePicker) return null;
 
     return (
@@ -188,7 +219,17 @@ export function LiveTurnMonitor() {
                         </div>
                         <div>
                             <h3 className="font-bold text-slate-900">Live Turn Monitor</h3>
-                            <p className="text-xs text-slate-500">Watching: <strong className="text-indigo-600">{activePicker}</strong> (Round {round})</p>
+                            <div className="text-xs text-slate-500 flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                                <span>Watching: <strong className="text-indigo-600">{activePicker}</strong> (Round {round})</span>
+                                {pickerDetails && (
+                                    <span className="flex items-center gap-3 text-slate-400">
+                                        <span className="hidden md:inline">|</span>
+                                        <span>Cabin: <strong>{pickerDetails.cabinNumber || pickerDetails.defaultCabin || "?"}</strong></span>
+                                        <span className="hidden md:inline">|</span>
+                                        <span>{pickerDetails.email}</span>
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

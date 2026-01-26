@@ -87,10 +87,51 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
     try {
         const info = await transporter.sendMail(mailOptions);
         logger.info("Email sent successfully", { messageId: info.messageId });
+
+        // --- CENTRALIZED LOGGING TO FIRESTORE ---
+        try {
+            const admin = require("firebase-admin");
+            if (admin.apps.length === 0) {
+                admin.initializeApp();
+            }
+            const db = admin.firestore();
+
+            await db.collection("email_logs").add({
+                to: recipient,
+                original_to: typeof to === 'object' ? JSON.stringify(to) : to, // Capture original intent
+                subject: subject,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                status: 'sent',
+                messageId: info.messageId,
+                isTestMode: isTestMode,
+                templateId: null, // Basic logging doesn't know template ID unless passed. 
+                // We rely on 'subject' to identify type for now, or could pass metadata later.
+            });
+        } catch (logErr) {
+            // Non-blocking error - don't fail the email if logging fails
+            logger.error("Failed to write to email_logs", logErr);
+        }
+
         return { success: true, messageId: info.messageId };
 
     } catch (error) {
         logger.error("Gmail send failed", error);
+
+        // Log failure if possible
+        try {
+            const admin = require("firebase-admin");
+            if (admin.apps.length === 0) admin.initializeApp();
+            const db = admin.firestore();
+            await db.collection("email_logs").add({
+                to: recipient,
+                subject: subject,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                status: 'failed',
+                error: error.message,
+                isTestMode: isTestMode
+            });
+        } catch (e) { /* ignore */ }
+
         throw error;
     }
 }

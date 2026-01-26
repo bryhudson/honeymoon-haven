@@ -9,6 +9,8 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
     const [step, setStep] = useState('select'); // 'select', 'form', 'success'
     const [type, setType] = useState(null); // 'bug', 'feature'
     const [message, setMessage] = useState('');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [alertData, setAlertData] = useState(null);
 
@@ -18,9 +20,12 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
             setStep('select');
             setType(null);
             setMessage('');
+            // Pre-fill if known
+            setName(shareholderName || '');
+            setEmail(currentUser?.email || '');
             setIsSending(false);
         }
-    }, [isOpen]);
+    }, [isOpen, shareholderName, currentUser]);
 
     if (!isOpen) return null;
 
@@ -39,13 +44,15 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
 
         setIsSending(true);
         try {
-            const senderName = shareholderName || currentUser?.email || 'Anonymous';
+            const finalName = name.trim() || shareholderName || 'Anonymous';
+            const finalEmail = email.trim() || currentUser?.email || 'N/A';
+
             await emailService.sendEmail({
                 to: { name: 'Super Admin', email: 'bryan.m.hudson@gmail.com' },
                 templateId: 'feedback',
                 params: {
-                    name: senderName,
-                    email: currentUser?.email,
+                    name: finalName,
+                    email: finalEmail,
                     type: type,
                     message: message
                 }
@@ -145,13 +152,37 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
                                 )}
                             </div>
 
+                            {/* Contact Info (Optional) */}
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your Name (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        placeholder="Name"
+                                        className="w-full p-2.5 rounded-lg border border-input bg-background relative focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your Email (Optional)</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="Email"
+                                        className="w-full p-2.5 rounded-lg border border-input bg-background relative focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+
                             <textarea
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 placeholder={type === 'bug'
                                     ? "Describe what happened, what you expected, and steps to reproduce..."
                                     : "Tell us about your idea! How would it help you?"}
-                                className="flex-1 w-full p-4 p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[150px]"
+                                className="flex-1 w-full p-4 p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[120px]"
                                 autoFocus
                             />
 
