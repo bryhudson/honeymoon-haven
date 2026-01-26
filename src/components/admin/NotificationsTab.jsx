@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TestTube, Clock, Zap, Settings, Bell } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ConfirmationModal } from '../ConfirmationModal';
+import { LiveTurnMonitor } from './LiveTurnMonitor';
 import { EmailHistoryTab } from './EmailHistoryTab';
 
 export function NotificationsTab({ triggerAlert }) {
@@ -75,6 +76,9 @@ export function NotificationsTab({ triggerAlert }) {
                 </h2>
                 <p className="text-sm text-slate-500">Manage, test, and audit system communications.</p>
             </div>
+
+            {/* 0. Live Turn Monitor */}
+            <LiveTurnMonitor />
 
             {/* 1. Email System Overview & Testing */}
             <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">

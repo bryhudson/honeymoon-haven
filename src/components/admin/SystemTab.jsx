@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight, Info } from 'lucide-react';
 import { collection, onSnapshot, getDocs, getDoc, Timestamp } from 'firebase/firestore';
 import { calculateDraftSchedule, getShareholderOrder } from '../../lib/shareholders';
-import { LiveTurnMonitor } from './LiveTurnMonitor';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -345,8 +344,7 @@ export function SystemTab({
                     </div>
                 </div>
 
-                {/* 2b. Live Turn Monitor (NEW) */}
-                <LiveTurnMonitor />
+
 
 
 
