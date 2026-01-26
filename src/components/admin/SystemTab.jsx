@@ -388,52 +388,12 @@ export function SystemTab({
                                 <span className="text-indigo-600 font-medium text-xs">Safe Mode On (Emails -&gt; Admin only)</span>
                             </div>
 
-                            {/* Time Travel Toggle & Picker */}
+                            {/* Time Travel Removed per User Request (Simplification) */}
                             {simStartDate !== '' && (
-                                <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-indigo-100">
-                                    {!showTimeTravel ? (
-                                        <button
-                                            onClick={() => setShowTimeTravel(true)}
-                                            className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider hover:text-indigo-600 flex items-center gap-1"
-                                        >
-                                            <Clock className="w-3 h-3" /> Show Time Travel Controls
-                                        </button>
-                                    ) : (
-                                        <div className="animate-in fade-in slide-in-from-top-1">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Custom Start Date</label>
-                                                <button
-                                                    onClick={() => setShowTimeTravel(false)}
-                                                    className="text-[10px] text-slate-400 hover:text-slate-600"
-                                                >
-                                                    Hide
-                                                </button>
-                                            </div>
-                                            <input
-                                                type="datetime-local"
-                                                defaultValue={simStartDate}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    setSimStartDate(val); // UI update immediately
-
-                                                    // Clear existing timer
-                                                    if (window.timeTravelTimer) clearTimeout(window.timeTravelTimer);
-
-                                                    // Set new timer (Debounce 800ms)
-                                                    window.timeTravelTimer = setTimeout(() => {
-                                                        const newDate = new Date(val);
-                                                        // Use new performWipe(date, options) signature to FORCE TEST MODE atomically
-                                                        performWipe(newDate, { forceTestMode: true })
-                                                            .then(() => handleSyncDraftStatus());
-                                                    }, 800);
-                                                }}
-                                                className="w-full px-2 py-1.5 border border-indigo-200 rounded text-xs text-indigo-700 bg-white"
-                                            />
-                                            <p className="text-[10px] text-indigo-400 mt-1 italic">
-                                                Fast-forward time to test deadlines & expiration logic.
-                                            </p>
-                                        </div>
-                                    )}
+                                <div className="mt-3 pt-3 border-t border-indigo-100">
+                                    <p className="text-[10px] text-indigo-400 italic">
+                                        Simulation running. Check Live Turn Monitor for status.
+                                    </p>
                                 </div>
                             )}
                         </div>
