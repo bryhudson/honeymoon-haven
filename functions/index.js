@@ -18,11 +18,12 @@ if (admin.apps.length === 0) {
 
 const { sendGmail, gmailSecrets } = require("./helpers/email");
 const { emailTemplates } = require("./helpers/emailTemplates");
-const { onBookingChangeTrigger, checkDailyReminders, sendGuestGuideEmail } = require("./triggers/emailTriggers");
+const { onBookingChangeTrigger, sendGuestGuideEmail } = require("./triggers/emailTriggers");
 const { createAccount, deleteAccount } = require("./triggers/userManagement");
 const { turnReminderScheduler } = require("./triggers/turnReminderScheduler");
 const { autosyncDraftStatus } = require("./triggers/autosyncDraftStatus");
 const { sendTestEmail, sendTestReminder } = require("./triggers/manualTestEmail");
+const { forceSendNotification } = require("./triggers/adminForceSend");
 const { debugShareholder } = require("./triggers/debugTools");
 
 /**
@@ -57,6 +58,10 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                 case 3: templateFn = emailTemplates.reminder; if (params) params.type = 'evening'; break; // Assuming 'evening' default or explicit
                 case 4: templateFn = emailTemplates.finalWarning; break;
                 case 5: templateFn = emailTemplates.bookingConfirmed; break;
+                case 'paymentReceived': templateFn = emailTemplates.paymentReceived; break;
+                case 'paymentReminder': templateFn = emailTemplates.paymentReminder; break;
+                case 'bookingCancelled': templateFn = emailTemplates.bookingCancelled; break;
+                case 'feedback': templateFn = emailTemplates.feedback; break;
                 default:
                     logger.warn(`Unknown Template ID: ${templateId}`);
             }
@@ -88,12 +93,13 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 
 // Export triggers
 exports.onBookingChangeTrigger = onBookingChangeTrigger;
-exports.checkDailyReminders = checkDailyReminders;
+
 exports.sendGuestGuideEmail = sendGuestGuideEmail;
 exports.turnReminderScheduler = turnReminderScheduler;
 exports.autosyncDraftStatus = autosyncDraftStatus;
 exports.sendTestEmail = sendTestEmail;
 exports.sendTestReminder = sendTestReminder;
+exports.forceSendNotification = forceSendNotification;
 exports.debugShareholder = debugShareholder;
 
 // User Management

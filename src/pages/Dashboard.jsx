@@ -1,4 +1,4 @@
-import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info, BookOpen, User } from 'lucide-react';
+import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info, BookOpen, User, History } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
@@ -22,6 +22,7 @@ import { BookingSection } from '../components/BookingSection';
 import { OnboardingTour } from '../components/OnboardingTour';
 import { EmailGuestModal } from '../components/dashboard/EmailGuestModal';
 import { ShareholderCalendarView } from '../components/dashboard/ShareholderCalendarView';
+
 import { FeedbackModal } from '../components/FeedbackModal';
 
 // Basic Error Boundary
@@ -214,29 +215,8 @@ export function Dashboard() {
             "Are you sure you want to delete this draft? This action cannot be undone and you will need to re-select your dates if you change your mind.",
             async () => {
                 // Send Cancellation Email
-                try {
-                    const bookingData = allDraftRecords.find(b => b.id === bookingId);
-                    if (bookingData) {
-                        const shareholderName = bookingData.shareholderName || "Unknown";
-                        // Notify Admin? Or User? The original code notified Admin (to_name: Admin). 
-                        // The user requirements say "Booking Cancelled Notification (Current)".
-                        // We will notify the USER.
-                        await emailService.sendBookingCancelled({
-                            name: shareholderName,
-                            email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                        }, {
-                            name: shareholderName,
-                            check_in: format(bookingData.from, 'MMM d'),
-                            check_out: format(bookingData.to, 'MMM d'),
-                            cabin_number: bookingData.cabinNumber || "?",
-                            cancelled_date: format(new Date(), 'PPP'),
-                            within_turn_window: false, // Assuming draft discard is manual
-                            dashboard_url: "https://hhr-trailer-booking.web.app/"
-                        });
-                    }
-                } catch (e) {
-                    console.error("Cancellation email failed", e);
-                }
+                // Cancel in DB - Backend Trigger handles email ("Booking Cancelled")
+
 
                 await deleteDoc(doc(db, "bookings", bookingId));
                 setEditingBooking(null);
@@ -262,53 +242,8 @@ export function Dashboard() {
                 // 1. Notify CURRENT user (Confirmation) - HANDLED IN BookingSection.jsx NOW.
                 // Removing duplicate email call.
 
-                // Notify NEXT shareholder
-                if (status.nextPicker) {
-                    const nextOwner = shareholders.find(o => o.name === status.nextPicker);
-                    if (nextOwner && nextOwner.email) {
-                        try {
-                            // Deadline calculation: Unified using shared logic
-                            const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
+                // Backend Trigger handles "Turn Complete" detection and emails next user.
 
-                            const nextStart = (fastTestingMode || bypassTenAM) ? new Date() : getOfficialStart(new Date());
-                            deadline = new Date(nextStart.getTime() + PICK_DURATION_MS);
-
-                            // Detect Phase Transition for Notification Context
-                            // If current user is the LAST one in Round 1, the next turn is Round 2.
-                            // If current user is the LAST one in Round 2, the next phase is Open Season.
-                            const order = getShareholderOrder(2026);
-                            let nextPhase = status.phase;
-                            let nextRound = status.round || (status.phase === 'ROUND_2' ? 2 : 1);
-
-                            if (status.phase === 'ROUND_1' && status.activePicker === order[order.length - 1]) {
-                                nextPhase = 'ROUND_2';
-                                nextRound = 2;
-                            } else if (status.phase === 'ROUND_2' && status.activePicker === order[0]) {
-                                // Last person in Round 2 (Reverse order ends at Start) is the FIRST person.
-                                nextPhase = 'OPEN_SEASON';
-                            }
-
-                            // NON-BLOCKING EMAIL
-                            emailService.sendTurnStarted({
-                                name: nextOwner.name,
-                                email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                            }, {
-                                name: nextOwner.name,
-                                deadline_date: format(deadline, 'PPP'),
-                                deadline_time: format(deadline, 'p'),
-                                booking_url: "https://hhr-trailer-booking.web.app/",
-                                dashboard_url: "https://hhr-trailer-booking.web.app/",
-                                pass_turn_url: "https://hhr-trailer-booking.web.app/",
-                                phase: nextPhase,
-                                round: nextRound
-                            }).then(() => console.log("Notification sent to", nextOwner.name))
-                                .catch(e => console.error("Next user email failed", e));
-
-                        } catch (e) {
-                            console.error("Next user email setup failed", e);
-                        }
-                    }
-                }
 
                 if (!skipConfirm) {
                     triggerAlert("Booking Finalized", "Thank you! Your turn is complete and the next shareholder has been notified.");
@@ -373,65 +308,10 @@ export function Dashboard() {
                             to: new Date()
                         });
 
-                        // 1. Notify CURRENT user (Pass Confirmation)
-                        try {
-                            const owner = shareholders.find(o => o.name === passData.name);
-                            await emailService.sendTurnPassedCurrent({
-                                name: passData.name,
-                                email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                            }, {
-                                name: passData.name,
-                                dashboard_url: "https://hhr-trailer-booking.web.app/",
-                                phase: status?.phase,
-                                round: status?.round
-                            });
-                        } catch (e) {
-                            console.error("Pass email failed", e);
-                        }
+                        // Backend Trigger handles "Turn Passed" notification to:
+                        // 1. Current User ("You Passed")
+                        // 2. Next User ("Turn Started - Previous Passed")
 
-                        // Notify NEXT shareholder
-                        if (status.nextPicker) {
-                            const nextOwner = shareholders.find(o => o.name === status.nextPicker);
-                            if (nextOwner && nextOwner.email) {
-                                try {
-                                    // Deadline calculation: Fast testing mode or normal
-                                    // Deadline calculation: Unified using shared logic
-                                    const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
-
-                                    const nextStart = (fastTestingMode || bypassTenAM) ? new Date() : getOfficialStart(new Date());
-                                    deadline = new Date(nextStart.getTime() + PICK_DURATION_MS);
-
-                                    // Detect Phase Transition for Notification Context
-                                    const order = getShareholderOrder(2026);
-                                    let nextPhase = status.phase;
-                                    let nextRound = status.round || (status.phase === 'ROUND_2' ? 2 : 1);
-
-                                    if (status.phase === 'ROUND_1' && status.activePicker === order[order.length - 1]) {
-                                        nextPhase = 'ROUND_2';
-                                        nextRound = 2;
-                                    } else if (status.phase === 'ROUND_2' && status.activePicker === order[0]) {
-                                        nextPhase = 'OPEN_SEASON';
-                                    }
-
-                                    await emailService.sendTurnPassedNext({
-                                        name: nextOwner.name,
-                                        email: "bryan.m.hudson@gmail.com" // OVERRIDE
-                                    }, {
-                                        name: nextOwner.name,
-                                        previous_shareholder: passData.name,
-                                        deadline_date: format(deadline, 'PPP'),
-                                        deadline_time: format(deadline, 'p'),
-                                        booking_url: "https://hhr-trailer-booking.web.app/",
-                                        dashboard_url: "https://hhr-trailer-booking.web.app/",
-                                        phase: nextPhase,
-                                        round: nextRound
-                                    });
-                                    console.log("Notification sent to", nextOwner.name);
-                                } catch (e) {
-                                    console.error("Next user email failed", e);
-                                }
-                            }
-                        }
 
                         triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
                         setPassData({ name: '' });
@@ -540,50 +420,10 @@ export function Dashboard() {
                                 celebrated: false
                             });
 
-                            // 2. Send "Booking Cancelled" Email
-                            try {
-                                const owner = shareholders.find(o => o.name === booking.shareholderName);
-                                const emailTo = owner?.email || "bryan.m.hudson@gmail.com";
-                                const isTargetingAdminFallback = !owner?.email;
+                            // Backend handles cancellation email trigger
+                            triggerAlert("Success", "Booking cancelled. A confirmation email has been sent.");
+                            setViewingBooking(null);
 
-                                console.log(`Sending cancellation email to: ${emailTo} (Shareholder: ${booking.shareholderName})`);
-
-                                // Safe helper for dates
-                                const safeFormat = (dateObj) => {
-                                    try {
-                                        if (!dateObj) return "N/A";
-                                        if (dateObj.toDate) return format(dateObj.toDate(), 'MMM d, yyyy');
-                                        const d = new Date(dateObj);
-                                        return isNaN(d.getTime()) ? "N/A" : format(d, 'MMM d, yyyy');
-                                    } catch (e) { return "N/A"; }
-                                };
-
-                                // Determine if this cancellation affects the active turn
-                                const isActiveTurn = status?.activePicker === booking.shareholderName;
-
-                                await emailService.sendBookingCancelled(emailTo, {
-                                    name: booking.shareholderName,
-                                    check_in: safeFormat(booking.from),
-                                    check_out: safeFormat(booking.to),
-                                    cabin_number: booking.cabinNumber || "?",
-                                    cancelled_date: format(new Date(), 'PPP'),
-                                    dashboard_url: window.location.origin,
-                                    within_turn_window: isActiveTurn,
-                                    next_shareholder: status?.nextPicker || "the next shareholder"
-                                });
-
-                                // If we fell back to admin (because owner email missing), log warning
-                                if (isTargetingAdminFallback) {
-                                    console.warn(`WARNING: Could not find email for shareholder '${booking.shareholderName}'. Defaulted to Admin.`);
-                                }
-
-                                triggerAlert("Success", "Booking cancelled. A confirmation email has been sent.");
-                                setViewingBooking(null);
-                            } catch (emailErr) {
-                                console.error("Email failed:", emailErr);
-                                triggerAlert("Warning", "Booking cancelled, but failed to send email notification.");
-                                setViewingBooking(null);
-                            }
                         } catch (err) {
                             console.error("Cancellation Critical Error:", err);
                             triggerAlert("Error", "Failed to cancel booking: " + err.message);
@@ -799,6 +639,7 @@ export function Dashboard() {
                                             key={editingBooking ? editingBooking.id : 'new'}
                                             onCancel={() => { setIsBooking(false); setEditingBooking(null); }}
                                             initialBooking={editingBooking}
+                                            status={status}
                                             activePicker={status.phase === 'OPEN_SEASON' ? loggedInShareholder : status.activePicker}
                                             onPass={() => {
                                                 setIsBooking(false);
@@ -955,9 +796,14 @@ export function Dashboard() {
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <p className="text-[10px] text-muted-foreground/60">v2.69.17</p>
-
-
+                        <div className="flex justify-center gap-4 text-[10px] items-center text-muted-foreground/50 font-mono">
+                            <span>v{__APP_VERSION__}</span>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        </div>
                     </div>
                 </>
             )}

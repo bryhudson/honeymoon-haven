@@ -115,18 +115,19 @@ export function AdminDashboard() {
                 setCurrentSimDate(d);
                 setSimStartDate(format(d, "yyyy-MM-dd'T'HH:mm"));
                 setIsSystemFrozen(doc.data().isSystemFrozen || false);
+                if (doc.data().isTestMode !== undefined) setIsTestMode(doc.data().isTestMode);
                 setFastTestingMode(doc.data().fastTestingMode || false);
                 setBypassTenAM(doc.data().bypassTenAM || false);
             } else {
                 // AUTO-DEFAULT: Set to Normal Testing until Feb 15, 2026, then Production
                 const now = new Date();
-                const feb15_2026 = new Date(2026, 1, 15); // Month is 0-indexed, so 1 = February
+                const feb20_2026 = new Date(2026, 1, 20); // Feb 20, 2026
 
                 let defaultDate;
                 let defaultBypassTenAM;
                 let defaultMessage;
 
-                if (now < feb15_2026) {
+                if (now < feb20_2026) {
                     // Before Feb 15: Use Normal Testing (Today @ 6 AM)
                     defaultDate = new Date();
                     defaultDate.setHours(6, 0, 0, 0);
@@ -145,7 +146,7 @@ export function AdminDashboard() {
                     bypassTenAM: defaultBypassTenAM,
                     fastTestingMode: false,
                     isSystemFrozen: false,
-                    isTestMode: now < feb15_2026 ? true : false, // Auto-enable test mode until Feb 15 for email safety
+                    isTestMode: now < feb20_2026 ? true : false, // Auto-enable test mode until Feb 20 for email safety
                     autoInitialized: true,
                     autoInitMessage: defaultMessage
                 }, { merge: true });
@@ -189,7 +190,7 @@ export function AdminDashboard() {
         };
     }, []);
 
-    const performWipe = async (overrideStartDate = null) => {
+    const performWipe = async (overrideStartDate = null, options = {}) => {
         setActionLog("Resetting database...");
 
         // 1. Delete all bookings
@@ -239,12 +240,20 @@ export function AdminDashboard() {
         // 4. Reset Settings
         const defaultStart = overrideStartDate || new Date(2026, 2, 1, 10, 0, 0);
 
-        await setDoc(doc(db, "settings", "general"), {
+        const settingsUpdate = {
             draftStartDate: defaultStart,
             isSystemFrozen: false,
             bypassTenAM: false,
             season: 2026
-        }, { merge: true });
+        };
+
+        if (options.forceTestMode) {
+            settingsUpdate.isTestMode = true;
+        } else if (options.forceProductionMode) {
+            settingsUpdate.isTestMode = false;
+        }
+
+        await setDoc(doc(db, "settings", "general"), settingsUpdate, { merge: true });
 
         console.log("[DEBUG] performWipe: Settings reset command sent");
 
@@ -260,13 +269,18 @@ export function AdminDashboard() {
             const shareholdersSnapshot = await getDocs(collection(db, "shareholders"));
             const firstShareholder = shareholdersSnapshot.docs.map(d => d.data()).find(s => s.name === firstShareholderName);
 
+            /* [DUPLICATE FIX] - Disabled Client-Side Email
+               The backend 'turnReminderScheduler' will detect the new turn within 1 minute
+               and send the official email. This prevents double-sending.
+            
             if (firstShareholder && firstShareholder.email) {
                 const PICK_DURATION_MS = fastTestingMode ? (10 * 60 * 1000) : (48 * 60 * 60 * 1000);
                 const deadline = new Date(defaultStart.getTime() + PICK_DURATION_MS);
 
-                await emailService.sendTurnStarted(
-                    { name: firstShareholderName, email: firstShareholder.email },
-                    {
+                await emailService.sendEmail({
+                    to: { name: firstShareholderName, email: firstShareholder.email },
+                    templateId: 1, // Turn Started
+                    params: {
                         name: firstShareholderName,
                         deadline_date: format(deadline, 'PPP'),
                         deadline_time: format(deadline, 'p'),
@@ -276,9 +290,11 @@ export function AdminDashboard() {
                         phase: 'ROUND_1',
                         round: 1
                     }
-                );
+                });
                 console.log("Turn start email sent immediately to " + firstShareholderName);
             }
+            */
+            console.log("Skipped client-side email. Waiting for Backend Scheduler to send official notification.");
         } catch (emailError) {
             console.error("Failed to send turn start email:", emailError);
         }
@@ -787,16 +803,17 @@ export function AdminDashboard() {
                         const owner = shareholders.find(o => o.name === booking.shareholderName);
                         const userEmail = owner ? owner.email : "bryan.m.hudson@gmail.com";
 
-                        await emailService.sendPaymentReceived({
-                            name: booking.shareholderName,
-                            email: "bryan.m.hudson@gmail.com" // OVERRIDE for safety/demo, could use userEmail
-                        }, {
-                            name: booking.shareholderName,
-                            amount: amount.toLocaleString(),
-                            check_in: format(start, 'MMM d, yyyy'),
-                            check_out: format(end, 'MMM d, yyyy'),
-                            cabin_number: booking.cabinNumber,
-                            dashboard_url: window.location.origin
+                        await emailService.sendEmail({
+                            to: { name: booking.shareholderName, email: userEmail },
+                            templateId: 'paymentReceived',
+                            params: {
+                                name: booking.shareholderName,
+                                amount: amount.toLocaleString(),
+                                check_in: format(start, 'MMM d, yyyy'),
+                                check_out: format(end, 'MMM d, yyyy'),
+                                cabin_number: booking.cabinNumber,
+                                dashboard_url: window.location.origin
+                            }
                         });
 
                         triggerAlert("Success", "Payment recorded and email sent! 💰");
@@ -819,16 +836,17 @@ export function AdminDashboard() {
                     const owner = shareholders.find(o => o.name === booking.shareholderName);
                     const emailTo = "bryan.m.hudson@gmail.com"; // OVERRIDE for safety/demo
 
-                    await emailService.sendPaymentReminder({
-                        name: booking.shareholderName,
-                        email: emailTo
-                    }, {
-                        name: booking.shareholderName,
-                        total_price: booking.totalPrice,
-                        cabin_number: booking.cabinNumber,
-                        check_in: format(booking.from, 'PPP'),
-                        payment_deadline: "within 12 hours",
-                        dashboard_url: window.location.origin
+                    await emailService.sendEmail({
+                        to: { name: booking.shareholderName, email: emailTo },
+                        templateId: 'paymentReminder',
+                        params: {
+                            name: booking.shareholderName,
+                            total_price: booking.totalPrice,
+                            cabin_number: booking.cabinNumber,
+                            check_in: format(booking.from, 'PPP'),
+                            payment_deadline: "within 12 hours",
+                            dashboard_url: window.location.origin
+                        }
                     });
                     triggerAlert("Success", "Payment reminder sent.");
                 } catch (err) {
@@ -887,27 +905,7 @@ export function AdminDashboard() {
                             name: booking.shareholderName,
                             email: owner?.email || "bryan.m.hudson@gmail.com"
                         };
-                        // Initial Data Fetch
-                        useEffect(() => {
-                            const fetchSettings = async () => {
-                                try {
-                                    const docRef = doc(db, "settings", "general");
-                                    const snapshot = await getDoc(docRef);
-                                    if (snapshot.exists()) {
-                                        const data = snapshot.data();
-                                        if (data.draftStartDate) {
-                                            setSimStartDate(format(data.draftStartDate.toDate(), 'yyyy-MM-dd HH:mm'));
-                                            setCurrentSimDate(data.draftStartDate.toDate());
-                                        }
-                                        if (data.isSystemFrozen !== undefined) setIsSystemFrozen(data.isSystemFrozen);
-                                        if (data.isTestMode !== undefined) setIsTestMode(data.isTestMode);
-                                    }
-                                } catch (err) {
-                                    console.error("Failed to fetch settings", err);
-                                }
-                            };
-                            fetchSettings();
-                        }, []);
+
 
                         // Helper for safe date formatting
                         const safeFormat = (dateObj) => {
@@ -921,15 +919,7 @@ export function AdminDashboard() {
                             }
                         };
 
-                        await emailService.sendBookingCancelled(emailTo, {
-                            name: booking.shareholderName,
-                            check_in: safeFormat(booking.from),
-                            check_out: safeFormat(booking.to),
-                            cabin_number: booking.cabinNumber,
-                            cancelled_date: format(new Date(), 'PPP'),
-                            dashboard_url: window.location.origin
-                        });
-
+                        // Email handled by backend trigger 'onBookingChangeTrigger'
                         triggerAlert("Success", "Booking cancelled.");
                     } catch (emailErr) {
                         console.error("Email failed:", emailErr);
@@ -1944,6 +1934,12 @@ export function AdminDashboard() {
                     inputType={promptData.inputType}
                     confirmText={promptData.confirmText}
                 />
+                <div className="mt-12 pt-8 border-t text-center space-y-2 pb-8">
+                    <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
+                    <div className="text-center mt-6">
+                        <p className="text-[10px] text-muted-foreground/60">v{__APP_VERSION__}</p>
+                    </div>
+                </div>
             </div >
         </div >
     );

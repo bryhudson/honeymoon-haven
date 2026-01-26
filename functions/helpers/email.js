@@ -16,7 +16,7 @@ const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
  * @param {string} data.htmlContent - HTML body
  * @returns {Promise<{success: boolean, messageId: string}>}
  */
-async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven", replyTo }) {
+async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven", replyTo, bypassTestMode = false }) {
     const user = gmailEmail.value();
     const pass = gmailAppPassword.value();
 
@@ -35,27 +35,32 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
     });
 
     // Sender Info
-    // Gmail always overwrites the "From" address with the authenticated user, but we can set a custom name.
     const from = `"${senderName}" <${user}>`;
 
     // --- DYNAMIC SAFETY OVERRIDE ---
     const DEV_EMAIL_OVERRIDE = "bryan.m.hudson@gmail.com";
 
-    // Check Firestore for Test Mode
+    // Check Firestore for Test Mode (unless bypassed)
     let isTestMode = true; // Default to safety
-    try {
-        const admin = require("firebase-admin");
-        if (admin.apps.length === 0) {
-            admin.initializeApp();
+
+    if (bypassTestMode) {
+        isTestMode = false; // TRUST THE CALLER
+        logger.warn(`[SAFETY OVERRIDE] Bypassing Test Mode for email to: ${JSON.stringify(to)}`);
+    } else {
+        try {
+            const admin = require("firebase-admin");
+            if (admin.apps.length === 0) {
+                admin.initializeApp();
+            }
+            const db = admin.firestore();
+            const settingsDoc = await db.collection("settings").doc("general").get();
+            if (settingsDoc.exists) {
+                isTestMode = settingsDoc.data().isTestMode !== false; // Default true if undefined
+            }
+        } catch (err) {
+            logger.warn("Failed to fetch settings for email safety check, defaulting to TEST MODE", err);
+            isTestMode = true;
         }
-        const db = admin.firestore();
-        const settingsDoc = await db.collection("settings").doc("general").get();
-        if (settingsDoc.exists) {
-            isTestMode = settingsDoc.data().isTestMode !== false; // Default true if undefined
-        }
-    } catch (err) {
-        logger.warn("Failed to fetch settings for email safety check, defaulting to TEST MODE", err);
-        isTestMode = true;
     }
 
     let recipient;
@@ -69,8 +74,8 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
     const mailOptions = {
         from: from,
         to: recipient,
-        // Only add [TEST] prefix if not already prefixed with [TEST EMAIL]
-        subject: (isTestMode && !subject.startsWith('[TEST EMAIL]')) ? `[TEST] ${subject}` : subject,
+        // REMOVED [TEST] prefix per user request (Production Readiness)
+        subject: subject,
         html: htmlContent,
     };
 

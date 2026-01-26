@@ -36,8 +36,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const bookingId = event.params.bookingId;
 
     // Detect Status Changes
-    const wasConfirmed = beforeData?.status === 'confirmed';
-    const isConfirmed = afterData?.status === 'confirmed';
+    const wasConfirmed = beforeData?.status === 'confirmed' || beforeData?.isFinalized === true;
+    const isConfirmed = afterData?.status === 'confirmed' || afterData?.isFinalized === true;
 
     const wasCancelled = beforeData?.status === 'cancelled';
     const isCancelled = afterData?.status === 'cancelled';
@@ -52,16 +52,16 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     // 1. Booking Confirmation Email (To Current User)
     if (!wasConfirmed && isConfirmed) {
         logger.info(`Sending Booking Confirmation for ${bookingId}`);
-        const userProfile = await getUserProfile(afterData.uid);
+        const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
 
         const templateData = {
             ...SEASON_CONFIG,
-            name: userProfile.displayName,
-            check_in: formatDate(afterData.checkInDate),
-            check_out: formatDate(afterData.checkOutDate),
-            cabin_number: afterData.cabinId,
+            name: afterData.shareholderName || userProfile.displayName || userProfile.name || "Shareholder",
+            check_in: formatDate(afterData.from || afterData.checkInDate),
+            check_out: formatDate(afterData.to || afterData.checkOutDate),
+            cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
             guests: afterData.guests || 1,
-            nights: afterData.nights || 0,
+            nights: afterData.nights || calculateNights(afterData.from || afterData.checkInDate, afterData.to || afterData.checkOutDate),
             total_price: afterData.totalPrice,
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
@@ -70,25 +70,41 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
 
         try {
             await sendGmail({
-                to: { name: userProfile.displayName || "Shareholder", email: userProfile.email },
+                to: { name: afterData.shareholderName || userProfile.displayName || userProfile.name || "Shareholder", email: userProfile.email },
                 subject: subject,
                 htmlContent: htmlContent
             });
         } catch (error) {
             logger.error(`Failed to send confirmation for ${bookingId}`, error);
         }
+
+        // LOGGING
+        if (afterData.shareholderName) {
+            // Need round info? statusData might not be fetched yet.
+            // We can try to guess or just log generic "booking_confirmed" if we don't have round.
+            // But we want to match `{activePicker}-{round}` pattern.
+            // Let's assume current global round is relevant, or pass it?
+            // Actually, querying draftStatus is fast.
+            const statusDoc = await db.collection("status").doc("draftStatus").get();
+            const round = statusDoc.exists ? statusDoc.data().round : 1;
+            const logId = `${afterData.shareholderName}-${round}`;
+            await db.collection("notification_log").doc(logId).set({
+                bookingConfirmedSent: admin.firestore.Timestamp.now(),
+                bookingId: bookingId
+            }, { merge: true });
+        }
     }
 
     // 2. Booking Cancellation Email (To Current User)
     if (!wasCancelled && isCancelled) {
         logger.info(`Sending Booking Cancellation for ${bookingId}`);
-        const userProfile = await getUserProfile(afterData.uid);
+        const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
 
         const templateData = {
-            name: userProfile.displayName,
-            check_in: formatDate(afterData.checkInDate),
-            check_out: formatDate(afterData.checkOutDate),
-            cabin_number: afterData.cabinId,
+            name: afterData.shareholderName || userProfile.displayName || userProfile.name || "Shareholder",
+            check_in: formatDate(afterData.from || afterData.checkInDate),
+            check_out: formatDate(afterData.to || afterData.checkOutDate),
+            cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
             cancelled_date: formatDate(new Date().toISOString()),
             within_turn_window: false,
             next_shareholder: "Next Shareholder",
@@ -99,12 +115,69 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
 
         try {
             await sendGmail({
-                to: { name: userProfile.displayName || "Shareholder", email: userProfile.email },
+                to: { name: afterData.shareholderName || userProfile.displayName || "Shareholder", email: userProfile.email },
                 subject: subject,
                 htmlContent: htmlContent
             });
         } catch (error) {
             logger.error(`Failed to send cancellation for ${bookingId}`, error);
+        }
+
+        // LOGGING
+        if (afterData.shareholderName) {
+            const statusDoc = await db.collection("status").doc("draftStatus").get();
+            const round = statusDoc.exists ? statusDoc.data().round : 1;
+            const logId = `${afterData.shareholderName}-${round}`;
+            await db.collection("notification_log").doc(logId).set({
+                bookingCancelledSent: admin.firestore.Timestamp.now(),
+                bookingId: bookingId
+            }, { merge: true });
+        }
+    }
+
+    // 2b. Pass Confirmation Email (To Current User)
+    if (isNewPass) {
+        logger.info(`Sending Pass Confirmation for ${bookingId}`);
+        const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
+
+        // Logic for Next Opportunity Message
+        // If current phase is Round 1, next is Round 2. If Round 2, next is Open Season.
+        // We need 'phase' and 'round' from somewhere, but 'afterData' just has booking info.
+        // We can infer or fetch current status, OR make the template generic. 
+        // Let's fetch current status quickly for accuracy.
+        const statusDoc = await db.collection("status").doc("draftStatus").get();
+        const statusData = statusDoc.exists ? statusDoc.data() : { phase: 'ROUND_1', round: 1 };
+
+        const isRound1 = statusData.phase === 'ROUND_1' || statusData.round === 1;
+        const nextTitle = isRound1 ? "ROUND 2 (SNAKE DRAFT)" : "OPEN SEASON BOOKING";
+        const nextText = isRound1
+            ? "Your next opportunity to book will be in Round 2 (Snake Draft), which begins after Round 1 concludes. The order will be reversed for the second round."
+            : "Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis.";
+
+        const { subject, htmlContent } = emailTemplates.turnPassedCurrent({
+            name: afterData.shareholderName || userProfile.displayName || "Shareholder",
+            next_opportunity_title: nextTitle,
+            next_opportunity_text: nextText
+        });
+
+        try {
+            await sendGmail({
+                to: { name: afterData.shareholderName || userProfile.displayName || "Shareholder", email: userProfile.email },
+                subject: subject,
+                htmlContent: htmlContent
+            });
+        } catch (error) {
+            logger.error(`Failed to send pass confirmation for ${bookingId}`, error);
+        }
+
+        // LOGGING
+        if (afterData.shareholderName) {
+            // we already fetched statusData in line 121
+            const round = statusData.round || 1;
+            const logId = `${afterData.shareholderName}-${round}`;
+            await db.collection("notification_log").doc(logId).set({
+                passConfirmedSent: admin.firestore.Timestamp.now()
+            }, { merge: true });
         }
     }
 
@@ -113,12 +186,23 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const turnEnded = (!wasConfirmed && isConfirmed) || (!wasCancelled && isCancelled) || isNewPass;
 
     if (turnEnded) {
-        logger.info(`Turn Ended detected. Calling notifyNextShareholder...`);
-        // Pass the CURRENT snapshot to ensure we use the latest data, 
-        // mitigating Firestore eventual consistency delays.
-        await notifyNextShareholder(snapshot.after);
+        let reason = 'completed'; // Default: User made a booking
+        if (isNewPass) reason = 'passed';
+        // Note: Cancellation effectively acts as a 'pass' or 'completed' depending on context,
+        // but since the template for cancellation implies 'turn passed', let's use 'passed' for now
+        // or keep 'completed' which sends the robust "It's Your Turn" email. 
+        // Given 'bookingCancelled' template handles the "Previous User Cancelled" context within ITSELF (sent to the canceller),
+        // the NEXT user just wants to know "It's Your Turn". 
+        // 'turnStarted' (completed) is the most generic/welcoming one.
+        // 'turnPassedNext' explicitly says "Previous User Passed". 
+        // If I cancel, I am effectively passing. Let's stick with 'completed' (standard welcome) 
+        // UNLESS it's an explicit pass type.
+
+        logger.info(`Turn Ended detected. Calling notifyNextShareholder with reason: ${reason}...`);
+        await notifyNextShareholder(snapshot.after, reason);
     } else {
         logger.info(`Turn NOT ended. Flags: wasConfirmed=${wasConfirmed}, isConfirmed=${isConfirmed}, isNewPass=${isNewPass}`);
+        logger.info(`Debug Values: BeforeStatus=${beforeData?.status}, AfterStatus=${afterData?.status}, BeforeType=${beforeData?.type}, AfterType=${afterData?.type}`);
     }
 });
 
@@ -127,9 +211,9 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
  * Calculates the schedule based on ALL bookings and sends an email to the active picker.
  * @param {admin.firestore.DocumentSnapshot} [triggerSnapshot] - Optional: The latest booking doc that triggered this.
  */
-async function notifyNextShareholder(triggerSnapshot = null) {
+async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed') {
     try {
-        logger.info("Turn Ended. Calculating Next Shareholder for Notification...");
+        logger.info(`Turn Ended (Reason: ${reason}). Calculating Next Shareholder for Notification...`);
 
         // 1. Fetch necessary data
         const settingsDoc = await db.collection("settings").doc("general").get();
@@ -167,11 +251,16 @@ async function notifyNextShareholder(triggerSnapshot = null) {
         }
 
         // 2. Calculate Schedule
+        const year = 2026;
+        const shareholders = getShareholderOrder(year);
+
         const schedule = calculateDraftSchedule(
-            allBookings,
-            settings.draftStartDate?.toDate(),
-            settings.bypassTenAM,
-            settings.fastTestingMode
+            shareholders,               // 1. Shareholders
+            allBookings,                // 2. Bookings
+            new Date(),                 // 3. Now
+            settings.draftStartDate?.toDate(), // 4. Start Date Override
+            settings.fastTestingMode,   // 5. Fast Mode
+            settings.bypassTenAM        // 6. Bypass 10AM
         );
 
         const nextPickerName = schedule.activePicker;
@@ -195,17 +284,51 @@ async function notifyNextShareholder(triggerSnapshot = null) {
                     phase: schedule.phase
                 };
 
-                const { subject: nextSubject, htmlContent: nextHtml } = emailTemplates.turnPassedNext(emailParams);
+                // Select Template based on Reason
+                let subject, htmlContent;
 
-                const recipient = isTestMode ? "bryan.m.hudson@gmail.com" : nextEmail;
-                const finalSubject = isTestMode ? `[TEST] ${nextSubject}` : nextSubject;
+                if (reason === 'passed') {
+                    // Previous user explicitly passed
+                    ({ subject, htmlContent } = emailTemplates.turnPassedNext(emailParams));
+                } else if (reason === 'timed_out') {
+                    // Previous user timed out
+                    ({ subject, htmlContent } = emailTemplates.autoPassNext(emailParams));
+                } else {
+                    // Default: 'completed' (Previous user booked)
+                    // This is the standard "It's Your Turn! 🎉" email
+                    ({ subject, htmlContent } = emailTemplates.turnStarted(emailParams));
+                }
 
+                // Removed [TEST] logic from comments or active code if present.
+                // NOTE: `sendGmail` helper handles TEST_MODE redirection and [TEST] prefixing centrally.
+                // We pass the real recipient and real subject here.
+
+                // [DUPLICATE FIX] Disabling this immediate email. 
+                // We will rely on turnReminderScheduler.js to send the "Turn Started" email.
+                // This prevents race conditions where both send.
+                /*
                 await sendGmail({
-                    to: { name: nextPickerName, email: recipient },
-                    subject: finalSubject,
-                    htmlContent: nextHtml
+                    to: { name: nextPickerName, email: nextEmail },
+                    subject: subject,
+                    htmlContent: htmlContent
                 });
-                logger.info(`Turn Passed Notification sent to ${nextPickerName} (${recipient})`);
+                logger.info(`Turn Passed Notification sent to ${nextPickerName} (${nextEmail})`);
+
+                // LOGGING: Update notification_log so scheduler doesn't double-send
+                // and so Admin Monitor sees it.
+                const notificationLogId = `${nextPickerName}-${schedule.round}`;
+                await db.collection("notification_log").doc(notificationLogId).set({
+                    shareholderName: nextPickerName,
+                    round: schedule.round,
+                    phase: schedule.phase,
+                    turnStartTime: admin.firestore.Timestamp.fromDate(schedule.windowStarts || new Date()),
+                    lastTurnStartSent: admin.firestore.Timestamp.now(),
+                    // Mark as sent so scheduler skips it
+                    triggeredBy: `booking_change (${reason})`
+                }, { merge: true });
+                */
+                logger.info(`[DEBOUNCE] Identifying next picker ${nextPickerName}, but waiting for Scheduler to send email to avoid duplicates.`);
+
             } else {
                 logger.warn(`Next picker ${nextPickerName} not found in shareholders collection.`);
             }
@@ -218,21 +341,22 @@ async function notifyNextShareholder(triggerSnapshot = null) {
     }
 }
 
-/**
- * 2. Scheduled Trigger: Daily Reminders
- * Runs every day at 9am to check for deadlines.
- */
-exports.checkDailyReminders = onSchedule({ schedule: "every day 09:00", secrets: gmailSecrets }, async (event) => {
-    logger.info("Running Daily Reminder Check");
-    logger.info("Daily reminder check completed (logic pending database schema confirmation)");
-    return;
-});
+
 
 // Helper to get user profile
-async function getUserProfile(uid) {
-    if (!uid) return { displayName: "Shareholder", email: "bryan.m.hudson@gmail.com" };
-    const doc = await db.collection("users").doc(uid).get();
-    return doc.data() || {};
+async function getUserProfile(uid, shareholderName) {
+    if (uid) {
+        const doc = await db.collection("users").doc(uid).get();
+        if (doc.exists) return doc.data();
+    }
+
+    // Fallback: Lookup by Shareholder Name
+    if (shareholderName) {
+        const query = await db.collection("shareholders").where("name", "==", shareholderName).limit(1).get();
+        if (!query.empty) return query.docs[0].data();
+    }
+
+    return { displayName: shareholderName || "Shareholder", email: "bryan.m.hudson@gmail.com" };
 }
 
 /**
@@ -285,12 +409,30 @@ function formatDate(input) {
     const date = toDate(input);
     if (!date || isNaN(date.getTime())) return "Unknown Date";
 
-    return date.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return date.toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'America/Vancouver'
+    });
 }
 
 function formatTime(input) {
     const date = toDate(input);
     if (!date || isNaN(date.getTime())) return "Unknown Time";
 
-    return date.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return date.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'America/Vancouver'
+    });
+}
+
+function calculateNights(start, end) {
+    const s = toDate(start);
+    const e = toDate(end);
+    if (!s || !e) return 0;
+    const diff = e.getTime() - s.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }

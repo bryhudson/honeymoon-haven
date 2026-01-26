@@ -20,7 +20,45 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             result.logs.push(msg);
         };
 
-        if (action === 'simulate') {
+        if (action === 'simulate_lifecycle') {
+            log("🎬 Starting Lifecycle Simulation...");
+            const bookingId = "SIMULATION_" + Date.now();
+            const docRef = admin.firestore().collection("bookings").doc(bookingId);
+
+            // 1. Create PENDING
+            log(`[1/2] Creating ${bookingId} as PENDING...`);
+            await docRef.set({
+                createdAt: new Date(),
+                uid: "user_sim",
+                cabinId: "7",
+                checkInDate: new Date("2026-06-01"),
+                checkOutDate: new Date("2026-06-08"),
+                status: "pending",
+                test: true,
+                note: "Debug Lifecycle Test"
+            });
+            log("   -> Created. Sleeping 2s...");
+            await new Promise(r => setTimeout(r, 2000));
+
+            // 2. Update CONFIRMED
+            log(`[2/2] Updating ${bookingId} to CONFIRMED...`);
+            await docRef.update({ status: "confirmed" });
+
+            log("✅ Update complete. Check logs for trigger firing.");
+            result.lifecycleTest = "Updated " + bookingId + " to confirmed";
+
+        } else if (action === 'smoke_test') {
+            log("🔥 Running Smoke Test: Writing to 'bookings/TRIGGER_VITALITY_TEST'...");
+            const testDocRef = admin.firestore().collection("bookings").doc("TRIGGER_VITALITY_TEST");
+            await testDocRef.set({
+                createdAt: new Date(),
+                test: true,
+                status: 'test_ignore',
+                note: "Smoke test triggered via debugShareholder at " + new Date().toISOString()
+            });
+            log("✅ Write complete. Check onBookingChangeTrigger logs.");
+            result.smokeTest = "Wrote to bookings/TRIGGER_VITALITY_TEST";
+        } else if (action === 'simulate') {
             // --- SIMULATION MODE ---
             log("Starting Simulation for: " + targetName);
 
@@ -40,11 +78,16 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             log(`Bookings loaded: ${allBookings.length}`);
 
             // 2. Calc Schedule
+            const year = 2026;
+            const shareholders = getShareholderOrder(year);
+
             const schedule = calculateDraftSchedule(
+                shareholders,
                 allBookings,
+                new Date(),
                 settings.draftStartDate?.toDate(),
-                settings.bypassTenAM,
-                settings.fastTestingMode
+                settings.fastTestingMode,
+                settings.bypassTenAM
             );
             log(`Schedule Calc: Active=${schedule.activePicker}, Next=${schedule.nextPicker}`);
 
@@ -96,6 +139,13 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
                 log(`Target (${targetName}) is NOT the active picker (${nextPickerName}). Simulation skipped. (Verify schedule state)`);
             }
 
+        } else if (action === 'inspect_bookings') {
+            const bookingsSnapshot = await db.collection("bookings").orderBy("createdAt", "desc").limit(5).get();
+            result.bookings = bookingsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate()?.toISOString()
+            }));
         } else {
             // --- INSPECT MODE ---
             // 1. Check Shareholder Doc
@@ -122,11 +172,16 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             const settingsDoc = await db.collection("settings").doc("general").get();
             const settings = settingsDoc.exists ? settingsDoc.data() : {};
 
+            const year = 2026;
+            const shareholders = getShareholderOrder(year);
+
             const schedule = calculateDraftSchedule(
+                shareholders,
                 allBookings,
+                new Date(),
                 settings.draftStartDate?.toDate(),
-                settings.bypassTenAM,
-                settings.fastTestingMode
+                settings.fastTestingMode,
+                settings.bypassTenAM
             );
 
             result.schedule = {
@@ -163,11 +218,11 @@ function toDate(input) {
 function formatDate(input) {
     const date = toDate(input);
     if (!date || isNaN(date.getTime())) return "Unknown Date";
-    return date.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return date.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Vancouver' });
 }
 
 function formatTime(input) {
     const date = toDate(input);
     if (!date || isNaN(date.getTime())) return "Unknown Time";
-    return date.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return date.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Vancouver' });
 }

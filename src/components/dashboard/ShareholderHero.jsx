@@ -225,27 +225,27 @@ export function ShareholderHero({
     if (status.phase === 'ROUND_2') roundTarget = 2;
     const myActions = drafts.filter(b =>
         b.shareholderName === shareholderName &&
-        (b.isFinalized || b.type === 'pass' || b.type === 'skipped') &&
-        b.type !== 'cancelled'
-    );
+        (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
+    ).sort((a, b) => a.createdAt - b.createdAt);
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
 
     // Get the absolute most recent action (including cancellations and skips) for generic state detection
     const latestAction = drafts
-        .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped'))
+        .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
 
     // Helper: Render Round Status Badges
     const renderBadges = () => {
-        const cancelledActions = drafts.filter(b => b.shareholderName === shareholderName && b.type === 'cancelled').sort((a, b) => a.createdAt - b.createdAt);
+        const cancelledActions = drafts.filter(b => b.shareholderName === shareholderName && (b.type === 'cancelled' || b.status === 'cancelled')).sort((a, b) => a.createdAt - b.createdAt);
 
         return (
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                 {/* Round 1 Badge */}
                 {(() => {
-                    const r1Action = myActions[0];
+                    const hasRoundData = myActions.some(b => b.round !== undefined);
+                    const r1Action = hasRoundData ? myActions.find(b => b.round === 1) : myActions[0];
                     const r1Cancelled = !r1Action && cancelledActions.length > 0;
                     const isR1Queue = queueInfo && queueInfo.round === 1;
                     const isR1Turn = status.phase === 'ROUND_1' && isYourTurn;
@@ -313,7 +313,8 @@ export function ShareholderHero({
 
                 {/* Round 2 Badge */}
                 {(() => {
-                    const r2Action = myActions.length > 1 ? myActions[1] : null;
+                    const hasRoundData = myActions.some(b => b.round !== undefined);
+                    const r2Action = hasRoundData ? myActions.find(b => b.round === 2) : (myActions.length > 1 ? myActions[1] : null);
                     const r1DoneOrCancelled = myActions.length > 0 || cancelledActions.length > 0;
                     const isR2Cancelled = (myActions.length === 1 && cancelledActions.length >= 1) || (myActions.length === 0 && cancelledActions.length >= 2);
                     const isR2Queue = queueInfo && queueInfo.round === 2;
@@ -584,7 +585,7 @@ export function ShareholderHero({
 
 
     // --- CASE C: Done for Round ---
-    if (isDoneForRound) {
+    if (isDoneForRound && lastAction?.type !== 'cancelled') {
         const isPassed = lastAction?.type === 'pass';
         const isSkipped = lastAction?.type === 'skipped';
         let displayDate = null;

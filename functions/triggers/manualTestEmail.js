@@ -64,7 +64,8 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                 day: 'numeric',
                 hour: 'numeric',
                 minute: '2-digit',
-                hour12: true
+                hour12: true,
+                timeZone: 'America/Vancouver'
             }),
             status_message: "This is a test email.",
             urgency_message: "Testing the email notification system.",
@@ -149,7 +150,7 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 
         // 7. Use testEmail if provided, otherwise apply test mode override
         const recipient = testEmail || (isTestMode ? "bryan.m.hudson@gmail.com" : shareholderEmail);
-        const finalSubject = `[TEST EMAIL] ${subject}`;
+        const finalSubject = subject;
 
         await sendGmail({
             to: { name: shareholderName, email: recipient },
@@ -217,10 +218,10 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
 
         // Define reminder messages
         const reminderMessages = {
-            evening: { timeRemaining: "evening check-in", isUrgent: false },
-            day2: { timeRemaining: "day 2", isUrgent: false },
-            final: { timeRemaining: "final day", isUrgent: false },
-            urgent: { timeRemaining: "2 hours", isUrgent: true }
+            evening: { type: 'evening', hoursRemaining: 49, isUrgent: false }, // ~7pm Day 1 (starts at -1h? No, 7pm is 21 hours remains? Wait. 48h. 7pm Day 1 is 3h into window? No window starts 7pm? Turn starts 10am? Wait. 48h window. Day 1 7pm = 9h elapsed = 39h remaining.
+            day2: { type: 'morning', hoursRemaining: 25, isUrgent: false }, // Day 2 9am = 23h elapsed = 25h remaining
+            final: { type: 'morning', hoursRemaining: 1, isUrgent: false }, // Day 3 9am = 47h elapsed = 1h remaining? No. Deadline is 10am? Deadline is variable. Let's just use placeholder.
+            urgent: { type: 'evening', hoursRemaining: 2, isUrgent: true } // 2h remaining. Type doesn't matter for urgent template.
         };
 
         const config = reminderMessages[reminderType];
@@ -228,20 +229,20 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
             throw new HttpsError('invalid-argument', `Unknown reminder type: ${reminderType}`);
         }
 
+        // Format deadline parts
+        const deadlineDate = deadline.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Vancouver' });
+        const deadlineTime = deadline.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Vancouver' });
+
         // Prepare email data
         const testData = {
             name: activePicker,
             round: round || 1,
             phase: phase || 'ROUND_1',
-            deadline: deadline.toLocaleString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            }),
-            status_message: `You have ${config.timeRemaining} remaining to make your selection.`,
+            type: config.type, // Critical for Morning/Evening greeting
+            hours_remaining: config.hoursRemaining, // Critical for "Time Remaining"
+            deadline_date: deadlineDate, // Critical for template
+            deadline_time: deadlineTime, // Critical for template
+            status_message: `You have ${config.hoursRemaining} hours remaining to make your selection.`,
             urgency_message: config.isUrgent ? '⚠️ URGENT: Your booking window is about to expire!' : 'Friendly reminder to complete your booking.',
             dashboard_url: "https://hhr-trailer-booking.web.app/"
         };
@@ -250,9 +251,9 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
         const emailFunction = config.isUrgent ? emailTemplates.finalWarning : emailTemplates.reminder;
         const { subject, htmlContent } = emailFunction(testData);
 
-        // Always send to Super Admin for test emails
-        const recipient = "bryan.m.hudson@gmail.com";
-        const finalSubject = `[TEST REMINDER - ${reminderType.toUpperCase()}] ${subject}`;
+        // Use provided test email or default to Super Admin
+        const recipient = request.data.testEmail || "bryan.m.hudson@gmail.com";
+        const finalSubject = subject;
 
         await sendGmail({
             to: { name: activePicker, email: recipient },

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Bug, Lightbulb, Send, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { emailService } from '../services/emailService';
 import { useAuth } from '../contexts/AuthContext';
+import { ConfirmationModal } from './ConfirmationModal';
 
 export function FeedbackModal({ isOpen, onClose, shareholderName }) {
     const { currentUser } = useAuth();
@@ -9,6 +10,7 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
     const [type, setType] = useState(null); // 'bug', 'feature'
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
+    const [alertData, setAlertData] = useState(null);
 
     // Reset state when opening/closing
     React.useEffect(() => {
@@ -38,23 +40,15 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
         setIsSending(true);
         try {
             const senderName = shareholderName || currentUser?.email || 'Anonymous';
-            const subject = `[HHR Feedback] ${type === 'bug' ? '🐛 Bug Report' : '💡 Feature Request'} from ${senderName}`;
-
-            const htmlContent = `
-                <div style="font-family: sans-serif; padding: 20px; color: #333;">
-                    <h2 style="color: ${type === 'bug' ? '#ef4444' : '#eab308'};">
-                        ${type === 'bug' ? 'Bug Report' : 'Feature Request'}
-                    </h2>
-                    <p><strong>From:</strong> ${senderName} (${currentUser?.email})</p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-                    <p style="font-size: 16px; line-height: 1.5; white-space: pre-wrap;">${message}</p>
-                </div>
-            `;
-
             await emailService.sendEmail({
-                to: 'bryan.m.hudson@gmail.com',
-                subject,
-                htmlContent
+                to: { name: 'Super Admin', email: 'bryan.m.hudson@gmail.com' },
+                templateId: 'feedback',
+                params: {
+                    name: senderName,
+                    email: currentUser?.email,
+                    type: type,
+                    message: message
+                }
             });
 
             setStep('success');
@@ -63,7 +57,12 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
             }, 2500);
         } catch (error) {
             console.error("Failed to send feedback:", error);
-            alert("Failed to send feedback. Please try again or email bryan.m.hudson@gmail.com directly.");
+            console.error("Failed to send feedback:", error);
+            setAlertData({
+                title: "Feedback Error",
+                message: "Failed to send feedback. Please try again or email bryan.m.hudson@gmail.com directly.",
+                isDanger: true
+            });
         } finally {
             setIsSending(false);
         }
@@ -187,6 +186,17 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
                     )}
                 </div>
             </div>
+            {/* Confirmation Modal for Feedback Alerts */}
+            <ConfirmationModal
+                isOpen={!!alertData}
+                onClose={() => setAlertData(null)}
+                onConfirm={() => setAlertData(null)}
+                title={alertData?.title}
+                message={alertData?.message}
+                isDanger={alertData?.isDanger}
+                confirmText="OK"
+                showCancel={false}
+            />
         </div>
     );
 }

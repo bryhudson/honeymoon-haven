@@ -1,6 +1,7 @@
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { CheckCircle2, X, AlertTriangle, Home, Mail } from 'lucide-react';
+import { ConfirmationModal } from '../ConfirmationModal';
 
 export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin }) {
     if (!booking) return null;
@@ -33,16 +34,22 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     const [guestName, setGuestName] = React.useState('Guest'); // Default
     const [sending, setSending] = React.useState(false);
     const [sentSuccess, setSentSuccess] = React.useState(false);
+    const [alertData, setAlertData] = React.useState(null);
 
     const handleSendEmail = async () => {
         if (!guestEmail) return;
         setSending(true);
         try {
-            await emailService.sendGuestGuideEmail(guestEmail, guestName, {
-                checkIn: format(start, 'MMM d, yyyy'),
-                checkOut: format(end, 'MMM d, yyyy'),
-                cabinNumber: booking.cabinNumber
-            }, currentUser);
+            await emailService.sendGuestGuideEmail({
+                guestEmail,
+                guestName,
+                bookingDetails: {
+                    checkIn: format(start, 'MMM d, yyyy'),
+                    checkOut: format(end, 'MMM d, yyyy'),
+                    cabinNumber: booking.cabinNumber
+                },
+                shareholderName: currentUser
+            });
             setSentSuccess(true);
             setTimeout(() => {
                 setShowEmailForm(false);
@@ -52,7 +59,12 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
             }, 2000);
         } catch (error) {
             console.error("Error sending email:", error);
-            alert(`Failed to send email: ${error.message}`);
+            console.error("Error sending email:", error);
+            setAlertData({
+                title: "Error Sending Email",
+                message: `Failed to send email: ${error.message}`,
+                isDanger: true
+            });
         } finally {
             setSending(false);
         }
@@ -361,6 +373,16 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         </button>
                     </div>
                 </div>
+                <ConfirmationModal
+                    isOpen={!!alertData}
+                    onClose={() => setAlertData(null)}
+                    onConfirm={() => setAlertData(null)}
+                    title={alertData?.title}
+                    message={alertData?.message}
+                    isDanger={alertData?.isDanger}
+                    confirmText="OK"
+                    showCancel={false}
+                />
             </div>
         </div>
     );

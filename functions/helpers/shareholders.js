@@ -1,8 +1,13 @@
+
+// functions/helpers/shareholders.js
+// PORTED FROM src/lib/shareholders.js to ensure Logic Parity
+// CommonJS Format for Cloud Functions
+
 const SHAREHOLDERS_2025 = [
     "Mike & Janelle",
-    "Brian & Sam",
-    "Brian & Monique",
     "Julia, Mandy & Bryan",
+    "Brian & Monique",
+    "Brian & Sam",
     "Jeff & Lori",
     "David & Gayla",
     "Barb",
@@ -18,6 +23,8 @@ function getShareholderOrder(year) {
     if (year === 2026) {
         return [
             "Julia, Mandy & Bryan",
+            "Brian & Monique",
+            "Brian & Sam",
             "Jeff & Lori",
             "David & Gayla",
             "Barb",
@@ -26,9 +33,7 @@ function getShareholderOrder(year) {
             "Gerry & Georgina",
             "Saurabh & Jessica",
             "Dom & Melanie",
-            "Mike & Janelle",
-            "Brian & Sam",
-            "Brian & Monique"
+            "Mike & Janelle"
         ];
     }
 
@@ -45,15 +50,22 @@ function getShareholderOrder(year) {
     ];
 }
 
+// --- DRAFT CONFIGURATION ---
 const DRAFT_CONFIG = {
     // Current Production Start: March 1, 2026.
     START_DATE: new Date(2026, 2, 1, 0, 0, 0),
+
     PICK_DURATION_DAYS: 2,
     SEASON_START: new Date(2026, 3, 3), // April 3
     SEASON_END: new Date(2026, 9, 12),   // Oct 12
     IS_TEST_MODE: false // System always in production
 };
 
+/**
+ * STRICT RULE: Every turn officially starts at 10:00 AM.
+ * If finished before 10 AM, starts at 10 AM today.
+ * If finished after 10 AM, starts at 10 AM tomorrow.
+ */
 function getOfficialStart(finishTime) {
     if (!finishTime) return null;
     const date = new Date(finishTime);
@@ -77,11 +89,9 @@ function getPickDurationMS(fastTestingMode) {
         : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
 }
 
-function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassTenAM = false, fastTestingMode = false) {
-    const now = new Date();
-    const DRAFT_START = draftStartDateOverride ? new Date(draftStartDateOverride) : DRAFT_CONFIG.START_DATE;
-    const year = DRAFT_START.getFullYear();
-    const shareholders = getShareholderOrder(year);
+
+function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
     const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
 
     // Build the full turn order (Round 1 + Round 2 Snake)
@@ -105,18 +115,6 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
     const userTurnCounts = {};
     shareholders.forEach(s => userTurnCounts[s] = 0);
 
-    // Preliminary check: Pre-draft
-    if (now < DRAFT_START && bookings.length === 0) {
-        return {
-            phase: 'PRE_DRAFT',
-            activePicker: null,
-            nextPicker: fullTurnOrder[0],
-            windowStarts: null,
-            windowEnds: null,
-            round: 1
-        };
-    }
-
     for (let i = 0; i < fullTurnOrder.length; i++) {
         const shareholderName = fullTurnOrder[i];
 
@@ -127,12 +125,9 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
         // Find if they have a booking/pass for this slot
         const userActions = bookings
             .filter(b => b.shareholderName === shareholderName) // Allow cancelled to be seen
-            .sort((a, b) => a.createdAt - b.createdAt); // Assumption: bookings have 'createdAt' (JS Date or Timestamp)
+            .sort((a, b) => a.createdAt - b.createdAt);
 
         const action = userActions[bookingIndex];
-
-        // Helper to get Date object from Firestore Timestamp or JS Date
-        const getDate = (d) => d && d.toDate ? d.toDate() : (d ? new Date(d) : null);
 
         if (action) {
             // Check if this action completes the turn (Pass, Finalized Booking, or Cancelled)
@@ -140,11 +135,19 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
 
             if (isCompleted) {
                 // Turn is done. Next window starts at official 10 AM anchor.
-                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? getDate(action.cancelledAt) : (getDate(action.createdAt) || getDate(action.from));
+                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
                 if (!actionTime) actionTime = currentWindowStart;
 
-                if (!isNaN(actionTime.getTime())) {
-                    currentWindowStart = startAnchor(actionTime);
+                // Safe Date Conversion (Handle Firestore Timestamp)
+                let pTime;
+                if (actionTime?.toDate) {
+                    pTime = actionTime.toDate();
+                } else {
+                    pTime = new Date(actionTime);
+                }
+
+                if (!isNaN(pTime.getTime())) {
+                    currentWindowStart = startAnchor(pTime);
                 }
             } else {
                 // Booking exists but is NOT finalized (Draft Mode).
@@ -159,6 +162,7 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
                     nextPicker = fullTurnOrder[i + 1] || null;
                     activeWindowEnd = windowLimit;
                     isSeasonStart = (i === 0);
+                    // Special Rule: First person ignores Grace Period (Early Access active immediately)
                     isGracePeriod = isSeasonStart ? false : (now < currentWindowStart);
                     phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                     break;
@@ -177,6 +181,7 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
                 nextPicker = fullTurnOrder[i + 1] || null;
                 activeWindowEnd = windowLimit;
                 isSeasonStart = (i === 0);
+                // Special Rule: First person ignores Grace Period (Early Access active immediately)
                 isGracePeriod = isSeasonStart ? false : (now < currentWindowStart);
                 phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
                 break;
@@ -184,7 +189,7 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
         }
     }
 
-    // If loop finishes without activePicker, draft is done OR Pre-Draft
+    // If loop finishes without activePicker, draft is done
     if (!activePicker && now >= DRAFT_START) {
         phase = 'OPEN_SEASON';
     } else if (now < DRAFT_START && bookings.length === 0 && !activePicker) {
@@ -194,17 +199,26 @@ function calculateDraftSchedule(bookings, draftStartDateOverride = null, bypassT
     const currentRound = phase === 'ROUND_1' ? 1 : phase === 'ROUND_2' ? 2 : (phase === 'OPEN_SEASON' ? 3 : 1);
 
     return {
+        phase,
         activePicker,
         nextPicker,
-        windowStarts: currentWindowStart,
         windowEnds: activeWindowEnd,
-        round: currentRound,
-        phase
+        draftStart: DRAFT_START,
+        isGracePeriod,
+        isSeasonStart,
+        windowStarts: currentWindowStart, // FIX: Match property expected by autosync and frontend
+        officialStart: currentWindowStart,
+        debugPhase: phase, // Helper for debugging
+        round: currentRound
     };
 }
+
 
 module.exports = {
     SHAREHOLDERS_2025,
     getShareholderOrder,
+    DRAFT_CONFIG,
+    getOfficialStart,
+    getPickDurationMS,
     calculateDraftSchedule
 };

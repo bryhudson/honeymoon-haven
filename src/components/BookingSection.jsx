@@ -12,13 +12,10 @@ import { ConfirmationModal } from './ConfirmationModal';
 import ErrorBoundary from './ErrorBoundary';
 
 
-// Helper for safely showing alerts
-const safeAlert = (handler, title, msg) => {
-    if (handler) handler(title, msg);
-    else alert(`${title}\n\n${msg}`);
-};
+// Helper removed - using direct handlers
 
-export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, startDateOverride, bookings }) {
+
+export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, startDateOverride, bookings, status }) {
     // Parse initial booking synchronously to prevent render race conditions
     const getInitialRange = (booking) => {
         if (!booking?.from || !booking?.to) return undefined;
@@ -42,6 +39,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFinalSuccess, setIsFinalSuccess] = useState(false);
     const [localBookingId, setLocalBookingId] = useState(null);
+    const [alertData, setAlertData] = useState(null);
 
     // Filter out 'pass' records for date blocking logic
 
@@ -126,6 +124,17 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             }
         }
     }, [initialBooking, activePicker]);
+
+    // Auto-populate Cabin Number for new bookings
+    useEffect(() => {
+        if (!initialBooking && formData.shareholderName && !formData.cabinNumber) {
+            const owner = CABIN_OWNERS.find(o => o.name === formData.shareholderName);
+            if (owner) {
+                console.log(`Auto-setting cabin ${owner.cabin} for ${formData.shareholderName}`);
+                setFormData(prev => ({ ...prev, cabinNumber: owner.cabin }));
+            }
+        }
+    }, [formData.shareholderName, initialBooking, formData.cabinNumber]);
 
     const [isDraftActive, setIsDraftActive] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false); // New Success State
@@ -322,8 +331,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             if (isTooLong || isOverlap || !bookingStatus.canBook) {
                 return;
             }
-            if (!formData.shareholderName || !formData.email) {
-                safeAlert(onShowAlert, "Missing Information", "Please ensure you have selected a shareholder and provided an email address.");
+            if (!formData.shareholderName) {
+                if (onShowAlert) onShowAlert("Missing Information", "Please ensure you have selected a shareholder.");
+                else setAlertData({ title: "Missing Information", message: "Please ensure you have selected a shareholder." });
                 return;
             }
 
@@ -342,7 +352,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 ...newBooking,
                 totalPrice: nights * 125, // Add calculated price for record keeping
                 guests: parseInt(formData.guests) || 1, // Ensure number
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                round: status?.phase === 'ROUND_1' ? 1 : 2,
+                phase: status?.phase || 'OPEN_SEASON'
             };
 
             // Remove undefined values
@@ -368,32 +380,20 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 }
 
                 if (finalize) {
-                    try {
-                        await emailService.sendBookingConfirmed({
-                            name: formData.shareholderName,
-                            email: "bryan.m.hudson@gmail.com" // OVERRIDE for safety/testing as per previous code
-                        }, {
-                            name: formData.shareholderName,
-                            check_in: format(selectedRange.from, 'PPP'),
-                            check_out: format(selectedRange.to, 'PPP'),
-                            cabin_number: formData.cabinNumber || "Not specified",
-                            guests: formData.guests,
-                            nights: nights,
-                            total_price: totalPrice,
-                            dashboard_url: "https://hhr-trailer-booking.web.app/"
-                        });
-                        console.log('Confirmation email sent successfully');
-                    } catch (error) {
-                        console.error('Failed to send confirmation email:', error);
-                        safeAlert(onShowAlert, "Notification Delay", "Your booking has been saved, but we encountered an issue sending the confirmation email.");
-                    }
+                    // DUPLICATE EMAIL FIX:
+                    // Backend `emailTriggers.js` now handles the confirmation email automatically.
+                    // Frontend trigger disabled to prevent double emails (3:02 PM Issue).
+                    console.log('Finalization request sent. Backend will handle confirmation email.');
+
+
                 }
 
                 // SUCCESS HANDLER
                 setIsSuccess(true);
             } catch (error) {
                 console.error("Error saving booking: ", error);
-                safeAlert(onShowAlert, "Save Error", `We encountered an error while saving your booking: ${error.message}`);
+                if (onShowAlert) onShowAlert("Save Error", `We encountered an error while saving your booking: ${error.message}`);
+                else setAlertData({ title: "Save Error", message: `We encountered an error while saving your booking: ${error.message}`, isDanger: true });
             } finally {
                 setIsSubmitting(false);
             }
@@ -706,6 +706,17 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 message={`Are you sure you want to lock in these dates? This will officially finish your turn and notify the next shareholder.`}
                 confirmText="Yes, Finalize Booking"
                 requireTyping="agree"
+            />
+
+            <ConfirmationModal
+                isOpen={!!alertData}
+                onClose={() => setAlertData(null)}
+                onConfirm={() => setAlertData(null)}
+                title={alertData?.title}
+                message={alertData?.message}
+                isDanger={alertData?.isDanger}
+                confirmText="OK"
+                showCancel={false}
             />
         </section>
     );

@@ -28,6 +28,7 @@ import {
     Mail
 } from 'lucide-react';
 import { emailService } from '../../services/emailService';
+import { ConfirmationModal } from '../ConfirmationModal';
 
 
 
@@ -40,6 +41,7 @@ export function TrailerGuide({ shareholderName, booking }) {
     const [guestName, setGuestName] = useState('');
     const [sending, setSending] = useState(false);
     const [sentSuccess, setSentSuccess] = useState(false);
+    const [alertData, setAlertData] = useState(null);
 
     const handleSendEmail = async () => {
         if (!guestEmail) return;
@@ -58,16 +60,21 @@ export function TrailerGuide({ shareholderName, booking }) {
         }
 
         try {
-            await emailService.sendGuestGuideEmail(
+            await emailService.sendGuestGuideEmail({
                 guestEmail,
                 guestName,
                 bookingDetails,
-                shareholderName || "A HHR Shareholder"
-            );
+                shareholderName: shareholderName || "A HHR Shareholder"
+            });
             setSentSuccess(true);
         } catch (error) {
             console.error("Error sending email:", error);
-            alert(`Failed to send email: ${error.message}`);
+            console.error("Error sending email:", error);
+            setAlertData({
+                title: "Error Sending Email",
+                message: `Failed to send email: ${error.message}`,
+                isDanger: true
+            });
         } finally {
             setSending(false);
         }
@@ -436,6 +443,17 @@ export function TrailerGuide({ shareholderName, booking }) {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={!!alertData}
+                onClose={() => setAlertData(null)}
+                onConfirm={() => setAlertData(null)}
+                title={alertData?.title}
+                message={alertData?.message}
+                isDanger={alertData?.isDanger}
+                confirmText="OK"
+                showCancel={false}
+            />
         </div>
     );
 }

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight } from 'lucide-react';
+import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight, Info } from 'lucide-react';
 import { collection, onSnapshot, getDocs, getDoc, Timestamp } from 'firebase/firestore';
 import { calculateDraftSchedule, getShareholderOrder } from '../../lib/shareholders';
+import { LiveTurnMonitor } from './LiveTurnMonitor';
+import { ConfirmationModal } from '../ConfirmationModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function SystemTab({
     simStartDate,
@@ -23,11 +26,28 @@ export function SystemTab({
     setDoc,
     format
 }) {
+    const { currentUser } = useAuth();
+    const [testRecipient, setTestRecipient] = useState('bryan.m.hudson@gmail.com');
+    const [pendingTest, setPendingTest] = useState(null); // { type, category, label }
+
+    // Logged-in user default logic
+    useEffect(() => {
+        if (currentUser?.email) {
+            if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') {
+                setTestRecipient('honeymoonhavenresort.lc@gmail.com');
+            } else {
+                setTestRecipient('bryan.m.hudson@gmail.com');
+            }
+        }
+    }, [currentUser]);
 
     const [lastSyncTime, setLastSyncTime] = useState('Never');
     const [monitorData, setMonitorData] = useState(null);
     const [bookings, setBookings] = useState([]);
     const [showTimeTravel, setShowTimeTravel] = useState(false); // Toggle for advanced date picker
+    const [showGuide, setShowGuide] = useState(false); // Toggle for Admin Guide
+    const [confirmMaintenance, setConfirmMaintenance] = useState(false);
+    const [confirmReset, setConfirmReset] = useState(false);
 
     // Calculate if we're before Feb 15, 2026
     const now = new Date();
@@ -121,52 +141,51 @@ export function SystemTab({
         }
     };
 
-    // Send transactional test email
-    const sendTestTransaction = async (type) => {
+    // Initiate Test Transaction
+    const initiateTestTransaction = (type, label) => {
+        setPendingTest({ type, category: 'transaction', label });
+    };
+
+    // Initiate Test Reminder
+    const initiateTestReminder = (type, label) => {
+        setPendingTest({ type, category: 'reminder', label });
+    };
+
+    // Execute the pending test
+    const executeTest = async () => {
+        if (!pendingTest) return;
+        const { type, category } = pendingTest;
+        setPendingTest(null); // Close modal
+
         try {
             const { httpsCallable } = await import('firebase/functions');
             const { functions } = await import('../../lib/firebase');
-            const sendTestEmailFn = httpsCallable(functions, 'sendTestEmail');
 
-            // Map UI types to backend types
-            const typeMap = {
-                'turnStarted': 'turnStarted',
-                'turnPassed': 'turnPassedNext', // Testing the "Next Person" notification
-                'bookingConfirmed': 'bookingConfirmed',
-                'paymentReceived': 'paymentReceived',
-                'bookingCancelled': 'bookingCancelled',
-                'paymentReminder': 'paymentReminder'
-            };
+            if (category === 'transaction') {
+                const sendTestEmailFn = httpsCallable(functions, 'sendTestEmail');
+                const typeMap = {
+                    'turnStarted': 'turnStarted',
+                    'turnPassed': 'turnPassedNext',
+                    'bookingConfirmed': 'bookingConfirmed',
+                    'paymentReceived': 'paymentReceived',
+                    'bookingCancelled': 'bookingCancelled',
+                    'paymentReminder': 'paymentReminder'
+                };
+                const backendType = typeMap[type] || type;
+                await sendTestEmailFn({ emailType: backendType, testEmail: testRecipient });
+            } else {
+                const sendTestReminderFn = httpsCallable(functions, 'sendTestReminder');
+                await sendTestReminderFn({ reminderType: type, testEmail: testRecipient });
+            }
 
-            const backendType = typeMap[type] || type;
-            await sendTestEmailFn({ emailType: backendType });
-
-            triggerAlert('Success', `Test email (${type}) sent to your Gmail!`);
+            triggerAlert('Success', `Test email (${type}) sent to ${testRecipient}!`);
         } catch (error) {
             console.error(error);
             triggerAlert('Error', `Failed: ${error.message}`);
         }
     };
 
-    // Send test reminder function
-    const sendTestReminder = async (type) => {
-        try {
-            const { httpsCallable } = await import('firebase/functions');
-            const { functions } = await import('../../lib/firebase');
-            const sendTestReminderFn = httpsCallable(functions, 'sendTestReminder');
-            await sendTestReminderFn({ reminderType: type });
 
-            const typeNames = {
-                evening: 'Evening Check-In',
-                day2: 'Day 2 Reminder',
-                final: 'Final Day Warning',
-                urgent: 'Urgent Alert'
-            };
-            triggerAlert('Success', `${typeNames[type]} email sent to your Gmail!`);
-        } catch (error) {
-            triggerAlert('Error', `Failed: ${error.message}`);
-        }
-    };
 
     // Start full test (Fast Mode + Sync)
     // REMOVED: Legacy 10-minute test logic removed in v2.69.19 favor of production-mirror testing.
@@ -190,15 +209,63 @@ export function SystemTab({
             <div className="space-y-8">
                 {/* 1. Maintenance & Troubleshooting Zone */}
                 <div>
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <Settings className="w-4 h-4" />
-                        Troubleshooting Zone
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            <Settings className="w-4 h-4" />
+                            Troubleshooting Zone
+                        </h3>
+                        <button
+                            onClick={() => setShowGuide(!showGuide)}
+                            className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase tracking-wider hover:text-indigo-600 transition-colors"
+                        >
+                            <Info className="w-3 h-3" />
+                            {showGuide ? "Hide Guide" : "What do these buttons do?"}
+                        </button>
+                    </div>
+
+                    {showGuide && (
+                        <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm space-y-4 animate-in fade-in slide-in-from-top-2">
+                            <div>
+                                <div className="font-bold text-slate-800 flex items-center gap-2">
+                                    <AlertTriangle className="w-4 h-4 text-slate-500" />
+                                    Maintenance Mode
+                                </div>
+                                <p className="text-slate-600 mt-1">
+                                    <strong>What it does:</strong> Instantly locks the entire platform. Users will see a "Under Maintenance" screen and cannot log in or make bookings.<br />
+                                    <strong>When to use:</strong> During critical updates, if a major bug is found, or between seasons.<br />
+                                    <strong>Production Impact:</strong> 🔴 <strong>HIGH.</strong> Blocks all public access.
+                                </p>
+                            </div>
+                            <div className="border-t border-slate-200 pt-3">
+                                <div className="font-bold text-slate-800 flex items-center gap-2">
+                                    <RefreshCw className="w-4 h-4 text-slate-500" />
+                                    Reset Schedule State
+                                </div>
+                                <p className="text-slate-600 mt-1">
+                                    <strong>What it does:</strong> Forces the system to re-read all bookings and re-calculate the draft schedule. It does NOT delete any data.<br />
+                                    <strong>When to use:</strong> If the dashboard says "Waiting..." but it should be someone's turn, or if the "Active Picker" looks wrong.<br />
+                                    <strong>Production Impact:</strong> 🟢 <strong>NONE.</strong> Safe to use anytime. It just refreshes the logic.
+                                </p>
+                            </div>
+                            <div className="border-t border-slate-200 pt-3">
+                                <div className="font-bold text-slate-800 flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-red-500" />
+                                    Wipe Data
+                                </div>
+                                <p className="text-slate-600 mt-1">
+                                    <strong>What it does:</strong> ⚠️ <strong>PERMANENT DELETION.</strong> Deletes all bookings, clears all notification logs, and resets the simulation to Day 1.<br />
+                                    <strong>When to use:</strong> Only when preparing for a brand new season or restarting a test simulation from scratch.<br />
+                                    <strong>Production Impact:</strong> 🔴 <strong>CATASTROPHIC.</strong> Do not use during a live season.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Maintenance Mode */}
                         <div className="flex flex-col gap-1">
                             <button
-                                onClick={toggleSystemFreeze}
+                                onClick={() => setConfirmMaintenance(true)}
                                 className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl font-medium transition-all text-sm ${isSystemFrozen ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
                             >
                                 <AlertTriangle className="w-4 h-4" />
@@ -210,7 +277,7 @@ export function SystemTab({
                         {/* Reset Schedule State */}
                         <div className="flex flex-col gap-1">
                             <button
-                                onClick={handleSyncDraftStatus}
+                                onClick={() => setConfirmReset(true)}
                                 className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm"
                             >
                                 <RefreshCw className="w-4 h-4" />
@@ -264,19 +331,20 @@ export function SystemTab({
                                     }
                                 );
                             }}
-                            className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${simStartDate === ''
+                            className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${!isTestMode
                                 ? 'border-green-500 bg-green-50 ring-1 ring-green-500'
                                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <Shield className={`w-5 h-5 ${simStartDate === '' ? 'text-green-600' : 'text-slate-400'}`} />
+                                    <Shield className={`w-5 h-5 ${!isTestMode ? 'text-green-600' : 'text-slate-400'}`} />
                                 </div>
-                                {simStartDate === '' && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
+                                {!isTestMode && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
                             </div>
-                            <h4 className={`font-bold text-lg ${simStartDate === '' ? 'text-green-900' : 'text-slate-700'}`}>Production Mode</h4>
+                            <h4 className={`font-bold text-lg ${!isTestMode ? 'text-green-900' : 'text-slate-700'}`}>Production Mode</h4>
                             <p className="text-sm text-slate-500 mt-1">
-                                Start: March 1, 2026 @ 10:00 AM<br />
+                                System Live: Feb 20, 2026<br />
+                                Official Start: March 1, 2026 @ 10am PST<br />
                                 <span className="text-slate-400 text-xs">Real emails sent to shareholders.</span>
                             </p>
                         </div>
@@ -304,17 +372,17 @@ export function SystemTab({
                                     }
                                 );
                             }}
-                            className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${simStartDate !== ''
+                            className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all ${isTestMode
                                 ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
                                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <TestTube className={`w-5 h-5 ${simStartDate !== '' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                    <TestTube className={`w-5 h-5 ${isTestMode ? 'text-indigo-600' : 'text-slate-400'}`} />
                                 </div>
-                                {simStartDate !== '' && <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
+                                {isTestMode && <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
                             </div>
-                            <h4 className={`font-bold text-lg ${simStartDate !== '' ? 'text-indigo-900' : 'text-slate-700'}`}>Test Simulation</h4>
+                            <h4 className={`font-bold text-lg ${isTestMode ? 'text-indigo-900' : 'text-slate-700'}`}>Test Simulation</h4>
                             <div className="text-sm text-slate-500 mt-1 mb-3">
                                 Start: Today @ 10:00 AM<br />
                                 <span className="text-indigo-600 font-medium text-xs">Safe Mode On (Emails -&gt; Admin only)</span>
@@ -343,17 +411,21 @@ export function SystemTab({
                                             </div>
                                             <input
                                                 type="datetime-local"
-                                                value={simStartDate}
+                                                defaultValue={simStartDate}
                                                 onChange={(e) => {
-                                                    setSimStartDate(e.target.value);
-                                                    // Auto-update on change (debounce in real app, here simple)
-                                                    const newDate = new Date(e.target.value);
-                                                    performWipe(newDate).then(() => {
-                                                        setDoc(doc(db, "settings", "general"), {
-                                                            draftStartDate: newDate,
-                                                            bypassTenAM: true
-                                                        }, { merge: true }).then(() => handleSyncDraftStatus());
-                                                    });
+                                                    const val = e.target.value;
+                                                    setSimStartDate(val); // UI update immediately
+
+                                                    // Clear existing timer
+                                                    if (window.timeTravelTimer) clearTimeout(window.timeTravelTimer);
+
+                                                    // Set new timer (Debounce 800ms)
+                                                    window.timeTravelTimer = setTimeout(() => {
+                                                        const newDate = new Date(val);
+                                                        // Use new performWipe(date, options) signature to FORCE TEST MODE atomically
+                                                        performWipe(newDate, { forceTestMode: true })
+                                                            .then(() => handleSyncDraftStatus());
+                                                    }, 800);
                                                 }}
                                                 className="w-full px-2 py-1.5 border border-indigo-200 rounded text-xs text-indigo-700 bg-white"
                                             />
@@ -367,6 +439,9 @@ export function SystemTab({
                         </div>
                     </div>
                 </div>
+
+                {/* 2b. Live Turn Monitor (NEW) */}
+                <LiveTurnMonitor />
 
                 {/* 3. Email System Visibility (Always On) */}
                 <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
@@ -388,6 +463,8 @@ export function SystemTab({
                                     <h4 className="font-bold text-slate-800">Timed Reminders (48h Window)</h4>
                                     <p className="text-xs text-slate-500 mt-1">
                                         These run automatically on a set schedule relative to the turn start.
+                                        <br />
+                                        <span className="text-amber-600 font-medium">⚡️ Instant Test:</span> Click any button below to simulate that email immediately (redirected to you). No waiting required!
                                     </p>
                                 </div>
                             </div>
@@ -400,11 +477,11 @@ export function SystemTab({
                                     <div className="flex items-center justify-between group">
                                         <div>
                                             <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Evening Reminder: Your Honeymoon Haven Booking Awaits</div>
-                                            <div className="text-xs font-bold text-slate-700">Day 1 @ 7:00 PM</div>
+                                            <div className="text-xs font-bold text-slate-700">First Night (Same Day) @ 7:00 PM</div>
                                             <div className="text-[10px] text-slate-400">Evening Check-in</div>
                                         </div>
                                         <button
-                                            onClick={() => sendTestReminder('evening')}
+                                            onClick={() => initiateTestReminder('evening', 'First Night Reminder')}
                                             className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                         >
                                             <Zap className="w-3 h-3" /> Test
@@ -418,11 +495,11 @@ export function SystemTab({
                                     <div className="flex items-center justify-between group">
                                         <div>
                                             <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
-                                            <div className="text-xs font-bold text-slate-700">Day 2 @ 9:00 AM</div>
+                                            <div className="text-xs font-bold text-slate-700">Middle Morning (Day 2) @ 9:00 AM</div>
                                             <div className="text-[10px] text-slate-400">Mid-point Reminder</div>
                                         </div>
                                         <button
-                                            onClick={() => sendTestReminder('day2')}
+                                            onClick={() => initiateTestReminder('day2', 'Middle Morning Reminder')}
                                             className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                         >
                                             <Zap className="w-3 h-3" /> Test
@@ -436,11 +513,11 @@ export function SystemTab({
                                     <div className="flex items-center justify-between group">
                                         <div>
                                             <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
-                                            <div className="text-xs font-bold text-slate-700">Day 3 @ 9:00 AM</div>
+                                            <div className="text-xs font-bold text-slate-700">Final Morning (Day 3) @ 9:00 AM</div>
                                             <div className="text-[10px] text-slate-400">Final Morning Warning</div>
                                         </div>
                                         <button
-                                            onClick={() => sendTestReminder('final')}
+                                            onClick={() => initiateTestReminder('final', 'Final Morning Warning')}
                                             className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                         >
                                             <Zap className="w-3 h-3" /> Test
@@ -453,12 +530,12 @@ export function SystemTab({
                                     <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white animate-pulse"></div>
                                     <div className="flex items-center justify-between group">
                                         <div>
-                                            <div className="text-[10px] font-bold text-amber-600 mb-0.5">Subject: URGENT: 6 Hours Left to Complete Your Booking</div>
+                                            <div className="text-[10px] font-bold text-amber-600 mb-0.5">Subject: URGENT: 2 Hours Left to Complete Your Booking</div>
                                             <div className="text-xs font-bold text-slate-700">2 Hours Before End</div>
                                             <div className="text-[10px] text-slate-400">Urgent Deadline Alert</div>
                                         </div>
                                         <button
-                                            onClick={() => sendTestReminder('urgent')}
+                                            onClick={() => initiateTestReminder('urgent', 'Urgent Warning')}
                                             className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                         >
                                             <Zap className="w-3 h-3" /> Test
@@ -478,7 +555,8 @@ export function SystemTab({
                                     <h4 className="font-bold text-slate-800">Transactional Events</h4>
                                     <p className="text-xs text-slate-500 mt-1">
                                         Triggered by <span className="font-semibold text-slate-700">Actions</span>. Sent instantly when users interact.
-                                        <br />Click to simulate and send a test to yourself.
+                                        <br />
+                                        <span className="text-indigo-600 font-medium">⚡️ Instant Test:</span> Click to simulate and send a test to yourself immediately.
                                     </p>
                                 </div>
                             </div>
@@ -503,7 +581,7 @@ export function SystemTab({
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => sendTestTransaction(event.id)}
+                                            onClick={() => initiateTestTransaction(event.id, event.name)}
                                             className="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-100 transition-all"
                                         >
                                             Test
@@ -517,6 +595,100 @@ export function SystemTab({
 
 
             </div>
+
+            {/* Modals */}
+            <ConfirmationModal
+                isOpen={confirmMaintenance}
+                onClose={() => setConfirmMaintenance(false)}
+                onConfirm={toggleSystemFreeze}
+                title={isSystemFrozen ? "Disable Maintenance Mode?" : "Enable Maintenance Mode?"}
+                message={isSystemFrozen
+                    ? "Users will regain access immediately."
+                    : "This will LOCK the platform. No one will be able to log in or book.\nUse this before deployment or critical updates."}
+                isDanger={!isSystemFrozen}
+                confirmText={isSystemFrozen ? "Deactivate Maintenance" : "Activate Maintenance"}
+                requireTyping="maintenance"
+            />
+
+            <ConfirmationModal
+                isOpen={confirmReset}
+                onClose={() => setConfirmReset(false)}
+                onConfirm={handleSyncDraftStatus}
+                title="Reset Schedule State?"
+                message="This will force the system to re-read all bookings and re-calculate who should be active.\n\nType 'reset' to confirm."
+                isDanger={false}
+                confirmText="Reset State"
+                requireTyping="reset"
+            />
+
+            {/* Test Email Recipient Modal */}
+            {pendingTest && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-indigo-50 rounded-full">
+                                <TestTube className="w-6 h-6 text-indigo-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900">Send Test Email?</h3>
+                                <p className="text-sm text-slate-500">Simulate: {pendingTest.label}</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Send Test To:</p>
+
+                            <div className="space-y-3">
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${testRecipient === 'bryan.m.hudson@gmail.com' ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                                    <input
+                                        type="radio"
+                                        name="testRecipient"
+                                        value="bryan.m.hudson@gmail.com"
+                                        checked={testRecipient === 'bryan.m.hudson@gmail.com'}
+                                        onChange={(e) => setTestRecipient(e.target.value)}
+                                        className="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                    />
+                                    <div>
+                                        <div className="font-bold text-slate-800 text-sm">Bryan Hudson</div>
+                                        <div className="text-xs text-slate-500">bryan.m.hudson@gmail.com</div>
+                                    </div>
+                                </label>
+
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${testRecipient === 'honeymoonhavenresort.lc@gmail.com' ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                                    <input
+                                        type="radio"
+                                        name="testRecipient"
+                                        value="honeymoonhavenresort.lc@gmail.com"
+                                        checked={testRecipient === 'honeymoonhavenresort.lc@gmail.com'}
+                                        onChange={(e) => setTestRecipient(e.target.value)}
+                                        className="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                    />
+                                    <div>
+                                        <div className="font-bold text-slate-800 text-sm">HHR Admin</div>
+                                        <div className="text-xs text-slate-500">honeymoonhavenresort.lc@gmail.com</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setPendingTest(null)}
+                                className="flex-1 px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeTest}
+                                className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+                            >
+                                <Zap className="w-4 h-4" />
+                                Send Test
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
 
     );

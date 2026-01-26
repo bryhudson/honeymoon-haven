@@ -1,9 +1,9 @@
 
 export const SHAREHOLDERS_2025 = [
     "Mike & Janelle",
-    "Brian & Sam",
-    "Brian & Monique",
     "Julia, Mandy & Bryan",
+    "Brian & Monique",
+    "Brian & Sam",
     "Jeff & Lori",
     "David & Gayla",
     "Barb",
@@ -19,6 +19,8 @@ export function getShareholderOrder(year) {
     if (year === 2026) {
         return [
             "Julia, Mandy & Bryan",
+            "Brian & Monique",
+            "Brian & Sam",
             "Jeff & Lori",
             "David & Gayla",
             "Barb",
@@ -27,9 +29,7 @@ export function getShareholderOrder(year) {
             "Gerry & Georgina",
             "Saurabh & Jessica",
             "Dom & Melanie",
-            "Mike & Janelle",
-            "Brian & Sam",
-            "Brian & Monique"
+            "Mike & Janelle"
         ];
     }
 
@@ -245,6 +245,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         draftStart: DRAFT_START,
         isGracePeriod,
         isSeasonStart,
+        windowStarts: currentWindowStart, // FIX: Match property expected by autosync and frontend
         officialStart: currentWindowStart,
         debugPhase: phase, // Helper for debugging
         round: currentRound

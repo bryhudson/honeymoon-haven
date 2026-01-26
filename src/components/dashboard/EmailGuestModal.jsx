@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, X, Send, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ConfirmationModal } from '../ConfirmationModal';
 import { emailService } from '../../services/emailService';
 import { format } from 'date-fns';
 
@@ -8,6 +9,7 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
     const [guestName, setGuestName] = useState('Guest');
     const [sending, setSending] = useState(false);
     const [sentSuccess, setSentSuccess] = useState(false);
+    const [alertData, setAlertData] = useState(null);
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
     const end = booking.to?.toDate ? booking.to.toDate() : new Date(booking.to);
@@ -16,18 +18,28 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
         if (!guestEmail) return;
         setSending(true);
         try {
-            await emailService.sendGuestGuideEmail(guestEmail, guestName, {
-                checkIn: format(start, 'MMM d, yyyy'),
-                checkOut: format(end, 'MMM d, yyyy'),
-                cabinNumber: booking.cabinNumber
-            }, currentUser);
+            await emailService.sendGuestGuideEmail({
+                guestEmail,
+                guestName,
+                bookingDetails: {
+                    checkIn: format(start, 'MMM d, yyyy'),
+                    checkOut: format(end, 'MMM d, yyyy'),
+                    cabinNumber: booking.cabinNumber
+                },
+                shareholderName: currentUser
+            });
             setSentSuccess(true);
             setTimeout(() => {
                 onClose();
             }, 2000);
         } catch (error) {
             console.error("Error sending email:", error);
-            alert(`Failed to send email: ${error.message}`);
+            console.error("Error sending email:", error);
+            setAlertData({
+                title: "Error Sending Email",
+                message: `Failed to send email: ${error.message}`,
+                isDanger: true
+            });
         } finally {
             setSending(false);
         }

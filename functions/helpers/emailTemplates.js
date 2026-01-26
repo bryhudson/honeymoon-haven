@@ -170,11 +170,11 @@ const emailTemplates = {
 
   // 4. Final Warning
   finalWarning: (data) => {
-    const subject = `URGENT: 6 Hours Left to Complete Your Booking`;
+    const subject = `URGENT: 2 Hours Left to Complete Your Booking`;
     const body = `
       <p>Hi ${data.name},</p>
       <p style="color: #dc2626; font-weight: bold;">URGENT REMINDER</p>
-      <p>Your 48-hour booking window expires in just 6 hours!</p>
+      <p>Your 48-hour booking window expires in just 2 hours!</p>
 
       <p><strong>Deadline: ${data.deadline_date} at ${data.deadline_time}</strong></p>
 
@@ -203,44 +203,34 @@ const emailTemplates = {
 
   // 5. Booking Finalized
   bookingConfirmed: (data) => {
-    const subject = `Booking Confirmed for Honeymoon Haven`;
+    const subject = `HHR Trailer Booking: Woohoo! Your Booking is Confirmed! 🎊`;
     const body = `
-      <p>Hi ${data.name},</p>
-      <p>Congratulations! Your booking is confirmed!</p>
+      <p>Woohoo, ${data.name}! 🎊</p>
+      <p>Your trailer booking is <strong>LOCKED IN!</strong> Your guests are going to love it! 🎉</p>
 
-      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #166534;">BOOKING DETAILS</h3>
-        <p style="margin-bottom: 0;">
-          • Check-in: <strong>${data.check_in}</strong><br>
-          • Check-out: <strong>${data.check_out}</strong><br>
-          • Cabin: <strong>${data.cabin_number}</strong><br>
-          • Guests: <strong>${data.guests}</strong><br>
-          • Nights: <strong>${data.nights}</strong><br>
-          • Total Maintenance Fee: <strong>$${data.total_price}</strong>
+      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #86efac;">
+        <h3 style="margin-top: 0; color: #166534;">Your Summer Plans 🌞</h3>
+        <p style="margin-bottom: 0; font-size: 16px;">
+          📅 ${data.check_in} - ${data.check_out} (${data.nights} nights)<br>
+          🏠 Cabin #${data.cabin_number}<br>
+          👥 ${data.guests} guests<br>
+          💰 $${data.total_price}
         </p>
       </div>
 
-      <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fcd34d;">
-        <h3 style="margin-top: 0; color: #92400e;">PAYMENT REQUIRED</h3>
-        <p>To lock in your cabin, please send an e-transfer within 48 hours:</p>
-        <p>
-          Email: <strong>honeymoonhavenresort.lc@gmail.com</strong><br>
-          Amount: <strong>$${data.total_price}</strong><br>
-          Message: "${data.name} - Cabin ${data.cabin_number} - ${data.check_in}"
-        </p>
-        <p style="font-size: 0.9em; color: #b45309;">Important: Your booking may be cancelled if payment is not received within 48 hours.</p>
+      <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #fbbf24;">
+        <h3 style="margin-top: 0; color: #92400e;">Next Step: Payment! 💳</h3>
+        <p>Send <strong>$${data.total_price}</strong> e-transfer to:<br>
+        <strong>honeymoonhavenresort.lc@gmail.com</strong></p>
+        <p>Message: "${data.name} - Cabin ${data.cabin_number} - ${data.check_in}"</p>
+        <p style="font-size: 0.9em; color: #b45309;">Payment due within 24 hours to secure your booking!</p>
       </div>
-
-      <h3>CHECK-IN INFORMATION</h3>
-      <ul>
-        <li>Check-in time: 3:00 PM</li>
-        <li>Check-out time: 11:00 AM</li>
-        <li>Address: [Resort Address]</li>
-      </ul>
 
       <div style="margin: 25px 0;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Go to Dashboard</a>
       </div>
+
+      <p>Can't wait to welcome your guests! 🌞</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -291,7 +281,6 @@ const emailTemplates = {
 
       <div style="margin: 25px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${CTA_BUTTON_STYLES}">Book Now</a>
-        <a href="https://hhr-trailer-booking.web.app/" style="${SECONDARY_STYLES}">View Dashboard</a>
       </div>
 
       ${isRound1 ? `
@@ -603,6 +592,27 @@ const emailTemplates = {
       </div>
 
       <p>We hope you enjoy your stay!</p>
+    `;
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
+  // 15. Feedback
+  feedback: (data) => {
+    const isBug = data.type === 'bug';
+    const color = isBug ? '#ef4444' : '#eab308';
+    const title = isBug ? '🐛 Bug Report' : '💡 Feature Request';
+    const subject = `[HHR Feedback] ${title} from ${data.name}`;
+
+    const body = `
+      <div style="border-left: 4px solid ${color}; padding-left: 15px; margin: 20px 0;">
+        <h2 style="color: ${color}; margin-top: 0;">${title}</h2>
+        <p><strong>From:</strong> ${data.name} (${data.email})</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;" />
+        <p style="white-space: pre-wrap; font-size: 16px;">${data.message}</p>
+      </div>
+      
+      <div style="margin: 25px 0;">
+        <a href="mailto:${data.email}" style="${SECONDARY_STYLES}">Reply to User</a>
+      </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   }

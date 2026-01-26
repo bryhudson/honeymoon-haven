@@ -136,7 +136,7 @@ async function handleFastModeReminders(
     // 2-minute urgent warning (Catch anything between 0 and 2.5 mins)
     if (minutesRemaining <= 2.5 && minutesRemaining > 0 && !notificationLog.last2minSent) {
         logger.info("Sending 2-minute urgent reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 minutes", true, isTestMode);
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 minutes", true, isTestMode, 'evening');
         await notificationLogRef.update({
             last2minSent: admin.firestore.Timestamp.now()
         });
@@ -144,7 +144,7 @@ async function handleFastModeReminders(
     // 5-minute warning (Catch anything between 2.5 and 6 mins)
     else if (minutesRemaining <= 6 && minutesRemaining > 2.5 && !notificationLog.last5minSent) {
         logger.info("Sending 5-minute reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "5 minutes", false, isTestMode);
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "5 minutes", false, isTestMode, 'morning');
         await notificationLogRef.update({
             last5minSent: admin.firestore.Timestamp.now()
         });
@@ -171,19 +171,29 @@ async function handleNormalModeReminders(
         twoHourWarning = new Date(turnEnd.getTime() - 2 * 60 * 1000); // 2 min before end
     } else {
         // Normal Mode: Standard 48h schedule
-        sameDayEvening = new Date(turnStart);
-        sameDayEvening.setHours(19, 0, 0, 0); // 7pm same day
+        // ADJUSTED FOR PST TIMEZONE (UTC-8)
+        // Cloud Functions run in UTC. To target PST times, we add 8 hours to the target hour.
 
+        // 7pm PST same day = 03:00 UTC next day
+        sameDayEvening = new Date(turnStart);
+        sameDayEvening.setDate(sameDayEvening.getDate() + 1); // Move to next UTC day
+        sameDayEvening.setHours(3, 0, 0, 0);
+
+        // 9am PST next day = 17:00 UTC next day
+        // NOTE: This assumes UTC-8 (PST). During PDT (April-Oct), 17:00 UTC is 10:00 AM PDT.
+        // Reminders will arrive at 10 AM instead of 9 AM during the season. 
+        // This is acceptable for now but could be improved with 'luxon' or similar.
         nextDayMorning = new Date(turnStart);
         nextDayMorning.setDate(nextDayMorning.getDate() + 1);
-        nextDayMorning.setHours(9, 0, 0, 0); // 9am next day
+        nextDayMorning.setHours(17, 0, 0, 0);
 
+        // 9am PST last day = 17:00 UTC last day
         lastDayMorning = new Date(turnStart);
         lastDayMorning.setDate(lastDayMorning.getDate() + 2);
-        lastDayMorning.setHours(9, 0, 0, 0); // 9am last day
+        lastDayMorning.setHours(17, 0, 0, 0);
 
         twoHourWarning = new Date(turnEnd);
-        twoHourWarning.setHours(twoHourWarning.getHours() - 2); // 2h before deadline
+        twoHourWarning.setHours(twoHourWarning.getHours() - 2); // 2h before deadline (Relative is fine)
     }
 
     logger.info(`Normal Mode - Checking reminders at ${now.toISOString()}`);
@@ -193,7 +203,7 @@ async function handleNormalModeReminders(
     // 2h before deadline - URGENT
     if (now >= twoHourWarning && now < turnEnd && !notificationLog.twoHourWarningSent) {
         logger.info("Sending 2-hour urgent reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 hours", true, isTestMode);
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 hours", true, isTestMode, 'evening');
         await notificationLogRef.update({
             twoHourWarningSent: admin.firestore.Timestamp.now()
         });
@@ -201,7 +211,7 @@ async function handleNormalModeReminders(
     // 9am on last day
     else if (now >= lastDayMorning && !notificationLog.lastDayMorningSent) {
         logger.info("Sending last day 9am reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "final day", false, isTestMode);
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "final day", false, isTestMode, 'morning');
         await notificationLogRef.update({
             lastDayMorningSent: admin.firestore.Timestamp.now()
         });
@@ -209,7 +219,7 @@ async function handleNormalModeReminders(
     // 9am on next day
     else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
         logger.info("Sending next day 9am reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode);
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning');
         await notificationLogRef.update({
             nextDayMorningSent: admin.firestore.Timestamp.now()
         });
@@ -217,7 +227,7 @@ async function handleNormalModeReminders(
     // 7pm same day
     else if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
         logger.info("Sending same day 7pm reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode);
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening');
         await notificationLogRef.update({
             sameDayEveningSent: admin.firestore.Timestamp.now()
         });
@@ -242,7 +252,7 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
 
     // Apply test mode override
     const recipient = isTestMode ? "bryan.m.hudson@gmail.com" : email;
-    const finalSubject = isTestMode ? `[TEST] ${subject}` : subject;
+    const finalSubject = subject;
 
     await sendGmail({
         to: { name: shareholderName, email: recipient },
@@ -256,22 +266,26 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
 /**
  * Send Reminder Email
  */
-async function sendReminderEmail(email, shareholderName, deadline, round, phase, timeRemaining, isUrgent, isTestMode) {
+async function sendReminderEmail(email, shareholderName, deadline, round, phase, timeRemaining, isUrgent, isTestMode, reminderType = 'morning') {
     const urgencyMessage = isUrgent
         ? "⚠️ URGENT: Your booking window is about to expire!"
         : "Friendly reminder to complete your booking.";
 
     const statusMessage = `You have ${timeRemaining} remaining to make your selection.`;
 
+    // Calculate hours remaining for template logic (e.g. "49 hours")
+    const hoursRemaining = Math.max(0, Math.ceil((deadline - new Date()) / (1000 * 60 * 60)));
+
     const templateData = {
         name: shareholderName,
         round: round,
-        phase: phase,
         phase: phase,
         deadline_date: formatDeadlineDate(deadline),
         deadline_time: formatDeadlineTime(deadline),
         status_message: statusMessage,
         urgency_message: urgencyMessage,
+        hours_remaining: hoursRemaining,
+        type: reminderType, // Fix: Explicitly pass type for greeting logic
         dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
     };
 
@@ -280,7 +294,7 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
 
     // Apply test mode override
     const recipient = isTestMode ? "bryan.m.hudson@gmail.com" : email;
-    const finalSubject = isTestMode ? `[TEST] ${subject}` : subject;
+    const finalSubject = subject;
 
     await sendGmail({
         to: { name: shareholderName, email: recipient },
@@ -306,7 +320,8 @@ function formatDeadlineDate(input) {
     return date.toLocaleString('en-US', {
         weekday: 'short',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
+        timeZone: 'America/Vancouver'
     });
 }
 
@@ -317,6 +332,7 @@ function formatDeadlineTime(input) {
     return date.toLocaleString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
+        timeZone: 'America/Vancouver'
     });
 }
