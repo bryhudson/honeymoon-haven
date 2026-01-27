@@ -197,31 +197,29 @@ export function SystemTab({
                             </button>
                         </div>
 
-                        {/* Wipe Data (Owner Only) */}
-                        {IS_SITE_OWNER && (
-                            <div className="bg-red-50/50 rounded-xl border border-red-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Users className="w-5 h-5 text-red-600" />
-                                        <h4 className="font-bold text-red-900">Wipe Database</h4>
-                                    </div>
-                                    <p className="text-sm text-red-800/70 leading-relaxed mb-2">
-                                        Permanently deletes ALL bookings and logs. Resets simulation to Day 1.
-                                        Only use when starting a fresh season.
-                                    </p>
-                                    <div className="flex items-center gap-2 text-xs font-medium">
-                                        <span className="text-red-400/80">Production Impact:</span>
-                                        <span className="text-red-700 bg-red-100 px-2 py-0.5 rounded">⚠️ Catastrophic</span>
-                                    </div>
+                        {/* Wipe Data (Protected Action) */}
+                        <div className="bg-red-50/50 rounded-xl border border-red-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Users className="w-5 h-5 text-red-600" />
+                                    <h4 className="font-bold text-red-900">Wipe Database</h4>
                                 </div>
-                                <button
-                                    onClick={handleWipeDatabase}
-                                    className="shrink-0 w-full md:w-48 justify-center px-5 py-2.5 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition-all shadow-sm border border-transparent flex items-center gap-2"
-                                >
-                                    Nuke & Reset
-                                </button>
+                                <p className="text-sm text-red-800/70 leading-relaxed mb-2">
+                                    Permanently deletes ALL bookings and logs. Resets simulation to Day 1.
+                                    Only use when starting a fresh season.
+                                </p>
+                                <div className="flex items-center gap-2 text-xs font-medium">
+                                    <span className="text-red-400/80">Production Impact:</span>
+                                    <span className="text-red-700 bg-red-100 px-2 py-0.5 rounded">⚠️ Catastrophic</span>
+                                </div>
                             </div>
-                        )}
+                            <button
+                                onClick={handleWipeDatabase}
+                                className="shrink-0 w-full md:w-48 justify-center px-5 py-2.5 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition-all shadow-sm border border-transparent flex items-center gap-2"
+                            >
+                                Nuke & Reset
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.71.60",
+  "version": "2.71.61",
   "type": "module",
   "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
