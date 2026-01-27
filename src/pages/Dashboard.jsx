@@ -10,6 +10,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { WelcomeModal } from '../components/WelcomeModal';
 import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
@@ -68,6 +69,8 @@ export function Dashboard() {
     const navigate = useNavigate();
 
     const [shareholders, setShareholders] = useState(CABIN_OWNERS);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    const [currentShareholderDoc, setCurrentShareholderDoc] = useState(null);
 
     // Fetch dynamic shareholders
     useEffect(() => {
@@ -75,7 +78,8 @@ export function Dashboard() {
             try {
                 const snapshot = await getDocs(collection(db, "shareholders"));
                 if (!snapshot.empty) {
-                    const list = snapshot.docs.map(d => d.data());
+                    // STORE IDs with data
+                    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     setShareholders(list);
                 }
             } catch (err) {
@@ -104,6 +108,41 @@ export function Dashboard() {
         const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
     }, [currentUser, shareholders, masqueradeAs]);
+
+    // --- WELCOME MODAL LOGIC ---
+    useEffect(() => {
+        if (loggedInShareholder && shareholders.length > 0 && !masqueradeAs) {
+            // Find the robust shareholder object (with ID)
+            const myRecord = shareholders.find(s => s.name === loggedInShareholder);
+            if (myRecord) {
+                setCurrentShareholderDoc(myRecord);
+                // Check if they've seen the welcome modal
+                if (!myRecord.seenWelcome) {
+                    // Small delay for effect
+                    const timer = setTimeout(() => setShowWelcomeModal(true), 1500);
+                    return () => clearTimeout(timer);
+                }
+            }
+        }
+    }, [loggedInShareholder, shareholders, masqueradeAs]);
+
+    const handleWelcomeSeen = async () => {
+        setShowWelcomeModal(false);
+        if (currentShareholderDoc?.id) {
+            try {
+                // Optimistic UI update
+                setShareholders(prev => prev.map(s =>
+                    s.id === currentShareholderDoc.id ? { ...s, seenWelcome: true } : s
+                ));
+
+                await updateDoc(doc(db, "shareholders", currentShareholderDoc.id), {
+                    seenWelcome: true
+                });
+            } catch (err) {
+                console.error("Failed to mark welcome as seen:", err);
+            }
+        }
+    };
 
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
@@ -793,6 +832,13 @@ export function Dashboard() {
                             </div>
                         )
                     }
+
+                    {/* SHAREHOLDER WELCOME MODAL */}
+                    <WelcomeModal
+                        isOpen={showWelcomeModal}
+                        onClose={handleWelcomeSeen}
+                        userName={loggedInShareholder}
+                    />
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
                         <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
