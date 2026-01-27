@@ -263,10 +263,14 @@ export function SystemTab({
                                 {!isTestMode && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Active</span>}
                             </div>
                             <h4 className={`font-bold text-lg ${!isTestMode ? 'text-green-900' : 'text-slate-700'}`}>Production Mode</h4>
-                            <p className="text-sm text-slate-500 mt-1">
-                                System Live: Feb 20, 2026<br />
-                                Official Start: March 1, 2026 @ 10am PST<br />
-                                <span className="text-slate-400 text-xs">Real emails sent to shareholders.</span>
+                            <p className="text-sm text-slate-500 mt-1 mb-3">
+                                <span className="font-semibold text-slate-700">What:</span> The real live system. Draft schedule is set to March 1, 2026.
+                                <br />
+                                <span className="font-semibold text-slate-700">Why:</span> Use this to launch the official season.
+                                <br />
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${!isTestMode ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                    ⚠️ SAFETY: EMAILS GO TO SHAREHOLDERS
+                                </span>
                             </p>
                         </div>
 
@@ -305,8 +309,13 @@ export function SystemTab({
                             </div>
                             <h4 className={`font-bold text-lg ${isTestMode ? 'text-indigo-900' : 'text-slate-700'}`}>Test Simulation</h4>
                             <div className="text-sm text-slate-500 mt-1 mb-3">
-                                Start: Today @ 10:00 AM<br />
-                                <span className="text-indigo-600 font-medium text-xs">Safe Mode On (Emails -&gt; Admin only)</span>
+                                <span className="font-semibold text-slate-700">What:</span> A sandbox environment. Sets "Day 1" to Today @ 10am.
+                                <br />
+                                <span className="font-semibold text-slate-700">Why:</span> Use this to test the flow, emails, and logic without consequences.
+                                <br />
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isTestMode ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                                    🛡 SAFE MODE: EMAILS → ADMIN ONLY
+                                </span>
                             </div>
 
                             {/* Time Travel Removed per User Request (Simplification) */}
