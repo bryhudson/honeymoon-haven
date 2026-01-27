@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Calendar, Smartphone, ArrowRight, MessageSquareHeart, Zap } from 'lucide-react';
+import { Sparkles, ArrowRight, MessageSquareHeart, Zap, Palmtree, Anchor } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function WelcomeModal({ isOpen, onClose, userName }) {
@@ -43,7 +43,7 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                             Hey {userName}! 👋
                         </h2>
                         <p className="text-base text-indigo-200 font-medium leading-relaxed">
-                            Welcome to the NEW Honeymoon Haven Resort Trailer booking app!
+                            Welcome to the NEW Honeymoon Haven Resort Trailer booking app! We’ve traded in the clunky spreadsheets for something a lot smoother—think of it as upgrading from an old rowboat to a sleek pontoon.
                         </p>
                     </div>
 
@@ -55,22 +55,38 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                             <div>
                                 <h3 className="font-bold text-white text-base">Fully Automated</h3>
                                 <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                    This app allows our directors and shareholders to enjoy the lake instead of managing emails and spreadsheets. Everything is now automatic!
+                                    No more getting caught in a "weed bed" of emails and spreadsheets. Everything is now handled automatically.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-300 shrink-0">
+                                <Palmtree className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white text-base">Maximum Lake Time</h3>
+                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                    We built this so our directors and shareholders can spend more time on the dock and less time at the desk.
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-pink-500/20 rounded-lg text-pink-300 shrink-0">
-                                <MessageSquareHeart className="w-5 h-5" />
+                                <Anchor className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white text-base">Feedback Welcome</h3>
+                                <h3 className="font-bold text-white text-base">Easy Breezy Booking</h3>
                                 <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                    We hope this make booking fun this summer! If you run into issues, use the <strong>Feedback</strong> button in the header to let us know.
+                                    We’ve designed this to make claiming your summer dates as fun and easy as a sunset cruise.
                                 </p>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="text-xs text-indigo-300/80 italic px-4">
+                        If you hit a snag or have a "big fish" idea for an improvement, just click the <strong>Feedback</strong> button in the header.
                     </div>
 
                     <button
