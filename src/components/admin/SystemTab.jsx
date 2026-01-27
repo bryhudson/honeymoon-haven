@@ -31,7 +31,6 @@ export function SystemTab({
     const [monitorData, setMonitorData] = useState(null);
     const [bookings, setBookings] = useState([]);
     const [showTimeTravel, setShowTimeTravel] = useState(false); // Toggle for advanced date picker
-    const [showGuide, setShowGuide] = useState(false); // Toggle for Admin Guide
     const [confirmMaintenance, setConfirmMaintenance] = useState(false);
     const [confirmReset, setConfirmReset] = useState(false);
 
@@ -59,10 +58,6 @@ export function SystemTab({
     // Recalculate monitor status whenever bookings or settings change
     useEffect(() => {
         const runCalculation = async () => {
-            // Get current settings for calculation
-            // In a real app we might want to listen to settings too, but for UI smooth updates we'll use props/state
-            // Assuming simStartDate and fastTestingMode reflect current DB state roughly or are the inputs
-
             const schedule = calculateDraftSchedule(
                 getShareholderOrder(2026), // shareholders
                 bookings, // bookings
@@ -127,15 +122,6 @@ export function SystemTab({
         }
     };
 
-
-
-
-
-    // Start full test (Fast Mode + Sync)
-    // REMOVED: Legacy 10-minute test logic removed in v2.69.19 favor of production-mirror testing.
-
-
-
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
@@ -147,100 +133,93 @@ export function SystemTab({
                         <p className="text-sm text-slate-500">Manage testing, schedule, and system status</p>
                     </div>
                 </div>
-                {/* Redundant Badge Removed */}
             </div>
 
             <div className="space-y-8">
                 {/* 1. Maintenance & Troubleshooting Zone */}
                 <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <Settings className="w-4 h-4" />
+                    <div className="flex items-center gap-2 mb-4">
+                        <Settings className="w-4 h-4 text-slate-400" />
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Troubleshooting Zone
                         </h3>
-                        <button
-                            onClick={() => setShowGuide(!showGuide)}
-                            className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase tracking-wider hover:text-indigo-600 transition-colors"
-                        >
-                            <Info className="w-3 h-3" />
-                            {showGuide ? "Hide Guide" : "What do these buttons do?"}
-                        </button>
                     </div>
 
-                    {showGuide && (
-                        <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm space-y-4 animate-in fade-in slide-in-from-top-2">
-                            <div>
-                                <div className="font-bold text-slate-800 flex items-center gap-2">
-                                    <AlertTriangle className="w-4 h-4 text-slate-500" />
-                                    Maintenance Mode
-                                </div>
-                                <p className="text-slate-600 mt-1">
-                                    <strong>What it does:</strong> Instantly locks the entire platform. Users will see a "Under Maintenance" screen and cannot log in or make bookings.<br />
-                                    <strong>When to use:</strong> During critical updates, if a major bug is found, or between seasons.<br />
-                                    <strong>Production Impact:</strong> 🔴 <strong>HIGH.</strong> Blocks all public access.
-                                </p>
-                            </div>
-                            <div className="border-t border-slate-200 pt-3">
-                                <div className="font-bold text-slate-800 flex items-center gap-2">
-                                    <RefreshCw className="w-4 h-4 text-slate-500" />
-                                    Reset Schedule State
-                                </div>
-                                <p className="text-slate-600 mt-1">
-                                    <strong>What it does:</strong> Forces the system to re-read all bookings and re-calculate the draft schedule. It does NOT delete any data.<br />
-                                    <strong>When to use:</strong> If the dashboard says "Waiting..." but it should be someone's turn, or if the "Active Picker" looks wrong.<br />
-                                    <strong>Production Impact:</strong> 🟢 <strong>NONE.</strong> Safe to use anytime. It just refreshes the logic.
-                                </p>
-                            </div>
-                            <div className="border-t border-slate-200 pt-3">
-                                <div className="font-bold text-slate-800 flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-red-500" />
-                                    Wipe Data
-                                </div>
-                                <p className="text-slate-600 mt-1">
-                                    <strong>What it does:</strong> ⚠️ <strong>PERMANENT DELETION.</strong> Deletes all bookings, clears all notification logs, and resets the simulation to Day 1.<br />
-                                    <strong>When to use:</strong> Only when preparing for a brand new season or restarting a test simulation from scratch.<br />
-                                    <strong>Production Impact:</strong> 🔴 <strong>CATASTROPHIC.</strong> Do not use during a live season.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-4">
                         {/* Maintenance Mode */}
-                        <div className="flex flex-col gap-1">
+                        <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <AlertTriangle className={`w-5 h-5 ${isSystemFrozen ? 'text-red-600' : 'text-slate-600'}`} />
+                                    <h4 className="font-bold text-slate-900">Maintenance Mode</h4>
+                                </div>
+                                <p className="text-sm text-slate-500 leading-relaxed mb-2">
+                                    Instantly locks the platform. Users see an "Under Maintenance" screen.
+                                    Use during critical updates.
+                                </p>
+                                <div className="flex items-center gap-2 text-xs font-medium">
+                                    <span className="text-slate-400">Production Impact:</span>
+                                    <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded">🔴 High - Blocks Access</span>
+                                </div>
+                            </div>
                             <button
                                 onClick={() => setConfirmMaintenance(true)}
-                                className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl font-medium transition-all text-sm ${isSystemFrozen ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
+                                className={`shrink-0 px-5 py-2.5 rounded-lg font-bold text-sm transition-all border ${isSystemFrozen
+                                        ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+                                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                                    }`}
                             >
-                                <AlertTriangle className="w-4 h-4" />
-                                {isSystemFrozen ? 'Maintenance ON' : 'Maintenance Mode'}
+                                {isSystemFrozen ? 'Deactivate Mode' : 'Activate Mode'}
                             </button>
-                            <span className="text-[10px] text-center text-slate-400">Blocks all users from making changes</span>
                         </div>
 
                         {/* Reset Schedule State */}
-                        <div className="flex flex-col gap-1">
+                        <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <RefreshCw className="w-5 h-5 text-slate-600" />
+                                    <h4 className="font-bold text-slate-900">Reset Schedule State</h4>
+                                </div>
+                                <p className="text-sm text-slate-500 leading-relaxed mb-2">
+                                    Forces a re-calculation of the draft schedule based on current bookings.
+                                    Use if the dashboard is "stuck" or showing the wrong active picker.
+                                </p>
+                                <div className="flex items-center gap-2 text-xs font-medium">
+                                    <span className="text-slate-400">Production Impact:</span>
+                                    <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">🟢 None - Safe</span>
+                                </div>
+                            </div>
                             <button
                                 onClick={() => setConfirmReset(true)}
-                                className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm"
+                                className="shrink-0 px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all"
                             >
-                                <RefreshCw className="w-4 h-4" />
-                                Reset Schedule State
+                                Recalculate State
                             </button>
-                            <span className="text-[10px] text-center text-slate-400">Fixes "stuck" states by recalculating schedule</span>
                         </div>
 
                         {/* Wipe Data (Owner Only) */}
                         {IS_SITE_OWNER && (
-                            <div className="flex flex-col gap-1">
+                            <div className="bg-red-50/50 rounded-xl border border-red-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Users className="w-5 h-5 text-red-600" />
+                                        <h4 className="font-bold text-red-900">Wipe Database</h4>
+                                    </div>
+                                    <p className="text-sm text-red-800/70 leading-relaxed mb-2">
+                                        Permanently deletes ALL bookings and logs. Resets simulation to Day 1.
+                                        Only use when starting a fresh season.
+                                    </p>
+                                    <div className="flex items-center gap-2 text-xs font-medium">
+                                        <span className="text-red-400/80">Production Impact:</span>
+                                        <span className="text-red-700 bg-red-100 px-2 py-0.5 rounded">⚠️ Catastrophic</span>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={handleWipeDatabase}
-                                    className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl font-medium hover:bg-red-100 transition-all text-sm"
+                                    className="shrink-0 px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg font-bold text-sm hover:bg-red-50 transition-all shadow-sm"
                                 >
-                                    <Users className="w-4 h-4" />
-                                    Wipe Data
+                                    Nuke & Reset
                                 </button>
-                                <span className="text-[10px] text-center text-red-400/60">⚠️ Delete all bookings & reset</span>
                             </div>
                         )}
                     </div>
@@ -343,12 +322,6 @@ export function SystemTab({
                         </div>
                     </div>
                 </div>
-
-
-
-
-
-
             </div>
 
             {/* Modals */}
@@ -375,9 +348,6 @@ export function SystemTab({
                 confirmText="Reset State"
                 requireTyping="reset"
             />
-
-
         </div>
-
     );
 }
