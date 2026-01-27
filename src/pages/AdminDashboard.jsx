@@ -1273,6 +1273,12 @@ export function AdminDashboard() {
                     >
                         Notifications
                     </button>
+                    <button
+                        onClick={() => setActiveTab('archives')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'archives' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                    >
+                        Archives
+                    </button>
                 </div>
 
                 {/* System Tab Content */}
