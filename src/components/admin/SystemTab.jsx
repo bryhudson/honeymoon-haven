@@ -291,7 +291,8 @@ export function SystemTab({
                                             draftStartDate: today,
                                             bypassTenAM: true,
                                             fastTestingMode: false,
-                                            isTestMode: true // Safe Mode
+                                            isTestMode: true, // Safe Mode
+                                            testEmailReceiver: currentUser.email // Route emails to whoever started this
                                         }, { merge: true });
                                         await handleSyncDraftStatus();
                                     }

@@ -251,8 +251,9 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
 
     const { subject, htmlContent } = emailTemplates.turnStarted(templateData);
 
-    // Apply test mode override
-    const recipient = isTestMode ? "bryan.m.hudson@gmail.com" : email;
+    // SAFETY: We pass the REAL recipient. 
+    // The 'sendGmail' helper will check 'isTestMode' and intercept it if necessary.
+    const recipient = email;
     const finalSubject = subject;
 
     await sendGmail({
@@ -293,8 +294,9 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
     const emailFunction = isUrgent ? emailTemplates.finalWarning : emailTemplates.reminder;
     const { subject, htmlContent } = emailFunction(templateData);
 
-    // Apply test mode override
-    const recipient = isTestMode ? "bryan.m.hudson@gmail.com" : email;
+    // SAFETY: We pass the REAL recipient. 
+    // The 'sendGmail' helper will check 'isTestMode' and intercept it if necessary.
+    const recipient = email;
     const finalSubject = subject;
 
     await sendGmail({

@@ -37,11 +37,9 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
     // Sender Info
     const from = `"${senderName}" <${user}>`;
 
-    // --- DYNAMIC SAFETY OVERRIDE ---
-    const DEV_EMAIL_OVERRIDE = "bryan.m.hudson@gmail.com";
-
-    // Check Firestore for Test Mode (unless bypassed)
-    let isTestMode = true; // Default to safety
+    // Check Firestore for Test Mode and Override Email
+    let isTestMode = true; // Default to TRUE (Safety First)
+    let dynamicOverride = "bryan.m.hudson@gmail.com"; // Default fallback
 
     if (bypassTestMode) {
         isTestMode = false; // TRUST THE CALLER
@@ -55,13 +53,20 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
             const db = admin.firestore();
             const settingsDoc = await db.collection("settings").doc("general").get();
             if (settingsDoc.exists) {
-                isTestMode = settingsDoc.data().isTestMode !== false; // Default true if undefined
+                const data = settingsDoc.data();
+                isTestMode = data.isTestMode !== false; // Default true if undefined
+                if (data.testEmailReceiver) {
+                    dynamicOverride = data.testEmailReceiver;
+                }
             }
         } catch (err) {
             logger.warn("Failed to fetch settings for email safety check, defaulting to TEST MODE", err);
             isTestMode = true;
         }
     }
+
+    // --- DYNAMIC SAFETY OVERRIDE ---
+    const DEV_EMAIL_OVERRIDE = dynamicOverride;
 
     let recipient;
     if (isTestMode) {
