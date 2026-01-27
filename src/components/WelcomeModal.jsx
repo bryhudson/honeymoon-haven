@@ -38,36 +38,24 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                         <Sparkles className="w-8 h-8 text-white" />
                     </div>
 
-                    <div className="space-y-2">
-                        <h2 className="text-3xl md:text-4xl font-black tracking-tight">
-                            Your Cabin, Upgraded. 🌲
+                    <div className="space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                            Hey {userName}! 👋
                         </h2>
-                        <p className="text-lg text-indigo-200 font-medium">
-                            Welcome to the new digital home for Honeymoon Haven.
+                        <p className="text-base text-indigo-200 font-medium leading-relaxed">
+                            Welcome to the 2026 booking season! You're receiving this because it's officially your turn to pick your dates for the trailer.
                         </p>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left space-y-5">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left space-y-4">
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300 shrink-0">
                                 <Smartphone className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white">Why Use This App?</h3>
-                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                    We've ditched the paper calendars and email chains. Now you can see the full schedule instantly, pick your dates in seconds, and track everything from your phone.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-300 shrink-0">
-                                <Sparkles className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-white">Fairness Baked In</h3>
-                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                    Our new "Snake Draft" system ensures everyone gets a fair shot at prime weekends. Round 1 goes forward (1-12), and Round 2 flips backward (12-1).
+                                <h3 className="font-bold text-white text-lg">🆕 What's this all about?</h3>
+                                <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+                                    We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place! You can pick your dates, see what's available, and track your bookings all from your personal dashboard.
                                 </p>
                             </div>
                         </div>

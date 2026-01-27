@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Joyride, { STATUS } from 'react-joyride';
 
-export function OnboardingTour({ currentUser }) {
+export function OnboardingTour({ currentUser, defer = false }) {
     const [run, setRun] = useState(false);
 
     useEffect(() => {
-        if (!currentUser?.email) return;
+        if (!currentUser?.email || defer) return;
 
         const storageKey = `hhr_tour_seen_${currentUser.email}`;
         const hasSeenTour = localStorage.getItem(storageKey);
@@ -17,7 +17,7 @@ export function OnboardingTour({ currentUser }) {
             }, 1000);
             return () => clearTimeout(timer);
         }
-    }, [currentUser]);
+    }, [currentUser, defer]);
 
     const steps = [
         {
