@@ -22,37 +22,25 @@ export function OnboardingTour({ currentUser, defer = false }) {
     const steps = [
         {
             target: '#tour-status',
-            title: '👀 Your Status & Queue',
+            title: 'Your Status & Queue',
             content: "Check here for your current status, queue position, or the time remaining to make your booking.",
             disableBeacon: true,
         },
         {
-            target: '#tour-actions',
-            title: '⚡ Take Action',
-            content: "When it's your turn, the 'Start Booking' button will appear here. You can also finalize your draft or review booking details directly from this panel.",
-            disableBeacon: true,
-        },
-        {
             target: '#tour-schedule',
-            title: '📅 New Season Schedule',
+            title: 'New Season Schedule',
             content: "Click this tab to view the full 2026 Season Schedule, including round dates and draft rules.",
             disableBeacon: true,
         },
         {
             target: '#tour-recent',
-            title: '📜 Recent Activity',
+            title: 'Recent Activity',
             content: 'Click here to see who has booked recently. If you have an active booking, you can also modify or cancel it from here.',
             disableBeacon: true,
         },
         {
-            target: '#tour-calendar',
-            title: '🗓️ Calendar View',
-            content: 'Switch to the calendar view to visualize all bookings for the season in a familiar monthly layout.',
-            disableBeacon: true,
-        },
-        {
             target: '#tour-guide',
-            title: '📖 Trailer Guide & Rules',
+            title: 'Trailer Guide & Rules',
             content: 'Need to check the rules? Find the complete Trailer Guide and operational rules here.',
             disableBeacon: true,
         },
