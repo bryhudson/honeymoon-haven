@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowRight, MessageSquareHeart, Zap, Palmtree, Anchor } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Palmtree, Anchor } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function WelcomeModal({ isOpen, onClose, userName }) {
@@ -43,7 +43,7 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                             Hey {userName}! 👋
                         </h2>
                         <p className="text-base text-indigo-200 font-medium leading-relaxed">
-                            Welcome to the NEW Honeymoon Haven Resort Trailer booking app! We’ve traded in the clunky spreadsheets for something a lot smoother—think of it as upgrading from an old rowboat to a sleek pontoon.
+                            Welcome to the NEW HHR Trailer booking app! We’ve traded the clunky spreadsheets for a much smoother ride.
                         </p>
                     </div>
 
@@ -55,7 +55,7 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                             <div>
                                 <h3 className="font-bold text-white text-base">Fully Automated</h3>
                                 <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                    No more getting caught in a "weed bed" of emails and spreadsheets. Everything is now handled automatically.
+                                    No more getting lost in email chains. Everything is now handled automatically.
                                 </p>
                             </div>
                         </div>
@@ -79,14 +79,14 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                             <div>
                                 <h3 className="font-bold text-white text-base">Easy Breezy Booking</h3>
                                 <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                    We’ve designed this to make claiming your summer dates as fun and easy as a sunset cruise.
+                                    Claiming your summer dates is now as simple as a sunset cruise.
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div className="text-xs text-indigo-300/80 italic px-4">
-                        If you hit a snag or have a "big fish" idea for an improvement, just click the <strong>Feedback</strong> button in the header.
+                        Need a hand? If you run into any issues, just click the <strong>Feedback</strong> button in the header.
                     </div>
 
                     <button
