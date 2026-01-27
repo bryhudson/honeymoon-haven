@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Calendar, Smartphone, ArrowRight } from 'lucide-react';
+import { Sparkles, Calendar, Smartphone, ArrowRight, MessageSquareHeart, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function WelcomeModal({ isOpen, onClose, userName }) {
@@ -43,19 +43,31 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                             Hey {userName}! 👋
                         </h2>
                         <p className="text-base text-indigo-200 font-medium leading-relaxed">
-                            Welcome to the 2026 booking season! You're receiving this because it's officially your turn to pick your dates for the trailer.
+                            Welcome to the NEW Honeymoon Haven Resort Trailer booking app!
                         </p>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left space-y-4">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-4">
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300 shrink-0">
-                                <Smartphone className="w-5 h-5" />
+                                <Zap className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white text-lg">🆕 What's this all about?</h3>
-                                <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                                    We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place! You can pick your dates, see what's available, and track your bookings all from your personal dashboard.
+                                <h3 className="font-bold text-white text-base">Fully Automated</h3>
+                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                    This app allows our directors and shareholders to enjoy the lake instead of managing emails and spreadsheets. Everything is now automatic!
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-pink-500/20 rounded-lg text-pink-300 shrink-0">
+                                <MessageSquareHeart className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white text-base">Feedback Welcome</h3>
+                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                    We hope this make booking fun this summer! If you run into issues, use the <strong>Feedback</strong> button in the header to let us know.
                                 </p>
                             </div>
                         </div>
@@ -69,9 +81,6 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
 
-                    <p className="text-xs text-slate-500">
-                        PS: Check the "Rules" tab if you get lost!
-                    </p>
                 </div>
             </div>
         </div>
