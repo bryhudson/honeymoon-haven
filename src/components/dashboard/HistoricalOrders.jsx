@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, Trophy } from 'lucide-react';
+import { History, Trophy, Info } from 'lucide-react';
 
 export function HistoricalOrders() {
     const ORDER_2025 = [
@@ -18,48 +18,52 @@ export function HistoricalOrders() {
     ];
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-
-            <div className="text-center space-y-2 mb-8">
-                <div className="inline-flex items-center justify-center p-3 bg-amber-100 rounded-full text-amber-700 mb-2 shadow-sm">
-                    <History className="w-8 h-8" />
-                </div>
-                <h2 className="text-3xl font-bold text-slate-800">Historical Archives</h2>
-                <p className="text-slate-500 max-w-lg mx-auto">
-                    A record of past booking orders and rotations for historical reference.
-                </p>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header */}
+            <div>
+                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <History className="w-8 h-8 text-slate-800" />
+                    Historical Archives
+                </h2>
+                <p className="text-sm text-slate-500">A record of past booking orders and rotations.</p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-                {/* 2025 Order Card */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
-                    <div className="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Content: 2025 Season Table */}
+                <div className="lg:col-span-2 bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                         <div>
-                            <h3 className="font-bold text-xl text-slate-800">2025 Season</h3>
-                            <p className="text-sm text-slate-500">Historical Record</p>
+                            <h3 className="font-bold text-slate-900">2025 Season</h3>
+                            <p className="text-xs text-slate-500">Historical Booking Order</p>
                         </div>
-                        <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">ARCHIVED</span>
+                        <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                            Archived
+                        </span>
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="py-3 px-4 font-semibold text-slate-600 w-16 text-center">Order</th>
-                                    <th className="py-3 px-4 font-semibold text-slate-600 w-20 text-center">Cabin</th>
-                                    <th className="py-3 px-4 font-semibold text-slate-600">Shareholder</th>
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
+                                <tr>
+                                    <th className="px-6 py-3 w-20">Order</th>
+                                    <th className="px-6 py-3 w-24">Cabin #</th>
+                                    <th className="px-6 py-3">Shareholder</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
+                            <tbody className="divide-y divide-slate-100">
                                 {ORDER_2025.map((row) => (
-                                    <tr key={row.order} className="hover:bg-amber-50/50 transition-colors">
-                                        <td className="py-3 px-4 text-center font-mono text-slate-400 font-bold">{row.order}</td>
-                                        <td className="py-3 px-4 text-center">
-                                            <span className="inline-block bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold min-w-[30px]">
+                                    <tr key={row.order} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4 font-mono text-slate-400 font-bold">
+                                            #{row.order}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center justify-center bg-slate-100 text-slate-600 px-2.5 py-1 rounded font-bold text-xs min-w-[2rem]">
                                                 {row.cabin}
                                             </span>
                                         </td>
-                                        <td className="py-3 px-4 font-medium text-slate-700">{row.name}</td>
+                                        <td className="px-6 py-4 font-medium text-slate-900">
+                                            {row.name}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -67,20 +71,35 @@ export function HistoricalOrders() {
                     </div>
                 </div>
 
-                {/* Placeholder for future or context */}
+                {/* Sidebar Context */}
                 <div className="space-y-6">
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl p-6 text-white text-center flex flex-col items-center justify-center min-h-[200px]">
-                        <Trophy className="w-12 h-12 mb-4 text-yellow-300 opacity-90" />
-                        <h3 className="text-xl font-bold mb-2">2026 is LIVE!</h3>
-                        <p className="text-blue-100 mb-6 max-w-xs">
-                            The 2026 season draft is currently active. Check the "Schedule" tab for the live rotation.
-                        </p>
+                    {/* Live Context Card */}
+                    <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl shadow-lg p-6 text-white relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Trophy className="w-24 h-24 transform rotate-12" />
+                        </div>
+
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+                                <Trophy className="w-6 h-6 text-yellow-300" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">2026 is Live!</h3>
+                            <p className="text-indigo-100 text-sm mb-6 leading-relaxed">
+                                The 2026 season draft is currently active. Check the "Season Schedule" tab for real-time updates.
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-6 text-amber-900/80 text-sm leading-relaxed">
-                        <p className="font-semibold text-amber-800 mb-2">Did you know?</p>
-                        The booking order rotates annually using a specialized algorithm to ensure fairness over time.
-                        The order shifts by one position each year, meaning the 1st pick in 2025 becomes the last pick of the first round in 2026 (before the snake draft reversal).
+                    {/* Did You Know */}
+                    <div className="bg-amber-50 rounded-xl border border-amber-100 p-5">
+                        <h4 className="flex items-center gap-2 text-amber-800 font-bold text-sm mb-2">
+                            <Info className="w-4 h-4" />
+                            How Rotation Works
+                        </h4>
+                        <p className="text-xs text-amber-900/70 leading-relaxed">
+                            The booking order rotates annually using a specialized algorithm to ensure fairness over time.
+                            The order shifts by one position each year, meaning the 1st pick in 2025 becomes the last pick of the first round in 2026.
+                        </p>
                     </div>
                 </div>
             </div>

@@ -1,41 +1,15 @@
-import React, { useState } from 'react';
-import { HistoricalOrders } from './HistoricalOrders';
+import React from 'react';
 import { Info, RotateCw, Clock, Sunrise, Zap, CalendarCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 
 export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDateOverride, onAction, fastTestingMode = false, bypassTenAM = false }) {
-    const [view, setView] = useState('current'); // 'current' | 'history'
-
-    if (view === 'history') {
-        return (
-            <div className="space-y-6">
-                <div className="flex justify-between items-center mb-4">
-                    <button
-                        onClick={() => setView('current')}
-                        className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
-                    >
-                        ← Back to 2026 Schedule
-                    </button>
-                    {onAction && <div>{onAction}</div>}
-                </div>
-                <HistoricalOrders />
-            </div>
-        );
-    }
 
     return (
         <div id="tour-schedule" className="">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
                     <h2 className="text-2xl font-bold tracking-tight">2026 Season Schedule</h2>
-                    <button
-                        onClick={() => setView('history')}
-                        className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
-                    >
-                        <Clock className="w-3 h-3" />
-                        Archives
-                    </button>
                 </div>
                 {onAction && (
                     <div>{onAction}</div>

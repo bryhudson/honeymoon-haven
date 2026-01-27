@@ -20,7 +20,8 @@ import { AdminCalendarView } from '../components/AdminCalendarView';
 import { ShareholderHero } from '../components/dashboard/ShareholderHero';
 import { AdminTurnHero } from '../components/dashboard/AdminTurnHero';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
-import { Users, UserPlus } from 'lucide-react';
+import { HistoricalOrders } from '../components/dashboard/HistoricalOrders';
+import { Users, UserPlus, Archive } from 'lucide-react';
 import { SystemTab } from '../components/admin/SystemTab';
 import { NotificationsTab } from '../components/admin/NotificationsTab';
 
@@ -1301,6 +1302,10 @@ export function AdminDashboard() {
                 {/* Notifications Tab Content */}
                 {activeTab === 'notifications' && (
                     <NotificationsTab triggerAlert={triggerAlert} />
+                )}
+
+                {activeTab === 'archives' && (
+                    <HistoricalOrders />
                 )}
 
                 {/* 2026 Season Schedule Tab Content */}
