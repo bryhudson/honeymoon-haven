@@ -113,9 +113,9 @@ export function NotificationsTab({ triggerAlert }) {
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Evening Reminder: Your Honeymoon Haven Booking Awaits</div>
-                                        <div className="text-xs font-bold text-slate-700">First Night (Same Day) @ 7:00 PM</div>
-                                        <div className="text-[10px] text-slate-400">Evening Check-in</div>
+                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Subject: Evening Reminder: Your Honeymoon Haven Booking Awaits</div>
+                                        <div className="text-sm font-bold text-slate-700">First Night (Same Day) @ 7:00 PM</div>
+                                        <div className="text-xs text-slate-400">Evening Check-in</div>
                                     </div>
                                     <button
                                         onClick={() => initiateTestReminder('evening', 'First Night Reminder')}
@@ -131,9 +131,9 @@ export function NotificationsTab({ triggerAlert }) {
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
-                                        <div className="text-xs font-bold text-slate-700">Middle Morning (Day 2) @ 9:00 AM</div>
-                                        <div className="text-[10px] text-slate-400">Mid-point Reminder</div>
+                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
+                                        <div className="text-sm font-bold text-slate-700">Middle Morning (Day 2) @ 9:00 AM</div>
+                                        <div className="text-xs text-slate-400">Mid-point Reminder</div>
                                     </div>
                                     <button
                                         onClick={() => initiateTestReminder('day2', 'Middle Morning Reminder')}
@@ -149,9 +149,9 @@ export function NotificationsTab({ triggerAlert }) {
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-[10px] font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
-                                        <div className="text-xs font-bold text-slate-700">Final Morning (Day 3) @ 9:00 AM</div>
-                                        <div className="text-[10px] text-slate-400">Final Morning Warning</div>
+                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
+                                        <div className="text-sm font-bold text-slate-700">Final Morning (Day 3) @ 9:00 AM</div>
+                                        <div className="text-xs text-slate-400">Final Morning Warning</div>
                                     </div>
                                     <button
                                         onClick={() => initiateTestReminder('final', 'Final Morning Warning')}
@@ -167,9 +167,9 @@ export function NotificationsTab({ triggerAlert }) {
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white animate-pulse"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-[10px] font-bold text-amber-600 mb-0.5">Subject: URGENT: 2 Hours Left to Complete Your Booking</div>
-                                        <div className="text-xs font-bold text-slate-700">2 Hours Before End</div>
-                                        <div className="text-[10px] text-slate-400">Urgent Deadline Alert</div>
+                                        <div className="text-xs font-bold text-amber-600 mb-0.5">Subject: URGENT: 2 Hours Left to Complete Your Booking</div>
+                                        <div className="text-sm font-bold text-slate-700">2 Hours Before End</div>
+                                        <div className="text-xs text-slate-400">Urgent Deadline Alert</div>
                                     </div>
                                     <button
                                         onClick={() => initiateTestReminder('urgent', 'Urgent Warning')}
@@ -213,8 +213,8 @@ export function NotificationsTab({ triggerAlert }) {
                                             <Zap className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-slate-700">{event.name}</div>
-                                            <div className="text-[10px] text-slate-400">"{event.subject}"</div>
+                                            <div className="text-sm font-bold text-slate-700">{event.name}</div>
+                                            <div className="text-xs text-slate-400">"{event.subject}"</div>
                                         </div>
                                     </div>
                                     <button
