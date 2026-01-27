@@ -40,34 +40,34 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
 
                     <div className="space-y-2">
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight">
-                            Welcome Back, {userName}!
+                            Your Cabin, Upgraded. 🌲
                         </h2>
                         <p className="text-lg text-indigo-200 font-medium">
-                            Ready for the 2026 Season? 🌲
+                            Welcome to the new digital home for Honeymoon Haven.
                         </p>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left space-y-4">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left space-y-5">
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300 shrink-0">
-                                <Calendar className="w-5 h-5" />
+                                <Smartphone className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white">New Draft System</h3>
-                                <p className="text-sm text-slate-300 mt-1">
-                                    We've introduced a fair "Snake Draft" format. Round 1 goes forward (1-12), Round 2 goes backward (12-1).
+                                <h3 className="font-bold text-white">Why Use This App?</h3>
+                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                    We've ditched the paper calendars and email chains. Now you can see the full schedule instantly, pick your dates in seconds, and track everything from your phone.
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex items-start gap-4">
-                            <div className="p-2 bg-green-500/20 rounded-lg text-green-300 shrink-0">
-                                <Smartphone className="w-5 h-5" />
+                            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-300 shrink-0">
+                                <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white">Mobile First</h3>
-                                <p className="text-sm text-slate-300 mt-1">
-                                    Book from anywhere! The new app is designed to work perfectly on your phone.
+                                <h3 className="font-bold text-white">Fairness Baked In</h3>
+                                <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                    Our new "Snake Draft" system ensures everyone gets a fair shot at prime weekends. Round 1 goes forward (1-12), and Round 2 flips backward (12-1).
                                 </p>
                             </div>
                         </div>
