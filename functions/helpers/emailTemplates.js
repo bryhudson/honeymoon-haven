@@ -3,32 +3,34 @@
  * 
  * Ported to CommonJS for Cloud Functions
  *
- * [DEPLOYMENT BUMP] - Modern UI/UX Overhaul
+ * [DEPLOYMENT BUMP] - Final Polish: Clean, Modern, Fun Tone
  */
 
 // --- DESIGN SYSTEM ---
 const THEME = {
   colors: {
-    primary: '#1e40af',    // Blue-800
-    primaryLight: '#3b82f6', // Blue-500
-    text: '#1f2937',       // Gray-800
-    textLight: '#4b5563',  // Gray-600
-    background: '#f9fafb', // Gray-50
+    primary: '#2563eb',    // Bright Blue
+    primaryDark: '#1e40af', // Navy
+    text: '#334155',       // Slate-700 (Softer than black)
+    textLight: '#64748b',  // Slate-500
+    background: '#f8fafc', // Slate-50 (Very light gray)
     white: '#ffffff',
-    border: '#e5e7eb',
-    success: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' }, // Emerald
+    border: '#e2e8f0',
+    success: { bg: '#f0fdf4', text: '#166534', border: '#bbf7d0' }, // Green
     warning: { bg: '#fffbeb', text: '#92400e', border: '#fcd34d' }, // Amber
     error: { bg: '#fef2f2', text: '#991b1b', border: '#fecaca' }, // Red
+    info: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' }, // Blue
   },
   typography: {
     fontFamily: `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`,
-    h1: 'font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 20px 0; letter-spacing: -0.5px;',
-    h2: 'font-size: 20px; font-weight: 600; color: #1f2937; margin: 24px 0 12px 0;',
-    h3: 'font-size: 16px; font-weight: 600; color: #374151; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;',
-    body: 'font-size: 16px; line-height: 1.6; color: #374151; margin-bottom: 16px;',
-    small: 'font-size: 14px; color: #6b7280;',
+    h1: 'font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 24px 0; letter-spacing: -0.5px;',
+    h2: 'font-size: 18px; font-weight: 700; color: #0f172a; margin: 24px 0 12px 0;',
+    h3: 'font-size: 14px; font-weight: 700; color: #475569; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;',
+    body: 'font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 16px;',
+    small: 'font-size: 14px; color: #64748b; line-height: 1.5;',
   },
   components: {
+    // Primary Action Button
     button: `
       display: inline-block;
       background-color: #2563eb;
@@ -39,42 +41,44 @@ const THEME = {
       font-weight: 600;
       font-size: 16px;
       text-align: center;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+      transition: background-color 0.2s;
     `,
+    // Secondary Action (Ghost)
     secondaryButton: `
       display: inline-block;
-      background-color: #f3f4f6;
-      color: #4b5563;
+      background-color: #f1f5f9;
+      color: #475569;
       padding: 14px 28px;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
       font-size: 16px;
       text-align: center;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #e2e8f0;
     `,
+    // Content Card (Bordered Box)
     card: `
       background-color: #ffffff;
       border-radius: 12px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #e2e8f0;
       padding: 24px;
       margin-bottom: 24px;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     `,
+    // Colored Callout Box
     callout: (type = 'info') => {
-      // Default to info (blueish)
-      let bg = '#eff6ff'; let color = '#1e3a8a'; let border = '#bfdbfe';
-      if (type === 'success') { bg = THEME.colors.success.bg; color = THEME.colors.success.text; border = THEME.colors.success.border; }
-      if (type === 'warning') { bg = THEME.colors.warning.bg; color = THEME.colors.warning.text; border = THEME.colors.warning.border; }
-      if (type === 'error') { bg = THEME.colors.error.bg; color = THEME.colors.error.text; border = THEME.colors.error.border; }
+      let bg = '#eff6ff'; let color = '#1e40af'; let border = 'transparent';
+      if (type === 'success') { bg = THEME.colors.success.bg; color = THEME.colors.success.text; }
+      if (type === 'warning') { bg = THEME.colors.warning.bg; color = THEME.colors.warning.text; }
+      if (type === 'error') { bg = THEME.colors.error.bg; color = THEME.colors.error.text; }
 
       return `
         background-color: ${bg};
         border-radius: 8px;
         padding: 20px;
         margin: 20px 0;
-        border: 1px solid ${border};
         color: ${color};
+        border: 1px solid ${border};
       `;
     }
   }
@@ -82,10 +86,10 @@ const THEME = {
 
 // --- HELPERS ---
 
-// Helper to generate the Round/Phase Badge
+// Helper to generate the Round/Phase Badge (Clean & Pill-shaped)
 const getRoundBadge = (phase) => {
   let roundText = 'Open Season';
-  let bg = '#dbeafe'; // Default blue
+  let bg = '#eff6ff'; // Default blue
   let text = '#1e40af';
 
   if (phase === 'ROUND_1' || phase === 1) {
@@ -100,15 +104,15 @@ const getRoundBadge = (phase) => {
   }
 
   return `
-      <div style="margin-bottom: 24px; text-align: center;">
-        <span style="display: inline-block; background-color: ${bg}; color: ${text}; padding: 6px 16px; border-radius: 9999px; font-weight: bold; font-size: 14px; letter-spacing: 0.5px;">
+      <div style="margin-bottom: 24px;">
+        <span style="display: inline-block; background-color: ${bg}; color: ${text}; padding: 6px 16px; border-radius: 9999px; font-weight: 600; font-size: 14px;">
           📍 You're booking for: ${roundText}
         </span>
       </div>
     `;
 };
 
-// Helper to wrap content in a basic HTML shell
+// Helper to wrap content in a clean HTML shell
 const wrapHtml = (title, bodyContent) => `
 <!DOCTYPE html>
 <html>
@@ -123,6 +127,7 @@ const wrapHtml = (title, bodyContent) => `
     table { border-collapse: collapse !important; }
     a { color: ${THEME.colors.primary}; text-decoration: underline; }
     a:hover { text-decoration: none; }
+    .btn:hover { opacity: 0.9; }
   </style>
 </head>
 <body style="font-family: ${THEME.typography.fontFamily}; background-color: ${THEME.colors.background}; color: ${THEME.colors.text}; margin: 0; padding: 40px 0;">
@@ -131,12 +136,12 @@ const wrapHtml = (title, bodyContent) => `
     <tr>
       <td align="center">
         <!-- Main Container -->
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 1px solid ${THEME.colors.border};">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid ${THEME.colors.border};">
           
           <!-- Header -->
-          <div style="background-color: #ffffff; padding: 32px 40px 0 40px; text-align: left;">
+          <div style="background-color: #ffffff; padding: 40px 40px 0 40px; text-align: left;">
              <h1 style="${THEME.typography.h1}">HHR Trailer Booking</h1>
-             <div style="height: 4px; width: 60px; background: linear-gradient(to right, ${THEME.colors.primary}, ${THEME.colors.primaryLight}); border-radius: 2px;"></div>
+             <div style="height: 4px; width: 40px; background-color: ${THEME.colors.primary}; border-radius: 2px;"></div>
           </div>
 
           <!-- Body Content -->
@@ -145,9 +150,11 @@ const wrapHtml = (title, bodyContent) => `
           </div>
 
           <!-- Footer -->
-          <div style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid ${THEME.colors.border}; text-align: center;">
-            <p style="${THEME.typography.small} margin: 0;">Questions? Reply to this email or contact <a href="mailto:honeymoonhavenresort.lc@gmail.com" style="color: ${THEME.colors.textLight}; text-decoration: none; font-weight: 600;">honeymoonhavenresort.lc@gmail.com</a></p>
-            <p style="${THEME.typography.small} margin: 8px 0 0 0; color: #9ca3af;">&copy; 2026 Honeymoon Haven Resort</p>
+          <div style="background-color: #f8fafc; padding: 24px 40px; border-top: 1px solid ${THEME.colors.border}; text-align: left;">
+            <p style="${THEME.typography.small} margin: 0;">Have a great day! ☀️</p>
+            <p style="${THEME.typography.small} margin: 16px 0 0 0; color: #94a3b8;">
+              Questions? Reply to this email or contact <a href="mailto:honeymoonhavenresort.lc@gmail.com" style="color: ${THEME.colors.textLight}; text-decoration: none; font-weight: 600;">honeymoonhavenresort.lc@gmail.com</a>
+            </p>
           </div>
 
         </div>
@@ -159,9 +166,9 @@ const wrapHtml = (title, bodyContent) => `
 </html>
 `;
 
-// Format details list
+// Format details list styles
 const listStyle = `list-style-type: none; padding: 0; margin: 0;`;
-const listItemStyle = `padding-left: 24px; position: relative; margin-bottom: 8px; color: ${THEME.colors.textLight};`;
+const listItemStyle = `padding-left: 24px; position: relative; margin-bottom: 10px; color: ${THEME.colors.text};`;
 const bulletStyle = `position: absolute; left: 0; color: ${THEME.colors.primary}; font-weight: bold;`;
 
 const emailTemplates = {
@@ -178,8 +185,8 @@ const emailTemplates = {
       <p style="${THEME.typography.body}"><strong>Welcome to the 2026 booking season!</strong> You're receiving this because it's officially <em>your turn</em> to pick your dates for the trailer.</p>
 
       <div style="${THEME.components.callout('info')}">
-        <strong style="display: block; margin-bottom: 8px; color: #1e3a8a;">🆕 What's this all about?</strong>
-        <p style="margin: 0; font-size: 15px;">We've built a brand new web app to make booking the HHR trailer for your guests easier and more organized. No more spreadsheets or email chains - everything's in one place!</p>
+        <strong style="display: block; margin-bottom: 8px;">🆕 What's this all about?</strong>
+        <p style="margin: 0;">We've built a brand new web app to make booking easier. No more spreadsheets! Everything is now in one simple dashboard.</p>
       </div>
     ` : `
       <p style="${THEME.typography.body}">It's officially <strong>your turn</strong> for Round 2! The snake draft order has reversed, and you can now make your second selection.</p>
@@ -197,13 +204,13 @@ const emailTemplates = {
         <p style="${THEME.typography.body} margin-bottom: 0;">You have until <strong>${data.deadline_date} at ${data.deadline_time}</strong> to make your selection.</p>
       </div>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Start Booking Now &rarr;</a>
       </div>
 
       ${isRound1 ? `
-      <p style="${THEME.typography.small} margin-top: 24px; text-align: center;">
-        <strong>Need help?</strong> Hit the Feedback button in the app to let us know. 💙
+      <p style="${THEME.typography.small} margin-top: 32px;">
+        <strong>Note:</strong> Need help? Hit the Feedback button in the app to let us know. 💙
       </p>
       ` : ''}
     `;
@@ -236,19 +243,19 @@ const emailTemplates = {
 
     const body = `
       <p style="${THEME.typography.body}">Good ${isMorning ? 'morning' : 'evening'} ${data.name},</p>
-      <p style="${THEME.typography.body}">${isMorning ? 'This is a friendly reminder that your booking window is still active.' : 'Just checking in on your booking window for Honeymoon Haven Resort.'}</p>
+      <p style="${THEME.typography.body}">${isMorning ? 'Friendly reminder that your booking window is still active! ☀️' : 'Just checking in on your booking window before the day ends. 🌙'}</p>
 
       ${getRoundBadge(data.phase)}
 
-      <div style="${THEME.components.card} text-align: center;">
-        <h3 style="${THEME.typography.h3} margin-top: 0; color: ${THEME.colors.textLight};">Time Remaining</h3>
+      <div style="${THEME.components.card}">
+        <h3 style="${THEME.typography.h3} margin-top: 0;">Time Remaining</h3>
         <p style="font-size: 32px; font-weight: 800; color: ${THEME.colors.primary}; margin: 8px 0;">${data.hours_remaining} hours</p>
-        <p style="${THEME.typography.small}">Expires: ${data.deadline_date} at ${data.deadline_time}</p>
+        <p style="${THEME.typography.small}">Deadline: ${data.deadline_date} at ${data.deadline_time}</p>
       </div>
 
       ${statusSection}
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Go to Dashboard &rarr;</a>
       </div>
     `;
@@ -265,7 +272,7 @@ const emailTemplates = {
       ${getRoundBadge(data.phase)}
 
       <div style="${THEME.components.card} border-color: ${THEME.colors.error.border}; background-color: #fff1f2;">
-         <h3 style="${THEME.typography.h3} margin-top: 0; color: ${THEME.colors.error.text};">Deadline</h3>
+         <h3 style="${THEME.typography.h3} margin-top: 0; color: ${THEME.colors.error.text};">Final Deadline</h3>
          <p style="${THEME.typography.body} font-size: 18px; font-weight: bold; margin: 0;">${data.deadline_date} at ${data.deadline_time}</p>
       </div>
 
@@ -282,10 +289,10 @@ const emailTemplates = {
       ` : ''}
 
       <p style="${THEME.typography.small}">
-        <strong>Note:</strong> If no action is taken by the deadline, your turn will automatically pass to the next shareholder (${data.next_shareholder}).
+        <strong>Head's up:</strong> If no action is taken by the deadline, your turn will automatically pass to the next shareholder (${data.next_shareholder}).
       </p>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button} background-color: ${THEME.colors.error.text};">FINALIZE NOW &rarr;</a>
       </div>
     `;
@@ -312,12 +319,12 @@ const emailTemplates = {
       <div style="${THEME.components.callout('warning')}">
         <h3 style="${THEME.typography.h3} color: ${THEME.colors.warning.text}; margin-top: 0;">Next Step: Payment! 💳</h3>
         <p style="${THEME.typography.body}">Please send an <strong>e-transfer of $${data.total_price}</strong> to:</p>
-        <p style="font-size: 18px; font-weight: bold; margin: 8px 0; word-break: break-all;">honeymoonhavenresort.lc@gmail.com</p>
+        <p style="font-size: 16px; font-weight: bold; margin: 8px 0; color: ${THEME.colors.text};">honeymoonhavenresort.lc@gmail.com</p>
         <p style="${THEME.typography.small} margin-top: 12px;">Message: "${data.name} - Cabin ${data.cabin_number} - ${data.check_in}"</p>
         <p style="${THEME.typography.small} color: ${THEME.colors.warning.text}; font-weight: bold; margin-top: 8px;">Due within 24 hours to secure your booking.</p>
       </div>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Go to Dashboard &rarr;</a>
       </div>
 
@@ -331,14 +338,14 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: Turn Passed - Thank You`;
     const body = `
       <p style="${THEME.typography.h2} margin-top: 0;">Hi ${data.name},</p>
-      <p style="${THEME.typography.body}">Thank you for passing your turn! Your slot has been successfully moved to the next shareholder.</p>
+      <p style="${THEME.typography.body}">Thanks for passing your turn! Your slot has been successfully moved to the next shareholder.</p>
 
       <div style="${THEME.components.card}">
-        <h3 style="${THEME.typography.h3} margin-top: 0;">OPEN SEASON BOOKING</h3>
+        <h3 style="${THEME.typography.h3} margin-top: 0;">👀 OPEN SEASON BOOKING</h3>
         <p style="${THEME.typography.body}">Don't worry - you can still book during our open season! Once all shareholders have had their turn, any remaining dates will be available on a first-come, first-served basis.</p>
       </div>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">View Dashboard</a>
       </div>
     `;
@@ -362,18 +369,18 @@ const emailTemplates = {
     const body = `
       <p style="${THEME.typography.h2} margin-top: 0;">Hi ${data.name},</p>
       <p style="${THEME.typography.body}">Exciting news! It's now your turn to book at Honeymoon Haven Resort!</p>
-      <p style="${THEME.typography.body}">The previous shareholder (${data.previous_shareholder}) has passed their turn, so your booking window has started early.</p>
+      <p style="${THEME.typography.body}">The previous shareholder (${data.previous_shareholder}) has passed their turn, so your booking window has started early. 🚀</p>
 
       ${welcomeSection}
 
       ${getRoundBadge(data.phase)}
 
       <div style="${THEME.components.card}">
-         <h3 style="${THEME.typography.h3} margin-top: 0; color: ${THEME.colors.textLight};">Your Deadline</h3>
-         <p style="${THEME.typography.body} font-size: 18px; font-weight: bold; margin: 0; color: ${THEME.colors.primary};">${data.deadline_date} at ${data.deadline_time}</p>
+         <h3 style="${THEME.typography.h3} margin-top: 0;">Your Deadline</h3>
+         <p style="${THEME.typography.body} font-size: 18px; font-weight: 700; margin: 0; color: ${THEME.colors.primary};">${data.deadline_date} at ${data.deadline_time}</p>
       </div>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Now &rarr;</a>
       </div>
     `;
@@ -385,20 +392,22 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: Booking Window Expired`;
     const body = `
       <p style="${THEME.typography.h2} margin-top: 0;">Hi ${data.name},</p>
-      <p style="${THEME.typography.body}">Your 48-hour booking window for Honeymoon Haven Resort has expired.</p>
-      
       <div style="${THEME.components.callout('warning')}">
-        <p style="margin: 0;">Since no action was taken by the deadline, your turn has automatically passed to the next shareholder (${data.next_shareholder}).</p>
+        <p style="margin: 0;"><strong>Heads up:</strong> Your 48-hour booking window for Honeymoon Haven Resort has expired.</p>
+      </div>
+      
+      <p style="${THEME.typography.body}">Since we didn't hear from you by the deadline, your turn has automatically passed to the next shareholder (${data.next_shareholder}) to keep the draft moving.</p>
+
+      <div style="${THEME.components.card}">
+        <h3 style="${THEME.typography.h3} margin-top: 0;">What happens now?</h3>
+        <ul style="${listStyle}">
+           <li style="${listItemStyle}"><span style="${bulletStyle}">•</span> Your turn for this rotation is complete.</li>
+           <li style="${listItemStyle}"><span style="${bulletStyle}">•</span> The next shareholder is now booking.</li>
+           <li style="${listItemStyle}"><span style="${bulletStyle}">•</span> You can still book during <strong>open season</strong>!</li>
+        </ul>
       </div>
 
-      <p style="${THEME.typography.h3}">What this means</p>
-      <ul style="${listStyle}">
-         <li style="${listItemStyle}"><span style="${bulletStyle}">•</span> Your turn for this rotation is complete</li>
-         <li style="${listItemStyle}"><span style="${bulletStyle}">•</span> The next shareholder can now book their dates</li>
-         <li style="${listItemStyle}"><span style="${bulletStyle}">•</span> You can still book during <strong>open season</strong></li>
-      </ul>
-
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">View Dashboard</a>
       </div>
     `;
@@ -422,18 +431,18 @@ const emailTemplates = {
     const body = `
       <p style="${THEME.typography.h2} margin-top: 0;">Hi ${data.name},</p>
       <p style="${THEME.typography.body}">Good news! It's now your turn to book at Honeymoon Haven Resort!</p>
-      <p style="${THEME.typography.body}">The previous shareholder's booking window has expired, which means your turn has started.</p>
+      <p style="${THEME.typography.body}">The previous shareholder's booking window has expired, which means your turn has started early.</p>
 
       ${welcomeSection}
 
       ${getRoundBadge(data.phase)}
 
       <div style="${THEME.components.card}">
-         <h3 style="${THEME.typography.h3} margin-top: 0; color: ${THEME.colors.textLight};">Your Deadline</h3>
-         <p style="${THEME.typography.body} font-size: 18px; font-weight: bold; margin: 0; color: ${THEME.colors.primary};">${data.deadline_date} at ${data.deadline_time}</p>
+         <h3 style="${THEME.typography.h3} margin-top: 0;">Your Deadline</h3>
+         <p style="${THEME.typography.body} font-size: 18px; font-weight: 700; margin: 0; color: ${THEME.colors.primary};">${data.deadline_date} at ${data.deadline_time}</p>
       </div>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Now &rarr;</a>
       </div>
     `;
@@ -458,13 +467,13 @@ const emailTemplates = {
 
       ${data.within_turn_window ? `
         <div style="${THEME.components.callout('warning')}">
-          <strong>IMPORTANT:</strong> Since this cancellation occurred during your active booking window, your turn has been passed to the next shareholder (${data.next_shareholder}).
+          <strong>Note:</strong> Since this cancellation occurred during your active booking window, your turn has been passed to the next shareholder (${data.next_shareholder}).
         </div>
       ` : `
         <p style="${THEME.typography.body}">Your dates have been released and are now available for other shareholders.</p>
       `}
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">View Dashboard</a>
       </div>
     `;
@@ -476,7 +485,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: Payment Reminder - E-Transfer Due`;
     const body = `
       <p style="${THEME.typography.h2} margin-top: 0;">Hi ${data.name},</p>
-      <p style="${THEME.typography.body}">This is a friendly reminder that your e-transfer payment is due.</p>
+      <p style="${THEME.typography.body}">Just a friendly nudge that your e-transfer payment is due. 💸</p>
 
       <div style="${THEME.components.callout('warning')}">
         <h3 style="${THEME.typography.h3} color: ${THEME.colors.warning.text}; margin-top: 0;">Total Due: $${data.total_price}</h3>
@@ -488,7 +497,7 @@ const emailTemplates = {
         <p style="${THEME.typography.small}"><strong>Deadline: ${data.payment_deadline}</strong></p>
       </div>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="mailto:honeymoonhavenresort.lc@gmail.com" style="${THEME.components.button}">Send E-Transfer &rarr;</a>
       </div>
     `;
@@ -500,7 +509,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: Payment Received - Thank You!`;
     const body = `
       <p style="${THEME.typography.h2} margin-top: 0;">Hi ${data.name},</p>
-      <p style="${THEME.typography.body}">Thank you! We have received your payment for your upcoming stay.</p>
+      <p style="${THEME.typography.body}">Thanks! We've received your payment. ✅</p>
 
       <div style="${THEME.components.callout('success')}">
         <h3 style="${THEME.typography.h3} color: ${THEME.colors.success.text}; margin-top: 0;">PAYMENT CONFIRMED</h3>
@@ -513,7 +522,7 @@ const emailTemplates = {
 
       <p style="${THEME.typography.body}">Your booking is now fully secured. We look forward to seeing you at the lake!</p>
 
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">View Booking</a>
       </div>
     `;
@@ -529,26 +538,26 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: Welcome Guest Guide`;
     const body = `
       <p style="${THEME.typography.body}">Hi there,</p>
-      <p style="${THEME.typography.body}"><strong>${data.shareholder_name}</strong> has shared the Honeymoon Haven Resort Guest Guide with you for your upcoming stay${cabinText}.</p>
+      <p style="${THEME.typography.body}"><strong>${data.shareholder_name}</strong> has shared the Honeymoon Haven Resort Guest Guide with you for your upcoming stay${cabinText}. Welcome!</p>
 
       ${hasDetails ? `
       <div style="${THEME.components.callout('success')}">
         <h3 style="${THEME.typography.h3} color: ${THEME.colors.success.text}; margin-top: 0;">🗓️ YOUR STAY DETAILS</h3>
-        <p style="margin: 0; color: ${THEME.colors.success.text};">
-          Check-in: <strong>${details.checkIn}</strong> (3:00 PM)<br>
-          Check-out: <strong>${details.checkOut}</strong> (11:00 AM)
-        </p>
+        <ul style="${listStyle}">
+          <li style="${listItemStyle} margin-bottom: 4px; color: ${THEME.colors.success.text};"><span style="${bulletStyle} color: ${THEME.colors.success.text};">•</span> Check-in: <strong>${details.checkIn}</strong> (3:00 PM)</li>
+          <li style="${listItemStyle} margin-bottom: 4px; color: ${THEME.colors.success.text};"><span style="${bulletStyle} color: ${THEME.colors.success.text};">•</span> Check-out: <strong>${details.checkOut}</strong> (11:00 AM)</li>
+        </ul>
       </div>
       ` : ''}
 
       <div style="${THEME.components.card}">
-        <h3 style="${THEME.typography.h3} margin-top: 0;">📍 LOCATION</h3>
+        <h3 style="${THEME.typography.h3} margin-top: 0;">📍 GETTING HERE</h3>
         <p style="${THEME.typography.body} margin-bottom: 8px;"><strong>Honeymoon Haven Resort</strong><br>
         10257 South Shore Road, Honeymoon Bay, BC</p>
         <a href="https://www.google.com/maps/search/?api=1&query=Honeymoon+Haven+Resort+10257+South+Shore+Road+Honeymoon+Bay+BC+V0R+1Y0">View on Google Maps</a>
       </div>
 
-      <h3 style="${THEME.typography.h2}">📋 Resort Rules</h3>
+      <h3 style="${THEME.typography.h2}">📋 Essentials</h3>
       
       <div style="margin-bottom: 24px;">
         <strong style="display: block; color: ${THEME.colors.text}; margin-bottom: 8px;">🌊 Hot Tub & Safety</strong>
@@ -577,7 +586,7 @@ const emailTemplates = {
         </ul>
       </div>
 
-      <h3 style="${THEME.typography.h2} color: ${THEME.colors.success.text}; margin-top: 40px;">🔑 Check-In Checklist</h3>
+      <h3 style="${THEME.typography.h2} color: ${THEME.colors.success.text}; margin-top: 40px;">🔑 Check-In</h3>
       <div style="${THEME.components.card}">
          <div style="margin-bottom: 16px;">
             <strong>⚡ Power & Water Heater</strong>
@@ -593,7 +602,7 @@ const emailTemplates = {
          </div>
       </div>
 
-      <h3 style="${THEME.typography.h2} color: ${THEME.colors.error.text}; margin-top: 40px;">👋 Check-Out Checklist</h3>
+      <h3 style="${THEME.typography.h2} color: ${THEME.colors.error.text}; margin-top: 40px;">👋 Check-Out</h3>
       <div style="${THEME.components.card} border-color: ${THEME.colors.error.border};">
          <div style="margin-bottom: 16px;">
             <strong>🔌 Systems Off</strong>
@@ -613,7 +622,7 @@ const emailTemplates = {
          </div>
       </div>
 
-      <p style="${THEME.typography.body} text-align: center; margin-top: 40px;">We hope you enjoy your stay!</p>
+      <p style="${THEME.typography.body} margin-top: 40px;">We hope you enjoy your stay!</p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -635,7 +644,7 @@ const emailTemplates = {
         <p style="${THEME.typography.body} white-space: pre-wrap;">${data.message}</p>
       </div>
       
-      <div style="text-align: center; margin: 32px 0;">
+      <div style="margin: 32px 0;">
         <a href="mailto:${data.email}" style="${THEME.components.secondaryButton}">Reply to User</a>
       </div>
     `;
