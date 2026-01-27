@@ -112,13 +112,6 @@ const emailTemplates = {
       </div>
 
       ${isRound1 ? `
-      <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-        <strong>🔐 Login Credentials:</strong><br>
-        <p style="margin: 10px 0 0 0;">
-          • <strong>Username:</strong> Your email (the one receiving this)<br>
-          • <strong>Password:</strong> cabin# (all lowercase, e.g., "cabin7")
-        </p>
-      </div>
       
       <p><strong>Need help or have suggestions?</strong> We'd love to hear from you! Hit the <strong>Feedback</strong> button in the app anytime to share your thoughts, report issues, or suggest improvements. We're here to make this work for everyone. 💙</p>
       ` : ''}
@@ -284,9 +277,6 @@ const emailTemplates = {
       </div>
 
       ${isRound1 ? `
-      <p style="font-size: 0.9em; color: #64748b; margin-top: 20px;">
-        <strong>Login:</strong> Your email & password "cabin#" (e.g. cabin7)
-      </p>
       ` : ''}
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -344,9 +334,6 @@ const emailTemplates = {
       </div>
       
       ${isRound1 ? `
-      <p style="font-size: 0.9em; color: #64748b; margin-top: 20px;">
-        <strong>Login:</strong> Your email & password "cabin#" (e.g. cabin7)
-      </p>
       ` : ''}
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
