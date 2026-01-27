@@ -235,16 +235,36 @@ export function LiveTurnMonitor() {
                 </div>
 
                 <div className="space-y-2">
-                    {renderChecklistItem('lastTurnStartSent', 'turnStarted', '1. Turn Started Email')}
-                    {renderChecklistItem('sameDayEveningSent', 'evening', '2. First Night Reminder (7 PM)')}
-                    {renderChecklistItem('nextDayMorningSent', 'day2', '3. Middle Morning (9 AM)')}
-                    {renderChecklistItem('lastDayMorningSent', 'final', '4. Final Morning (9 AM)')}
-                    {renderChecklistItem('twoHourWarningSent', 'urgent', '5. Urgent Warning (T-2h)')}
+                    {loadingLog ? (
+                        /* Skeleton Loading State */
+                        [1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 animate-pulse">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-5 h-5 bg-slate-200 rounded-full"></div>
+                                    <div className="space-y-1">
+                                        <div className="w-32 h-4 bg-slate-200 rounded"></div>
+                                        <div className="w-24 h-3 bg-slate-200 rounded"></div>
+                                    </div>
+                                </div>
+                                <div className="w-20 h-6 bg-slate-200 rounded"></div>
+                            </div>
+                        ))
+                    ) : (
+                        <>
+                            {renderChecklistItem('lastTurnStartSent', 'turnStarted', '1. Turn Started Email')}
+                            {renderChecklistItem('sameDayEveningSent', 'evening', '2. First Night Reminder (7 PM)')}
+                            {renderChecklistItem('nextDayMorningSent', 'day2', '3. Middle Morning (9 AM)')}
+                            {renderChecklistItem('lastDayMorningSent', 'final', '4. Final Morning (9 AM)')}
+                            {renderChecklistItem('twoHourWarningSent', 'urgent', '5. Urgent Warning (T-2h)')}
+                        </>
+                    )}
                 </div>
 
-                <p className="text-[10px] text-slate-400 mt-4 text-center">
-                    System automatically detects if emails are <span className="font-bold text-red-500">Missed</span> based on the schedule.
-                </p>
+                {!loadingLog && (
+                    <p className="text-[10px] text-slate-400 mt-4 text-center">
+                        System automatically detects if emails are <span className="font-bold text-red-500">Missed</span> based on the schedule.
+                    </p>
+                )}
             </div>
 
             {/* Replaced inline modal with standardized ConfirmationModal */}
