@@ -144,6 +144,13 @@ export function Dashboard() {
         }
     };
 
+    // Determine if we should defer the tour
+    const isWelcomePending = React.useMemo(() => {
+        if (!loggedInShareholder || shareholders.length === 0) return false;
+        const myRecord = shareholders.find(s => s.name === loggedInShareholder);
+        return myRecord && !myRecord.seenWelcome;
+    }, [loggedInShareholder, shareholders]);
+
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
