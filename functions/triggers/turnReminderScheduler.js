@@ -257,7 +257,7 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
     const finalSubject = subject;
 
     await sendGmail({
-        to: { name: shareholderName, email: recipient },
+        to: { name: shareholderName, email: recipient, cabinNumber }, // ADDED cabinNumber
         subject: finalSubject,
         htmlContent: htmlContent
     });
@@ -300,7 +300,7 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
     const finalSubject = subject;
 
     await sendGmail({
-        to: { name: shareholderName, email: recipient },
+        to: { name: shareholderName, email: recipient, cabinNumber }, // ADDED cabinNumber
         subject: finalSubject,
         htmlContent: htmlContent
     });
