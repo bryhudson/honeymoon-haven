@@ -164,9 +164,9 @@ export function SystemTab({
                             </div>
                             <button
                                 onClick={() => setConfirmMaintenance(true)}
-                                className={`shrink-0 px-5 py-2.5 rounded-lg font-bold text-sm transition-all border ${isSystemFrozen
-                                        ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
-                                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                                className={`shrink-0 w-full md:w-48 justify-center px-5 py-2.5 rounded-lg font-bold text-sm transition-all shadow-sm flex items-center gap-2 ${isSystemFrozen
+                                    ? 'bg-red-600 text-white hover:bg-red-700 border border-transparent'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 border border-transparent'
                                     }`}
                             >
                                 {isSystemFrozen ? 'Deactivate Mode' : 'Activate Mode'}
@@ -191,7 +191,7 @@ export function SystemTab({
                             </div>
                             <button
                                 onClick={() => setConfirmReset(true)}
-                                className="shrink-0 px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all"
+                                className="shrink-0 w-full md:w-48 justify-center px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-all shadow-sm border border-transparent flex items-center gap-2 pt-2.5"
                             >
                                 Recalculate State
                             </button>
@@ -216,7 +216,7 @@ export function SystemTab({
                                 </div>
                                 <button
                                     onClick={handleWipeDatabase}
-                                    className="shrink-0 px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg font-bold text-sm hover:bg-red-50 transition-all shadow-sm"
+                                    className="shrink-0 w-full md:w-48 justify-center px-5 py-2.5 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition-all shadow-sm border border-transparent flex items-center gap-2"
                                 >
                                     Nuke & Reset
                                 </button>
