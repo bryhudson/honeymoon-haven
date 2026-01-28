@@ -18,7 +18,7 @@ if (admin.apps.length === 0) {
 
 const { sendGmail, gmailSecrets } = require("./helpers/email");
 const { emailTemplates } = require("./helpers/emailTemplates");
-const { onBookingChangeTrigger, sendGuestGuideEmail } = require("./triggers/emailTriggers");
+const { onBookingChangeTrigger, sendGuestGuideEmail, onDraftStatusChange } = require("./triggers/emailTriggers");
 const { createAccount, deleteAccount } = require("./triggers/userManagement");
 const { turnReminderScheduler } = require("./triggers/turnReminderScheduler");
 const { autosyncDraftStatus } = require("./triggers/autosyncDraftStatus");
@@ -95,6 +95,7 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 exports.onBookingChangeTrigger = onBookingChangeTrigger;
 
 exports.sendGuestGuideEmail = sendGuestGuideEmail;
+exports.onDraftStatusChange = onDraftStatusChange;
 exports.turnReminderScheduler = turnReminderScheduler;
 exports.autosyncDraftStatus = autosyncDraftStatus;
 exports.sendTestEmail = sendTestEmail;

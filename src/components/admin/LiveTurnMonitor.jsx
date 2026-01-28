@@ -53,13 +53,17 @@ export function LiveTurnMonitor() {
             case 'day2':
                 const mor = new Date(d); mor.setDate(d.getDate() + 1); mor.setHours(9, 0, 0, 0);
                 return mor;
-            case 'final':
-                const fin = new Date(d); fin.setDate(d.getDate() + 2); fin.setHours(9, 0, 0, 0);
-                return fin;
-            case 'urgent':
+            case 'evening2': // Day 2 7 PM
+                const eve2 = new Date(d); eve2.setDate(d.getDate() + 1); eve2.setHours(19, 0, 0, 0);
+                return eve2;
+            case 'final6am':
                 if (!windowEnds) return null;
-                const urg = new Date(windowEnds); urg.setHours(urg.getHours() - 2);
-                return urg;
+                const f6 = new Date(windowEnds); f6.setHours(f6.getHours() - 4); // 6 AM (T-4h)
+                return f6;
+            case 'final9am':
+                if (!windowEnds) return null;
+                const f9 = new Date(windowEnds); f9.setHours(f9.getHours() - 1); // 9 AM (T-1h)
+                return f9;
             default: return null;
         }
     };
@@ -251,11 +255,12 @@ export function LiveTurnMonitor() {
                         ))
                     ) : (
                         <>
-                            {renderChecklistItem('lastTurnStartSent', 'turnStarted', '1. Turn Started Email')}
-                            {renderChecklistItem('sameDayEveningSent', 'evening', '2. First Night Reminder (7 PM)')}
-                            {renderChecklistItem('nextDayMorningSent', 'day2', '3. Middle Morning (9 AM)')}
-                            {renderChecklistItem('lastDayMorningSent', 'final', '4. Final Morning (9 AM)')}
-                            {renderChecklistItem('twoHourWarningSent', 'urgent', '5. Urgent Warning (T-2h)')}
+                            {renderChecklistItem('lastTurnStartSent', 'turnStarted', '1. Turn Started (Day 1 - 10 AM)')}
+                            {renderChecklistItem('sameDayEveningSent', 'evening', '2. Day 1 Evening (7 PM)')}
+                            {renderChecklistItem('nextDayMorningSent', 'day2', '3. Day 2 Morning (9 AM)')}
+                            {renderChecklistItem('nextDayEveningSent', 'evening2', '4. Day 2 Evening (7 PM)')}
+                            {renderChecklistItem('finalMorning6amSent', 'final6am', '5. Day 3 Morning (6 AM)')}
+                            {renderChecklistItem('finalMorning9amSent', 'final9am', '6. Day 3 Urgent (9 AM)')}
                         </>
                     )}
                 </div>

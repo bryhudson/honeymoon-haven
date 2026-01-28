@@ -30,6 +30,7 @@ export function AdminDashboard() {
 
     // Tab State: 'system', 'bookings', 'history'
     const [activeTab, setActiveTab] = useState('system');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const [actionLog, setActionLog] = useState("");
     const [allBookings, setAllBookings] = useState([]);
@@ -1265,40 +1266,108 @@ export function AdminDashboard() {
                     </div>
                 </div>
 
-                <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit">
-                    <button
-                        onClick={() => setActiveTab('bookings')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                        Booking Management
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('schedule')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'schedule' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                        2026 Season Schedule
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('users')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                        Users & Roles
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('system')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <span>System</span>
-                            {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
-                        </div>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('notifications')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'notifications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                        Notifications
-                    </button>
+                {/* Responsive Navigation */}
+                <div className="w-full relative z-20">
+                    {/* Mobile: Hamburger Menu */}
+                    <div className="md:hidden">
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="w-full bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm hover:bg-slate-50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                {/* Dynamic Icon based on active tab */}
+                                {activeTab === 'bookings' && <ListIcon className="w-5 h-5 text-slate-500" />}
+                                {activeTab === 'schedule' && <Calendar className="w-5 h-5 text-slate-500" />}
+                                {activeTab === 'users' && <Users className="w-5 h-5 text-slate-500" />}
+                                {activeTab === 'system' && <Settings className="w-5 h-5 text-slate-500" />}
+                                {activeTab === 'notifications' && <Bell className="w-5 h-5 text-slate-500" />}
+
+                                <span className="font-bold text-slate-800">
+                                    {activeTab === 'bookings' && 'Booking Management'}
+                                    {activeTab === 'schedule' && '2026 Season Schedule'}
+                                    {activeTab === 'users' && 'Users & Roles'}
+                                    {activeTab === 'system' && 'System Controls'}
+                                    {activeTab === 'notifications' && 'Notification Center'}
+                                </span>
+                            </div>
+                            {isMobileMenuOpen ? (
+                                <XCircle className="w-5 h-5 text-slate-400" />
+                            ) : (
+                                <ListIcon className="w-5 h-5 text-slate-400" />
+                            )}
+                        </button>
+
+                        {/* Mobile Menu Dropdown */}
+                        {isMobileMenuOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col divide-y divide-slate-100">
+                                {[
+                                    { id: 'bookings', label: 'Booking Management', icon: ListIcon },
+                                    { id: 'schedule', label: '2026 Season Schedule', icon: Calendar },
+                                    { id: 'users', label: 'Users & Roles', icon: Users },
+                                    { id: 'system', label: 'System Controls', icon: Settings },
+                                    { id: 'notifications', label: 'Notification Center', icon: Bell }
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className={`flex items-center gap-3 p-4 text-left transition-colors ${activeTab === tab.id
+                                            ? 'bg-indigo-50 text-indigo-700 font-bold'
+                                            : 'text-slate-600 hover:bg-slate-50'
+                                            }`}
+                                    >
+                                        <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                        <span>{tab.label}</span>
+                                        {tab.id === 'system' && isSystemFrozen && (
+                                            <span className="ml-auto w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                        )}
+                                        {activeTab === tab.id && (
+                                            <CheckCircle className="w-4 h-4 ml-auto text-indigo-600" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop: Tabs */}
+                    <div className="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit">
+                        <button
+                            onClick={() => setActiveTab('bookings')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            Booking Management
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('schedule')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'schedule' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            2026 Season Schedule
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('users')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            Users & Roles
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('system')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <span>System</span>
+                                {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('notifications')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'notifications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            Notifications
+                        </button>
+                    </div>
                 </div>
 
                 {/* System Tab Content */}

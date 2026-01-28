@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TestTube, Clock, Zap, Settings, Bell } from 'lucide-react';
+import { TestTube, Clock, Zap, Settings, Bell, Info } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { LiveTurnMonitor } from './LiveTurnMonitor';
@@ -108,17 +108,17 @@ export function NotificationsTab({ triggerAlert }) {
 
                         {/* Timeline Visualization */}
                         <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 ml-2">
-                            {/* Evening */}
+                            {/* Day 1 Evening */}
                             <div className="relative">
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Subject: Evening Reminder: Your Honeymoon Haven Booking Awaits</div>
-                                        <div className="text-sm font-bold text-slate-700">First Night (Same Day) @ 7:00 PM</div>
-                                        <div className="text-xs text-slate-400">Evening Check-in</div>
+                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Day 1 - Evening</div>
+                                        <div className="text-sm font-bold text-slate-700">7:00 PM (First Night)</div>
+                                        <div className="text-xs text-slate-400">"Your Honeymoon Haven Booking Awaits"</div>
                                     </div>
                                     <button
-                                        onClick={() => initiateTestReminder('evening', 'First Night Reminder')}
+                                        onClick={() => initiateTestReminder('evening', 'Day 1 Evening (7 PM)')}
                                         className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                     >
                                         <Zap className="w-3 h-3" /> Test
@@ -126,17 +126,17 @@ export function NotificationsTab({ triggerAlert }) {
                                 </div>
                             </div>
 
-                            {/* Day 2 */}
+                            {/* Day 2 Morning */}
                             <div className="relative">
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
-                                        <div className="text-sm font-bold text-slate-700">Middle Morning (Day 2) @ 9:00 AM</div>
-                                        <div className="text-xs text-slate-400">Mid-point Reminder</div>
+                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Day 2 - Morning</div>
+                                        <div className="text-sm font-bold text-slate-700">9:00 AM (Middle)</div>
+                                        <div className="text-xs text-slate-400">"Complete Your Booking"</div>
                                     </div>
                                     <button
-                                        onClick={() => initiateTestReminder('day2', 'Middle Morning Reminder')}
+                                        onClick={() => initiateTestReminder('day2', 'Day 2 Morning (9 AM)')}
                                         className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                     >
                                         <Zap className="w-3 h-3" /> Test
@@ -144,17 +144,17 @@ export function NotificationsTab({ triggerAlert }) {
                                 </div>
                             </div>
 
-                            {/* Day 3 / Final */}
+                            {/* Day 2 Evening (NEW) */}
                             <div className="relative">
                                 <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Subject: Morning Reminder: Complete Your Booking</div>
-                                        <div className="text-sm font-bold text-slate-700">Final Morning (Day 3) @ 9:00 AM</div>
-                                        <div className="text-xs text-slate-400">Final Morning Warning</div>
+                                        <div className="text-xs font-bold text-purple-600 mb-0.5">Day 2 - Evening</div>
+                                        <div className="text-sm font-bold text-slate-700">7:00 PM (Night 2)</div>
+                                        <div className="text-xs text-slate-400">"Friendly reminder..."</div>
                                     </div>
                                     <button
-                                        onClick={() => initiateTestReminder('final', 'Final Morning Warning')}
+                                        onClick={() => initiateTestReminder('evening2', 'Day 2 Evening (7 PM)')}
                                         className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                     >
                                         <Zap className="w-3 h-3" /> Test
@@ -162,17 +162,35 @@ export function NotificationsTab({ triggerAlert }) {
                                 </div>
                             </div>
 
-                            {/* Urgent */}
+                            {/* Day 3 Morning - Early */}
                             <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white animate-pulse"></div>
+                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
                                 <div className="flex items-center justify-between group">
                                     <div>
-                                        <div className="text-xs font-bold text-amber-600 mb-0.5">Subject: URGENT: 2 Hours Left to Complete Your Booking</div>
-                                        <div className="text-sm font-bold text-slate-700">2 Hours Before End</div>
-                                        <div className="text-xs text-slate-400">Urgent Deadline Alert</div>
+                                        <div className="text-xs font-bold text-amber-600 mb-0.5">Day 3 - Early Warning</div>
+                                        <div className="text-sm font-bold text-slate-700">6:00 AM (Final Day)</div>
+                                        <div className="text-xs text-slate-400">4 Hours Remaining</div>
                                     </div>
                                     <button
-                                        onClick={() => initiateTestReminder('urgent', 'Urgent Warning')}
+                                        onClick={() => initiateTestReminder('final6am', 'Final Morning (6 AM)')}
+                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                    >
+                                        <Zap className="w-3 h-3" /> Test
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Day 3 Urgent */}
+                            <div className="relative">
+                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-red-500 border-2 border-white animate-pulse"></div>
+                                <div className="flex items-center justify-between group">
+                                    <div>
+                                        <div className="text-xs font-bold text-red-600 mb-0.5">Day 3 - URGENT</div>
+                                        <div className="text-sm font-bold text-slate-700">9:00 AM (1 Hour Left)</div>
+                                        <div className="text-xs text-slate-400">"URGENT: 1 Hour Left"</div>
+                                    </div>
+                                    <button
+                                        onClick={() => initiateTestReminder('final9am', 'Urgent Warning (9 AM)')}
                                         className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
                                     >
                                         <Zap className="w-3 h-3" /> Test
@@ -231,6 +249,21 @@ export function NotificationsTab({ triggerAlert }) {
             </div>
 
             {/* 2. Email History Log */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                        <Info className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-blue-900">Safety Verification Note</h4>
+                        <p className="text-sm text-blue-700 mt-1">
+                            When <strong>Test Mode</strong> is active, the logs below display the <span className="underline decoration-blue-400 decoration-2 underline-offset-2">Intended Recipient</span> so you can verify the logic is correct.
+                            Rest assured, the actual emails are <strong>redirected to you</strong> (Admin) and are <strong>NOT</strong> sent to the shareholders.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <EmailHistoryTab />
 
             {/* Test Email Recipient Modal */}

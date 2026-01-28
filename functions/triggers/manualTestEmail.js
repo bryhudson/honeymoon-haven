@@ -57,14 +57,19 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         const isTestMode = settingsDoc.exists ? (settingsDoc.data().isTestMode !== false) : true;
 
         // 5. Prepare test email data
+        const testDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h from now
+
         const testData = {
             name: shareholderName,
             round: 1,
             phase: 'ROUND_1',
-            deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toLocaleString('en-US', {
+            deadline_date: testDeadline.toLocaleString('en-US', {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
+                timeZone: 'America/Vancouver'
+            }),
+            deadline_time: testDeadline.toLocaleString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true,
@@ -223,10 +228,11 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
 
         // Define reminder messages
         const reminderMessages = {
-            evening: { type: 'evening', hoursRemaining: 49, isUrgent: false }, // ~7pm Day 1 (starts at -1h? No, 7pm is 21 hours remains? Wait. 48h. 7pm Day 1 is 3h into window? No window starts 7pm? Turn starts 10am? Wait. 48h window. Day 1 7pm = 9h elapsed = 39h remaining.
-            day2: { type: 'morning', hoursRemaining: 25, isUrgent: false }, // Day 2 9am = 23h elapsed = 25h remaining
-            final: { type: 'morning', hoursRemaining: 1, isUrgent: false }, // Day 3 9am = 47h elapsed = 1h remaining? No. Deadline is 10am? Deadline is variable. Let's just use placeholder.
-            urgent: { type: 'evening', hoursRemaining: 2, isUrgent: true } // 2h remaining. Type doesn't matter for urgent template.
+            evening: { type: 'evening', hoursRemaining: 41, isUrgent: false }, // Day 1 7 PM (7h in)
+            day2: { type: 'morning', hoursRemaining: 25, isUrgent: false }, // Day 2 9 AM
+            evening2: { type: 'evening', hoursRemaining: 15, isUrgent: false }, // Day 2 7 PM
+            final6am: { type: 'morning', hoursRemaining: 4, isUrgent: false }, // Day 3 6 AM
+            final9am: { type: 'morning', hoursRemaining: 1, isUrgent: true } // Day 3 9 AM (Urgent)
         };
 
         const config = reminderMessages[reminderType];

@@ -55,10 +55,11 @@ exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request
             name: targetShareholder,
             round: round || statusData.round || 1, // Allow override or fetch
             phase: statusData.phase || 'ROUND_1',
-            type: ['day2', 'final'].includes(notificationType) ? 'morning' : 'evening', // Infer type
+            phase: statusData.phase || 'ROUND_1',
+            type: ['day2', 'final6am', 'final9am'].includes(notificationType) ? 'morning' : 'evening', // Infer type
             hours_remaining: Math.round((deadlineDateObj - Date.now()) / (1000 * 60 * 60)),
-            deadline_date: deadlineDateObj.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-            deadline_time: deadlineDateObj.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+            deadline_date: deadlineDateObj.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Vancouver' }),
+            deadline_time: deadlineDateObj.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Vancouver' }),
             status_message: "Admin manually triggered this notification.",
             urgency_message: notificationType === 'urgent' ? "⚠️ URGENT REMINDER" : "Friendly Reminder",
             dashboard_url: "https://hhr-trailer-booking.web.app/"
@@ -70,10 +71,14 @@ exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request
             case 'turnStarted': templateFn = emailTemplates.turnStarted; break;
             case 'evening':
             case 'day2':
-            case 'final':
+            case 'evening2':
+            case 'final6am':
                 templateFn = emailTemplates.reminder;
                 break;
-            case 'urgent': templateFn = emailTemplates.finalWarning; break;
+            case 'urgent':
+            case 'final9am':
+                templateFn = emailTemplates.finalWarning;
+                break;
             default:
                 throw new HttpsError('invalid-argument', `Unknown notification type: ${notificationType}`);
         }
@@ -96,8 +101,9 @@ exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request
         if (notificationType === 'turnStarted') logUpdate.lastTurnStartSent = admin.firestore.Timestamp.now();
         if (notificationType === 'evening') logUpdate.sameDayEveningSent = admin.firestore.Timestamp.now();
         if (notificationType === 'day2') logUpdate.nextDayMorningSent = admin.firestore.Timestamp.now();
-        if (notificationType === 'final') logUpdate.lastDayMorningSent = admin.firestore.Timestamp.now();
-        if (notificationType === 'urgent') logUpdate.twoHourWarningSent = admin.firestore.Timestamp.now();
+        if (notificationType === 'evening2') logUpdate.nextDayEveningSent = admin.firestore.Timestamp.now();
+        if (notificationType === 'final6am') logUpdate.finalMorning6amSent = admin.firestore.Timestamp.now();
+        if (notificationType === 'final9am') logUpdate.finalMorning9amSent = admin.firestore.Timestamp.now();
 
         logUpdate.forceSentBy = request.auth.token.email;
         logUpdate.forceSentAt = admin.firestore.Timestamp.now();

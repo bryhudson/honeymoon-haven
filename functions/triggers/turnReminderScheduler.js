@@ -184,40 +184,75 @@ async function handleNormalModeReminders(
         // NOTE: This assumes UTC-8 (PST). During PDT (April-Oct), 17:00 UTC is 10:00 AM PDT.
         // Reminders will arrive at 10 AM instead of 9 AM during the season. 
         // This is acceptable for now but could be improved with 'luxon' or similar.
+        // 9am PST Day 2 (Middle Morning)
         nextDayMorning = new Date(turnStart);
         nextDayMorning.setDate(nextDayMorning.getDate() + 1);
-        nextDayMorning.setHours(17, 0, 0, 0);
+        nextDayMorning.setHours(17, 0, 0, 0); // 17:00 UTC = 9:00 AM PST
 
-        // 9am PST last day = 17:00 UTC last day
-        lastDayMorning = new Date(turnStart);
-        lastDayMorning.setDate(lastDayMorning.getDate() + 2);
-        lastDayMorning.setHours(17, 0, 0, 0);
+        // 7pm PST Day 2 (Middle Evening) - NEW
+        nextDayEvening = new Date(turnStart);
+        nextDayEvening.setDate(nextDayEvening.getDate() + 1);
+        nextDayEvening.setHours(3, 0, 0, 0); // 03:00 UTC (Next Day) = 7:00 PM PST
+        // Note: nextDayEvening is technically Day 3 in UTC, so we add 2 days to date if using base UTC logic?
+        // Wait, turnStart is UTC? 
+        // Let's rely on relative Date logic.
+        // turnStart (10am D1). +1d = 10am D2. Set hours 19 (7pm).
+        // JS Date setHours(19) sets it to 19:00 local time if using local, or we should use UTC.
+        // The previous code used UTC offsets.
+        // 9am PST = 17:00 UTC.
+        // 7pm PST = 03:00 UTC (Next Day).
 
-        twoHourWarning = new Date(turnEnd);
-        twoHourWarning.setHours(twoHourWarning.getHours() - 2); // 2h before deadline (Relative is fine)
+        // Let's stick to the pattern:
+        // Day 2 7pm:
+        nextDayEvening = new Date(turnStart);
+        nextDayEvening.setDate(nextDayEvening.getDate() + 2); // +2 because 7pm PST is 3am UTC next day
+        nextDayEvening.setHours(3, 0, 0, 0);
+
+        // Final Morning 6am (T-4h)
+        // 6am PST = 14:00 UTC
+        finalMorning6am = new Date(turnEnd);
+        finalMorning6am.setHours(14, 0, 0, 0); // Directly set to 14:00 UTC of the deadline day?
+        // Wait, deadline is 10am PST = 18:00 UTC.
+        // 6am PST is 4 hours before.
+        // 18 - 4 = 14:00 UTC. Correct.
+        // But turnEnd might vary? If turnEnd is flexible, use relative subtraction.
+        finalMorning6am = new Date(turnEnd);
+        finalMorning6am.setHours(turnEnd.getHours() - 4);
+
+        // Final Urgent 9am (T-1h)
+        finalMorning9am = new Date(turnEnd);
+        finalMorning9am.setHours(turnEnd.getHours() - 1);
     }
 
     logger.info(`Normal Mode - Checking reminders at ${now.toISOString()}`);
 
     // Check each reminder time (in priority order - most urgent first)
 
-    // 2h before deadline - URGENT
-    if (now >= twoHourWarning && now < turnEnd && !notificationLog.twoHourWarningSent) {
-        logger.info("Sending 2-hour urgent reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 hours", true, isTestMode, 'evening', cabinNumber);
+    // 1. Final Morning 9 AM (Urgent 1h)
+    if (now >= finalMorning9am && now < turnEnd && !notificationLog.finalMorning9amSent) {
+        logger.info("Sending final urgent reminder (9 AM)");
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, 'morning', cabinNumber);
         await notificationLogRef.update({
-            twoHourWarningSent: admin.firestore.Timestamp.now()
+            finalMorning9amSent: admin.firestore.Timestamp.now()
         });
     }
-    // 9am on last day
-    else if (now >= lastDayMorning && !notificationLog.lastDayMorningSent) {
-        logger.info("Sending last day 9am reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "final day", false, isTestMode, 'morning', cabinNumber);
+    // 2. Final Morning 6 AM (4h)
+    else if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
+        logger.info("Sending final morning reminder (6 AM)");
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, 'morning', cabinNumber);
         await notificationLogRef.update({
-            lastDayMorningSent: admin.firestore.Timestamp.now()
+            finalMorning6amSent: admin.firestore.Timestamp.now()
         });
     }
-    // 9am on next day
+    // 3. Day 2 Evening (7 PM)
+    else if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
+        logger.info("Sending Day 2 evening reminder (7 PM)");
+        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'evening', cabinNumber);
+        await notificationLogRef.update({
+            nextDayEveningSent: admin.firestore.Timestamp.now()
+        });
+    }
+    // 4. Day 2 Morning (9 AM)
     else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
         logger.info("Sending next day 9am reminder");
         await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
@@ -225,7 +260,7 @@ async function handleNormalModeReminders(
             nextDayMorningSent: admin.firestore.Timestamp.now()
         });
     }
-    // 7pm same day
+    // 5. Day 1 Evening (7 PM)
     else if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
         logger.info("Sending same day 7pm reminder");
         await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);

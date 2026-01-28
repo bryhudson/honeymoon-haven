@@ -1,5 +1,5 @@
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onDocumentWritten, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
@@ -436,3 +436,82 @@ function calculateNights(start, end) {
     const diff = e.getTime() - s.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * 4. Status Trigger: Turn Skipped Notification
+ * Listens for changes in Active Picker (Draft Status) to detect Timeouts.
+ * If the user changes BUT they didn't make a booking/pass (checked via logs), they were SKIPPED.
+ */
+exports.onDraftStatusChange = onDocumentUpdated({ document: "status/draftStatus", secrets: gmailSecrets }, async (event) => {
+    logger.info("TRIGGER FIRED: onDraftStatusChange");
+
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+
+    if (!before || !after) return;
+
+    const previousPicker = before.activePicker;
+    const currentPicker = after.activePicker;
+
+    // Only run if the turn has actually moved to someone else (or finished)
+    if (previousPicker && previousPicker !== currentPicker) {
+        logger.info(`Turn detected moving from ${previousPicker} to ${currentPicker || 'End of Draft'}`);
+
+        // Check if previousPicker effectively passed (Timed Out) or manually acted
+        // We look at the notification log for that user's turn
+        const round = before.round || 1;
+        const logId = `${previousPicker}-${round}`;
+
+        const logDoc = await db.collection("notification_log").doc(logId).get();
+        const logData = logDoc.exists ? logDoc.data() : {};
+
+        // Did they act?
+        const hasBooked = !!logData.bookingConfirmedSent;
+        const hasPassed = !!logData.passConfirmedSent;
+        const hasBeenSkippedAlready = !!logData.autoPassSent; // Anti-duplicate
+
+        if (!hasBooked && !hasPassed && !hasBeenSkippedAlready) {
+            logger.info(`🚨 TIMEOUT DETECTED: ${previousPicker} did not book or pass manually. Sending Skip Notification.`);
+
+            // Get Email
+            const userProfile = await getUserProfile(null, previousPicker);
+            const email = userProfile.email;
+
+            if (!email) {
+                logger.error(`No email found for skipped user ${previousPicker}`);
+                return;
+            }
+
+            // Prepare Email Data
+            const templateData = {
+                name: previousPicker,
+                next_shareholder: currentPicker || "Next Shareholder",
+                dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
+            };
+
+            const { subject, htmlContent } = emailTemplates.autoPassCurrent(templateData);
+
+            try {
+                await sendGmail({
+                    to: { name: previousPicker, email: email },
+                    subject: subject,
+                    htmlContent: htmlContent
+                });
+
+                // Mark log
+                await db.collection("notification_log").doc(logId).set({
+                    autoPassSent: admin.firestore.Timestamp.now(),
+                    skippedAt: admin.firestore.Timestamp.now()
+                }, { merge: true });
+
+                logger.info(`Skipped notification sent to ${previousPicker}`);
+
+            } catch (error) {
+                logger.error(`Failed to send skipped notification to ${previousPicker}`, error);
+            }
+
+        } else {
+            logger.info(`Turn moved naturally. Booked: ${hasBooked}, Passed: ${hasPassed}, AlreadySkipped: ${hasBeenSkippedAlready}`);
+        }
+    }
+});
