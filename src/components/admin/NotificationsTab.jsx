@@ -5,7 +5,7 @@ import { ConfirmationModal } from '../ConfirmationModal';
 import { LiveTurnMonitor } from './LiveTurnMonitor';
 import { EmailHistoryTab } from './EmailHistoryTab';
 
-export function NotificationsTab({ triggerAlert }) {
+export function NotificationsTab({ triggerAlert, isTestMode = true }) {
     const { currentUser } = useAuth();
     const [testRecipient, setTestRecipient] = useState('bryan.m.hudson@gmail.com');
     const [pendingTest, setPendingTest] = useState(null); // { type, category, label }
@@ -22,6 +22,43 @@ export function NotificationsTab({ triggerAlert }) {
     }, [currentUser]);
 
     const [activeTab, setActiveTab] = useState('monitor'); // 'monitor' | 'testing' | 'history'
+
+    // --- Tab Summaries ---
+    const getTabSummary = () => {
+        switch (activeTab) {
+            case 'monitor':
+                return {
+                    title: "Live Turn Monitor",
+                    description: "Tracks the current 48-hour turn window for the active shareholder.",
+                    modeNote: isTestMode
+                        ? "Test Mode Active: Tracking the simulated schedule. Auto-emails are redirected to Admins."
+                        : "Production Mode: Tracking real-time usage. Emails are sent to Shareholders.",
+                    icon: Clock,
+                    color: isTestMode ? "bg-amber-50 border-amber-200 text-amber-900" : "bg-green-50 border-green-200 text-green-900"
+                };
+            case 'testing':
+                return {
+                    title: "Testing Center",
+                    description: "Safely simulate any system email to verify content and formatting.",
+                    modeNote: "All manual tests from this page are sent to your selected test recipient (default: You).",
+                    icon: TestTube,
+                    color: "bg-indigo-50 border-indigo-200 text-indigo-900"
+                };
+            case 'history':
+                return {
+                    title: "Email Audit Log",
+                    description: "A complete searchable history of every email attempted by the system.",
+                    modeNote: isTestMode
+                        ? "Test Mode: Logs show the INTENDED recipient, but the email was safely redirected to you."
+                        : "Production Mode: Logs show actual emails sent to shareholders.",
+                    icon: Info,
+                    color: "bg-blue-50 border-blue-200 text-blue-900"
+                };
+            default: return null;
+        }
+    };
+
+    const tabInfo = getTabSummary();
 
     // Initiate Test Transaction
     const initiateTestTransaction = (type, label) => {
@@ -102,6 +139,23 @@ export function NotificationsTab({ triggerAlert }) {
                     Email History
                 </button>
             </div>
+
+            {/* Tab Summary Banner */}
+            {tabInfo && (
+                <div className={`p-4 rounded-xl border ${tabInfo.color} flex items-start gap-4 animate-in fade-in slide-in-from-top-2`}>
+                    <div className="p-2 bg-white/50 rounded-lg">
+                        <tabInfo.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-sm uppercase tracking-wide opacity-90">{tabInfo.title}</h3>
+                        <p className="font-bold text-lg leading-snug">{tabInfo.description}</p>
+                        <p className="text-sm mt-1 opacity-80 font-medium flex items-center gap-2">
+                            <Info className="w-3 h-3" />
+                            {tabInfo.modeNote}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* 0. Live Turn Monitor Content */}
             {activeTab === 'monitor' && (

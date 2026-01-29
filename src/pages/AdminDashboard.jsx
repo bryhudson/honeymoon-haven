@@ -1396,7 +1396,7 @@ export function AdminDashboard() {
 
                 {/* Notifications Tab Content */}
                 {activeTab === 'notifications' && (
-                    <NotificationsTab triggerAlert={triggerAlert} />
+                    <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />
                 )}
 
 
