@@ -113,10 +113,7 @@ const wrapHtml = (title, bodyContent) => `
   <div style="${THEME.components.wrapper}">
     <div style="${THEME.components.container}">
       
-       <!-- Minimal Header -->
-       <div style="${THEME.components.header}">
-          <span style="${THEME.components.headerText}">HHR</span>
-       </div>
+
 
       <!-- Main Card -->
       <div style="${THEME.components.card}">
