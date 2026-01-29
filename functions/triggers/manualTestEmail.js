@@ -15,9 +15,22 @@ const db = admin.firestore();
  * Allows admins to send test emails from Notifications tab
  */
 exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
-    // 1. Security: Only Super Admin
-    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
-        throw new HttpsError('permission-denied', 'Only the Super Admin can send test emails.');
+    // 1. Security: Check for Admin Role (Any Admin)
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Must be logged in to send test emails.');
+    }
+
+    const callerEmail = request.auth.token.email;
+
+    // Verify role in database
+    const callerDoc = await db.collection("shareholders").doc(callerEmail).get();
+    if (!callerDoc.exists) {
+        throw new HttpsError('permission-denied', 'Caller not found in database.');
+    }
+
+    const callerRole = callerDoc.data().role;
+    if (callerRole !== 'admin' && callerRole !== 'super_admin') {
+        throw new HttpsError('permission-denied', 'Only Admins can send test emails.');
     }
 
     const { emailType, targetShareholder, testEmail } = request.data;
@@ -183,9 +196,21 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
  * Instantly sends a reminder email for testing purposes
  */
 exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => {
-    // Security: Only Super Admin
-    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
-        throw new HttpsError('permission-denied', 'Only the Super Admin can send test reminders.');
+    // Security: Any Admin
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Must be logged in to send test reminders.');
+    }
+
+    const callerEmail = request.auth.token.email;
+    const callerDoc = await db.collection("shareholders").doc(callerEmail).get();
+
+    if (!callerDoc.exists) {
+        throw new HttpsError('permission-denied', 'Caller not found.');
+    }
+
+    const callerRole = callerDoc.data().role;
+    if (callerRole !== 'admin' && callerRole !== 'super_admin') {
+        throw new HttpsError('permission-denied', 'Only Admins can send test reminders.');
     }
 
     const { reminderType } = request.data; // 'evening', 'day2', 'final', 'urgent'
