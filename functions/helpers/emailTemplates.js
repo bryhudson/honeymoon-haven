@@ -159,7 +159,14 @@ const emailTemplates = {
   turnStarted: (data) => {
     const subject = `HHR Trailer Booking: It's Your Turn! 🎯`;
     const body = `
-      <h1 style="${THEME.typography.h1}">You're up, ${data.name}!</h1>
+      <h1 style="${THEME.typography.h1}">Welcome to the new HHR App! 🚀</h1>
+      <p style="${THEME.typography.body}">You're up, ${data.name}! We're ditching the spreadsheets and manual emails for something much better.</p>
+      
+      <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>✨ What's New?</strong><br>
+        We built this app to make booking effortless. View the live calendar, pick your dates instantly, and confirm your spot in seconds—no need to cross-check a Google Sheet or wait for email replies.</p>
+      </div>
+
       <p style="${THEME.typography.body}">The draft is moving and the spotlight is on you. It's officially your turn to pick your dates for the 2026 season.</p>
       
       <div style="margin: 32px 0;">
