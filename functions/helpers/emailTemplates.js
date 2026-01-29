@@ -123,11 +123,13 @@ const wrapHtml = (title, bodyContent) => `
         ${bodyContent}
       </div>
 
-      <!-- Simple Footer -->
-      <div style="text-align: center; padding: 20px;">
+      <!-- Footer with Support Options -->
+      <div style="text-align: center; padding: 32px 20px; border-top: 1px solid #e5e5ea; margin-top: 32px;">
+        <p style="${THEME.typography.small} margin-bottom: 8px;">
+          <strong>Have questions or feedback?</strong>
+        </p>
         <p style="${THEME.typography.small}">
-          Questions? Reply to this email.<br>
-          <a href="https://hhr-trailer-booking.web.app/" style="${THEME.typography.link}">Visit Booking Portal</a>
+          You can <a href="mailto:bryan.m.hudson@gmail.com?subject=HHR%20App%20Question" style="${THEME.typography.link}">reply directly to this email</a> or submit feedback in the <a href="https://hhr-trailer-booking.web.app/" style="${THEME.typography.link}">Booking Portal</a>.
         </p>
       </div>
 
