@@ -113,10 +113,10 @@ const wrapHtml = (title, bodyContent) => `
   <div style="${THEME.components.wrapper}">
     <div style="${THEME.components.container}">
       
-      <!-- Minimal Header -->
-      <div style="${THEME.components.header}">
-         <span style="${THEME.components.headerText}">Honeymoon Haven Resort</span>
-      </div>
+       <!-- Minimal Header -->
+       <div style="${THEME.components.header}">
+          <span style="${THEME.components.headerText}">HHR</span>
+       </div>
 
       <!-- Main Card -->
       <div style="${THEME.components.card}">
@@ -157,7 +157,7 @@ const emailTemplates = {
 
   // 1. Turn Started
   turnStarted: (data) => {
-    const subject = `It's Your Turn! 🎯`;
+    const subject = `HHR Trailer Booking: It's Your Turn! 🎯`;
     const body = `
       <h1 style="${THEME.typography.h1}">You're up, ${data.name}!</h1>
       <p style="${THEME.typography.body}">The draft is moving and the spotlight is on you. It's officially your turn to pick your dates for the 2026 season.</p>
@@ -176,7 +176,7 @@ const emailTemplates = {
 
   // 2. Daily Reminder
   reminder: (data) => {
-    const subject = `The clock is ticking ⏳`;
+    const subject = `HHR Trailer Booking: The clock is ticking ⏳`;
     const body = `
       <h1 style="${THEME.typography.h1}">Don't snooze on summer.</h1>
       <p style="${THEME.typography.body}">You have <strong>${data.hours_remaining} hours left</strong> to lock in your plans before the turn passes.</p>
@@ -195,7 +195,7 @@ const emailTemplates = {
 
   // 3. Final Warning
   finalWarning: (data) => {
-    const subject = `Last Call! 🚨`;
+    const subject = `HHR Trailer Booking: Last Call! 🚨`;
     const body = `
       <h1 style="${THEME.typography.h1} color: ${THEME.colors.error};">1 Hour Remaining</h1>
       <p style="${THEME.typography.body}">This is it. You have one hour left before your turn auto-skips to the next shareholder.</p>
@@ -215,7 +215,7 @@ const emailTemplates = {
 
   // 4. Booking Confirmed
   bookingConfirmed: (data) => {
-    const subject = `You're Going to the Lake! 🌊`;
+    const subject = `HHR Trailer Booking: You're Going to the Lake! 🌊`;
     const body = `
       <h1 style="${THEME.typography.h1}">Great choice, ${data.name}.</h1>
       <p style="${THEME.typography.body}">Your cabin is secured for the 2026 season. Here are your details:</p>
@@ -241,7 +241,7 @@ const emailTemplates = {
 
     // Dynamic Subject
     const isRound2 = nextStepTitle.toUpperCase().includes('ROUND 2');
-    const subject = isRound2 ? `See you in Round 2 👋` : `See you in Open Season 👋`;
+    const subject = isRound2 ? `HHR Trailer Booking: See you in Round 2 👋` : `HHR Trailer Booking: See you in Open Season 👋`;
 
     const body = `
       <h1 style="${THEME.typography.h1}">Thanks for letting us know.</h1>
@@ -261,7 +261,7 @@ const emailTemplates = {
 
   // 6. Turn Passed - Next (Early Start)
   turnPassedNext: (data) => {
-    const subject = `You're Up Early! 🚀`;
+    const subject = `HHR Trailer Booking: You're Up Early! 🚀`;
     const body = `
       <h1 style="${THEME.typography.h1}">The stage is yours.</h1>
       <p style="${THEME.typography.body}">The previous shareholder passed their turn, so you're on the clock earlier than expected!</p>
@@ -280,7 +280,7 @@ const emailTemplates = {
 
   // 7. Auto Pass - Current (Timeout)
   autoPassCurrent: (data) => {
-    const subject = `Your Turn Has Ended ⌛`;
+    const subject = `HHR Trailer Booking: Your Turn Has Ended ⌛`;
     const body = `
       <h1 style="${THEME.typography.h1}">We missed you.</h1>
       <p style="${THEME.typography.body}">We didn't hear from you by the deadline, so we had to move the line along to keep fairness for everyone.</p>
@@ -295,7 +295,7 @@ const emailTemplates = {
 
   // 8. Auto Pass - Next (Timeout from Prev)
   autoPassNext: (data) => {
-    const subject = `It's Finally Time! ✨`;
+    const subject = `HHR Trailer Booking: It's Finally Time! ✨`;
     const body = `
       <h1 style="${THEME.typography.h1}">You're up.</h1>
       <p style="${THEME.typography.body}">The previous window closed, and the drafting order has arrived at you.</p>
@@ -314,7 +314,7 @@ const emailTemplates = {
 
   // 9. Booking Cancelled
   bookingCancelled: (data) => {
-    const subject = `Cancellation Confirmed`;
+    const subject = `HHR Trailer Booking: Cancellation Confirmed`;
     const body = `
       <h1 style="${THEME.typography.h1}">Booking Cancelled.</h1>
       <p style="${THEME.typography.body}">We've released your dates back to the pool as requested.</p>
@@ -333,7 +333,7 @@ const emailTemplates = {
 
   // 10. Payment Reminder
   paymentReminder: (data) => {
-    const subject = `Let's make it official 💸`;
+    const subject = `HHR Trailer Booking: Let's make it official 💸`;
     const body = `
       <h1 style="${THEME.typography.h1}">Payment Due</h1>
       <p style="${THEME.typography.body}">Please send your e-transfer to finalize the booking.</p>
@@ -353,7 +353,7 @@ const emailTemplates = {
 
   // 11. Payment Received
   paymentReceived: (data) => {
-    const subject = `All Paid Up! ✅`;
+    const subject = `HHR Trailer Booking: All Paid Up! ✅`;
     const body = `
       <h1 style="${THEME.typography.h1}">Payment Received.</h1>
       <p style="${THEME.typography.body}">Thanks, ${data.name}. You're all set for simpler times at the lake.</p>
@@ -374,7 +374,7 @@ const emailTemplates = {
   // 12. Guest Guide
   guestGuide: (data) => {
     const details = data.booking_details || {};
-    const subject = `Your Guide to Honeymoon Haven 🦌`;
+    const subject = `HHR Trailer Booking: Your Guide to Honeymoon Haven 🦌`;
 
     // Custom content logic for the guide (more text heavy)
     const customContent = `
@@ -423,7 +423,7 @@ const emailTemplates = {
   feedback: (data) => {
     const isBug = data.type === 'bug';
     const title = isBug ? 'Bug Report' : 'Feature Request';
-    const subject = `New Feedback 📬 (${title})`;
+    const subject = `HHR Trailer Booking: New Feedback 📬 (${title})`;
 
     const body = `
       <h3 style="${THEME.typography.h3}">${title}</h3>
