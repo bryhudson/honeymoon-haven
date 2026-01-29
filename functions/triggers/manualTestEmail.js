@@ -140,17 +140,14 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                 }));
                 break;
             case 'bonusTime':
-                // Bonus time template (will create if needed)
-                subject = "🎁 Bonus Time! Early Access to Your Turn";
-                htmlContent = `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2>Great News, ${shareholderName}!</h2>
-                        <p>The previous shareholder finished early, so you get a head start!</p>
-                        <p><strong>Bonus Time:</strong> You can book now</p>
-                        <p><strong>Official 48-hour window starts:</strong> Tomorrow at 10:00 AM</p>
-                        <p><a href="${testData.dashboard_url}" style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Book Now</a></p>
-                    </div>
-                `;
+                // Bonus time is effectively "Turn Passed Next" (Early Access)
+                ({ subject, htmlContent } = emailTemplates.turnPassedNext({
+                    ...testData,
+                    round: 1,
+                    phase: 'ROUND_1',
+                    deadline_date: "Tomorrow",
+                    deadline_time: "10:00 AM"
+                }));
                 break;
             default:
                 throw new HttpsError('invalid-argument', `Unknown email type: ${emailType}`);
