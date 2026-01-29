@@ -223,14 +223,14 @@ export function LiveTurnMonitor() {
                         </div>
                         <div>
                             <h3 className="font-bold text-slate-900">Live Turn Monitor</h3>
-                            <div className="text-xs text-slate-500 flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
-                                <span>Watching: <strong className="text-indigo-600">{activePicker}</strong> (Round {round})</span>
+                            <div className="text-sm md:text-base text-slate-600 flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mt-1">
+                                <span>Watching: <strong className="text-indigo-700 text-lg ml-1">{activePicker}</strong> <span className="text-slate-400 text-sm">(Round {round})</span></span>
                                 {pickerDetails && (
-                                    <span className="flex items-center gap-3 text-slate-400">
-                                        <span className="hidden md:inline">|</span>
-                                        <span>Cabin: <strong>{pickerDetails.cabin || pickerDetails.cabinNumber || pickerDetails.defaultCabin || "?"}</strong></span>
-                                        <span className="hidden md:inline">|</span>
-                                        <span>{pickerDetails.email}</span>
+                                    <span className="flex items-center gap-3 text-slate-500 font-medium">
+                                        <span className="hidden md:inline text-slate-300">|</span>
+                                        <span>Cabin: <strong className="text-slate-800">{pickerDetails.cabin || pickerDetails.cabinNumber || pickerDetails.defaultCabin || "?"}</strong></span>
+                                        <span className="hidden md:inline text-slate-300">|</span>
+                                        <span className="text-slate-600">{pickerDetails.email}</span>
                                     </span>
                                 )}
                             </div>
