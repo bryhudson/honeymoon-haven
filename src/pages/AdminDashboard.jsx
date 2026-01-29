@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { version } from '../../package.json';
+// import { version } from '../../package.json'; // Removed to use global __APP_VERSION__
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
@@ -29,7 +29,7 @@ export function AdminDashboard() {
     const IS_SITE_OWNER = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Tab State: 'system', 'bookings', 'history'
-    const [activeTab, setActiveTab] = useState('system');
+    const [activeTab, setActiveTab] = useState('bookings');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const [actionLog, setActionLog] = useState("");
@@ -1255,7 +1255,7 @@ export function AdminDashboard() {
                         <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
                             Admin Dashboard
                             <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                                v{version}
+                                v{__APP_VERSION__}
                             </span>
                         </h1>
 
@@ -1303,9 +1303,9 @@ export function AdminDashboard() {
                                 {[
                                     { id: 'bookings', label: 'Booking Management', icon: ListIcon },
                                     { id: 'schedule', label: '2026 Season Schedule', icon: Calendar },
+                                    { id: 'notifications', label: 'Notification Center', icon: Bell },
                                     { id: 'users', label: 'Users & Roles', icon: Users },
-                                    { id: 'system', label: 'System Controls', icon: Settings },
-                                    { id: 'notifications', label: 'Notification Center', icon: Bell }
+                                    { id: 'system', label: 'System Controls', icon: Settings }
                                 ].map((tab) => (
                                     <button
                                         key={tab.id}
@@ -1347,6 +1347,12 @@ export function AdminDashboard() {
                             2026 Season Schedule
                         </button>
                         <button
+                            onClick={() => setActiveTab('notifications')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'notifications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            Notifications
+                        </button>
+                        <button
                             onClick={() => setActiveTab('users')}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                         >
@@ -1360,12 +1366,6 @@ export function AdminDashboard() {
                                 <span>System</span>
                                 {isSystemFrozen && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
                             </div>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('notifications')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'notifications' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                        >
-                            Notifications
                         </button>
                     </div>
                 </div>

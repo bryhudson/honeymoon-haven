@@ -2,37 +2,36 @@
 description: Build and deploy the Honeymoon Haven web application
 ---
 
-# Release & Deploy Workflow
+# 🚀 GOLDEN RULE: Deploy Workflow
 
-Description: Automates the full HHR release cycle: commits changes, bumps version, deploys to Firebase, and pushes to GitHub.
+> [!IMPORTANT]
+> **Strict Rule**: We ALWAYS bumping the version, push to Git, and then deploy.
+> Never manually run `firebase deploy` without versioning.
 
 // turbo-all
 
-## Step 1: Stage All Changes
-Add all modified files to git staging.
-- Command: `git add -A`
+## Step 1: The "One Command" Deployment
+We use a unified script that handles:
+1.  **Versioning**: Bumps `package.json` version (Patch).
+2.  **Building**: Runs `npm run build` (injecting new version).
+3.  **Deploying**: Pushes to Firebase Hosting.
+4.  **Git Backup**: Commits with your message and pushes to GitHub.
 
-## Step 2: Commit Changes
-Commit with a descriptive message. Use the pattern: `feat: <description>` or `fix: <description>`.
-- Command: `git commit -m "feat: redesigned shareholder hero banners with modern UI and skipped state support"`
-- **Note**: Adjust the message to describe the actual changes made.
+### Command
+```bash
+npm run release "Your descriptive commit message here"
+```
 
-## Step 3: Execute Release Script
-Run the release script which handles version bumping, building, and deploying to Firebase.
-- Command: `npm run release -- "Hero banner redesign + skipped state"`
-- **Note**: The message will appear in the version commit and git tag.
+## Step 2: Verify Success
+1.  Check terminal for "✅ Version Jumped!"
+2.  Check for "✅ Deployment Complete!"
+3.  Check for "✅ Success! Site is Live & Code is Saved."
 
-## Step 4: Verify Deployment
-Check the terminal output to ensure:
-- ✅ Version number was incremented
-- ✅ Firebase deploy URL is visible
-- ✅ GitHub push was successful
-- 🎉 Celebrate with the user if successful!
+## Troubleshooting
+- If the script fails, check the error message.
+- Ensure you have a clean working directory (or just use the script, as it stage changes).
+- If you need to verify the version, check `package.json` before and after.
 
----
-
-## Quick Deploy (Single Command)
-If you just want to push to GitHub without a version bump:
-1. `git add -A`
-2. `git commit -m "feat: <description>"`
-3. `git push origin main`
+## Why this is mandatory
+- Ensures `__APP_VERSION__` visible on Shareholder/Admin dashboards is always in sync with the deployed code.
+- Guarantees every deployment is backed up to GitHub.

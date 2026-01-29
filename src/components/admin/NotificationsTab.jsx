@@ -21,6 +21,8 @@ export function NotificationsTab({ triggerAlert }) {
         }
     }, [currentUser]);
 
+    const [activeTab, setActiveTab] = useState('monitor'); // 'monitor' | 'testing' | 'history'
+
     // Initiate Test Transaction
     const initiateTestTransaction = (type, label) => {
         setPendingTest({ type, category: 'transaction', label });
@@ -66,7 +68,7 @@ export function NotificationsTab({ triggerAlert }) {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Header */}
             <div>
@@ -77,194 +79,228 @@ export function NotificationsTab({ triggerAlert }) {
                 <p className="text-sm text-slate-500">Manage, test, and audit system communications.</p>
             </div>
 
-            {/* 0. Live Turn Monitor */}
-            <LiveTurnMonitor />
+            {/* Sub-Navigation Tabs */}
+            <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit">
+                <button
+                    onClick={() => setActiveTab('monitor')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'monitor' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                    Live Turn Monitor
+                </button>
+                <button
+                    onClick={() => setActiveTab('testing')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'testing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                    <div className="flex items-center gap-2">
+                        <span>Testing Center</span>
+                    </div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                    Email History
+                </button>
+            </div>
 
-            {/* 1. Email System Overview & Testing */}
-            <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                        <TestTube className="w-5 h-5 text-indigo-700" />
-                        <span className="text-indigo-900">Email System Overview & Testing</span>
-                    </h3>
+            {/* 0. Live Turn Monitor Content */}
+            {activeTab === 'monitor' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <LiveTurnMonitor />
                 </div>
+            )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* LEFT: Timed Reminders (Testable) */}
-                    <div className="space-y-6">
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-amber-100 rounded-lg">
-                                <Clock className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800">Timed Reminders (48h Window)</h4>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    These run automatically on a set schedule relative to the turn start.
-                                    <br />
-                                    <span className="text-amber-600 font-medium">⚡️ Instant Test:</span> Click any button below to simulate that email immediately (redirected to you). No waiting required!
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Timeline Visualization */}
-                        <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 ml-2">
-                            {/* Day 1 Evening */}
-                            <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
-                                <div className="flex items-center justify-between group">
-                                    <div>
-                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Day 1 - Evening</div>
-                                        <div className="text-sm font-bold text-slate-700">7:00 PM (First Night)</div>
-                                        <div className="text-xs text-slate-400">"Your Honeymoon Haven Booking Awaits"</div>
-                                    </div>
-                                    <button
-                                        onClick={() => initiateTestReminder('evening', 'Day 1 Evening (7 PM)')}
-                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
-                                    >
-                                        <Zap className="w-3 h-3" /> Test
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Day 2 Morning */}
-                            <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
-                                <div className="flex items-center justify-between group">
-                                    <div>
-                                        <div className="text-xs font-bold text-blue-600 mb-0.5">Day 2 - Morning</div>
-                                        <div className="text-sm font-bold text-slate-700">9:00 AM (Middle)</div>
-                                        <div className="text-xs text-slate-400">"Complete Your Booking"</div>
-                                    </div>
-                                    <button
-                                        onClick={() => initiateTestReminder('day2', 'Day 2 Morning (9 AM)')}
-                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
-                                    >
-                                        <Zap className="w-3 h-3" /> Test
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Day 2 Evening (NEW) */}
-                            <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
-                                <div className="flex items-center justify-between group">
-                                    <div>
-                                        <div className="text-xs font-bold text-purple-600 mb-0.5">Day 2 - Evening</div>
-                                        <div className="text-sm font-bold text-slate-700">7:00 PM (Night 2)</div>
-                                        <div className="text-xs text-slate-400">"Friendly reminder..."</div>
-                                    </div>
-                                    <button
-                                        onClick={() => initiateTestReminder('evening2', 'Day 2 Evening (7 PM)')}
-                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
-                                    >
-                                        <Zap className="w-3 h-3" /> Test
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Day 3 Morning - Early */}
-                            <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
-                                <div className="flex items-center justify-between group">
-                                    <div>
-                                        <div className="text-xs font-bold text-amber-600 mb-0.5">Day 3 - Early Warning</div>
-                                        <div className="text-sm font-bold text-slate-700">6:00 AM (Final Day)</div>
-                                        <div className="text-xs text-slate-400">4 Hours Remaining</div>
-                                    </div>
-                                    <button
-                                        onClick={() => initiateTestReminder('final6am', 'Final Morning (6 AM)')}
-                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
-                                    >
-                                        <Zap className="w-3 h-3" /> Test
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Day 3 Urgent */}
-                            <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-red-500 border-2 border-white animate-pulse"></div>
-                                <div className="flex items-center justify-between group">
-                                    <div>
-                                        <div className="text-xs font-bold text-red-600 mb-0.5">Day 3 - URGENT</div>
-                                        <div className="text-sm font-bold text-slate-700">9:00 AM (1 Hour Left)</div>
-                                        <div className="text-xs text-slate-400">"URGENT: 1 Hour Left"</div>
-                                    </div>
-                                    <button
-                                        onClick={() => initiateTestReminder('final9am', 'Urgent Warning (9 AM)')}
-                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
-                                    >
-                                        <Zap className="w-3 h-3" /> Test
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            {/* 1. Email System Overview & Testing Content */}
+            {activeTab === 'testing' && (
+                <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                            <TestTube className="w-5 h-5 text-indigo-700" />
+                            <span className="text-indigo-900">Email System Overview & Testing</span>
+                        </h3>
                     </div>
 
-                    {/* RIGHT: Transactional Events (Testable) */}
-                    <div className="space-y-6">
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-indigo-100 rounded-lg">
-                                <Zap className="w-5 h-5 text-indigo-600" />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* LEFT: Timed Reminders (Testable) */}
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-amber-100 rounded-lg">
+                                    <Clock className="w-5 h-5 text-amber-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Timed Reminders (48h Window)</h4>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        These run automatically on a set schedule relative to the turn start.
+                                        <br />
+                                        <span className="text-amber-600 font-medium">⚡️ Instant Test:</span> Click any button below to simulate that email immediately (redirected to you). No waiting required!
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800">Transactional Events</h4>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Triggered by <span className="font-semibold text-slate-700">Actions</span>. Sent instantly when users interact.
-                                    <br />
-                                    <span className="text-indigo-600 font-medium">⚡️ Instant Test:</span> Click to simulate and send a test to yourself immediately.
-                                </p>
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 gap-2">
-                            {[
-                                { id: "turnStarted", name: "Turn Started", desc: "When active status begins", subject: "It's YOUR Turn! 🎉" },
-                                { id: "turnPassed", name: "Turn Passed (Next)", desc: "Notify next user", subject: "It's Your Turn! (Passed)" },
-                                { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
-                                { id: "paymentReminder", name: "Payment Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
-                                { id: "paymentReceived", name: "Payment Received", desc: "Admin marks as Paid", subject: "Payment Received" },
-                                { id: "bookingCancelled", name: "Booking Cancelled", desc: "Admin cancels booking", subject: "Booking Cancelled" }
-                            ].map((event) => (
-                                <div key={event.id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg group hover:border-indigo-200 transition-all">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-slate-50 rounded-md text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
-                                            <Zap className="w-4 h-4" />
-                                        </div>
+                            {/* Timeline Visualization */}
+                            <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 ml-2">
+                                {/* Day 1 Evening */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
                                         <div>
-                                            <div className="text-sm font-bold text-slate-700">{event.name}</div>
-                                            <div className="text-xs text-slate-400">"{event.subject}"</div>
+                                            <div className="text-xs font-bold text-blue-600 mb-0.5">Day 1 - Evening</div>
+                                            <div className="text-sm font-bold text-slate-700">7:00 PM (First Night)</div>
+                                            <div className="text-xs text-slate-400">"Your Honeymoon Haven Booking Awaits"</div>
                                         </div>
+                                        <button
+                                            onClick={() => initiateTestReminder('evening', 'Day 1 Evening (7 PM)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => initiateTestTransaction(event.id, event.name)}
-                                        className="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-100 transition-all"
-                                    >
-                                        Test
-                                    </button>
                                 </div>
-                            ))}
+
+                                {/* Day 2 Morning */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-blue-600 mb-0.5">Day 2 - Morning</div>
+                                            <div className="text-sm font-bold text-slate-700">9:00 AM (Middle)</div>
+                                            <div className="text-xs text-slate-400">"Complete Your Booking"</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestReminder('day2', 'Day 2 Morning (9 AM)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Day 2 Evening (NEW) */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-purple-600 mb-0.5">Day 2 - Evening</div>
+                                            <div className="text-sm font-bold text-slate-700">7:00 PM (Night 2)</div>
+                                            <div className="text-xs text-slate-400">"Friendly reminder..."</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestReminder('evening2', 'Day 2 Evening (7 PM)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Day 3 Morning - Early */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-amber-600 mb-0.5">Day 3 - Early Warning</div>
+                                            <div className="text-sm font-bold text-slate-700">6:00 AM (Final Day)</div>
+                                            <div className="text-xs text-slate-400">4 Hours Remaining</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestReminder('final6am', 'Final Morning (6 AM)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Day 3 Urgent */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-red-500 border-2 border-white animate-pulse"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-red-600 mb-0.5">Day 3 - URGENT</div>
+                                            <div className="text-sm font-bold text-slate-700">9:00 AM (1 Hour Left)</div>
+                                            <div className="text-xs text-slate-400">"URGENT: 1 Hour Left"</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestReminder('final9am', 'Urgent Warning (9 AM)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT: Transactional Events (Testable) */}
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-indigo-100 rounded-lg">
+                                    <Zap className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Transactional Events</h4>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Triggered by <span className="font-semibold text-slate-700">Actions</span>. Sent instantly when users interact.
+                                        <br />
+                                        <span className="text-indigo-600 font-medium">⚡️ Instant Test:</span> Click to simulate and send a test to yourself immediately.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-2">
+                                {[
+                                    { id: "turnStarted", name: "Turn Started", desc: "When active status begins", subject: "It's YOUR Turn! 🎉" },
+                                    { id: "turnPassed", name: "Turn Passed (Next)", desc: "Notify next user", subject: "It's Your Turn! (Passed)" },
+                                    { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
+                                    { id: "paymentReminder", name: "Payment Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
+                                    { id: "paymentReceived", name: "Payment Received", desc: "Admin marks as Paid", subject: "Payment Received" },
+                                    { id: "bookingCancelled", name: "Booking Cancelled", desc: "Admin cancels booking", subject: "Booking Cancelled" }
+                                ].map((event) => (
+                                    <div key={event.id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg group hover:border-indigo-200 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-slate-50 rounded-md text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                                                <Zap className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-slate-700">{event.name}</div>
+                                                <div className="text-xs text-slate-400">"{event.subject}"</div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestTransaction(event.id, event.name)}
+                                            className="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-100 transition-all"
+                                        >
+                                            Test
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* 2. Email History Log */}
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
-                <div className="flex items-start gap-3">
-                    <div className="mt-0.5">
-                        <Info className="w-5 h-5 text-blue-600" />
+            {/* 2. Email History Log Content */}
+            {activeTab === 'history' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5">
+                                <Info className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-blue-900">Safety Verification Note</h4>
+                                <p className="text-sm text-blue-700 mt-1">
+                                    When <strong>Test Mode</strong> is active, the logs below display the <span className="underline decoration-blue-400 decoration-2 underline-offset-2">Intended Recipient</span> so you can verify the logic is correct.
+                                    Rest assured, the actual emails are <strong>redirected to you</strong> (Admin) and are <strong>NOT</strong> sent to the shareholders.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h4 className="text-sm font-bold text-blue-900">Safety Verification Note</h4>
-                        <p className="text-sm text-blue-700 mt-1">
-                            When <strong>Test Mode</strong> is active, the logs below display the <span className="underline decoration-blue-400 decoration-2 underline-offset-2">Intended Recipient</span> so you can verify the logic is correct.
-                            Rest assured, the actual emails are <strong>redirected to you</strong> (Admin) and are <strong>NOT</strong> sent to the shareholders.
-                        </p>
-                    </div>
+
+                    <EmailHistoryTab />
                 </div>
-            </div>
-
-            <EmailHistoryTab />
+            )}
 
             {/* Test Email Recipient Modal */}
             {pendingTest && (
