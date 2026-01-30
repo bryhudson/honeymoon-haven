@@ -788,13 +788,35 @@ export function AdminDashboard() {
     };
 
     const handleToggleFinalized = async (bookingId, currentStatus) => {
-        try {
-            await updateDoc(doc(db, "bookings", bookingId), {
-                isFinalized: !currentStatus
-            });
-            triggerAlert("Success", `Booking ${!currentStatus ? 'finalized' : 'reverted to draft'}.`);
-        } catch (err) {
-            triggerAlert("Error", err.message);
+        if (currentStatus) {
+            // Reverting to Draft - DANGER
+            triggerConfirm(
+                "Revert to Draft?",
+                "Are you sure you want to UN-FINALIZE this booking? It will return to Draft status.",
+                async () => {
+                    try {
+                        await updateDoc(doc(db, "bookings", bookingId), {
+                            isFinalized: false
+                        });
+                        triggerAlert("Success", "Booking reverted to draft.");
+                    } catch (err) {
+                        triggerAlert("Error", err.message);
+                    }
+                },
+                true, // Danger color
+                "Revert",
+                "REVERT" // Strict typing
+            );
+        } else {
+            // Finalizing - Safe
+            try {
+                await updateDoc(doc(db, "bookings", bookingId), {
+                    isFinalized: true
+                });
+                triggerAlert("Success", "Booking finalized.");
+            } catch (err) {
+                triggerAlert("Error", err.message);
+            }
         }
     };
 
@@ -812,8 +834,9 @@ export function AdminDashboard() {
                         triggerAlert("Error", err.message);
                     }
                 },
-                false,
-                "Mark Unpaid"
+                true, // Danger
+                "Mark Unpaid",
+                "UNPAID" // Require strict typing
             );
         } else {
             // Mark as Paid

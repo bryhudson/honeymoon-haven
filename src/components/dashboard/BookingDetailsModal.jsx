@@ -162,9 +162,9 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         <>
                             {/* Cost Breakdown */}
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center text-xs text-slate-500 px-1 font-medium">
-                                    <span>Rate ({nights} nights × $125)</span>
-                                    <span>${totalCost.toLocaleString()}</span>
+                                <div className="flex justify-between items-center px-1">
+                                    <span className="text-sm font-medium text-slate-500">Rate ({nights} nights × $125)</span>
+                                    <span className="text-xl font-bold text-slate-900">${totalCost.toLocaleString()}</span>
                                 </div>
                             </div>
 

@@ -49,8 +49,8 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                        <Mail className="w-5 h-5 text-blue-600" />
                         Email Guest Guide
                     </h3>
                     <button

@@ -15,7 +15,7 @@ export function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
             <div className="bg-background border rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
-                <h3 className={`text-lg font-bold mb-2 ${isDanger ? 'text-destructive' : 'text-foreground'}`}>
+                <h3 className={`text-xl font-bold tracking-tight mb-2 ${isDanger ? 'text-destructive' : 'text-foreground'}`}>
                     {title}
                 </h3>
                 <p className="text-muted-foreground mb-6 whitespace-pre-wrap">
