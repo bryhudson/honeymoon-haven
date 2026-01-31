@@ -194,8 +194,11 @@ export function ShareholderHero({
 
                     <div>
                         <button
-                            onClick={onOpenBooking}
-                            className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            disabled={isReadOnly}
+                            className={`px-6 py-3 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all 
+                                ${isReadOnly
+                                    ? 'bg-green-600/50 text-white/50 cursor-not-allowed'
+                                    : 'bg-green-600 hover:bg-green-500 text-white hover:scale-105 active:scale-95'}`}
                         >
                             <Calendar className="w-5 h-5" />
                             Book Dates Now
@@ -492,7 +495,7 @@ export function ShareholderHero({
                                         }`}
                                 >
                                     <CheckCircle className="w-5 h-5" />
-                                    {isReadOnly ? 'Disabled' : 'Finalize Booking'}
+                                    {isReadOnly ? 'Finalize Booking' : 'Finalize Booking'}
                                 </button>
                             </div>
                         </div>
@@ -651,7 +654,11 @@ export function ShareholderHero({
                         <div className="flex flex-col sm:flex-row gap-4 justify-end">
                             <button
                                 onClick={() => onViewDetails(lastAction)}
-                                className="px-6 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                                disabled={isReadOnly}
+                                className={`px-6 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2
+                                    ${isReadOnly
+                                        ? 'bg-white/5 text-white/50 border border-white/5 cursor-not-allowed'
+                                        : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'}`}
                             >
                                 <Info className="w-5 h-5" />
                                 View Details
@@ -659,7 +666,11 @@ export function ShareholderHero({
                             {lastAction.isPaid && onEmail && (
                                 <button
                                     onClick={() => onEmail(lastAction)}
-                                    className="px-6 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-all shadow-lg flex items-center justify-center gap-2"
+                                    disabled={isReadOnly}
+                                    className={`px-6 py-4 font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2
+                                        ${isReadOnly
+                                            ? 'bg-blue-600/50 text-white/50 cursor-not-allowed'
+                                            : 'bg-blue-600 text-white hover:bg-blue-500'}`}
                                 >
                                     <Mail className="w-4 h-4" />
                                     Email Guest
@@ -695,7 +706,11 @@ export function ShareholderHero({
                     <div className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(latestAction)}
-                            className="px-5 py-3 bg-slate-700/70 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all"
+                            disabled={isReadOnly}
+                            className={`px-5 py-3 border border-white/10 font-semibold rounded-lg transition-all
+                                ${isReadOnly
+                                    ? 'bg-slate-700/40 text-white/40 cursor-not-allowed'
+                                    : 'bg-slate-700/70 text-white hover:bg-slate-600'}`}
                         >
                             View Cancelled Details
                         </button>
