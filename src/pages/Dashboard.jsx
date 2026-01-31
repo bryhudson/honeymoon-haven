@@ -770,6 +770,7 @@ export function Dashboard() {
                                 onClose={() => setViewingBooking(null)}
                                 currentUser={loggedInShareholder}
                                 isAdmin={isSuperAdmin}
+                                isReadOnly={!!masqueradeAs}
                                 onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
                                 onPass={() => {
                                     setViewingBooking(null);

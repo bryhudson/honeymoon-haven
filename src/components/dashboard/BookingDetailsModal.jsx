@@ -3,7 +3,7 @@ import { format, differenceInDays } from 'date-fns';
 import { CheckCircle2, X, AlertTriangle, Home, Mail } from 'lucide-react';
 import { ConfirmationModal } from '../ConfirmationModal';
 
-export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin }) {
+export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin, isReadOnly }) {
     if (!booking) return null;
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
@@ -19,14 +19,14 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
     // Permission Logic
     // Cancel: Only finalized bookings
-    const canCancel = isFinalized && !isCancelled && onCancel && (isAdmin || (isOwner && isFuture));
+    const canCancel = !isReadOnly && isFinalized && !isCancelled && onCancel && (isAdmin || (isOwner && isFuture));
 
     // Pass: Only non-finalized (draft) bookings, requires onPass handler
-    const canPass = !isFinalized && !isCancelled && onPass && (isAdmin || isOwner);
+    const canPass = !isReadOnly && !isFinalized && !isCancelled && onPass && (isAdmin || isOwner);
 
     // Edit/Finalize: Drafts only
-    const canEdit = !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
-    const canFinalize = !isFinalized && !isCancelled && onFinalize && (isAdmin || isOwner);
+    const canEdit = !isReadOnly && !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
+    const canFinalize = !isReadOnly && !isFinalized && !isCancelled && onFinalize && (isAdmin || isOwner);
 
     // Email Logic
     const [showEmailForm, setShowEmailForm] = React.useState(false);
