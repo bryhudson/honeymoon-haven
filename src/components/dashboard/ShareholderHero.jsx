@@ -474,7 +474,11 @@ export function ShareholderHero({
                             <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
                                 <button
                                     onClick={() => onViewDetails(activeDraft)}
-                                    className="px-5 py-3 bg-slate-700/70 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all"
+                                    disabled={isReadOnly}
+                                    className={`px-5 py-3 border border-white/10 font-semibold rounded-lg transition-all 
+                                        ${isReadOnly
+                                            ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                                            : 'bg-slate-700/70 text-white hover:bg-slate-600'}`}
                                 >
                                     Review Details
                                 </button>
@@ -793,7 +797,11 @@ export function ShareholderHero({
                     <div id="tour-actions" className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(upcomingBooking)}
-                            className="px-5 py-3 bg-slate-700/70 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all"
+                            disabled={isReadOnly}
+                            className={`px-5 py-3 border border-white/10 font-semibold rounded-lg transition-all 
+                                ${isReadOnly
+                                    ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                                    : 'bg-slate-700/70 text-white hover:bg-slate-600'}`}
                         >
                             View Details
                         </button>
