@@ -439,16 +439,19 @@ export function ShareholderHero({
             return parts.join(' ') || '< 1m';
         })() : null;
 
+        const theme = status.isGracePeriod ? 'green' : 'red';
+        const timerLabel = status.isGracePeriod ? 'Bonus Time Remaining' : 'Official Turn Ends';
+
         return (
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground('blue')}
+                {renderBackground(theme)}
 
                 <div className="relative z-10 space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
-                            Draft Saved
+                        <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'}`}>
+                            {status.isGracePeriod ? 'Bonus Time: Draft Saved' : 'Official Turn: Draft Saved'}
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
                             You've selected dates. Please <span className="text-white font-bold">finalize</span> your booking to lock them in.
@@ -460,7 +463,7 @@ export function ShareholderHero({
                             <div className="flex items-center gap-3">
                                 <Clock className="w-5 h-5 text-blue-400" />
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Request By</p>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{timerLabel}</p>
                                     <div className="flex items-center gap-3 mt-1">
                                         <span className="text-xl font-bold text-white">
                                             {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
@@ -522,19 +525,24 @@ export function ShareholderHero({
             return parts.join(' ') || '< 1m';
         })() : null;
 
+        const theme = status.isGracePeriod ? 'green' : 'red';
+        const timerLabel = status.isGracePeriod ? 'Bonus Time Remaining' : 'Official Turn Ends';
+
         return (
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground('blue')}
+                {renderBackground(theme)}
 
                 <div className="relative z-10 space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-tight">
-                            It's Your Turn ({status.phase === 'ROUND_2' ? 'Round 2' : 'Round 1'})
+                        <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'}`}>
+                            {status.isGracePeriod ? 'You Have Early Access!' : "It's Your Official Turn"}
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
-                            The calendar is yours! Please select your dates or pass your turn to the next shareholder.
+                            {status.isGracePeriod
+                                ? "You finished your previous round early! The clock doesn't officially start until 10:00 AM."
+                                : "The calendar is yours! Please select your dates or pass your turn to the next shareholder."}
                         </p>
                     </div>
 
@@ -543,7 +551,7 @@ export function ShareholderHero({
                             <div className="flex items-center gap-3">
                                 <Clock className="w-5 h-5 text-blue-400" />
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Request By</p>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{timerLabel}</p>
                                     <div className="flex items-center gap-3 mt-1">
                                         <span className="text-xl font-bold text-white">
                                             {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
