@@ -10,7 +10,7 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit, List } from 'lucide-react';
 import { calculateBookingCost } from '../lib/pricing';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { UserActionsDropdown } from '../components/UserActionsDropdown';
@@ -1302,7 +1302,7 @@ export function AdminDashboard() {
                         >
                             <div className="flex items-center gap-3">
                                 {/* Dynamic Icon based on active tab */}
-                                {activeTab === 'bookings' && <ListIcon className="w-5 h-5 text-slate-500" />}
+                                {activeTab === 'bookings' && <List className="w-5 h-5 text-slate-500" />}
                                 {activeTab === 'schedule' && <Calendar className="w-5 h-5 text-slate-500" />}
                                 {activeTab === 'users' && <Users className="w-5 h-5 text-slate-500" />}
                                 {activeTab === 'system' && <Settings className="w-5 h-5 text-slate-500" />}
@@ -1319,7 +1319,7 @@ export function AdminDashboard() {
                             {isMobileMenuOpen ? (
                                 <XCircle className="w-5 h-5 text-slate-400" />
                             ) : (
-                                <ListIcon className="w-5 h-5 text-slate-400" />
+                                <List className="w-5 h-5 text-slate-400" />
                             )}
                         </button>
 
@@ -1327,7 +1327,7 @@ export function AdminDashboard() {
                         {isMobileMenuOpen && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col divide-y divide-slate-100">
                                 {[
-                                    { id: 'bookings', label: 'Booking Management', icon: ListIcon },
+                                    { id: 'bookings', label: 'Booking Management', icon: List },
                                     { id: 'schedule', label: '2026 Season Schedule', icon: Calendar },
                                     { id: 'notifications', label: 'Notification Center', icon: Bell },
                                     { id: 'users', label: 'Users & Roles', icon: Users },
@@ -1535,7 +1535,7 @@ export function AdminDashboard() {
                                             : 'text-slate-500 hover:text-slate-900'
                                             }`}
                                     >
-                                        <ListIcon className="w-4 h-4" />
+                                        <List className="w-4 h-4" />
                                         <span>List</span>
                                     </button>
                                     <button
