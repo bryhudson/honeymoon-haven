@@ -10,7 +10,8 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { Trash2, PlayCircle, Clock, Bell, Calendar, Settings, AlertTriangle, CheckCircle, DollarSign, Pencil, XCircle, Ban, Mail, Key, PlusCircle, Shield, Moon, Download, ArrowRight, ArrowLeft, List as ListIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit } from 'lucide-react';
+import { calculateBookingCost } from '../lib/pricing';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { UserActionsDropdown } from '../components/UserActionsDropdown';
 import { ReauthenticationModal } from '../components/ReauthenticationModal';
@@ -449,7 +450,7 @@ export function AdminDashboard() {
 
                         <div style="display: flex; gap: 20px; margin: 30px 0; flex-wrap: wrap;">
                              <div style="background-color: #f0fdf4; border: 1px solid #dcfce7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
-                                <div style="color: #166534; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Revenue</div>
+                                <div style="color: #166534; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Fees Collected</div>
                                 <div style="color: #166534; font-size: 24px; font-weight: bold;">$${analytics.totalRevenue.toLocaleString()}</div>
                              </div>
                              <div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
@@ -475,7 +476,7 @@ export function AdminDashboard() {
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Payment</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Fee Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -554,7 +555,7 @@ export function AdminDashboard() {
 
     const generateAndDownloadCSV = (silent = false) => {
         try {
-            const headers = ["Shareholder,Cabin,Check In,Check Out,Nights,Status,Payment Status"];
+            const headers = ["Shareholder,Cabin,Check In,Check Out,Nights,Status,Fee Status"];
             const rows = allBookings
                 .sort((a, b) => {
                     const da = a.from ? new Date(a.from) : new Date(0);
@@ -825,7 +826,7 @@ export function AdminDashboard() {
             // Un-pay
             triggerConfirm(
                 "Mark as Unpaid?",
-                `Are you sure you want to revert the payment status for ${booking.shareholderName}?`,
+                `Are you sure you want to revert the maintenance fee status for ${booking.shareholderName}?`,
                 async () => {
                     try {
                         await updateDoc(doc(db, "bookings", booking.id), { isPaid: false, celebrated: false });
@@ -842,11 +843,12 @@ export function AdminDashboard() {
             // Mark as Paid
             const start = booking.from;
             const end = booking.to;
-            const nights = differenceInDays(end, start);
-            const amount = nights * 125;
+            // Dynamic Pricing Logic for Confirmation
+            const cost = calculateBookingCost(booking.from, booking.to);
+            const amount = cost.total; // Use dynamic total
 
             triggerConfirm(
-                "Confirm Payment & Send Email",
+                "Confirm Fee & Send Email",
                 `Mark booking for ${booking.shareholderName} as PAID?\n\nAmount: $${amount}\n\nThis will send a confirmation email to the user.`,
                 async () => {
                     try {
@@ -871,7 +873,7 @@ export function AdminDashboard() {
                             }
                         });
 
-                        triggerAlert("Success", "Payment recorded and email sent! 💰");
+                        triggerAlert("Success", "Maintenance fee recorded and email sent! 💰");
                     } catch (err) {
                         triggerAlert("Error", err.message);
                     }
@@ -884,7 +886,7 @@ export function AdminDashboard() {
 
     const handleSendPaymentReminder = async (booking) => {
         triggerConfirm(
-            "Send Payment Reminder?",
+            "Send Maintenance Fee Reminder?",
             `Send an email reminder to ${booking.shareholderName} (Cabin #${booking.cabinNumber}) for $${booking.totalPrice}?`,
             async () => {
                 try {
@@ -903,7 +905,7 @@ export function AdminDashboard() {
                             dashboard_url: window.location.origin
                         }
                     });
-                    triggerAlert("Success", "Payment reminder sent.");
+                    triggerAlert("Success", "Maintenance fee reminder sent.");
                 } catch (err) {
                     console.error(err);
                     triggerAlert("Error", "Failed to send reminder.");
@@ -1167,7 +1169,8 @@ export function AdminDashboard() {
             // Only count finalized active bookings towards stats
             if (b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'auto-pass') {
                 const nights = (b.from && b.to) ? Math.max(0, Math.round((new Date(b.to) - new Date(b.from)) / (1000 * 60 * 60 * 24))) : 0;
-                const amount = nights * 125;
+                const cost = calculateBookingCost(b.from, b.to);
+                const amount = b.totalPrice || cost.total;
 
                 totalBookings++;
                 totalNights += nights;
@@ -1643,9 +1646,14 @@ export function AdminDashboard() {
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Payment</div>
+                                                                    <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Maintenance Fee</div>
                                                                     {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
-                                                                        <span className="text-slate-400 text-sm">—</span>
+                                                                        <div className="text-xs text-slate-500 font-medium mt-0.5">
+                                                                            {(() => {
+                                                                                const cost = calculateBookingCost(booking.from, booking.to);
+                                                                                return cost?.averageRate ? `$${Math.round(cost.averageRate)} avg/night` : '$125/night';
+                                                                            })()}
+                                                                        </div>
                                                                     ) : (
                                                                         <span
                                                                             className={`px-3 py-1 rounded text-xs font-bold border ${paymentClass}`}
@@ -1697,7 +1705,7 @@ export function AdminDashboard() {
                                                 <th className="px-6 py-4">Guests</th>
                                                 <th className="px-6 py-4">Dates</th>
                                                 <th className="px-6 py-4 text-center">Status</th>
-                                                <th className="px-6 py-4 text-center">Payment</th>
+                                                <th className="px-6 py-4 text-center">Fee Status</th>
                                                 <th className="px-6 py-4 text-right">Actions</th>
                                             </tr>
                                         </thead>

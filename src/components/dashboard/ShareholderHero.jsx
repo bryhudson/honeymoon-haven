@@ -644,12 +644,12 @@ export function ShareholderHero({
                                         {isPaid ? (
                                             <span className="flex items-center gap-2 text-emerald-400 text-sm font-bold uppercase tracking-widest">
                                                 <CheckCircle className="w-4 h-4" />
-                                                Payment Completed
+                                                Maintenance Fee Paid
                                             </span>
                                         ) : (
                                             <span className="flex items-center gap-2 text-amber-500 text-sm font-bold uppercase tracking-widest">
                                                 <AlertTriangle className="w-4 h-4" />
-                                                Payment Outstanding
+                                                Fee Outstanding
                                             </span>
                                         )}
                                     </div>

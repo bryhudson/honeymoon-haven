@@ -372,7 +372,7 @@ export function TrailerGuide({ shareholderName, booking }) {
                                         Send the <strong>Resort Guest Guide</strong> (Rules, Location) directly to your guest.
                                         <span className="block mt-2 p-2 bg-amber-50 text-amber-800 border border-amber-200 rounded text-xs font-bold flex items-center gap-2">
                                             <AlertTriangle className="w-3.5 h-3.5" />
-                                            Note: Financial/Payment details are NOT included.
+                                            Note: Financial/Fee details are NOT included.
                                         </span>
                                     </p>
 

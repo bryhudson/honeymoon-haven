@@ -306,8 +306,8 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                                     { id: "turnStarted", name: "Turn Started", desc: "When active status begins", subject: "It's YOUR Turn! 🎉" },
                                     { id: "turnPassed", name: "Turn Passed (Next)", desc: "Notify next user", subject: "It's Your Turn! (Passed)" },
                                     { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
-                                    { id: "paymentReminder", name: "Payment Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
-                                    { id: "paymentReceived", name: "Payment Received", desc: "Admin marks as Paid", subject: "Payment Received" },
+                                    { id: "paymentReminder", name: "Maintenance Fee Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
+                                    { id: "paymentReceived", name: "Maintenance Fee Received", desc: "Admin marks as Paid", subject: "Fee Received" },
                                     { id: "bookingCancelled", name: "Booking Cancelled", desc: "Admin cancels booking", subject: "Booking Cancelled" }
                                 ].map((event) => (
                                     <div key={event.id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg group hover:border-indigo-200 transition-all">

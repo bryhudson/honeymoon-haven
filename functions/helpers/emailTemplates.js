@@ -184,7 +184,7 @@ const emailTemplates = {
   reminder: (data) => {
     const subject = `HHR Trailer Booking: The clock is ticking ⏳`;
     const body = `
-      <h1 style="${THEME.typography.h1}">Don't snooze on summer.</h1>
+      <h1 style="${THEME.typography.h1}">Don't snooze on summer, ${data.name}.</h1>
       <p style="${THEME.typography.body}">You have <strong>${data.hours_remaining} hours left</strong> to lock in your plans before the turn passes.</p>
 
       <div style="margin: 32px 0;">
@@ -203,6 +203,7 @@ const emailTemplates = {
   finalWarning: (data) => {
     const subject = `HHR Trailer Booking: Last Call! 🚨`;
     const body = `
+      <p style="${THEME.typography.body} font-weight: 600;">Hi ${data.name},</p>
       <h1 style="${THEME.typography.h1} color: ${THEME.colors.error};">1 Hour Remaining</h1>
       <p style="${THEME.typography.body}">This is it. You have one hour left before your turn auto-skips to the next shareholder.</p>
 
@@ -230,7 +231,7 @@ const emailTemplates = {
         ${dataItem('Check In', data.check_in)}
         ${dataItem('Check Out', data.check_out)}
         ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
-        ${dataItem('Total Paid', `$${data.total_price}`, true)}
+        ${dataItem('Maintenance Fee Paid', `$${data.total_price}`, true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
@@ -250,7 +251,7 @@ const emailTemplates = {
     const subject = isRound2 ? `HHR Trailer Booking: See you in Round 2 👋` : `HHR Trailer Booking: See you in Open Season 👋`;
 
     const body = `
-      <h1 style="${THEME.typography.h1}">Thanks for letting us know.</h1>
+      <h1 style="${THEME.typography.h1}">Thanks for letting us know, ${data.name}.</h1>
       <p style="${THEME.typography.body}">We've successfully passed the baton to the next shareholder.</p>
       
       <div style="background-color: #FFFFFF; border: 1px solid #d2d2d7; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -269,7 +270,7 @@ const emailTemplates = {
   turnPassedNext: (data) => {
     const subject = `HHR Trailer Booking: You're Up Early! 🚀`;
     const body = `
-      <h1 style="${THEME.typography.h1}">The stage is yours.</h1>
+      <h1 style="${THEME.typography.h1}">The stage is yours, ${data.name}.</h1>
       <p style="${THEME.typography.body}">The previous shareholder passed their turn, so you're on the clock earlier than expected!</p>
 
       <div style="margin: 32px 0;">
@@ -288,7 +289,7 @@ const emailTemplates = {
   autoPassCurrent: (data) => {
     const subject = `HHR Trailer Booking: Your Turn Has Ended ⌛`;
     const body = `
-      <h1 style="${THEME.typography.h1}">We missed you.</h1>
+      <h1 style="${THEME.typography.h1}">We missed you, ${data.name}.</h1>
       <p style="${THEME.typography.body}">We didn't hear from you by the deadline, so we had to move the line along to keep fairness for everyone.</p>
       <p style="${THEME.typography.body}">Don't worry—you can still book during <strong>Open Season</strong>.</p>
 
@@ -303,7 +304,7 @@ const emailTemplates = {
   autoPassNext: (data) => {
     const subject = `HHR Trailer Booking: It's Finally Time! ✨`;
     const body = `
-      <h1 style="${THEME.typography.h1}">You're up.</h1>
+      <h1 style="${THEME.typography.h1}">You're up, ${data.name}.</h1>
       <p style="${THEME.typography.body}">The previous window closed, and the drafting order has arrived at you.</p>
 
       <div style="margin: 32px 0;">
@@ -323,7 +324,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: Cancellation Confirmed`;
     const body = `
       <h1 style="${THEME.typography.h1}">Booking Cancelled.</h1>
-      <p style="${THEME.typography.body}">We've released your dates back to the pool as requested.</p>
+      <p style="${THEME.typography.body}">Hi ${data.name}, we've released your dates back to the pool as requested.</p>
 
       <div style="margin: 32px 0;">
          ${dataItem('Cancelled Dates', `${data.check_in} - ${data.check_out}`)}
@@ -341,11 +342,11 @@ const emailTemplates = {
   paymentReminder: (data) => {
     const subject = `HHR Trailer Booking: Let's make it official 💸`;
     const body = `
-      <h1 style="${THEME.typography.h1}">Payment Due</h1>
-      <p style="${THEME.typography.body}">Please send your e-transfer to finalize the booking.</p>
+      <h1 style="${THEME.typography.h1}">Maintenance Fee Due</h1>
+      <p style="${THEME.typography.body}">Hi ${data.name}, please send your e-transfer to finalize the booking.</p>
 
       <div style="margin: 32px 0;">
-        ${dataItem('Amount Due', `$${data.total_price}`)}
+        ${dataItem('Fee Amount', `$${data.total_price}`)}
         ${dataItem('E-Transfer To', 'honeymoonhavenresort.lc@gmail.com')}
         ${dataItem('Message', `${data.name} - Cabin ${data.cabin_number}`, true)}
       </div>
@@ -359,13 +360,13 @@ const emailTemplates = {
 
   // 11. Payment Received
   paymentReceived: (data) => {
-    const subject = `HHR Trailer Booking: All Paid Up! ✅`;
+    const subject = `HHR Trailer Booking: Maintenance Fee Received! ✅`;
     const body = `
-      <h1 style="${THEME.typography.h1}">Payment Received.</h1>
+      <h1 style="${THEME.typography.h1}">Maintenance Fee Received.</h1>
       <p style="${THEME.typography.body}">Thanks, ${data.name}. You're all set for simpler times at the lake.</p>
 
       <div style="margin: 32px 0;">
-        ${dataItem('Amount', `$${data.amount}`)}
+        ${dataItem('Fee Amount', `$${data.amount}`)}
         ${dataItem('Dates', `${data.check_in || 'TBD'} - ${data.check_out || 'TBD'}`)}
         ${dataItem('Cabin', `Cabin #${data.cabin_number}`, true)}
       </div>

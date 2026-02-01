@@ -157,7 +157,7 @@ export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus,
                                 role="menuitem"
                             >
                                 <Bell className="w-4 h-4" />
-                                Send Payment Reminder
+                                Send Maintenance Fee Reminder
                             </button>
                         )}
 

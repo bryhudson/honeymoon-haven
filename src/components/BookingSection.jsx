@@ -9,6 +9,7 @@ import { db } from '../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 
 import { ConfirmationModal } from './ConfirmationModal';
+import { calculateBookingCost } from '../lib/pricing';
 import ErrorBoundary from './ErrorBoundary';
 
 
@@ -190,6 +191,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
     let nights = 0;
     let totalPrice = 0;
+    let priceDetails = null;
     let isTooLong = false;
     let isTooShort = false; // New validation
     let isOverlap = false;
@@ -203,7 +205,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             isTooShort = true;
         }
 
-        totalPrice = nights * 125;
+        const cost = calculateBookingCost(selectedRange.from, selectedRange.to);
+        totalPrice = cost.total;
+        priceDetails = cost;
 
         // Check for max stay
         if (nights > 7) {
@@ -350,7 +354,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             // Sanitize Payload
             const payload = {
                 ...newBooking,
-                totalPrice: nights * 125, // Add calculated price for record keeping
+                totalPrice: totalPrice, // Use calculated dynamic price
                 guests: parseInt(formData.guests) || 1, // Ensure number
                 updatedAt: new Date(),
                 round: status?.phase === 'ROUND_1' ? 1 : 2,
@@ -552,7 +556,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                             <div className="p-4 bg-slate-50 rounded-xl shadow-lg border border-blue-100">
                                                 <div className="border-b border-slate-200 pb-2 mb-3">
                                                     <h3 className="text-lg font-bold text-blue-600 flex items-center gap-2">
-                                                        Payment Info
+                                                        Maintenance Fee Info
                                                     </h3>
                                                 </div>
 
@@ -641,7 +645,17 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 {/* Row: Rate */}
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-sm font-medium text-slate-500">Rate</span>
-                                                    <span className="text-sm font-bold text-slate-900">$125.00 / night</span>
+                                                    <span className="text-sm font-medium text-slate-500">Rate</span>
+                                                    <div className="text-right">
+                                                        <span className="text-xs font-bold text-slate-900 block">
+                                                            {priceDetails?.averageRate ? `$${Math.round(priceDetails.averageRate)} avg/night` : '$125/night'}
+                                                        </span>
+                                                        {priceDetails?.breakdown?.discount > 0 && (
+                                                            <span className="text-[10px] text-green-600 font-bold block">
+                                                                Includes ${priceDetails.breakdown.discount} discount
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
 
                                                 {/* Divider */}

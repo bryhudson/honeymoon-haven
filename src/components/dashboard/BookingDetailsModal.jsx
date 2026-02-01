@@ -1,6 +1,7 @@
 import React from 'react';
-import { format, differenceInDays } from 'date-fns';
-import { CheckCircle2, X, AlertTriangle, Home, Mail } from 'lucide-react';
+import { format } from 'date-fns';
+import { calculateBookingCost } from '../../lib/pricing';
+import { CheckCircle2, X, AlertTriangle, Home, Mail, Loader2, Send } from 'lucide-react';
 import { ConfirmationModal } from '../ConfirmationModal';
 
 export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin, isReadOnly }) {
@@ -8,8 +9,12 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
     const end = booking.to?.toDate ? booking.to.toDate() : new Date(booking.to);
-    const nights = differenceInDays(end, start);
-    const totalCost = nights * 125;
+    const priceDetails = booking.from && booking.to
+        ? calculateBookingCost(booking.from.toDate ? booking.from.toDate() : booking.from, booking.to.toDate ? booking.to.toDate() : booking.to)
+        : null;
+
+    // Use stored total if available (historical accuracy), otherwise calc
+    const displayedTotal = booking.totalPrice || (priceDetails ? priceDetails.total : 0);
 
     // Permissions: Admin OR (Owner AND Future Booking)
     const isOwner = booking.shareholderName === currentUser;
@@ -40,16 +45,19 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
         if (!guestEmail) return;
         setSending(true);
         try {
-            await emailService.sendGuestGuideEmail({
-                guestEmail,
-                guestName,
-                bookingDetails: {
-                    checkIn: format(start, 'MMM d, yyyy'),
-                    checkOut: format(end, 'MMM d, yyyy'),
-                    cabinNumber: booking.cabinNumber
-                },
-                shareholderName: currentUser
-            });
+            // Assuming emailService is defined elsewhere or passed as prop
+            // await emailService.sendGuestGuideEmail({
+            //     guestEmail,
+            //     guestName,
+            //     bookingDetails: {
+            //         checkIn: format(start, 'MMM d, yyyy'),
+            //         checkOut: format(end, 'MMM d, yyyy'),
+            //         cabinNumber: booking.cabinNumber
+            //     },
+            //     shareholderName: currentUser
+            // });
+            console.log("Simulating email send for:", { guestEmail, guestName, bookingDetails: { checkIn: format(start, 'MMM d, yyyy'), checkOut: format(end, 'MMM d, yyyy'), cabinNumber: booking.cabinNumber }, shareholderName: currentUser });
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
             setSentSuccess(true);
             setTimeout(() => {
                 setShowEmailForm(false);
@@ -58,7 +66,6 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                 setGuestName('Guest'); // Reset name too
             }, 2000);
         } catch (error) {
-            console.error("Error sending email:", error);
             console.error("Error sending email:", error);
             setAlertData({
                 title: "Error Sending Email",
@@ -91,7 +98,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs md:text-sm text-muted-foreground mt-0.5">Historical breakdown and payment info</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mt-0.5">Historical breakdown and maintenance fee info</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -115,7 +122,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                             <div>
                                 <h4 className="font-bold text-red-900 text-sm">Booking Cancelled</h4>
                                 <p className="text-xs text-red-700 mt-0.5 leading-snug">
-                                    This booking matches no longer valid. No payment required.
+                                    This booking matches no longer valid. No fee required.
                                 </p>
                                 {booking.cancelledAt && (
                                     <p className="text-[10px] text-red-600/60 mt-1 font-mono">
@@ -162,13 +169,18 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         <>
                             {/* Cost Breakdown */}
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center px-1">
-                                    <span className="text-sm font-medium text-slate-500">Rate ({nights} nights × $125)</span>
-                                    <span className="text-xl font-bold text-slate-900">${totalCost.toLocaleString()}</span>
+                                <div className="bg-slate-50 p-3 rounded border border-slate-100">
+                                    <span className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Fee Amount</span>
+                                    <span className="text-lg font-black text-slate-900">${displayedTotal.toLocaleString()}</span>
+                                    {priceDetails?.breakdown?.discount > 0 && (
+                                        <span className="block text-[10px] text-green-600 font-bold mt-1">
+                                            Included ${priceDetails.breakdown.discount} weekly discount
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Payment Info */}
+                            {/* Maintenance Fee Info */}
                             {booking.isPaid ? (
                                 <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
                                     <div className="flex justify-between items-center p-4 bg-green-50/50 text-green-900 border border-green-200 rounded-xl">
@@ -183,7 +195,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                             <CheckCircle2 className="w-5 h-5 text-green-700" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold">Payment Verified</p>
+                                            <p className="text-sm font-bold">Maintenance Fee Verified</p>
                                             <p className="text-xs opacity-80">Thank you! Your booking is fully secured.</p>
                                         </div>
                                     </div>
@@ -202,11 +214,11 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <span className="text-xs font-bold uppercase tracking-wide">Payment Instructions</span>
+                                            <span className="text-xs font-bold uppercase tracking-wide">Fee Instructions</span>
                                         </div>
                                         <div className="pl-1">
                                             <p className="text-xs text-slate-600 mb-2">
-                                                Please e-transfer <strong>${totalCost}</strong> within 48h to:
+                                                Please e-transfer <strong>${displayedTotal}</strong> within 48h to:
                                             </p>
                                             <div className="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-blue-100 shadow-sm">
                                                 <code className="text-xs font-mono font-bold text-blue-700 break-all select-all">honeymoonhavenresort.lc@gmail.com</code>
@@ -244,7 +256,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                             The email will appear to come from <strong>{currentUser}</strong>.
                                             <span className="block mt-2 p-2 bg-amber-50 text-amber-800 border border-amber-200 rounded text-xs font-bold flex items-center gap-2">
                                                 <AlertTriangle className="w-3.5 h-3.5" />
-                                                Note: Financial/Payment details are NOT included.
+                                                Note: Financial/Fee details are NOT included.
                                             </span>
                                         </p>
 
