@@ -170,13 +170,38 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                             {/* Cost Breakdown */}
                             <div className="space-y-4">
                                 <div className="bg-slate-50 p-3 rounded border border-slate-100">
-                                    <span className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Fee Amount</span>
-                                    <span className="text-lg font-black text-slate-900">${displayedTotal.toLocaleString()}</span>
-                                    {priceDetails?.breakdown?.discount > 0 && (
-                                        <span className="block text-[10px] text-green-600 font-bold mt-1">
-                                            Included ${priceDetails.breakdown.discount} weekly discount
-                                        </span>
-                                    )}
+                                    <span className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-2">Maintenance Fee Breakdown</span>
+
+                                    <div className="space-y-1 mb-3 border-b border-slate-200 pb-2">
+                                        {/* Weeknights */}
+                                        {priceDetails?.breakdown?.weeknights > 0 && (
+                                            <div className="flex justify-between text-xs text-slate-700">
+                                                <span>{priceDetails.breakdown.weeknights} Weeknight{priceDetails.breakdown.weeknights !== 1 ? 's' : ''} x $100</span>
+                                                <span className="font-bold">${priceDetails.breakdown.weeknightTotal}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Weekends */}
+                                        {priceDetails?.breakdown?.weekends > 0 && (
+                                            <div className="flex justify-between text-xs text-slate-700">
+                                                <span>{priceDetails.breakdown.weekends} Weekend{priceDetails.breakdown.weekends !== 1 ? 's' : ''} x $125</span>
+                                                <span className="font-bold">${priceDetails.breakdown.weekendTotal}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Discount */}
+                                        {priceDetails?.breakdown?.discount > 0 && (
+                                            <div className="flex justify-between text-xs text-green-600 font-bold">
+                                                <span>Weekly Discount</span>
+                                                <span>-${priceDetails.breakdown.discount}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-bold text-slate-900">Total</span>
+                                        <span className="text-lg font-black text-slate-900">${displayedTotal.toLocaleString()}</span>
+                                    </div>
                                 </div>
                             </div>
 

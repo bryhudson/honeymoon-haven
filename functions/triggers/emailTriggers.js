@@ -63,6 +63,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             guests: afterData.guests || 1,
             nights: afterData.nights || calculateNights(afterData.from || afterData.checkInDate, afterData.to || afterData.checkOutDate),
             total_price: afterData.totalPrice,
+            price_breakdown: afterData.priceBreakdown, // New field
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 

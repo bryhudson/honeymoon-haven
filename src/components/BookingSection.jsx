@@ -355,6 +355,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             const payload = {
                 ...newBooking,
                 totalPrice: totalPrice, // Use calculated dynamic price
+                priceBreakdown: priceDetails?.breakdown || null, // Save detailed breakdown
                 guests: parseInt(formData.guests) || 1, // Ensure number
                 updatedAt: new Date(),
                 round: status?.phase === 'ROUND_1' ? 1 : 2,
@@ -643,17 +644,29 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 </div>
 
                                                 {/* Row: Rate */}
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm font-medium text-slate-500">Rate</span>
-                                                    <span className="text-sm font-medium text-slate-500">Rate</span>
-                                                    <div className="text-right">
-                                                        <span className="text-xs font-bold text-slate-900 block">
-                                                            {priceDetails?.averageRate ? `$${Math.round(priceDetails.averageRate)} avg/night` : '$125/night'}
-                                                        </span>
+                                                {/* Row: Maintenance Fee Breakdown */}
+                                                <div className="flex justify-between items-start">
+                                                    <span className="text-sm font-medium text-slate-500 pt-1">Maintenance Fee Breakdown</span>
+                                                    <div className="text-right space-y-1">
+                                                        {/* Weeknights */}
+                                                        {priceDetails?.breakdown?.weeknights > 0 && (
+                                                            <div className="text-xs text-slate-700">
+                                                                <span className="font-bold">{priceDetails.breakdown.weeknights}</span> Weeknight{priceDetails.breakdown.weeknights !== 1 ? 's' : ''} x $100
+                                                            </div>
+                                                        )}
+
+                                                        {/* Weekends */}
+                                                        {priceDetails?.breakdown?.weekends > 0 && (
+                                                            <div className="text-xs text-slate-700">
+                                                                <span className="font-bold">{priceDetails.breakdown.weekends}</span> Weekend{priceDetails.breakdown.weekends !== 1 ? 's' : ''} x $125
+                                                            </div>
+                                                        )}
+
+                                                        {/* Discount */}
                                                         {priceDetails?.breakdown?.discount > 0 && (
-                                                            <span className="text-[10px] text-green-600 font-bold block">
-                                                                Includes ${priceDetails.breakdown.discount} discount
-                                                            </span>
+                                                            <div className="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded inline-block">
+                                                                -${priceDetails.breakdown.discount} Weekly Discount
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -663,7 +676,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                                                 {/* Row: Total */}
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-base font-bold text-slate-700">Total</span>
+                                                    <span className="text-base font-bold text-slate-700">Total Fee</span>
                                                     <span className="text-2xl font-black text-primary tracking-tight">${totalPrice.toLocaleString()}</span>
                                                 </div>
                                             </div>
