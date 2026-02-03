@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Info, RotateCw, Clock, Sunrise, Zap, CalendarCheck, History, Calendar } from 'lucide-react';
+import { Info, RotateCw, Clock, Sunrise, Zap, CalendarCheck, History, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { CABIN_OWNERS, mapOrderToSchedule } from '../../lib/shareholders';
 import { HistoricalOrders } from './HistoricalOrders';
@@ -85,6 +85,20 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                     <h4 className="font-bold text-slate-900 text-sm">Open Season</h4>
                                     <p className="text-xs text-slate-500 leading-relaxed mt-1">
                                         After Round 2, remaining dates open up for first-come, first-served booking.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-green-100/50 text-green-600 rounded-lg shrink-0">
+                                    <DollarSign className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-900 text-sm">Pricing Rules</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                        <strong>Weeknights (Sun-Thu):</strong> $100<br />
+                                        <strong>Weekends (Fri-Sat):</strong> $125<br />
+                                        <strong>Full Week (7 Nights):</strong> $650
                                     </p>
                                 </div>
                             </div>
