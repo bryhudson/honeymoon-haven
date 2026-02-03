@@ -229,7 +229,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center p-4 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl shadow-sm">
                                         <span className="font-bold text-sm text-slate-500 uppercase tracking-wider">Amount Due</span>
-                                        <span className="text-2xl font-black text-slate-900 tracking-tight">${totalCost.toLocaleString()}</span>
+                                        <span className="text-2xl font-black text-slate-900 tracking-tight">${displayedTotal.toLocaleString()}</span>
                                     </div>
 
                                     <div className="bg-blue-50/50 rounded-xl border border-blue-100 p-4 space-y-3">
