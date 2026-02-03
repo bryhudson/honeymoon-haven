@@ -94,7 +94,7 @@ export function SeasonSchedule({ currentOrder, allDraftRecords, status, startDat
                                     <DollarSign className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900 text-sm">Pricing Rules</h4>
+                                    <h4 className="font-bold text-slate-900 text-sm">Maintenance Fees</h4>
                                     <p className="text-xs text-slate-500 leading-relaxed mt-1">
                                         <strong>Weeknights (Sun-Thu):</strong> $100<br />
                                         <strong>Weekends (Fri-Sat):</strong> $125<br />
