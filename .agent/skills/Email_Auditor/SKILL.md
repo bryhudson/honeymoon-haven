@@ -1,34 +1,42 @@
 ---
 name: Lead UX/UI Email Auditor & Refactorist
-description: Expert-level capability for auditing existing communication stacks, enforcing high-end "Apple-style" UI/UX standards, and refactoring transactional/scheduled email code for tone and consistency.
+description: Expert-level capability for auditing communication stacks, enforcing Apple-style UI/UX, and strictly validating the 10 AM PST "Bonus Time" booking logic and conversational tone.
 ---
 
 # Lead UX/UI Email Auditor & Refactorist
 
 ## 🛠 Ruleset (The Constraints)
 
-### The Apple Standard
-Prioritize white space, high-contrast typography, and a single-column layout. If a design feels cluttered, the skill mandates simplification.
+### 1. The HHR Timing Anchor (Non-Negotiable)
+* **10 AM PST Rule**: All 48-hour countdowns and "Timed Reminders" (Day 1-3) must anchor to **10:00 AM PST** of the official start day.
+* **Bonus Access Logic**: "Early Access" (when a previous user finishes early) must be framed as a bonus. The 48-hour clock does NOT start until the following day at 10:00 AM PST. 
+* **Variable Audit**: Always verify `{{deadline}}` or `${deadline}` variables are calculated from the anchor, not the `sent_at` timestamp.
 
-### Single-Action Focus
-Every email must be stripped down to one primary CTA. Secondary links must be moved to a minimalist footer.
+### 2. Branding & Naming Accuracy
+* **Product Name**: Strictly use **"HHR Trailer Booking App"**.
+* **Draft Logic**: 
+    * Round 1 = Standard Draft.
+    * Round 2 = **Snake Draft**. (Ensure Round 1 is never labeled as Snake).
+* **Round Indicators**: Subject lines must dynamically include the current **[Round X]**.
 
-### Variable Integrity
-During refactoring, never alter or delete template literals or dynamic placeholders (e.g., `${booking_id}`, `${user_name}`)—only the surrounding HTML/text.
+### 3. The Apple Standard (UI/UX)
+* **Aesthetic**: Prioritize white space, high-contrast typography, and single-column layouts.
+* **CTAs**: Buttons must have 8px rounding, be 44px+ tall, and link to the official HHR Trailer Booking Sign-in page.
+* **Mobile-First**: Use fluid widths (100%) for mobile; max 600px for desktop.
 
-### Mobile-First rendering
-Use fluid widths (100%) for mobile and a fixed-width container (max 600px) for desktop.
+### 4. Tonal Direction
+* **Voice**: Fun, engaging, friendly, and conversational. 
+* **Style**: Use contractions, helpful "concierge" phrasing, and emojis where appropriate to keep it light.
 
 ## 🧠 Logic Steps (The Skill Workflow)
 
-1.  **Discovery**: Scan the repository (specifically `/functions` and `/src/emails`) to index all current templates and their trigger contexts (e.g., "Reminder," "Booking Confirmed").
-2.  **Structural Audit**: Compare the headers and footers of all indexed emails against the HHR Master Component. Mark discrepancies for replacement.
+1.  **Discovery**: Scan `/functions` and `/src/emails` to index all templates and their triggers (Timed vs. Transactional).
+2.  **Timing Audit**: Cross-reference triggers against the **10 AM PST Anchor**. Flag any "Fast Mode" or `Date.now()` logic that ignores the anchor.
 3.  **Tonal Translation**:
-    *   **Scan**: Identify "robotic" or "dry" phrasing.
-    *   **Refactor**: Rewrite into a fun, conversational voice (e.g., change "Your booking is confirmed" to "You’re all set! Your trailer is ready for its next adventure.").
-4.  **UI Refinement**: Standardize buttons to the approved CTA list (Book Now, Sign in to HHR Booking, Login to Web App) and apply 8px corner rounding.
-5.  **Quality Assurance**: Perform a "Mobile Readability Check." If the font size is below 16px or the button is less than 44px tall, adjust to meet UX standards.
+    * **Scan**: Identify "robotic" or "dry" phrasing.
+    * **Refactor**: Rewrite into the "HHR Fun Voice" (e.g., change "1 Hour Remaining" to "Clock's ticking! ⏳ You’ve got just one hour left.").
+4.  **Structural Alignment**: Compare headers/footers against the HHR Master Component. Ensure the "Round" and "Product Name" are correct.
+5.  **Open Season Check**: Ensure the post-Round 2 "First-Come, First-Served" template exists and matches the system style.
 
-## 💬 Usage Example (How to trigger)
-"Using your Email Auditor Skill, review the latest Cloud Function in functions/reminders.js. Refactor the email template to match our HHR Apple-style UI and update the tone to be more conversational."
-        
+## 💬 Usage Example
+"Using your Email Auditor Skill, review the templates in `functions/reminders.js`. Ensure the 10 AM PST 'Bonus Time' logic is clearly explained in the 'Turn Started' email, fix the Round 2 Snake Draft labels, and make the tone more conversational."
