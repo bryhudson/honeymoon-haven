@@ -37,7 +37,8 @@ export function ReauthenticationModal({ isOpen, onClose, onConfirm, title, messa
             } else if (err.code === 'auth/user-mismatch' || err.code === 'auth/user-token-expired') {
                 setError("Session expired. Please log out and back in.");
             } else {
-                setError(`Authentication failed (${err.code}). Please try again.`);
+                // Fallback: Show the raw message or code
+                setError(err.message || `Authentication failed (${err.code}).`);
             }
         } finally {
             setIsLoading(false);
