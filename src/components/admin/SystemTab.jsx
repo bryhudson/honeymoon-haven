@@ -32,7 +32,7 @@ export function SystemTab({
     const [bookings, setBookings] = useState([]);
     const [showTimeTravel, setShowTimeTravel] = useState(false); // Toggle for advanced date picker
     const [confirmMaintenance, setConfirmMaintenance] = useState(false);
-    const [confirmReset, setConfirmReset] = useState(false);
+
 
     // Calculate if we're before Feb 15, 2026
     const now = new Date();
@@ -76,51 +76,7 @@ export function SystemTab({
     }, [bookings, simStartDate, fastTestingMode]);
 
 
-    // Sync Draft Status Function
-    const handleSyncDraftStatus = async () => {
-        try {
-            // We re-fetch to ensure we have the absolute latest BEFORE writing
-            const bookingsSnapshot = await getDocs(collection(db, "bookings"));
-            const currentBookings = bookingsSnapshot.docs.map(d => ({
-                id: d.id,
-                ...d.data(),
-                from: d.data().from?.toDate(),
-                to: d.data().to?.toDate()
-            }));
 
-            const settingsDoc = await getDoc(doc(db, "settings", "general"));
-            const settings = settingsDoc.data() || {};
-
-            const calculatedStatus = calculateDraftSchedule(
-                getShareholderOrder(2026), // shareholders
-                currentBookings,
-                new Date(), // now
-                settings.draftStartDate?.toDate(),
-                settings.fastTestingMode,
-                settings.bypassTenAM
-            );
-
-            await setDoc(doc(db, "status", "draftStatus"), {
-                activePicker: calculatedStatus.activePicker,
-                nextPicker: calculatedStatus.nextPicker,
-                phase: calculatedStatus.phase,
-                round: calculatedStatus.round,
-                windowStarts: calculatedStatus.windowStarts ? Timestamp.fromDate(calculatedStatus.windowStarts) : null,
-                windowEnds: calculatedStatus.windowEnds ? Timestamp.fromDate(calculatedStatus.windowEnds) : null,
-                lastSynced: Timestamp.now()
-            });
-
-            setLastSyncTime('Just now');
-            const message = calculatedStatus.activePicker
-                ? `Schedule started! ${calculatedStatus.activePicker} is now active.`
-                : "Schedule synced - no active picker yet.";
-
-            triggerAlert("Success", message);
-        } catch (error) {
-            console.error("Sync failed:", error);
-            triggerAlert("Error", `Failed to sync: ${error.message}`);
-        }
-    };
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -173,29 +129,7 @@ export function SystemTab({
                             </button>
                         </div>
 
-                        {/* Reset Schedule State */}
-                        <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <RefreshCw className="w-5 h-5 text-slate-600" />
-                                    <h4 className="font-bold text-slate-900">Reset Schedule State</h4>
-                                </div>
-                                <p className="text-sm text-slate-500 leading-relaxed mb-2">
-                                    Forces a re-calculation of the draft schedule based on current bookings.
-                                    Use if the dashboard is "stuck" or showing the wrong active picker.
-                                </p>
-                                <div className="flex items-center gap-2 text-xs font-medium">
-                                    <span className="text-slate-400">Production Impact:</span>
-                                    <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">🟢 None - Safe</span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setConfirmReset(true)}
-                                className="shrink-0 w-full md:w-48 justify-center px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-all shadow-sm border border-transparent flex items-center gap-2 pt-2.5"
-                            >
-                                Recalculate State
-                            </button>
-                        </div>
+
 
                         {/* Wipe Data (Protected Action) */}
                         <div className="bg-red-50/50 rounded-xl border border-red-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -346,16 +280,7 @@ export function SystemTab({
                 requireTyping="maintenance"
             />
 
-            <ConfirmationModal
-                isOpen={confirmReset}
-                onClose={() => setConfirmReset(false)}
-                onConfirm={handleSyncDraftStatus}
-                title="Reset Schedule State?"
-                message="This will force the system to re-read all bookings and re-calculate who should be active.\n\nType 'reset' to confirm."
-                isDanger={false}
-                confirmText="Reset State"
-                requireTyping="reset"
-            />
+
         </div>
     );
 }

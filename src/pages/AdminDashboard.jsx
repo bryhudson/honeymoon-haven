@@ -550,56 +550,6 @@ export function AdminDashboard() {
         );
     };
 
-    const handleSyncDraftStatus = async () => {
-        triggerConfirm(
-            "Recalculate Schedule State?",
-            "This will force a re-calculation of the active picker based on current bookings. Use this if the dashboard state seems stuck.",
-            async () => {
-                try {
-                    // Refetch all bookings to be safe
-                    const bookingsSnapshot = await getDocs(collection(db, "bookings"));
-                    const currentBookings = bookingsSnapshot.docs.map(d => ({
-                        id: d.id,
-                        ...d.data(),
-                        from: d.data().from?.toDate(),
-                        to: d.data().to?.toDate()
-                    }));
-
-                    const settingsDoc = await getDoc(doc(db, "settings", "general"));
-                    const settings = settingsDoc.data() || {};
-
-                    const calculatedStatus = calculateDraftSchedule(
-                        getShareholderOrder(2026),
-                        currentBookings,
-                        new Date(),
-                        settings.draftStartDate?.toDate(),
-                        settings.fastTestingMode,
-                        settings.bypassTenAM
-                    );
-
-                    await setDoc(doc(db, "status", "draftStatus"), {
-                        activePicker: calculatedStatus.activePicker,
-                        nextPicker: calculatedStatus.nextPicker,
-                        phase: calculatedStatus.phase,
-                        round: calculatedStatus.round,
-                        windowStarts: calculatedStatus.windowStarts,
-                        windowEnds: calculatedStatus.windowEnds,
-                        lastSynced: new Date()
-                    });
-
-                    triggerAlert("Success", "Schedule state recalculated!");
-                    setTimeout(() => window.location.reload(), 1500);
-                } catch (error) {
-                    console.error("Sync failed:", error);
-                    triggerAlert("Error", `Failed to sync: ${error.message}`);
-                }
-            },
-            false,
-            "Recalculate"
-        );
-    };
-
-
     // --- SYSTEM CONTROLS ---
 
     const generateAndDownloadCSV = (silent = false) => {
@@ -1571,14 +1521,6 @@ export function AdminDashboard() {
                                         >
                                             <Download className="w-4 h-4" />
                                             <span className="hidden md:inline">CSV</span>
-                                        </button>
-                                        <button
-                                            onClick={handleSyncDraftStatus}
-                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-indigo-50 rounded"
-                                            title="Fix Stuck State"
-                                        >
-                                            <RefreshCw className="w-4 h-4" />
-                                            <span className="hidden md:inline">Reset State</span>
                                         </button>
                                     </div>
                                 )}
