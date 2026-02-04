@@ -182,7 +182,6 @@ export function SystemTab({
                                             fastTestingMode: false,
                                             isTestMode: false // Live Emails!
                                         }, { merge: true });
-                                        await handleSyncDraftStatus();
                                     }
                                 );
                             }}
@@ -228,7 +227,6 @@ export function SystemTab({
                                             isTestMode: true, // Safe Mode
                                             testEmailReceiver: currentUser.email // Route emails to whoever started this
                                         }, { merge: true });
-                                        await handleSyncDraftStatus();
                                     }
                                 );
                             }}
@@ -281,6 +279,6 @@ export function SystemTab({
             />
 
 
-        </div>
+        </div >
     );
 }
