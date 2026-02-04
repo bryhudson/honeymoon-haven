@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Caravan, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useBookingRealtime } from '../hooks/useBookingRealtime';
-import { CABIN_OWNERS } from '../lib/shareholders';
 import { db } from '../lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { FeedbackModal } from './FeedbackModal';
 
 export function Header() {
@@ -13,17 +12,34 @@ export function Header() {
     const navigate = useNavigate();
     const location = useLocation(); // Hook to check current path
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [shareholders, setShareholders] = useState([]);
 
     const isLoginPage = location.pathname === '/login';
 
-    // Resolve logged in share holder name from email
+    // Fetch shareholders from Firestore (to get email-to-name mapping)
+    useEffect(() => {
+        async function fetchShareholders() {
+            try {
+                const snapshot = await getDocs(collection(db, "shareholders"));
+                const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                setShareholders(data);
+            } catch (err) {
+                console.error("Header: Failed to fetch shareholders:", err);
+            }
+        }
+        if (currentUser) {
+            fetchShareholders();
+        }
+    }, [currentUser]);
+
+    // Resolve logged in shareholder name from email
     const loggedInShareholder = React.useMemo(() => {
         if (!currentUser?.email) return null;
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
         if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
-        const owner = CABIN_OWNERS.find(o => o.email && o.email.includes(currentUser.email));
+        const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
         return owner ? owner.name : null;
-    }, [currentUser]);
+    }, [currentUser, shareholders]);
 
     // Hardcoded Admin Check (for now)
     const isAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
