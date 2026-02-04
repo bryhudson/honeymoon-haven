@@ -2,6 +2,7 @@ import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Inf
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
+import confetti from 'canvas-confetti';
 import { emailService } from '../services/emailService';
 import { addHours } from 'date-fns';
 import { db, functions } from '../lib/firebase';
@@ -299,6 +300,20 @@ export function Dashboard() {
                 setViewingBooking(null);
                 setIsBooking(false);
                 setEditingBooking(null);
+
+                // FIRE CONFETTI! (Celebration for Booking)
+                const duration = 3 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+                const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+                const interval = setInterval(function () {
+                    const timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                }, 250);
 
                 if (onSuccess) onSuccess();
             } catch (err) {
