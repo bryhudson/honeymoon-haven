@@ -727,14 +727,23 @@ export function AdminDashboard() {
     };
 
 
-    const handleAddAdmin = () => {
-        requireAuth(
-            "Security Check: Add Administrator",
-            "This action grants high-level access to the system. Please verify your password to proceed.",
-            () => {
-                setCreateUserRole('admin');
-                setIsCreateUserModalOpen(true);
-            }
+    const handleAddShareholder = () => {
+        if (currentUser?.email !== 'bryan.m.hudson@gmail.com') return;
+
+        triggerPrompt(
+            "Security Check",
+            "Enter Master Passcode to add a new shareholder:",
+            "",
+            (code) => {
+                if (code === '2026') {
+                    setCreateUserRole('shareholder');
+                    setIsCreateUserModalOpen(true);
+                } else {
+                    triggerAlert("Access Denied", "Incorrect passcode.");
+                }
+            },
+            "password",
+            "Verify"
         );
     };
 
@@ -1900,20 +1909,13 @@ export function AdminDashboard() {
                             <div className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
                                 <div className="flex gap-2">
-                                    <button
-                                        onClick={() => { setCreateUserRole('shareholder'); setIsCreateUserModalOpen(true); }}
-                                        className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-sm"
-                                    >
-                                        <PlusCircle className="w-4 h-4" />
-                                        Add Shareholder
-                                    </button>
                                     {IS_SITE_OWNER && (
                                         <button
-                                            onClick={handleAddAdmin}
-                                            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm"
+                                            onClick={handleAddShareholder}
+                                            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-sm"
                                         >
-                                            <Shield className="w-4 h-4" />
-                                            Add Admin
+                                            <PlusCircle className="w-4 h-4" />
+                                            Add Shareholder
                                         </button>
                                     )}
                                 </div>
