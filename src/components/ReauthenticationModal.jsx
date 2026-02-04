@@ -34,8 +34,10 @@ export function ReauthenticationModal({ isOpen, onClose, onConfirm, title, messa
             console.error("Reauth Error:", err);
             if (err.code === 'auth/wrong-password') {
                 setError("Incorrect password.");
+            } else if (err.code === 'auth/user-mismatch' || err.code === 'auth/user-token-expired') {
+                setError("Session expired. Please log out and back in.");
             } else {
-                setError("Authentication failed. Please try again.");
+                setError(`Authentication failed (${err.code}). Please try again.`);
             }
         } finally {
             setIsLoading(false);
