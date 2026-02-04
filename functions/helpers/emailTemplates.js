@@ -310,10 +310,10 @@ const emailTemplates = {
     const body = `
       <h1 style="${THEME.typography.h1}">We missed you, ${data.name}.</h1>
       <p style="${THEME.typography.body}">We didn't hear from you by the deadline, so we had to move the line along to keep fairness for everyone.</p>
-      <p style="${THEME.typography.body}">Don't worry—you can still book during <strong>Open Season</strong>.</p>
+      <p style="${THEME.typography.body}">Don't worry - you can still book during <strong>Open Season</strong>.</p>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">Check Status</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Check Status</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };

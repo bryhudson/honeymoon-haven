@@ -27,6 +27,7 @@ description: Expert-level capability for auditing communication stacks, enforcin
 ### 4. Tonal Direction
 * **Voice**: Fun, engaging, friendly, and conversational. 
 * **Style**: Use contractions, helpful "concierge" phrasing, and emojis where appropriate to keep it light.
+* **Typography**: Never use em dashes (—). Always use regular hyphens (-) with spaces.
 
 ## 🧠 Logic Steps (The Skill Workflow)
 
