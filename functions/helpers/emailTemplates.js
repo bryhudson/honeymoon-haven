@@ -253,8 +253,14 @@ const emailTemplates = {
         </div>
       </div>
 
+      <div style="background-color: #FFF4E5; border: 1px solid #FFE0B2; border-radius: 8px; padding: 16px; margin: 24px 0; text-align: center;">
+         <p style="${THEME.typography.body} margin: 0; color: #9A3412;">
+           <strong>Action Required:</strong> Please complete your e-transfer within 48 hours to secure your booking.
+         </p>
+      </div>
+
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">View Itinerary</a>
+        <a href="https://hhr-trailer-booking.web.app/dashboard" style="${THEME.components.button}">View Itinerary</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -378,7 +384,7 @@ const emailTemplates = {
 
     const body = `
       <h1 style="${THEME.typography.h1}">Maintenance Fee Due</h1>
-      <p style="${THEME.typography.body}">Hi ${data.name}, please send your e-transfer to finalize the booking.</p>
+      <p style="${THEME.typography.body}">Hi ${data.name}, please complete your e-transfer to finalize the booking.</p>
 
       <div style="margin: 32px 0;">
         <div style="${THEME.components.dataRow}">
@@ -386,12 +392,12 @@ const emailTemplates = {
           <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.total_price}</span>
           ${breakdownHtml}
         </div>
-        ${dataItem('E-Transfer To', 'honeymoonhavenresort.lc@gmail.com')}
         ${dataItem('Message', `${data.name} - Cabin ${data.cabin_number}`, true)}
       </div>
 
-      <div style="text-align: center; margin-top: 32px;">
-         <a href="mailto:honeymoonhavenresort.lc@gmail.com" style="${THEME.components.button}">Send E-Transfer</a>
+      <div style="text-align: center; margin-top: 32px; background-color: #F5F5F7; padding: 24px; border-radius: 12px; border: 1px solid #e5e5ea;">
+         <p style="${THEME.typography.body} margin: 0; font-weight: 600; color: ${THEME.colors.textLight}; font-size: 12px; text-transform: uppercase;">Send E-Transfer To</p>
+         <p style="${THEME.typography.h2} color: ${THEME.colors.primary}; margin: 8px 0; font-size: 18px; word-break: break-all;">honeymoonhavenresort.lc@gmail.com</p>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -401,7 +407,7 @@ const emailTemplates = {
   paymentReceived: (data) => {
     const subject = `HHR Trailer Booking App: Maintenance Fee Received! ✅`;
     const body = `
-      <h1 style="${THEME.typography.h1}">Maintenance Fee Received.</h1>
+      < h1 style = "${THEME.typography.h1}" > Maintenance Fee Received.</h1 >
       <p style="${THEME.typography.body}">Thanks, ${data.name}. You're all set for simpler times at the lake.</p>
 
       <div style="margin: 32px 0;">
@@ -424,8 +430,8 @@ const emailTemplates = {
 
     // Custom content logic for the guide (more text heavy)
     const customContent = `
-      <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${data.guest_name}!</h1>
-      <p style="${THEME.typography.body}">${data.shareholder_name} wants to ensure you have the best stay possible.</p>
+      < h1 style = "${THEME.typography.h1} margin-bottom: 8px;" > Welcome, ${data.guest_name} !</h1 >
+        <p style="${THEME.typography.body}">${data.shareholder_name} wants to ensure you have the best stay possible.</p>
 
       ${details.checkIn ? `
       <div style="margin: 32px 0;">
@@ -434,7 +440,8 @@ const emailTemplates = {
         ${dataItem('Check Out', `${details.checkOut} (11:00 AM)`)}
         ${dataItem('Cabin', `Cabin #${details.cabinNumber}`, true)}
       </div>
-      ` : ''}
+      ` : ''
+      }
 
       <div style="margin-top: 40px;">
         <h3 style="${THEME.typography.h3}">Essentials</h3>
@@ -469,7 +476,7 @@ const emailTemplates = {
   openSeasonStarted: (data) => {
     const subject = `HHR Trailer Booking App: Open Season is Here! 🌲`;
     const body = `
-      <h1 style="${THEME.typography.h1}">The Draft is Complete.</h1>
+      < h1 style = "${THEME.typography.h1}" > The Draft is Complete.</h1 >
       <p style="${THEME.typography.body}">All rounds are finished, and Open Season has officially begun.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -491,7 +498,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: New Feedback 📬 (${title})`;
 
     const body = `
-      <h3 style="${THEME.typography.h3}">${title}</h3>
+      < h3 style = "${THEME.typography.h3}" > ${title}</h3 >
       <h1 style="${THEME.typography.h1} font-size: 20px;">From ${data.name}</h1>
       
       <div style="background-color: #F5F5F7; border-radius: 12px; padding: 20px; margin: 32px 0;">
