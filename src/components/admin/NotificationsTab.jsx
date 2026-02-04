@@ -285,6 +285,80 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                             </div>
                         </div>
 
+                        {/* LEFT BOTTOM: Payment Reminders (Testable) */}
+                        <div className="space-y-6 pt-6 border-t border-slate-100">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-green-100 rounded-lg">
+                                    <Clock className="w-5 h-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Maintenance Fee Reminders (48h Window)</h4>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Automated payment nudges based on booking creation time.
+                                        <br />
+                                        <span className="text-green-600 font-medium">⚡️ Instant Test:</span> Simulates the automated scheduler email.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Timeline Visualization */}
+                            <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 ml-2">
+                                {/* Day 1 Morning */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-green-600 mb-0.5">Day 1 - Morning</div>
+                                            <div className="text-sm font-bold text-slate-700">9:00 AM (Next Day)</div>
+                                            <div className="text-xs text-slate-400">"Maintenance Fee Due" (Nudge 1)</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestTransaction('paymentReminder', 'Payment Reminder (Day 1)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-green-50 text-slate-500 hover:text-green-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Day 2 Morning */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-green-600 mb-0.5">Day 2 - Morning</div>
+                                            <div className="text-sm font-bold text-slate-700">9:00 AM (Day 2)</div>
+                                            <div className="text-xs text-slate-400">"Maintenance Fee Due" (Nudge 2)</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestTransaction('paymentReminder', 'Payment Reminder (Day 2)')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-green-50 text-slate-500 hover:text-green-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Urgent T-6h */}
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-red-500 border-2 border-white animate-pulse"></div>
+                                    <div className="flex items-center justify-between group">
+                                        <div>
+                                            <div className="text-xs font-bold text-red-600 mb-0.5">Day 3 - URGENT</div>
+                                            <div className="text-sm font-bold text-slate-700">T-6 Hours (42hr Mark)</div>
+                                            <div className="text-xs text-slate-400">"URGENT: 48-hour payment window"</div>
+                                        </div>
+                                        <button
+                                            onClick={() => initiateTestTransaction('paymentReminder_urgent', 'Urgent Payment Warning')}
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-red-50 text-slate-500 hover:text-red-600 transition-all flex items-center gap-1"
+                                        >
+                                            <Zap className="w-3 h-3" /> Test
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* RIGHT: Transactional Events (Testable) */}
                         <div className="space-y-6">
                             <div className="flex items-start gap-3">

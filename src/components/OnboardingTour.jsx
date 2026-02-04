@@ -101,6 +101,7 @@ export function OnboardingTour({ currentUser, defer = false }) {
                 }
             }}
             spotlightPadding={10}
+            scrollIntoViewOptions={{ block: 'center' }}
         />
     );
 }

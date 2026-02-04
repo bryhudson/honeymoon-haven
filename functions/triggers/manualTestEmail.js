@@ -140,7 +140,18 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                     ...testData,
                     total_price: 875,
                     cabin_number: 3,
-                    check_in: "June 15, 2026"
+                    check_in: "June 15, 2026",
+                    price_breakdown: { weeknights: 5, weeknightTotal: 500, weekends: 2, weekendTotal: 250, discount: 0 }
+                }));
+                break;
+            case 'paymentReminder_urgent':
+                // Simulates the T-6h warning from paymentReminderScheduler
+                ({ subject, htmlContent } = emailTemplates.finalWarning({
+                    ...testData,
+                    status_message: "Your booking is confirmed but unpaid. Please settle immediately.",
+                    urgency_message: "⚠️ URGENT: Your 48-hour payment window is causing a hold.",
+                    hours_remaining: 6,
+                    type: 'morning'
                 }));
                 break;
             case 'paymentReceived':

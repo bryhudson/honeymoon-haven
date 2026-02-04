@@ -407,7 +407,7 @@ const emailTemplates = {
   paymentReceived: (data) => {
     const subject = `HHR Trailer Booking App: Maintenance Fee Received! ✅`;
     const body = `
-      < h1 style = "${THEME.typography.h1}" > Maintenance Fee Received.</h1 >
+      <h1 style="${THEME.typography.h1}">Maintenance Fee Received.</h1>
       <p style="${THEME.typography.body}">Thanks, ${data.name}. You're all set for simpler times at the lake.</p>
 
       <div style="margin: 32px 0;">
@@ -430,7 +430,7 @@ const emailTemplates = {
 
     // Custom content logic for the guide (more text heavy)
     const customContent = `
-      < h1 style = "${THEME.typography.h1} margin-bottom: 8px;" > Welcome, ${data.guest_name} !</h1 >
+      <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${data.guest_name}!</h1>
         <p style="${THEME.typography.body}">${data.shareholder_name} wants to ensure you have the best stay possible.</p>
 
       ${details.checkIn ? `
@@ -458,7 +458,7 @@ const emailTemplates = {
 
         <div style="margin-bottom: 24px;">
           <strong style="display: block; margin-bottom: 4px;">Quiet Time 🌙</strong>
-          <p style="${THEME.typography.small}">11:00 PM — 8:00 AM. Please be considerate of your neighbors.</p>
+          <p style="${THEME.typography.small}">11:00 PM - 8:00 AM. Please be considerate of your neighbors.</p>
         </div>
       </div>
 
@@ -476,7 +476,7 @@ const emailTemplates = {
   openSeasonStarted: (data) => {
     const subject = `HHR Trailer Booking App: Open Season is Here! 🌲`;
     const body = `
-      < h1 style = "${THEME.typography.h1}" > The Draft is Complete.</h1 >
+      <h1 style="${THEME.typography.h1}">The Draft is Complete.</h1>
       <p style="${THEME.typography.body}">All rounds are finished, and Open Season has officially begun.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -498,7 +498,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking: New Feedback 📬 (${title})`;
 
     const body = `
-      < h3 style = "${THEME.typography.h3}" > ${title}</h3 >
+      <h3 style="${THEME.typography.h3}">${title}</h3>
       <h1 style="${THEME.typography.h1} font-size: 20px;">From ${data.name}</h1>
       
       <div style="background-color: #F5F5F7; border-radius: 12px; padding: 20px; margin: 32px 0;">
