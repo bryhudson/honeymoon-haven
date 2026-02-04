@@ -262,13 +262,13 @@ export function EmailHistoryTab() {
                                                 <td className="px-6 py-4 text-slate-600 font-bold">
                                                     {log.cabinNumber}
                                                 </td>
-                                                <td className="px-6 py-4 font-bold text-slate-900 truncate max-w-[150px]" title={log.recipientName}>
+                                                <td className="px-6 py-4 font-bold text-slate-900" title={log.recipientName}>
                                                     {log.recipientName}
                                                 </td>
-                                                <td className="px-6 py-4 text-slate-500 font-mono text-xs truncate max-w-[200px]" title={log.recipientEmail}>
+                                                <td className="px-6 py-4 text-slate-500 font-mono text-xs break-all" title={log.recipientEmail}>
                                                     {log.recipientEmail}
                                                 </td>
-                                                <td className="px-6 py-4 text-slate-600 truncate max-w-[300px]" title={log.subject}>
+                                                <td className="px-6 py-4 text-slate-600 break-words" title={log.subject}>
                                                     {log.isTestMode && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-2">TEST</span>}
                                                     {log.subject}
                                                 </td>
