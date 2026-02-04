@@ -308,7 +308,8 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                                     { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
                                     { id: "paymentReminder", name: "Maintenance Fee Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
                                     { id: "paymentReceived", name: "Maintenance Fee Received", desc: "Admin marks as Paid", subject: "Fee Received" },
-                                    { id: "bookingCancelled", name: "Booking Cancelled", desc: "Admin cancels booking", subject: "Booking Cancelled" }
+                                    { id: "bookingCancelled", name: "Booking Cancelled", desc: "Admin cancels booking", subject: "Booking Cancelled" },
+                                    { id: "openSeasonStarted", name: "Open Season Blast", desc: "Draft End / Free-for-all", subject: "Open Season is Here! 🌲" }
                                 ].map((event) => (
                                     <div key={event.id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg group hover:border-indigo-200 transition-all">
                                         <div className="flex items-center gap-3">

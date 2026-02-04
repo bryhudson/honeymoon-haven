@@ -278,7 +278,7 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                 // 4. Send Email
                 const emailParams = {
                     name: nextPickerName,
-                    previous_shareholder: "Previous Shareholder", // Could infer, but keeping simple
+                    previous_shareholder: "Previous Shareholder",
                     deadline_date: formatDate(schedule.windowEnds),
                     deadline_time: formatTime(schedule.windowEnds),
                     round: schedule.round,
@@ -296,42 +296,51 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                     ({ subject, htmlContent } = emailTemplates.autoPassNext(emailParams));
                 } else {
                     // Default: 'completed' (Previous user booked)
-                    // This is the standard "It's Your Turn! 🎉" email
                     ({ subject, htmlContent } = emailTemplates.turnStarted(emailParams));
                 }
 
-                // Removed [TEST] logic from comments or active code if present.
-                // NOTE: `sendGmail` helper handles TEST_MODE redirection and [TEST] prefixing centrally.
-                // We pass the real recipient and real subject here.
-
                 // [DUPLICATE FIX] Disabling this immediate email. 
                 // We will rely on turnReminderScheduler.js to send the "Turn Started" email.
-                // This prevents race conditions where both send.
-                /*
-                await sendGmail({
-                    to: { name: nextPickerName, email: nextEmail },
-                    subject: subject,
-                    htmlContent: htmlContent
-                });
-                logger.info(`Turn Passed Notification sent to ${nextPickerName} (${nextEmail})`);
-
-                // LOGGING: Update notification_log so scheduler doesn't double-send
-                // and so Admin Monitor sees it.
-                const notificationLogId = `${nextPickerName}-${schedule.round}`;
-                await db.collection("notification_log").doc(notificationLogId).set({
-                    shareholderName: nextPickerName,
-                    round: schedule.round,
-                    phase: schedule.phase,
-                    turnStartTime: admin.firestore.Timestamp.fromDate(schedule.windowStarts || new Date()),
-                    lastTurnStartSent: admin.firestore.Timestamp.now(),
-                    // Mark as sent so scheduler skips it
-                    triggeredBy: `booking_change (${reason})`
-                }, { merge: true });
-                */
                 logger.info(`[DEBOUNCE] Identifying next picker ${nextPickerName}, but waiting for Scheduler to send email to avoid duplicates.`);
 
             } else {
                 logger.warn(`Next picker ${nextPickerName} not found in shareholders collection.`);
+            }
+        } else if (schedule.phase === 'OPEN_SEASON') {
+            // DETECTED OPEN SEASON
+            const seasonLogDoc = await db.collection("notification_log").doc("open_season_blast_2026").get();
+
+            if (!seasonLogDoc.exists) {
+                logger.info("Draft Complete! Initiating Open Season Blast...");
+
+                // Get All Shareholders emails
+                const allShareholders = await db.collection("shareholders").get();
+                const recipients = allShareholders.docs.map(d => ({ name: d.data().name, email: d.data().email })).filter(r => r.email);
+
+                // Prepare Email
+                const { subject, htmlContent } = emailTemplates.openSeasonStarted({});
+
+                // Send to each shareholder (or use BCC if we had a bulk sender, but individual is safer for deliverability here)
+                const sendPromises = recipients.map(recipient =>
+                    sendGmail({
+                        to: recipient,
+                        subject: subject,
+                        htmlContent: htmlContent
+                    })
+                        .catch(e => logger.error(`Failed to send Open Season email to ${recipient.email}`, e))
+                );
+
+                await Promise.all(sendPromises);
+
+                // Mark log
+                await db.collection("notification_log").doc("open_season_blast_2026").set({
+                    sentAt: admin.firestore.Timestamp.now(),
+                    recipientCount: recipients.length
+                });
+
+                logger.info(`Open Season Blast sent to ${recipients.length} shareholders.`);
+            } else {
+                logger.info("Open Season Blast already sent. Skipping.");
             }
         } else {
             logger.info("No next picker found (Draft complete or paused).");

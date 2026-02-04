@@ -162,6 +162,9 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                     deadline_time: "10:00 AM"
                 }));
                 break;
+            case 'openSeasonStarted':
+                ({ subject, htmlContent } = emailTemplates.openSeasonStarted({}));
+                break;
             default:
                 throw new HttpsError('invalid-argument', `Unknown email type: ${emailType}`);
         }

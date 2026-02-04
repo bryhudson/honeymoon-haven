@@ -88,18 +88,51 @@ export const DRAFT_CONFIG = {
 export function getOfficialStart(finishTime) {
     if (!finishTime) return null;
     const date = new Date(finishTime);
-    const tenAM = new Date(date);
-    tenAM.setHours(10, 0, 0, 0);
 
-    // If we finished at or before 10:00:00 AM, start at 10 AM today
-    if (date.getTime() <= tenAM.getTime()) {
-        return tenAM;
-    } else {
-        // Start at 10 AM tomorrow
-        const nextDay = new Date(tenAM);
-        nextDay.setDate(nextDay.getDate() + 1);
-        return nextDay;
+    // Convert finishTime to Pacific Time 'Wall Clock' components
+    // We use toLocaleString with America/Vancouver to get the local date/hour in PT
+    const options = { timeZone: 'America/Vancouver', hour12: false, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+
+    // 1. Create a "Today 10 AM PT" target for the given date
+    // We do this by getting the YMD parts in PT
+    const ymdOptions = { timeZone: 'America/Vancouver', year: 'numeric', month: 'numeric', day: 'numeric' };
+    const ptDateString = date.toLocaleString('en-US', ymdOptions); // e.g., "3/15/2026"
+
+    const hourInPT = parseInt(date.toLocaleString('en-US', { timeZone: 'America/Vancouver', hour: 'numeric', hour12: false }));
+    const minutesInPT = parseInt(date.toLocaleString('en-US', { timeZone: 'America/Vancouver', minute: 'numeric' }));
+
+    let isBeforeTen = false;
+    if (hourInPT < 10) isBeforeTen = true;
+    else if (hourInPT === 10 && minutesInPT === 0 && date.getSeconds() === 0) isBeforeTen = true;
+
+    // Function to get "10 AM PT" for a given JS Date object's Day
+    const getTenAmPtForDay = (baseDate) => {
+        // Base guess: Set UTC to 18:00 (Safe PST guess, 10 AM)
+        const guess = new Date(baseDate);
+        guess.setUTCHours(18, 0, 0, 0);
+
+        // Check what time this is in Vancouver
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/Vancouver', hour: 'numeric', hour12: false
+        }).formatToParts(guess);
+        const h = parseInt(parts.find(p => p.type === 'hour').value);
+
+        if (h === 11) {
+            guess.setUTCHours(17, 0, 0, 0); // PDT adjustment
+        } else if (h !== 10) {
+            const diff = 10 - h;
+            guess.setUTCHours(18 + diff, 0, 0, 0);
+        }
+        return guess;
+    };
+
+    let target = new Date(date);
+    if (!isBeforeTen) {
+        // Move to tomorrow first
+        target.setDate(target.getDate() + 1);
     }
+
+    return getTenAmPtForDay(target);
 }
 
 export function getPickDurationMS(fastTestingMode) {
