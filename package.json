@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.74.32",
+  "version": "2.74.33",
   "type": "module",
   "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
@@ -15,8 +15,6 @@
     "auto-deploy": "sh scripts/auto_deploy.sh"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
-    "@getbrevo/brevo": "^3.0.1",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

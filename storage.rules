@@ -1,0 +1,13 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // Allow public read access (required for website images)
+      allow read: if true;
+
+      // Allow write/delete only for authenticated users
+      // TODO: Refine this to Admin-only if users don't need to upload
+      allow write: if request.auth != null;
+    }
+  }
+}

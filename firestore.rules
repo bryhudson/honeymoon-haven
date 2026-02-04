@@ -26,13 +26,12 @@ service cloud.firestore {
       // READ: Publicly readable (required for Dashboard)
       allow read: if true;
 
-      // WRITE: Allow if validates schema
-      // Note: Since we have no Login, we cannot restrict WHO writes, only WHAT is written.
-      allow create: if isValidBooking();
-      allow update: if isValidBooking();
+      // WRITE: Allow if authenticated AND validates schema
+      allow create: if request.auth != null && isValidBooking();
+      allow update: if request.auth != null && isValidBooking();
       
-      // DELETE: functionality required for "Reset Simulation" and "Edit Booking"
-      allow delete: if true;
+      // DELETE: Authenticated users only (e.g. Admins or Owner)
+      allow delete: if request.auth != null;
     }
   }
 }
