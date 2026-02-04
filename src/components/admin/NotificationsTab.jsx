@@ -125,18 +125,18 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                     Live Turn Monitor
                 </button>
                 <button
+                    onClick={() => setActiveTab('history')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                    Email History
+                </button>
+                <button
                     onClick={() => setActiveTab('testing')}
                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'testing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                 >
                     <div className="flex items-center gap-2">
                         <span>Testing Center</span>
                     </div>
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                >
-                    Email History
                 </button>
             </div>
 
