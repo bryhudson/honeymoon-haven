@@ -73,6 +73,24 @@ exports.turnReminderScheduler = onSchedule(
             const notificationLogDoc = await notificationLogRef.get();
             const notificationLog = notificationLogDoc.exists ? notificationLogDoc.data() : {};
 
+            // CRITICAL FIX: Race Condition Check
+            // Before proceeding, verify this user hasn't ALREADY booked.
+            // (autosyncDraftStatus might lag by 1 minute, causing "Ghost Reminders")
+            const bookingCheck = await db.collection("bookings")
+                .where("shareholderName", "==", activePicker)
+                .where("round", "==", round) // Ensure it matches current round
+                .get();
+
+            const hasConfirmedBooking = bookingCheck.docs.some(d => {
+                const data = d.data();
+                return data.status !== 'cancelled' && data.type !== 'cancelled';
+            });
+
+            if (hasConfirmedBooking) {
+                logger.info(`[Race Condition Avoided] ${activePicker} has already booked. Skipping reminder.`);
+                return;
+            }
+
             const now = new Date();
             const turnStart = windowStarts ? new Date(windowStarts.toDate()) : null;
             const turnEnd = windowEnds ? new Date(windowEnds.toDate()) : null;
