@@ -158,7 +158,7 @@ const emailTemplates = {
   turnStarted: (data) => {
     const subject = `HHR Trailer Booking App: It's Your Turn! 🎯`;
     const body = `
-      <h1 style="${THEME.typography.h1}">Welcome to the new HHR App! 🚀</h1>
+      <h1 style="${THEME.typography.h1}">Welcome to the new HHR Trailer Booking App! 🚀</h1>
       <p style="${THEME.typography.body}">You're up, ${data.name}! We're ditching the spreadsheets and manual emails for something much better.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
