@@ -261,7 +261,8 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
             new Date(),                 // 3. Now
             settings.draftStartDate?.toDate(), // 4. Start Date Override
             settings.fastTestingMode,   // 5. Fast Mode
-            settings.bypassTenAM        // 6. Bypass 10AM
+            settings.fastTestingMode,   // 5. Fast Mode
+            false,  // 6. Strict 10AM (Enforce 'Next Day 10 AM' rule even if settings say bypass)
         );
 
         const nextPickerName = schedule.activePicker;
