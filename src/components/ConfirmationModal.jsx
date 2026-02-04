@@ -49,12 +49,12 @@ export function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, 
                     )}
                     <button
                         onClick={() => {
-                            console.log("ConfirmationModal: Confirm Clicked", { isInputValid, requireTyping, inputValue });
+
                             if (isInputValid) {
-                                console.log("ConfirmationModal: Executing onConfirm");
+
                                 onConfirm();
                                 if (closeOnConfirm) {
-                                    console.log("ConfirmationModal: Executing onClose");
+
                                     onClose();
                                 }
                             } else {

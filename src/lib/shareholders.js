@@ -55,18 +55,18 @@ export function getShareholderOrder(year) {
 // DEPRECATED: Use Firestore 'shareholders' collection instead.
 // This constant is now only used as a fallback for initial migration.
 export const CABIN_OWNERS = [
-    { cabin: "1", name: "Gerry & Georgina", email: "gerrygeorgie@gmail.com" },
-    { cabin: "2", name: "Mike & Janelle", email: "janellestaite@gmail.com" },
-    { cabin: "3", name: "Brian & Monique", email: "moniquerwebster@gmail.com" },
-    { cabin: "4", name: "Brian & Sam", email: "samantha.lange1978@gmail.com" },
-    { cabin: "5", name: "Ernest & Sandy", email: "ernest@malahatvaluationgroup.com" },
-    { cabin: "6", name: "Barb", email: "myakristy@gmail.com" },
-    { cabin: "7", name: "Jeff & Lori", email: "loriball@live.ca" },
-    { cabin: "8", name: "Julia, Mandy & Bryan", email: "aftertuesday@gmail.com" },
-    { cabin: "9", name: "David & Gayla", email: "dpanders@gmail.com" },
-    { cabin: "10", name: "Saurabh & Jessica", email: "jessica.suryavanshi@gmail.com" },
-    { cabin: "11", name: "Dom & Melanie", email: "melanie.oneill@hotmail.com" },
-    { cabin: "12", name: "Steve & Kate", email: "stevemiller@hotmail.ca" }
+    { cabin: "1", name: "Gerry & Georgina" },
+    { cabin: "2", name: "Mike & Janelle" },
+    { cabin: "3", name: "Brian & Monique" },
+    { cabin: "4", name: "Brian & Sam" },
+    { cabin: "5", name: "Ernest & Sandy" },
+    { cabin: "6", name: "Barb" },
+    { cabin: "7", name: "Jeff & Lori" },
+    { cabin: "8", name: "Julia, Mandy & Bryan" },
+    { cabin: "9", name: "David & Gayla" },
+    { cabin: "10", name: "Saurabh & Jessica" },
+    { cabin: "11", name: "Dom & Melanie" },
+    { cabin: "12", name: "Steve & Kate" }
 ];
 
 // --- DRAFT CONFIGURATION ---

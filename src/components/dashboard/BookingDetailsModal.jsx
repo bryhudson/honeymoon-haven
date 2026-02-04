@@ -56,7 +56,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
             //     },
             //     shareholderName: currentUser
             // });
-            console.log("Simulating email send for:", { guestEmail, guestName, bookingDetails: { checkIn: format(start, 'MMM d, yyyy'), checkOut: format(end, 'MMM d, yyyy'), cabinNumber: booking.cabinNumber }, shareholderName: currentUser });
+
             await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
             setSentSuccess(true);
             setTimeout(() => {

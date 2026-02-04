@@ -157,7 +157,7 @@ export function AdminDashboard() {
                     autoInitMessage: defaultMessage
                 }, { merge: true });
 
-                console.log(defaultMessage);
+
                 setCurrentSimDate(defaultDate);
                 setSimStartDate(format(defaultDate, "yyyy-MM-dd'T'HH:mm"));
                 setIsSystemFrozen(false);
@@ -218,7 +218,7 @@ export function AdminDashboard() {
                 });
                 await batch.commit();
                 deletedCount += chunk.length;
-                console.log(`Deleted chunk of ${chunk.length} bookings. Total: ${deletedCount}`);
+
             }
         }
 
@@ -230,7 +230,7 @@ export function AdminDashboard() {
                 batch.delete(doc.ref);
             });
             await batch.commit();
-            console.log(`Deleted ${notificationSnapshot.size} notification log entries`);
+
         }
 
         // 3. Reset draftStatus (so scheduler knows to start fresh)
@@ -241,7 +241,7 @@ export function AdminDashboard() {
             round: 1,
             phase: 'ROUND_1'
         });
-        console.log("Draft status reset");
+
 
         // 4. Reset Settings
         const defaultStart = overrideStartDate || new Date(2026, 2, 1, 10, 0, 0);
@@ -261,11 +261,11 @@ export function AdminDashboard() {
 
         await setDoc(doc(db, "settings", "general"), settingsUpdate, { merge: true });
 
-        console.log("[DEBUG] performWipe: Settings reset command sent");
+
 
         const verifySnap = await getDoc(doc(db, "settings", "general"));
         const verifyDate = verifySnap.data()?.draftStartDate?.toDate ? verifySnap.data().draftStartDate.toDate() : verifySnap.data().draftStartDate;
-        console.log("[DEBUG] performWipe: Verified DB Value: ", verifyDate);
+
 
         // 5. CRITICAL: Send turn start email immediately
         try {
@@ -297,10 +297,10 @@ export function AdminDashboard() {
                         round: 1
                     }
                 });
-                console.log("Turn start email sent immediately to " + firstShareholderName);
+
             }
             */
-            console.log("Skipped client-side email. Waiting for Backend Scheduler to send official notification.");
+
         } catch (emailError) {
             console.error("Failed to send turn start email:", emailError);
         }
@@ -1042,14 +1042,14 @@ export function AdminDashboard() {
         const q = query(collection(db, "shareholders"), orderBy("cabin"));
         const unsub = onSnapshot(q, async (snapshot) => {
             if (snapshot.empty) {
-                console.log("Migrating shareholders to DB...");
+
                 const batch = writeBatch(db);
                 CABIN_OWNERS.forEach(owner => {
                     const ref = doc(collection(db, "shareholders"));
                     batch.set(ref, owner);
                 });
                 await batch.commit();
-                console.log("Migration complete.");
+
             } else {
                 const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 // Sort by cabin number numeric

@@ -14,7 +14,7 @@ export const emailService = {
     // Uses backend templates defined in functions/helpers/emailTemplates.js
     sendEmail: async ({ to, templateId, params }) => {
         try {
-            console.log(`[EmailService] Sending '${templateId}' to:`, to);
+
             // 'to' can be string (email) or object { name, email }
 
             const sendEmailFn = httpsCallable(functions, 'sendEmail');

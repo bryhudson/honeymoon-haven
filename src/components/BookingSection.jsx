@@ -46,9 +46,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
     const activeBookedDates = React.useMemo(() => {
         // DEBUG LOGGING
-        console.group("BookingSection: activeBookedDates Recalculation");
-        console.log("Raw bookings prop:", bookings);
-        console.log("Initial Booking:", initialBooking);
+
 
         // Use passed bookings prop, fallback to empty array
         const records = Array.isArray(bookings) ? bookings : [];
@@ -87,11 +85,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
         const activeId = initialBooking?.id || localBookingId;
         if (activeId) {
-            console.log("Filtering out active ID:", activeId);
+
             return validRecords.filter(b => b.id !== activeId);
         }
 
-        console.log("Final activeBookedDates:", validRecords);
         console.groupEnd();
         return validRecords;
     }, [bookings, initialBooking, localBookingId]);
@@ -99,8 +96,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     const [formData, setFormData] = useState({
         shareholderName: activePicker || '', // Use activePicker as initial default
         cabinNumber: '',
-        guests: 1,
-        email: ''
+        guests: 1
     });
 
     // Calendar View State (Fix for stuck navigation)
@@ -118,8 +114,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 setFormData({
                     shareholderName: initialBooking.shareholderName || activePicker || '',
                     cabinNumber: initialBooking.cabinNumber || '',
-                    guests: initialBooking.guests || 1,
-                    email: initialBooking.email || ''
+                    guests: initialBooking.guests || 1
                 });
                 setCurrentMonth(fromDate); // Sync calendar view
             }
@@ -131,7 +126,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         if (!initialBooking && formData.shareholderName && !formData.cabinNumber) {
             const owner = CABIN_OWNERS.find(o => o.name === formData.shareholderName);
             if (owner) {
-                console.log(`Auto-setting cabin ${owner.cabin} for ${formData.shareholderName}`);
+
                 setFormData(prev => ({ ...prev, cabinNumber: owner.cabin }));
             }
         }
@@ -178,8 +173,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             setFormData(prev => ({
                 ...prev,
                 shareholderName: value,
-                cabinNumber: owner ? owner.cabin : '', // Auto-fill cabin if found, otherwise clear
-                email: owner ? owner.email : prev.email // Auto-fill email
+                cabinNumber: owner ? owner.cabin : '' // Auto-fill cabin if found, otherwise clear
             }));
         } else {
             setFormData(prev => ({
@@ -300,13 +294,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                 setFormData(prev => {
                     const newCabin = owner ? owner.cabin : '';
-                    const newEmail = owner ? owner.email : '';
-                    if (prev.shareholderName === schedule.activePicker && prev.cabinNumber === newCabin && prev.email === newEmail) return prev;
+                    if (prev.shareholderName === schedule.activePicker && prev.cabinNumber === newCabin) return prev;
                     return {
                         ...prev,
                         shareholderName: schedule.activePicker,
-                        cabinNumber: newCabin,
-                        email: newEmail
+                        cabinNumber: newCabin
                     };
                 });
 
@@ -388,7 +380,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     // DUPLICATE EMAIL FIX:
                     // Backend `emailTriggers.js` now handles the confirmation email automatically.
                     // Frontend trigger disabled to prevent double emails (3:02 PM Issue).
-                    console.log('Finalization request sent. Backend will handle confirmation email.');
+
 
 
                 }

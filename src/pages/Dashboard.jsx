@@ -191,7 +191,7 @@ export function Dashboard() {
         if (!loading && currentUser && !isSuperAdmin) {
             const currentMode = localStorage.getItem('DRAFT_MODE');
             if (currentMode === 'TEST') {
-                console.log("Security: Forcing Production Mode for non-admin");
+
                 localStorage.removeItem('DRAFT_MODE');
                 window.location.reload();
             }
@@ -205,7 +205,7 @@ export function Dashboard() {
                 currentUser.email === 'honeymoonhavenresort.lc@gmail.com';
 
             if (isAdmin) {
-                console.log("Auto-redirecting admin to /admin dashboard");
+
                 navigate('/admin', { replace: true });
             }
         }
