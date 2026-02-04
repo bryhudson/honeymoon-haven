@@ -31,3 +31,4 @@ Use fluid widths (100%) for mobile and a fixed-width container (max 600px) for d
 
 ## 💬 Usage Example (How to trigger)
 "Using your Email Auditor Skill, review the latest Cloud Function in functions/reminders.js. Refactor the email template to match our HHR Apple-style UI and update the tone to be more conversational."
+        

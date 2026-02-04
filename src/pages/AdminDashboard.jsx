@@ -10,7 +10,7 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit, List, Moon, Download } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit, List, Moon, Download, Bell, PlusCircle, Settings, Ban, Shield } from 'lucide-react';
 import { calculateBookingCost } from '../lib/pricing';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { UserActionsDropdown } from '../components/UserActionsDropdown';
