@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import { version } from '../../package.json'; // Removed to use global __APP_VERSION__
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule } from '../lib/shareholders';
+import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule, calculateDraftSchedule } from '../lib/shareholders';
 import { emailService } from '../services/emailService';
 import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -10,7 +10,7 @@ import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot,
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ActionsDropdown } from '../components/ActionsDropdown';
 import { format, differenceInDays, set } from 'date-fns';
-import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit, List, Moon, Download, Bell, PlusCircle, Settings, Ban, Shield } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, Calendar, User, DollarSign, Clock, CheckCircle, XCircle, AlertTriangle, Filter, MoreHorizontal, Mail, Trash2, Edit, List, Moon, Download, Bell, PlusCircle, Settings, Ban, Shield, RefreshCw } from 'lucide-react';
 import { calculateBookingCost } from '../lib/pricing';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { UserActionsDropdown } from '../components/UserActionsDropdown';
@@ -547,6 +547,55 @@ export function AdminDashboard() {
                     }
                 }
             }
+        );
+    };
+
+    const handleSyncDraftStatus = async () => {
+        triggerConfirm(
+            "Recalculate Schedule State?",
+            "This will force a re-calculation of the active picker based on current bookings. Use this if the dashboard state seems stuck.",
+            async () => {
+                try {
+                    // Refetch all bookings to be safe
+                    const bookingsSnapshot = await getDocs(collection(db, "bookings"));
+                    const currentBookings = bookingsSnapshot.docs.map(d => ({
+                        id: d.id,
+                        ...d.data(),
+                        from: d.data().from?.toDate(),
+                        to: d.data().to?.toDate()
+                    }));
+
+                    const settingsDoc = await getDoc(doc(db, "settings", "general"));
+                    const settings = settingsDoc.data() || {};
+
+                    const calculatedStatus = calculateDraftSchedule(
+                        getShareholderOrder(2026),
+                        currentBookings,
+                        new Date(),
+                        settings.draftStartDate?.toDate(),
+                        settings.fastTestingMode,
+                        settings.bypassTenAM
+                    );
+
+                    await setDoc(doc(db, "status", "draftStatus"), {
+                        activePicker: calculatedStatus.activePicker,
+                        nextPicker: calculatedStatus.nextPicker,
+                        phase: calculatedStatus.phase,
+                        round: calculatedStatus.round,
+                        windowStarts: calculatedStatus.windowStarts,
+                        windowEnds: calculatedStatus.windowEnds,
+                        lastSynced: new Date()
+                    });
+
+                    triggerAlert("Success", "Schedule state recalculated!");
+                    setTimeout(() => window.location.reload(), 1500);
+                } catch (error) {
+                    console.error("Sync failed:", error);
+                    triggerAlert("Error", `Failed to sync: ${error.message}`);
+                }
+            },
+            false,
+            "Recalculate"
         );
     };
 
@@ -1522,6 +1571,14 @@ export function AdminDashboard() {
                                         >
                                             <Download className="w-4 h-4" />
                                             <span className="hidden md:inline">CSV</span>
+                                        </button>
+                                        <button
+                                            onClick={handleSyncDraftStatus}
+                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-900 flex items-center gap-2 transition-colors px-2 py-1 hover:bg-indigo-50 rounded"
+                                            title="Fix Stuck State"
+                                        >
+                                            <RefreshCw className="w-4 h-4" />
+                                            <span className="hidden md:inline">Reset State</span>
                                         </button>
                                     </div>
                                 )}
