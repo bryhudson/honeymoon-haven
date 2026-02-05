@@ -223,7 +223,7 @@ const emailTemplates = {
   // 4. Booking Confirmed
   bookingConfirmed: (data) => {
     const roundLabel = data.round ? `[Round ${data.round}]` : '';
-    const subject = `${roundLabel} Pack Your Bags - You're Lake Bound! 🎉🌊`;
+    const subject = `${roundLabel} Your Trailer Dates Are Locked In! 🎉`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -239,17 +239,17 @@ const emailTemplates = {
     }
 
     const body = `
-      <h1 style="${THEME.typography.h1}">Woohoo! You did it, ${data.name || 'friend'}! 🎊</h1>
-      <p style="${THEME.typography.body}">Your summer escape is officially locked in. Time to start dreaming about those lake sunsets, morning coffee on the dock, and way too many s'mores. 🏕️</p>
+      <h1 style="${THEME.typography.h1}">You're all set, ${data.name || 'friend'}! 🎊</h1>
+      <p style="${THEME.typography.body}">Great news - the trailer is officially reserved for your guests! They're going to love it. Time to start planning those lake days together. ☀️</p>
 
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
-        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🗓️ Your Trip at a Glance</strong></p>
+        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🗓️ Reservation Details</strong></p>
       </div>
 
       <div style="margin: 32px 0;">
         ${dataItem('Check In', data.check_in)}
         ${dataItem('Check Out', data.check_out)}
-        ${dataItem('Your Home', `Cabin #${data.cabin_number}`)}
+        ${dataItem('Trailer', `Cabin #${data.cabin_number}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
           <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Maintenance Fee</span>
@@ -261,14 +261,14 @@ const emailTemplates = {
       <div style="background-color: #FFF4E5; border: 1px solid #FFE0B2; border-radius: 12px; padding: 20px; margin: 24px 0;">
          <p style="${THEME.typography.body} margin: 0; color: #9A3412;">
            <strong>💸 One Quick Thing!</strong><br>
-           Pop over an e-transfer within the next 48 hours to make it official. Easy peasy!
+           Pop over an e-transfer within the next 48 hours to lock it in. Easy peasy!
          </p>
       </div>
 
-      <p style="${THEME.typography.body}">We're so stoked you're coming! If you have any questions before your trip, just holler. See you at the lake!</p>
+      <p style="${THEME.typography.body}">Once you're ready, you can send your guests all the details they'll need - check-in info, directions, the whole works. We've got you covered!</p>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/dashboard" style="${THEME.components.button}">View My Trip Details</a>
+        <a href="https://hhr-trailer-booking.web.app/dashboard" style="${THEME.components.button}">View Reservation</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
