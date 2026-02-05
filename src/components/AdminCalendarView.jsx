@@ -70,7 +70,7 @@ export function AdminCalendarView({ bookings, onNotify }) {
                     let info = "";
 
                     if (b) {
-                        bg = "#22c55e"; // green-500
+                        bg = b.isPaid ? "#22c55e" : "#f43f5e"; // green-500 (Paid) : rose-500 (Unpaid)
                         color = "#ffffff";
                         info = `<div style="font-size: 8px; line-height: 1;">${b.cabinNumber}</div>`;
                     }
@@ -156,7 +156,7 @@ export function AdminCalendarView({ bookings, onNotify }) {
                         // Determine styling based on booking status
                         let bgClass = "bg-white hover:bg-slate-50 text-slate-700";
                         if (booking) {
-                            bgClass = "bg-green-500 text-white hover:bg-green-600";
+                            bgClass = booking.isPaid ? "bg-green-500 text-white hover:bg-green-600" : "bg-rose-500 text-white hover:bg-rose-600";
                         }
 
                         // Tooltip text
@@ -176,6 +176,9 @@ export function AdminCalendarView({ bookings, onNotify }) {
                                     <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50 w-max max-w-[150px] bg-slate-900 text-white text-[10px] p-2 rounded shadow-lg pointer-events-none text-center">
                                         <div className="font-bold">{booking.shareholderName}</div>
                                         <div className="opacity-75">Cabin #{booking.cabinNumber}</div>
+                                        <div className={`mt-1 font-bold ${booking.isPaid ? 'text-green-400' : 'text-rose-400'}`}>
+                                            {booking.isPaid ? "PAID" : "UNPAID"}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -199,7 +202,11 @@ export function AdminCalendarView({ bookings, onNotify }) {
                 <div className="flex gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-green-500"></div>
-                        <span>Confirmed Booking</span>
+                        <span>Paid</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded bg-rose-500"></div>
+                        <span>Unpaid</span>
                     </div>
                 </div>
             </div>
