@@ -222,7 +222,8 @@ const emailTemplates = {
 
   // 4. Booking Confirmed
   bookingConfirmed: (data) => {
-    const subject = `HHR Trailer Booking App: You're Going to the Lake! 🌊`;
+    const roundLabel = data.round ? `[Round ${data.round}] ` : '';
+    const subject = `HHR Trailer Booking App ${roundLabel}: You're Going to the Lake! 🌊`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -268,12 +269,13 @@ const emailTemplates = {
 
   // 5. Turn Passed - Current
   turnPassedCurrent: (data) => {
+    const roundLabel = data.round ? `[Round ${data.round}]` : '';
     const nextStepTitle = data.next_opportunity_title || 'Open Season';
     const nextStepText = data.next_opportunity_text || 'You can still book any remaining dates during <strong>Open Season</strong>.';
 
     // Dynamic Subject
     const isRound2 = nextStepTitle.toUpperCase().includes('ROUND 2');
-    const subject = isRound2 ? `HHR Trailer Booking App: See you in Round 2 👋` : `HHR Trailer Booking App: See you in Open Season 👋`;
+    const subject = isRound2 ? `HHR Trailer Booking App ${roundLabel}: See you in Round 2 👋` : `HHR Trailer Booking App ${roundLabel}: See you in Open Season 👋`;
 
     const body = `
       <h1 style="${THEME.typography.h1}">Thanks for letting us know, ${data.name}.</h1>
@@ -293,7 +295,8 @@ const emailTemplates = {
 
   // 6. Turn Passed - Next (Early Access / Bonus Time)
   turnPassedNext: (data) => {
-    const subject = `HHR Trailer Booking App: Early Access Unlocked! 🎁`;
+    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const subject = `HHR Trailer Booking App ${roundLabel}: Early Access Unlocked! 🎁`;
     const body = `
       <h1 style="${THEME.typography.h1}">Good news, ${data.name}!</h1>
       <p style="${THEME.typography.body}">The previous shareholder just passed their turn, which means you now have <strong>early access</strong> to start planning your dates.</p>
@@ -369,7 +372,8 @@ const emailTemplates = {
 
   // 9. Booking Cancelled
   bookingCancelled: (data) => {
-    const subject = `HHR Trailer Booking App: Cancellation Confirmed`;
+    const roundLabel = data.round ? `[Round ${data.round}] ` : '';
+    const subject = `HHR Trailer Booking App ${roundLabel}: Cancellation Confirmed`;
     const body = `
       <h1 style="${THEME.typography.h1}">Booking Cancelled.</h1>
       <p style="${THEME.typography.body}">Hi ${data.name}, we've released your dates back to the pool as requested.</p>
