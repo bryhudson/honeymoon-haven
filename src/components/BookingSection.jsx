@@ -258,7 +258,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 const hoursSinceBooking = (new Date() - lastBooking.createdAt) / (1000 * 60 * 60);
 
                 if (hoursSinceBooking < 48) {
-                    setIsDraftActive(false); // Dropdown still unlocked
+
                     setBookingStatus({
                         canBook: false,
                         message: `Cooldown Active: You must wait 48 hours after your last booking. (${Math.round(48 - hoursSinceBooking)}h remaining)`
@@ -267,10 +267,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 }
             }
 
-            setIsDraftActive(false);
+
             setBookingStatus({ canBook: true, message: 'Open Season! First come, first serve.' });
         } else if (schedule.phase === 'PRE_DRAFT') {
-            setIsDraftActive(true);
+
             setBookingStatus({ canBook: false, message: `Booking schedule begins on ${format(schedule.draftStart, 'PPP')}` });
         } else {
             // SCHEDULE IS ACTIVE (Round 1 or 2)
@@ -295,9 +295,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                         ? `✨ Early Access: Locked to ${schedule.activePicker}`
                         : `Schedule Round Active: Locked to ${schedule.activePicker}`
                 });
-                setIsDraftActive(true);
+
             } else {
-                setIsDraftActive(true);
+
                 setBookingStatus({ canBook: false, message: 'Schedule Active: transitioning...' });
             }
         }
