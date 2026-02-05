@@ -89,18 +89,24 @@ export function getOfficialStart(finishTime) {
     if (!finishTime) return null;
     const date = new Date(finishTime);
 
-    // Get current hour in PT (America/Los_Angeles is used for HHR standard)
-    const hourPT = parseInt(new Intl.DateTimeFormat('en-US', {
+    // Get PT components accurately to check for exact 10:00:00
+    const ptParts = new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/Los_Angeles',
         hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
         hour12: false
-    }).format(date));
+    }).formatToParts(date);
 
-    // Rule: If finished strictly BEFORE 10:00 AM PT -> Start 10:00 AM Today.
-    // Otherwise -> Start 10:00 AM Tomorrow.
-    const isBeforeTen = (hourPT < 10);
+    const hour = parseInt(ptParts.find(p => p.type === 'hour').value);
+    const minute = parseInt(ptParts.find(p => p.type === 'minute').value);
+    const second = parseInt(ptParts.find(p => p.type === 'second').value);
 
-    return getTargetPstTime(date, 10, isBeforeTen ? 0 : 1);
+    // RULE: If strictly before 10 AM or ALREADY exactly 10:00:00 PT, use Today at 10 AM.
+    // Otherwise, push to tomorrow 10 AM.
+    const isPastTen = (hour > 10) || (hour === 10 && (minute > 0 || second > 0));
+
+    return getTargetPstTime(date, 10, isPastTen ? 1 : 0);
 }
 
 /**
