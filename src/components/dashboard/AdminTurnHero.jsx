@@ -42,8 +42,6 @@ export function AdminTurnHero({
 
     if (!activeTurn) return null;
 
-    // Find any active draft for this user
-    const activeDraft = drafts.find(b => b.shareholderName === activeTurn.name && !b.isFinalized && b.type !== 'cancelled');
 
     return (
         <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
@@ -76,14 +74,7 @@ export function AdminTurnHero({
                     </h1>
 
                     <div className="text-lg text-slate-300 leading-relaxed">
-                        {activeDraft ? (
-                            <div className="flex items-center justify-center lg:justify-start gap-2 text-indigo-300 font-medium">
-                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
-                                Draft in progress ({activeDraft.cabinNumber}, {format(activeDraft.from?.toDate ? activeDraft.from.toDate() : new Date(activeDraft.from), 'MMM d')} - {format(activeDraft.to?.toDate ? activeDraft.to.toDate() : new Date(activeDraft.to), 'MMM d')})
-                            </div>
-                        ) : (
-                            <p>Current active shareholder. Waiting for selection.</p>
-                        )}
+                        <p>Current active shareholder. Waiting for selection.</p>
                     </div>
                 </div>
 

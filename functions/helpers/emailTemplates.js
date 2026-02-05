@@ -188,8 +188,7 @@ const emailTemplates = {
       <p style="${THEME.typography.body}">You have <strong>${data.hours_remaining} hours left</strong> to lock in your plans before the turn passes.</p>
 
       <div style="margin: 32px 0;">
-         ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
-         ${dataItem('Status', data.has_draft ? 'Draft Saved (Not Submitted)' : 'No Selection Yet', true)}
+         ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`, true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
@@ -207,11 +206,6 @@ const emailTemplates = {
       <h1 style="${THEME.typography.h1} color: ${THEME.colors.error};">1 Hour Remaining</h1>
       <p style="${THEME.typography.body}">This is it. You have one hour left before your turn auto-skips to the next shareholder.</p>
 
-      ${data.has_draft ? `
-        <div style="background-color: #fff1f2; border-radius: 12px; padding: 16px; margin: 24px 0;">
-          <p style="${THEME.typography.body} margin: 0; color: ${THEME.colors.error};"><strong>Draft Found:</strong> We see you have dates saved but not confirmed. Tap the button below to secure them instantly.</p>
-        </div>
-      ` : ''}
 
       <div style="text-align: center; margin-top: 32px;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Secure Your Spot</a>

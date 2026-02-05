@@ -29,9 +29,8 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     // Pass: Only non-finalized (draft) bookings, requires onPass handler
     const canPass = !isReadOnly && !isFinalized && !isCancelled && onPass && (isAdmin || isOwner);
 
-    // Edit/Finalize: Drafts only
+    // Edit: Only if owner/admin and NOT finalized (though we are removing drafts, keep for safety)
     const canEdit = !isReadOnly && !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
-    const canFinalize = !isReadOnly && !isFinalized && !isCancelled && onFinalize && (isAdmin || isOwner);
 
     // Email Logic
     const [showEmailForm, setShowEmailForm] = React.useState(false);
@@ -90,11 +89,6 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                             {isCancelled && (
                                 <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wide border border-red-200">
                                     Cancelled
-                                </span>
-                            )}
-                            {!isFinalized && !isCancelled && (
-                                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide border border-amber-200">
-                                    Draft
                                 </span>
                             )}
                         </div>
@@ -354,32 +348,14 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
                 {/* Footer */}
                 <div className="p-4 bg-muted/30 border-t flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center flex-shrink-0">
-                    <div className="w-full md:w-auto flex gap-2">
+                    <div className="items-center gap-2">
                         {canPass ? (
-                            <>
-                                {canFinalize && (
-                                    <button
-                                        onClick={onFinalize}
-                                        className="flex-1 md:flex-none px-4 py-2.5 bg-green-600 text-white hover:bg-green-700 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95"
-                                    >
-                                        Finalize
-                                    </button>
-                                )}
-                                {canEdit && (
-                                    <button
-                                        onClick={onEdit}
-                                        className="flex-1 md:flex-none px-4 py-2.5 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95"
-                                    >
-                                        Edit
-                                    </button>
-                                )}
-                                <button
-                                    onClick={onPass}
-                                    className="flex-1 md:flex-none px-4 py-2.5 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-xl text-sm font-bold transition-all active:scale-95"
-                                >
-                                    Pass
-                                </button>
-                            </>
+                            <button
+                                onClick={onPass}
+                                className="flex-1 md:flex-none px-6 py-2.5 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-xl text-sm font-bold transition-all active:scale-95"
+                            >
+                                Pass Turn
+                            </button>
                         ) : canCancel ? (
                             <button
                                 onClick={onCancel}
@@ -388,18 +364,18 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                                 Cancel Booking
                             </button>
                         ) : null}
-
-                        {/* Email Guest Button (Paid & Confirmed) */}
-                        {booking.isFinalized && booking.isPaid && onEmail && (
-                            <button
-                                onClick={onEmail}
-                                className="w-full md:w-auto px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Mail className="w-4 h-4" />
-                                Email Guest
-                            </button>
-                        )}
                     </div>
+
+                    {/* Email Guest Button (Paid & Confirmed) */}
+                    {booking.isFinalized && booking.isPaid && onEmail && (
+                        <button
+                            onClick={onEmail}
+                            className="w-full md:w-auto px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Mail className="w-4 h-4" />
+                            Email Guest
+                        </button>
+                    )}
 
                     <div className="flex gap-2 w-full md:w-auto">
                         <button

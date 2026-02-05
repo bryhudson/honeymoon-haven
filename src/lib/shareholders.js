@@ -211,40 +211,16 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
         const action = userActions[bookingIndex];
 
         if (action) {
-            // Check if this action completes the turn (Pass, Finalized Booking, or Cancelled)
-            const isCompleted = action.type === 'pass' || action.type === 'cancelled' || action.isFinalized !== false;
+            // Turn is done. Next window starts at official 10 AM anchor.
+            let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
+            if (!actionTime) actionTime = currentWindowStart;
 
-            if (isCompleted) {
-                // Turn is done. Next window starts at official 10 AM anchor.
-                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
-                if (!actionTime) actionTime = currentWindowStart;
+            // Safe Date Conversion (Handle Firestore Timestamp)
+            let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
 
-                // Safe Date Conversion (Handle Firestore Timestamp)
-                let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
-
-                if (!isNaN(pTime.getTime())) {
-                    lastCompletionTime = pTime;
-                    currentWindowStart = startAnchor(pTime);
-                }
-            } else {
-                // Booking exists but is NOT finalized (Draft Mode).
-                // FIXED: Use currentWindowStart (Official 10 AM Snap) for the limit calculation
-                const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);
-
-                if (now > windowLimit) {
-                    // TIMEOUT implies Finalization and move to next 10 AM
-                    currentWindowStart = startAnchor(windowLimit);
-                } else {
-                    // Still active and within window
-                    activePicker = shareholderName;
-                    nextPicker = fullTurnOrder[i + 1] || null;
-                    activeWindowEnd = windowLimit;
-                    isSeasonStart = (i === 0);
-                    // Special Rule: First person ignores Grace Period (Early Access active immediately)
-                    isGracePeriod = isSeasonStart ? false : (now < currentWindowStart);
-                    phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
-                    break;
-                }
+            if (!isNaN(pTime.getTime())) {
+                lastCompletionTime = pTime;
+                currentWindowStart = startAnchor(pTime);
             }
         } else {
             // No action found. They are either ACTIVE or TIMED OUT.

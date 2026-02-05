@@ -161,7 +161,7 @@ export function Dashboard() {
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
-    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM } = useBookingRealtime();
+    const { allBookings, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM } = useBookingRealtime();
 
     const handleCelebrated = async (bookingId) => {
         if (!bookingId) return;
@@ -265,7 +265,7 @@ export function Dashboard() {
     const handleDiscard = async (bookingId) => {
         triggerConfirm(
             "Cancel Booking?",
-            "Are you sure you want to delete this draft? This action cannot be undone and you will need to re-select your dates if you change your mind.",
+            "Are you sure you want to delete this booking? This action cannot be undone and you will need to re-select your dates if you change your mind.",
             async () => {
                 // Send Cancellation Email
                 // Cancel in DB - Backend Trigger handles email ("Booking Cancelled")
@@ -276,7 +276,7 @@ export function Dashboard() {
                 setIsBooking(false);
             },
             true, // Danger
-            "Delete Draft",
+            "Delete Booking",
             "delete" // Require typing
         );
     };
@@ -363,7 +363,7 @@ export function Dashboard() {
 
                     try {
                         // Check for existing draft to delete (replacing Draft with Pass)
-                        const draft = allDraftRecords.find(b => b.shareholderName === passData.name && b.isFinalized === false);
+                        const draft = allBookings.find(b => b.shareholderName === passData.name && b.isFinalized === false);
                         if (draft) {
                             await deleteDoc(doc(db, "bookings", draft.id));
                         }
@@ -412,7 +412,7 @@ export function Dashboard() {
         if (days > 7) return triggerAlert("Booking Limit Exceeded", "To ensure everyone has a fair chance, bookings are limited to a maximum of 7 days during the draft.");
 
         // Overlap Check
-        const isOverlap = allDraftRecords.some(b => {
+        const isOverlap = allBookings.some(b => {
             if (b.type === 'pass') return false;
             const bStart = b.from?.toDate ? b.from.toDate() : new Date(b.from);
             const bEnd = b.to?.toDate ? b.to.toDate() : new Date(b.to);
@@ -423,7 +423,7 @@ export function Dashboard() {
 
         triggerConfirm(
             "Confirm Selection",
-            `Create draft for ${format(start, 'MMM d')} - ${format(end, 'MMM d')}?\n\nYou will be able to review and finalize this selection on the next screen.`,
+            `Lock in ${format(start, 'MMM d')} - ${format(end, 'MMM d')}?\n\nThis will officially finish your turn and notify the next shareholder.`,
             async () => {
                 try {
                     const owner = shareholders.find(o => o.name === status.activePicker);
@@ -436,12 +436,10 @@ export function Dashboard() {
                         email: owner ? owner.email : "",
                         partyName: status.activePicker,
                         createdAt: new Date(),
-                        isFinalized: false // Creating as Draft
+                        isFinalized: true // Directly Finalizing
                     });
 
-                    // Email Removed for Quick Draft
-
-                    triggerAlert("Draft Saved", "Your selection has been saved as a draft. To complete your turn, please click the green 'Finalize Booking' button on the dashboard.");
+                    triggerAlert("Booking Confirmed", "Your selection has been saved and confirmed. To complete your turn, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 48 hours.");
                     setQuickStart('');
                     setQuickEnd('');
                 } catch (err) {
@@ -450,7 +448,7 @@ export function Dashboard() {
                 }
             },
             false,
-            "Create Draft"
+            "Confirm Booking"
         );
     };
 
@@ -464,11 +462,6 @@ export function Dashboard() {
     // Auto-populate Pass Form Removed - Handled in Button Click to prevent glitch
     // useEffect(() => { ... }, [isPassing, status.activePicker]);
 
-    const activeUserDraft = allDraftRecords.find(b =>
-        b.shareholderName === status.activePicker &&
-        b.isFinalized === false &&
-        b.type !== 'cancelled' // Fix: Ignore cancelled bookings
-    );
 
     const handleCancelConfirmedBooking = (booking) => {
         triggerConfirm(
@@ -578,7 +571,7 @@ export function Dashboard() {
                         currentUser={currentUser}
                         status={status}
                         shareholderName={loggedInShareholder}
-                        drafts={allDraftRecords}
+                        bookings={allBookings}
                         onOpenBooking={() => setIsBooking(true)}
                         onFinalize={handleFinalize}
                         onPass={() => {
@@ -638,7 +631,7 @@ export function Dashboard() {
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <SeasonSchedule
                                     currentOrder={currentOrder}
-                                    allDraftRecords={allDraftRecords}
+                                    allBookings={allBookings}
                                     status={status}
                                     startDateOverride={startDateOverride}
                                     bypassTenAM={bypassTenAM}
@@ -652,7 +645,7 @@ export function Dashboard() {
                         {activeTab === 'bookings' && (
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <RecentBookings
-                                    bookings={allDraftRecords}
+                                    bookings={allBookings}
                                     onViewDetails={(booking) => setViewingBooking(booking)}
                                     currentShareholder={loggedInShareholder}
                                     isAdmin={isSuperAdmin}
@@ -668,9 +661,9 @@ export function Dashboard() {
                                 <TrailerGuide
                                     shareholderName={loggedInShareholder}
                                     booking={(() => {
-                                        if (!loggedInShareholder || !allDraftRecords) return null;
+                                        if (!loggedInShareholder || !allBookings) return null;
                                         const now = new Date();
-                                        const myBookings = allDraftRecords
+                                        const myBookings = allBookings
                                             .filter(b =>
                                                 b.shareholderName === loggedInShareholder &&
                                                 b.isFinalized &&
@@ -723,7 +716,7 @@ export function Dashboard() {
                                             onFinalize={async (id, name) => {
                                                 await handleFinalize(id, name, true);
                                             }}
-                                            bookings={allDraftRecords}
+                                            bookings={allBookings}
                                             startDateOverride={startDateOverride}
                                         />
                                     </div>

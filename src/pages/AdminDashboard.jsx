@@ -434,7 +434,7 @@ export function AdminDashboard() {
             const paymentStatus = b?.isPaid ? "PAID" : "UNPAID";
             const paymentColor = b?.isPaid ? "#dcfce7" : "#fee2e2";
             const dateStr = b?.from && b?.to ? `${format(b.from, 'MMM d')} - ${format(b.to, 'MMM d, yyyy')}` : "N/A";
-            const statusLabel = b.isFinalized ? "Finalized" : "Draft";
+            const statusLabel = b.type === 'cancelled' ? "Cancelled" : "Confirmed";
             const nights = (b.from && b.to) ? differenceInDays(b.to, b.from) : 0;
             const totalPrice = b.totalPrice || "-";
 
@@ -943,38 +943,6 @@ export function AdminDashboard() {
         );
     };
 
-    const handleToggleFinalized = async (bookingId, currentStatus) => {
-        if (currentStatus) {
-            // Reverting to Draft - DANGER
-            triggerConfirm(
-                "Revert to Draft?",
-                "Are you sure you want to UN-FINALIZE this booking? It will return to Draft status.",
-                async () => {
-                    try {
-                        await updateDoc(doc(db, "bookings", bookingId), {
-                            isFinalized: false
-                        });
-                        triggerAlert("Success", "Booking reverted to draft.");
-                    } catch (err) {
-                        triggerAlert("Error", err.message);
-                    }
-                },
-                true, // Danger color
-                "Revert",
-                "REVERT" // Strict typing
-            );
-        } else {
-            // Finalizing - Safe
-            try {
-                await updateDoc(doc(db, "bookings", bookingId), {
-                    isFinalized: true
-                });
-                triggerAlert("Success", "Booking finalized.");
-            } catch (err) {
-                triggerAlert("Error", err.message);
-            }
-        }
-    };
 
     const handleTogglePaid = async (booking) => {
         if (booking.isPaid) {
@@ -1587,7 +1555,7 @@ export function AdminDashboard() {
                     <div className="mt-8 col-span-1 md:col-span-2 lg:col-span-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <SeasonSchedule
                             currentOrder={getShareholderOrder(2026)}
-                            allDraftRecords={allBookings}
+                            allBookings={allBookings}
                             status={draftStatus || { phase: 'PRE_DRAFT' }}
                             startDateOverride={currentSimDate}
                             fastTestingMode={fastTestingMode}
@@ -1777,10 +1745,8 @@ export function AdminDashboard() {
                                                                     );
                                                                 }
                                                                 return (
-                                                                    <div className={`px-2 py-1 rounded text-[10px] font-bold border ${booking.isFinalized
-                                                                        ? 'bg-green-50 text-green-700 border-green-200'
-                                                                        : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                                                                        {booking.isFinalized ? "FINALIZED" : "DRAFT"}
+                                                                    <div className="px-2 py-1 rounded text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">
+                                                                        CONFIRMED
                                                                     </div>
                                                                 );
                                                             })()
@@ -1971,17 +1937,10 @@ export function AdminDashboard() {
                                                                             : 'bg-amber-50 text-amber-700 border-amber-200'
                                                                             }`}
                                                                     >
-                                                                        {booking.isFinalized ? (
-                                                                            <>
-                                                                                <CheckCircle className="w-3 h-3 mr-1.5" />
-                                                                                Finalized
-                                                                            </>
-                                                                        ) : (
-                                                                            <>
-                                                                                <Clock className="w-3 h-3 mr-1.5" />
-                                                                                Draft
-                                                                            </>
-                                                                        )}
+                                                                        <>
+                                                                            <CheckCircle className="w-3 h-3 mr-1.5" />
+                                                                            Confirmed
+                                                                        </>
                                                                     </span>
                                                                 )}
                                                             </td>
@@ -2006,8 +1965,6 @@ export function AdminDashboard() {
                                                                         onEdit={booking.type !== 'cancelled' ? () => handleEditClick(booking) : undefined}
                                                                         onCancel={() => handleCancelBooking(booking)}
                                                                         isCancelled={booking.type === 'cancelled'}
-                                                                        onToggleStatus={() => handleToggleFinalized(booking.id, booking.isFinalized)}
-                                                                        isFinalized={booking.isFinalized}
                                                                         onTogglePaid={() => handleTogglePaid(booking)}
                                                                         isPaid={booking.isPaid}
                                                                         onSendReminder={() => handleSendPaymentReminder(booking)}

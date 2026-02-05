@@ -105,29 +105,6 @@ export function ActionsDropdown({ onEdit, onCancel, isCancelled, onToggleStatus,
                             </button>
                         )}
 
-                        {/* Status Toggle Action */}
-                        {!isCancelled && onToggleStatus && (
-                            <button
-                                onClick={() => {
-                                    setIsOpen(false);
-                                    onToggleStatus && onToggleStatus();
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-purple-50 hover:text-purple-600 flex items-center gap-2 border-t border-slate-100"
-                                role="menuitem"
-                            >
-                                {isFinalized ? (
-                                    <>
-                                        <Edit className="w-4 h-4" />
-                                        Revert to Draft
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle className="w-4 h-4" />
-                                        Finalize Booking
-                                    </>
-                                )}
-                            </button>
-                        )}
 
                         {/* Payment Actions */}
                         {!isCancelled && onTogglePaid && (

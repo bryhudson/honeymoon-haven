@@ -10,8 +10,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         cabinNumber: '',
         from: '',
         to: '',
-        guests: 1,
-        isFinalized: false
+        guests: 1
     });
 
 
@@ -117,9 +116,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                 // Format dates for input type="date" (YYYY-MM-DD)
                 from: booking.from ? format(booking.from, 'yyyy-MM-dd') : '',
                 to: booking.to ? format(booking.to, 'yyyy-MM-dd') : '',
-                guests: booking.guests || 1,
-                // If it's a pass/cancelled/finalized, default to Finalized to avoid reverting schedule
-                isFinalized: booking.isFinalized || booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled' || false
+                guests: booking.guests || 1
             });
         }
     }, [booking]);
@@ -255,23 +252,6 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
 
 
 
-                    {/* Status */}
-                    <div className="flex items-center gap-3 pt-2 pb-2">
-                        <input
-                            type="checkbox"
-                            id="isFinalized"
-                            name="isFinalized"
-                            checked={formData.isFinalized}
-                            onChange={handleChange}
-                            className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
-                        />
-                        <label htmlFor="isFinalized" className="text-sm font-medium text-slate-700 cursor-pointer select-none">
-                            Mark as Finalized
-                            <span className="block text-xs text-slate-500 font-normal">
-                                If unchecked, booking will be a <span className="text-amber-600 font-bold">Draft</span> (may block schedule).
-                            </span>
-                        </label>
-                    </div>
                     {/* Error Message */}
                     {error && (
                         <div className="flex items-start gap-2 p-3 bg-red-50 text-red-600 rounded-md text-sm border border-red-100">

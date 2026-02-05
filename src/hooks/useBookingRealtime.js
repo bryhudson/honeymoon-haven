@@ -7,7 +7,7 @@ import {
 } from '../lib/shareholders';
 
 export function useBookingRealtime() {
-    const [allDraftRecords, setAllDraftRecords] = useState([]);
+    const [allBookings, setAllBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [startDateOverride, setStartDateOverride] = useState(null);
     const [isSystemFrozen, setIsSystemFrozen] = useState(false);
@@ -46,7 +46,7 @@ export function useBookingRealtime() {
                     cancelledAt: data.cancelledAt?.toDate ? data.cancelledAt.toDate() : (data.cancelledAt ? new Date(data.cancelledAt) : null)
                 };
             });
-            setAllDraftRecords(records);
+            setAllBookings(records);
             setLoading(false);
         }, (error) => {
             console.error("Error fetching bookings:", error);
@@ -62,12 +62,12 @@ export function useBookingRealtime() {
 
     const currentOrder = getShareholderOrder(2026);
     // Use simulation start date from settings (set when enabling Test Simulation mode)
-    const status = calculateDraftSchedule(currentOrder, allDraftRecords, new Date(), startDateOverride, bypassTenAM);
+    const status = calculateDraftSchedule(currentOrder, allBookings, new Date(), startDateOverride, bypassTenAM);
 
 
 
     return {
-        allDraftRecords,
+        allBookings,
         loading,
         status,
         currentOrder,

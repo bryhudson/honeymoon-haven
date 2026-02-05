@@ -143,27 +143,12 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
         const action = userActions[bookingIndex];
 
         if (action) {
-            const isCompleted = action.type === 'pass' || action.type === 'cancelled' || action.isFinalized !== false;
-            if (isCompleted) {
-                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
-                if (!actionTime) actionTime = currentWindowStart;
-                let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
-                if (!isNaN(pTime.getTime())) {
-                    currentWindowStart = startAnchor(pTime);
-                }
-            } else {
-                const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);
-                if (now > windowLimit) {
-                    currentWindowStart = startAnchor(windowLimit);
-                } else {
-                    activePicker = shareholderName;
-                    nextPicker = fullTurnOrder[i + 1] || null;
-                    activeWindowEnd = windowLimit;
-                    isSeasonStart = (i === 0);
-                    isGracePeriod = isSeasonStart ? false : (now < currentWindowStart);
-                    phase = (i < round1Order.length) ? 'ROUND_1' : 'ROUND_2';
-                    break;
-                }
+            // Turn is done. Next window starts at official 10 AM anchor.
+            let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
+            if (!actionTime) actionTime = currentWindowStart;
+            let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
+            if (!isNaN(pTime.getTime())) {
+                currentWindowStart = startAnchor(pTime);
             }
         } else {
             const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);

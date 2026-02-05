@@ -12,17 +12,17 @@ const db = admin.firestore();
 const { calculateDraftSchedule, getShareholderOrder } = require("../helpers/shareholders");
 
 /**
- * Auto-Sync Draft Status Scheduler
- * Runs every 5 minutes to keep draftStatus in sync with calculated state
+ * Auto-Sync Turn Status Scheduler
+ * Runs every 5 minutes (or 1 in this config) to keep systemStatus in sync with calculated state
  * This enables Cloud Function email schedulers to send reminders to active shareholders
  */
-exports.autosyncDraftStatus = onSchedule(
+exports.autosyncTurnStatus = onSchedule(
     {
-        schedule: "* * * * *", // Every 1 minute for precise draft windows
+        schedule: "* * * * *", // Every 1 minute for precise turn windows
         timeZone: "America/Los_Angeles"
     },
     async (event) => {
-        logger.info("=== Auto-Sync Draft Status Started ===");
+        logger.info("=== Auto-Sync Turn Status Started ===");
 
         try {
             // 1. Fetch all bookings
@@ -65,6 +65,6 @@ exports.autosyncDraftStatus = onSchedule(
             logger.error("Auto-sync failed:", error);
         }
 
-        logger.info("=== Auto-Sync Draft Status Completed ===");
+        logger.info("=== Auto-Sync Turn Status Completed ===");
     }
 );

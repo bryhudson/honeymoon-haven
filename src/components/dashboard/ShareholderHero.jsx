@@ -7,7 +7,7 @@ export function ShareholderHero({
     currentUser,
     status,
     shareholderName,
-    drafts,
+    bookings,
     onOpenBooking,
     onFinalize,
     onPass,
@@ -32,7 +32,7 @@ export function ShareholderHero({
     // --- CONFETTI CELEBRATION ---
     React.useEffect(() => {
         // Find the most recent finalized, paid, but uncelebrated booking
-        const paidBooking = drafts?.find(b =>
+        const paidBooking = bookings?.find(b =>
             b.shareholderName === shareholderName &&
             b.isFinalized &&
             b.isPaid &&
@@ -64,7 +64,7 @@ export function ShareholderHero({
             // Mark as celebrated in Firestore
             onCelebrated(paidBooking.id);
         }
-    }, [drafts, shareholderName, onCelebrated]);
+    }, [bookings, shareholderName, onCelebrated]);
 
     if (!shareholderName) return null;
 
@@ -221,12 +221,11 @@ export function ShareholderHero({
 
     // 3. User State Logic
     const isYourTurn = status.activePicker === shareholderName;
-    const activeDraft = drafts.find(b => b.shareholderName === shareholderName && !b.isFinalized && b.type !== 'cancelled');
 
     // Determine completed status
     let roundTarget = 1;
     if (status.phase === 'ROUND_2') roundTarget = 2;
-    const myActions = drafts.filter(b =>
+    const myActions = bookings.filter(b =>
         b.shareholderName === shareholderName &&
         (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
     ).sort((a, b) => a.createdAt - b.createdAt);
@@ -234,14 +233,14 @@ export function ShareholderHero({
     const lastAction = myActions[myActions.length - 1];
 
     // Get the absolute most recent action (including cancellations and skips) for generic state detection
-    const latestAction = drafts
+    const latestAction = bookings
         .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
 
     // Helper: Render Round Status Badges
     const renderBadges = () => {
-        const cancelledActions = drafts.filter(b => b.shareholderName === shareholderName && (b.type === 'cancelled' || b.status === 'cancelled')).sort((a, b) => a.createdAt - b.createdAt);
+        const cancelledActions = bookings.filter(b => b.shareholderName === shareholderName && (b.type === 'cancelled' || b.status === 'cancelled')).sort((a, b) => a.createdAt - b.createdAt);
 
         return (
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
@@ -425,88 +424,6 @@ export function ShareholderHero({
 
 
 
-    // --- CASE A: Your Turn + Has Draft ---
-    if (isYourTurn && activeDraft) {
-        // Calculate time remaining
-        const timeRemaining = status.windowEnds ? (() => {
-            const end = new Date(status.windowEnds);
-            if (end <= now) return 'Ending...';
-            const diff = intervalToDuration({ start: now, end });
-            const parts = [];
-            if (diff.days > 0) parts.push(`${diff.days}d`);
-            if (diff.hours > 0) parts.push(`${diff.hours}h`);
-            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-            return parts.join(' ') || '< 1m';
-        })() : null;
-
-        const theme = status.isGracePeriod ? 'green' : 'red';
-        const timerLabel = status.isGracePeriod ? 'Bonus Time Remaining' : 'Official Turn Ends';
-
-        return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground(theme)}
-
-                <div className="relative z-10 space-y-6">
-                    {renderHeader()}
-
-                    <div className="space-y-3">
-                        <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'}`}>
-                            {status.isGracePeriod ? 'Bonus Time: Draft Saved' : 'Official Turn: Draft Saved'}
-                        </h2>
-                        <p className="text-base text-white/60 leading-relaxed">
-                            You've selected dates. Please <span className="text-white font-bold">finalize</span> your booking to lock them in.
-                        </p>
-                    </div>
-
-                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <Clock className="w-5 h-5 text-blue-400" />
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{timerLabel}</p>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-xl font-bold text-white">
-                                            {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
-                                        </span>
-                                        {timeRemaining && (
-                                            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-lg border border-blue-500/30">
-                                                Time remaining: {timeRemaining}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
-                                <button
-                                    onClick={() => onViewDetails(activeDraft)}
-                                    disabled={isReadOnly}
-                                    className={`px-5 py-3 border border-white/10 font-semibold rounded-lg transition-all 
-                                        ${isReadOnly
-                                            ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
-                                            : 'bg-slate-700/70 text-white hover:bg-slate-600'}`}
-                                >
-                                    Review Details
-                                </button>
-                                <button
-                                    disabled={isReadOnly}
-                                    onClick={() => onFinalize(activeDraft.id, shareholderName)}
-                                    className={`px-6 py-3 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all 
-                                        ${isReadOnly
-                                            ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                                            : 'bg-green-600 hover:bg-green-500 text-white hover:scale-105 active:scale-95'
-                                        }`}
-                                >
-                                    <CheckCircle className="w-5 h-5" />
-                                    {isReadOnly ? 'Finalize Booking' : 'Finalize Booking'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
 
 
@@ -729,7 +646,7 @@ export function ShareholderHero({
     }
 
     // --- CASE E: Waiting (Queue) ---
-    const upcomingBooking = drafts
+    const upcomingBooking = bookings
         .filter(b => b.shareholderName === shareholderName && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 

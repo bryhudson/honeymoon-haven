@@ -132,7 +132,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         }
     }, [formData.shareholderName, initialBooking, formData.cabinNumber]);
 
-    const [isDraftActive, setIsDraftActive] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false); // New Success State
 
 
@@ -276,18 +275,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         } else {
             // DRAFT IS ACTIVE (Round 1 or 2)
 
-            // CHECK FOR EXISTING DRAFT (Correction Mode)
-            // If the user has a booking that is NOT finalized, allow them to edit it regardless of turn order
-            const myDraft = (bookings || []).find(b => b.shareholderName === formData.shareholderName && b.isFinalized === false && b.type !== 'pass' && b.type !== 'cancelled');
-
-            if (myDraft) {
-                setBookingStatus({
-                    canBook: true,
-                    message: "Correction Mode: You can update your booking."
-                });
-                setIsDraftActive(true);
-                return;
-            }
 
             if (schedule.activePicker) {
                 const owner = CABIN_OWNERS.find(o => o.name === schedule.activePicker);
@@ -535,12 +522,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 </svg>
                                             </div>
                                             <h3 className="text-xl font-black text-green-900 mb-1">
-                                                {isFinalSuccess ? "Booking Confirmed!" : "Draft Saved!"}
+                                                Booking Confirmed!
                                             </h3>
                                             <p className="text-green-700/80 font-medium text-sm">
-                                                {isFinalSuccess
-                                                    ? "Your turn is complete. See you at the lake!"
-                                                    : "Dates held. Finalize on dashboard."}
+                                                Your turn is complete. See you at the lake!
                                             </p>
                                         </div>
 
@@ -679,7 +664,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                             <button
                                                 onClick={() => setShowConfirmation(true)}
                                                 disabled={!bookingStatus.canBook || isSubmitting}
-                                                className={`w-full py-3 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${!bookingStatus.canBook
+                                                className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${!bookingStatus.canBook
                                                     ? "bg-slate-200 text-slate-400 shadow-none"
                                                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                                                     }`}
@@ -689,14 +674,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                     : !bookingStatus.canBook
                                                         ? "Waiting for priority..."
                                                         : "Confirm & Finish"}
-                                            </button>
-
-                                            <button
-                                                onClick={() => handleBook(false)}
-                                                disabled={isSubmitting}
-                                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors py-2"
-                                            >
-                                                Save as Draft
                                             </button>
                                         </div>
 
