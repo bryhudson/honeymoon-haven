@@ -429,15 +429,9 @@ function formatDate(input) {
 }
 
 function formatTime(input) {
-    const date = toDate(input);
-    if (!date || isNaN(date.getTime())) return "Unknown Time";
-
-    return date.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: 'America/Vancouver'
-    });
+    // HHR TIMING ANCHOR RULE: All deadlines are at 10:00 AM PT
+    // See: .agent/rules/timezone_standard.md
+    return "10:00 AM";
 }
 
 function calculateNights(start, end) {
@@ -496,6 +490,7 @@ exports.onDraftStatusChange = onDocumentUpdated({ document: "status/draftStatus"
             // Prepare Email Data
             const templateData = {
                 name: previousPicker,
+                round: round, // Pass round so template can show "Round 2" vs "Open Season"
                 next_shareholder: currentPicker || "Next Shareholder",
                 dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
             };

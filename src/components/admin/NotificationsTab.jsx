@@ -86,11 +86,13 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                     'turnStarted': 'turnStarted',
                     'turnPassed': 'turnPassedNext',
                     'autoPass': 'autoPassNext',
+                    'autoPassCurrent': 'autoPassCurrent',
                     'bookingConfirmed': 'bookingConfirmed',
                     'paymentReceived': 'paymentReceived',
                     'bookingCancelled': 'bookingCancelled',
                     'paymentReminder': 'paymentReminder',
-                    'openSeasonStarted': 'openSeasonStarted'
+                    'openSeasonStarted': 'openSeasonStarted',
+                    'paymentOverdueAdmin': 'paymentOverdueAdmin'
                 };
                 const backendType = typeMap[type] || type;
                 await sendTestEmailFn({ emailType: backendType, testEmail: testRecipient });
@@ -382,6 +384,7 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                                     { id: "turnStarted", name: "Turn Started", desc: "When active status begins", subject: "It's YOUR Turn! 🎉" },
                                     { id: "turnPassed", name: "Turn Passed (Next)", desc: "Bonus Time - user passed early", subject: "Early Access Unlocked! 🎁" },
                                     { id: "autoPass", name: "Auto Pass (Next)", desc: "Clock Started - timeout from prev", subject: "It's Your Turn! 🎯" },
+                                    { id: "autoPassCurrent", name: "Auto Pass (Skipped)", desc: "Timeout notification to prev user", subject: "Your Turn Has Ended ⌛" },
                                     { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
                                     { id: "paymentReminder", name: "Maintenance Fee Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
                                     { id: "paymentReceived", name: "Maintenance Fee Received", desc: "Admin marks as Paid", subject: "Fee Received" },
@@ -406,6 +409,45 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                                         </button>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Admin-Only Alerts */}
+                            <div className="pt-6 border-t border-slate-200 space-y-4 mt-6">
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 bg-red-100 rounded-lg">
+                                        <Zap className="w-5 h-5 text-red-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-slate-800">Admin-Only Alerts</h4>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            Internal notifications sent to <span className="font-semibold text-red-600">Admins only</span> - not shareholders.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-2">
+                                    {[
+                                        { id: "paymentOverdueAdmin", name: "Payment Overdue Alert", desc: "Sent when 48h e-transfer deadline passes", subject: "⚠️ Overdue Payment: [Name]" }
+                                    ].map((event) => (
+                                        <div key={event.id} className="flex items-center justify-between p-3 bg-red-50 border border-red-100 rounded-lg group hover:border-red-300 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-white rounded-md text-red-400 group-hover:bg-red-100 group-hover:text-red-600 transition-colors">
+                                                    <Zap className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-red-700">{event.name}</div>
+                                                    <div className="text-xs text-red-500">"{event.subject}"</div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => initiateTestTransaction(event.id, event.name)}
+                                                className="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-red-100 text-red-600 rounded text-[10px] font-bold hover:bg-red-200 transition-all"
+                                            >
+                                                Test
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>

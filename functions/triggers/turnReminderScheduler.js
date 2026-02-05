@@ -10,6 +10,55 @@ if (admin.apps.length === 0) {
 }
 const db = admin.firestore();
 
+// --- PST TIMEZONE HELPER ---
+// CRITICAL: All reminder times must be calculated in Pacific Time (America/Los_Angeles)
+// This helper correctly handles DST transitions (PST = UTC-8, PDT = UTC-7)
+
+/**
+ * Get a Date object representing a specific hour in Pacific Time.
+ * @param {Date} baseDate - The reference date
+ * @param {number} targetHour - The target hour in 24h format (e.g., 19 for 7 PM)
+ * @param {number} daysOffset - Days to add/subtract from baseDate (0 = same day)
+ * @returns {Date} - A Date object representing the target time in PT
+ */
+function getTargetPstTime(baseDate, targetHour, daysOffset = 0) {
+    // 1. Get the date components in Pacific Time
+    const adjustedDate = new Date(baseDate);
+    adjustedDate.setDate(adjustedDate.getDate() + daysOffset);
+
+    // 2. Get year/month/day in PT for the target date
+    const ptParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+    }).formatToParts(adjustedDate);
+
+    const year = parseInt(ptParts.find(p => p.type === 'year').value);
+    const month = parseInt(ptParts.find(p => p.type === 'month').value);
+    const day = parseInt(ptParts.find(p => p.type === 'day').value);
+
+    // 3. Start with a guess: targetHour + 8 hours (PST offset)
+    // We'll refine this based on actual PT hour
+    const guess = new Date(Date.UTC(year, month - 1, day, targetHour + 8, 0, 0, 0));
+
+    // 4. Check what hour this actually is in PT
+    const checkParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles',
+        hour: 'numeric',
+        hour12: false
+    }).formatToParts(guess);
+    const actualHour = parseInt(checkParts.find(p => p.type === 'hour').value);
+
+    // 5. Adjust if needed (handles DST: PDT is UTC-7, PST is UTC-8)
+    if (actualHour !== targetHour) {
+        const correction = targetHour - actualHour;
+        guess.setUTCHours(guess.getUTCHours() + correction);
+    }
+
+    return guess;
+}
+
 /**
  * Scheduled Email Reminder System
  * Runs every 5 minutes to check for turn reminders
@@ -44,7 +93,6 @@ exports.turnReminderScheduler = onSchedule(
             // 2. Fetch settings for test mode and timing
             const settingsDoc = await db.collection("settings").doc("general").get();
             const settings = settingsDoc.exists ? settingsDoc.data() : {};
-            const fastTestingMode = settings.fastTestingMode || false;
             const isTestMode = settings.isTestMode !== false; // Default to true for safety
 
             // 3. Get shareholder email
@@ -120,18 +168,11 @@ exports.turnReminderScheduler = onSchedule(
                 return; // Don't send other reminders in the same run
             }
 
-            // 6. Send appropriate reminders based on mode
-            if (fastTestingMode) {
-                await handleFastModeReminders(
-                    now, turnEnd, shareholderEmail, activePicker,
-                    notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
-                );
-            } else {
-                await handleNormalModeReminders(
-                    now, turnStart, turnEnd, shareholderEmail, activePicker,
-                    notificationLog, notificationLogRef, round, phase, isTestMode, fastTestingMode, cabinNumber
-                );
-            }
+            // 6. Send reminders based on 48-hour schedule
+            await handleNormalModeReminders(
+                now, turnStart, turnEnd, shareholderEmail, activePicker,
+                notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
+            );
 
         } catch (error) {
             logger.error("Error in turn reminder scheduler:", error);
@@ -142,105 +183,31 @@ exports.turnReminderScheduler = onSchedule(
 );
 
 /**
- * Handle Fast Mode Reminders (10-minute windows)
- * Send at 5min and 2min remaining
- */
-async function handleFastModeReminders(
-    now, turnEnd, email, shareholderName,
-    notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
-) {
-    const minutesRemaining = (turnEnd - now) / (1000 * 60);
-    logger.info(`Fast Mode: ${minutesRemaining.toFixed(1)} minutes remaining`);
-
-    // 2-minute urgent warning (Catch anything between 0 and 2.5 mins)
-    if (minutesRemaining <= 2.5 && minutesRemaining > 0 && !notificationLog.last2minSent) {
-        logger.info("Sending 2-minute urgent reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "2 minutes", true, isTestMode, 'evening', cabinNumber);
-        await notificationLogRef.update({
-            last2minSent: admin.firestore.Timestamp.now()
-        });
-    }
-    // 5-minute warning (Catch anything between 2.5 and 6 mins)
-    else if (minutesRemaining <= 6 && minutesRemaining > 2.5 && !notificationLog.last5minSent) {
-        logger.info("Sending 5-minute reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "5 minutes", false, isTestMode, 'morning', cabinNumber);
-        await notificationLogRef.update({
-            last5minSent: admin.firestore.Timestamp.now()
-        });
-    }
-}
-
-/**
  * Handle Normal Mode Reminders (48-hour windows)
- * Send at: 7pm same day, 9am next day, 9am last day, 2h before deadline
- * In Fast Mode: 2min, 5min, 8min, 2min before deadline
+ * Send at: 7 PM Day 1, 9 AM Day 2, 7 PM Day 2, 6 AM Final Day, 9 AM Final Day
+ * All times anchored to Pacific Time (America/Los_Angeles)
  */
 async function handleNormalModeReminders(
     now, turnStart, turnEnd, email, shareholderName,
-    notificationLog, notificationLogRef, round, phase, isTestMode, fastMode, cabinNumber
+    notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
 ) {
-    // Calculate specific reminder times
-    let sameDayEvening, nextDayMorning, lastDayMorning, twoHourWarning;
+    // Calculate specific reminder times using PST-aware helper
+    // This handles DST automatically (PST = UTC-8, PDT = UTC-7)
 
-    if (fastMode) {
-        // Fast Mode: Compressed schedule for 10-minute testing
-        sameDayEvening = new Date(turnStart.getTime() + 2 * 60 * 1000); // 2 min after start
-        nextDayMorning = new Date(turnStart.getTime() + 5 * 60 * 1000); // 5 min after start
-        lastDayMorning = new Date(turnStart.getTime() + 8 * 60 * 1000); // 8 min after start
-        twoHourWarning = new Date(turnEnd.getTime() - 2 * 60 * 1000); // 2 min before end
-    } else {
-        // Normal Mode: Standard 48h schedule
-        // ADJUSTED FOR PST TIMEZONE (UTC-8)
-        // Cloud Functions run in UTC. To target PST times, we add 8 hours to the target hour.
+    // Day 1: 7 PM PST (same day as turn start)
+    const sameDayEvening = getTargetPstTime(turnStart, 19, 0);
 
-        // 7pm PST same day = 03:00 UTC next day
-        sameDayEvening = new Date(turnStart);
-        sameDayEvening.setDate(sameDayEvening.getDate() + 1); // Move to next UTC day
-        sameDayEvening.setHours(3, 0, 0, 0);
+    // Day 2: 9 AM PST
+    const nextDayMorning = getTargetPstTime(turnStart, 9, 1);
 
-        // 9am PST next day = 17:00 UTC next day
-        // NOTE: This assumes UTC-8 (PST). During PDT (April-Oct), 17:00 UTC is 10:00 AM PDT.
-        // Reminders will arrive at 10 AM instead of 9 AM during the season. 
-        // This is acceptable for now but could be improved with 'luxon' or similar.
-        // 9am PST Day 2 (Middle Morning)
-        nextDayMorning = new Date(turnStart);
-        nextDayMorning.setDate(nextDayMorning.getDate() + 1);
-        nextDayMorning.setHours(17, 0, 0, 0); // 17:00 UTC = 9:00 AM PST
+    // Day 2: 7 PM PST
+    const nextDayEvening = getTargetPstTime(turnStart, 19, 1);
 
-        // 7pm PST Day 2 (Middle Evening) - NEW
-        nextDayEvening = new Date(turnStart);
-        nextDayEvening.setDate(nextDayEvening.getDate() + 1);
-        nextDayEvening.setHours(3, 0, 0, 0); // 03:00 UTC (Next Day) = 7:00 PM PST
-        // Note: nextDayEvening is technically Day 3 in UTC, so we add 2 days to date if using base UTC logic?
-        // Wait, turnStart is UTC? 
-        // Let's rely on relative Date logic.
-        // turnStart (10am D1). +1d = 10am D2. Set hours 19 (7pm).
-        // JS Date setHours(19) sets it to 19:00 local time if using local, or we should use UTC.
-        // The previous code used UTC offsets.
-        // 9am PST = 17:00 UTC.
-        // 7pm PST = 03:00 UTC (Next Day).
+    // Final Day: 6 AM PST (4 hours before 10 AM deadline)
+    const finalMorning6am = getTargetPstTime(turnEnd, 6, 0);
 
-        // Let's stick to the pattern:
-        // Day 2 7pm:
-        nextDayEvening = new Date(turnStart);
-        nextDayEvening.setDate(nextDayEvening.getDate() + 2); // +2 because 7pm PST is 3am UTC next day
-        nextDayEvening.setHours(3, 0, 0, 0);
-
-        // Final Morning 6am (T-4h)
-        // 6am PST = 14:00 UTC
-        finalMorning6am = new Date(turnEnd);
-        finalMorning6am.setHours(14, 0, 0, 0); // Directly set to 14:00 UTC of the deadline day?
-        // Wait, deadline is 10am PST = 18:00 UTC.
-        // 6am PST is 4 hours before.
-        // 18 - 4 = 14:00 UTC. Correct.
-        // But turnEnd might vary? If turnEnd is flexible, use relative subtraction.
-        finalMorning6am = new Date(turnEnd);
-        finalMorning6am.setHours(turnEnd.getHours() - 4);
-
-        // Final Urgent 9am (T-1h)
-        finalMorning9am = new Date(turnEnd);
-        finalMorning9am.setHours(turnEnd.getHours() - 1);
-    }
+    // Final Day: 9 AM PST (1 hour before 10 AM deadline)
+    const finalMorning9am = getTargetPstTime(turnEnd, 9, 0);
 
     logger.info(`Normal Mode - Checking reminders at ${now.toISOString()}`);
 
@@ -382,13 +349,8 @@ function formatDeadlineDate(input) {
 }
 
 function formatDeadlineTime(input) {
-    const date = toDate(input);
-    if (!date || isNaN(date.getTime())) return "Unknown Time";
-
-    return date.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: 'America/Vancouver'
-    });
+    // HHR TIMING ANCHOR RULE: All deadlines are at 10:00 AM PT
+    // Regardless of actual stored time, we display the official anchor
+    // See: .agent/rules/timezone_standard.md
+    return "10:00 AM";
 }

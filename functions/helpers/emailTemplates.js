@@ -154,9 +154,9 @@ const callout = (text, type = 'info') => {
 
 const emailTemplates = {
 
-  // 1. Turn Started
   turnStarted: (data) => {
-    const subject = `HHR Trailer Booking App: It's Your Turn! 🎯`;
+    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const subject = `HHR Trailer Booking App [${roundLabel}]: It's Your Turn! 🎯`;
     const body = `
       <h1 style="${THEME.typography.h1}">Welcome to the new HHR Trailer Booking App! 🚀</h1>
       <p style="${THEME.typography.body}">You're up, ${data.name}! We're ditching the spreadsheets and manual emails for something much better.</p>
@@ -180,9 +180,9 @@ const emailTemplates = {
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
 
-  // 2. Daily Reminder
   reminder: (data) => {
-    const subject = `HHR Trailer Booking App: The clock is ticking ⏳`;
+    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const subject = `HHR Trailer Booking App [${roundLabel}]: The clock is ticking ⏳`;
     const body = `
       <h1 style="${THEME.typography.h1}">Don't snooze on summer, ${data.name}.</h1>
       <p style="${THEME.typography.body}">You have <strong>${data.hours_remaining} hours left</strong> to lock in your plans before the turn passes.</p>
@@ -199,9 +199,9 @@ const emailTemplates = {
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
 
-  // 3. Final Warning
   finalWarning: (data) => {
-    const subject = `HHR Trailer Booking App: Last Call! 🚨`;
+    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const subject = `HHR Trailer Booking App [${roundLabel}]: Last Call! 🚨`;
     const body = `
       <p style="${THEME.typography.body} font-weight: 600;">Hi ${data.name},</p>
       <h1 style="${THEME.typography.h1} color: ${THEME.colors.error};">1 Hour Remaining</h1>
@@ -317,11 +317,24 @@ const emailTemplates = {
 
   // 7. Auto Pass - Current (Timeout)
   autoPassCurrent: (data) => {
-    const subject = `HHR Trailer Booking App: Your Turn Has Ended ⌛`;
+    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const subject = `HHR Trailer Booking App [${roundLabel}]: Your Turn Has Ended ⌛`;
+
+    // Dynamic "next opportunity" based on which round they timed out in
+    const isRound1 = data.round === 1;
+    const nextOpportunityTitle = isRound1 ? 'Your Next Pick: Round 2 (Snake Draft)' : 'Open Season Awaits';
+    const nextOpportunityText = isRound1
+      ? "You still have your <strong>Round 2</strong> pick coming up - the draft order reverses, so hang tight. We'll let you know when it's your turn again."
+      : "The draft phase has finished, but you can still book any remaining dates during <strong>Open Season</strong> - first come, first served.";
+
     const body = `
       <h1 style="${THEME.typography.h1}">We missed you, ${data.name}.</h1>
       <p style="${THEME.typography.body}">We didn't hear from you by the deadline, so we had to move the line along to keep fairness for everyone.</p>
-      <p style="${THEME.typography.body}">Don't worry - you can still book during <strong>Open Season</strong>.</p>
+
+      <div style="background-color: #FFFFFF; border: 1px solid #d2d2d7; border-radius: 12px; padding: 20px; margin: 24px 0;">
+         <strong style="display: block; color: ${THEME.colors.primary}; margin-bottom: 8px;">👉 ${nextOpportunityTitle}</strong>
+         <p style="${THEME.typography.body} margin: 0; font-size: 14px;">${nextOpportunityText}</p>
+      </div>
 
       <div style="text-align: center; margin-top: 32px;">
         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Check Status</a>
@@ -330,9 +343,9 @@ const emailTemplates = {
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
 
-  // 8. Auto Pass - Next (Timeout from Prev) - NO BONUS TIME, clock starts now
   autoPassNext: (data) => {
-    const subject = `HHR Trailer Booking App: It's Your Turn! 🎯`;
+    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const subject = `HHR Trailer Booking App [${roundLabel}]: It's Your Turn! 🎯`;
     const body = `
       <h1 style="${THEME.typography.h1}">You're up, ${data.name}!</h1>
       <p style="${THEME.typography.body}">The previous shareholder's window has expired, and it's now officially your turn to book.</p>
@@ -520,6 +533,61 @@ const emailTemplates = {
       </div>
 
       <p style="${THEME.typography.small}">Reply to: <a href="mailto:${data.email}">${data.email}</a></p>
+    `;
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
+
+  // 15. Payment Overdue - Admin Alert
+  paymentOverdueAdmin: (data) => {
+    const subject = `⚠️ Overdue Payment: ${data.name} - ${data.check_in}`;
+
+    // Price breakdown HTML
+    let breakdownHtml = '';
+    if (data.price_breakdown) {
+      const bd = data.price_breakdown;
+      breakdownHtml = `
+         <div style="background-color: #F5F5F7; border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 13px; color: #1d1d1f;">
+            ${bd.weeknights > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>${bd.weeknights} Weeknight${bd.weeknights !== 1 ? 's' : ''} x $100</span><span>$${bd.weeknightTotal}</span></div>` : ''}
+            ${bd.weekends > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>${bd.weekends} Weekend${bd.weekends !== 1 ? 's' : ''} x $125</span><span>$${bd.weekendTotal}</span></div>` : ''}
+            ${bd.discount > 0 ? `<div style="display: flex; justify-content: space-between; color: #34c759; font-weight: 600; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #d2d2d7;"><span>Weekly Discount</span><span>-$${bd.discount}</span></div>` : ''}
+         </div>
+       `;
+    }
+
+    const body = `
+      <div style="background-color: #FFF1F2; border: 2px solid #FCA5A5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+        <p style="${THEME.typography.body} margin: 0; color: #991B1B; font-weight: 600;">
+          ⚠️ ACTION REQUIRED: A payment is now ${data.hours_overdue || 0} hours overdue.
+        </p>
+      </div>
+
+      <h1 style="${THEME.typography.h1}">Overdue Payment Alert</h1>
+      <p style="${THEME.typography.body}">The following booking has not been paid within the 48-hour window.</p>
+
+      <div style="margin: 32px 0;">
+        ${dataItem('Shareholder', data.name)}
+        ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
+        ${dataItem('Check-In', data.check_in)}
+        ${dataItem('Check-Out', data.check_out)}
+        ${dataItem('Guests', data.guests || 'Not specified')}
+        
+        <div style="${THEME.components.dataRow} border-bottom: none;">
+          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Maintenance Fee Due</span>
+          <span style="font-size: 20px; font-weight: 700; color: ${THEME.colors.error}; display: block;">$${data.total_price}</span>
+          ${breakdownHtml}
+        </div>
+      </div>
+
+      <div style="background-color: #F5F5F7; border-radius: 12px; padding: 16px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; font-size: 14px;">
+          <strong>Booking Created:</strong> ${data.created_at}<br>
+          <strong>Payment Deadline:</strong> ${data.deadline} (passed)
+        </p>
+      </div>
+
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="https://hhr-trailer-booking.web.app/admin" style="${THEME.components.button}">View in Admin Dashboard</a>
+      </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   }

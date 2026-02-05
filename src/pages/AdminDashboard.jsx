@@ -402,15 +402,33 @@ export function AdminDashboard() {
         // Generate Master Booking Report (Chronological)
         const sortedBookings = [...allBookings].sort((a, b) => {
             const da = a.from ? new Date(a.from) : new Date(0);
-            const db = b.from ? new Date(b.from) : new Date(0);
-            return da - db;
+            const dB = b.from ? new Date(b.from) : new Date(0);
+            return da - dB;
         });
 
-        // Filter out purely technical records if desired, or keep them. 
-        // User asked for "full season calendar data". Usually implies "actual bookings".
-        // Let's filter out 'pass' records for the email report to keep it clean, or keep them if they want "full log".
-        // The visual calendar excludes passes, so let's exclude them here to match "Calendar Data".
+        // Filter out purely technical records
         const reportBookings = sortedBookings.filter(b => b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled');
+
+        // Calculate analytics inline (since useMemo analytics is defined later)
+        let totalRevenue = 0;
+        let outstandingFees = 0;
+        let unpaidCount = 0;
+        let totalNights = 0;
+
+        reportBookings.forEach(b => {
+            if (b.isFinalized) {
+                const nights = (b.from && b.to) ? Math.max(0, differenceInDays(b.to, b.from)) : 0;
+                const amount = b.totalPrice || 0;
+                totalNights += nights;
+
+                if (b.isPaid) {
+                    totalRevenue += amount;
+                } else {
+                    outstandingFees += amount;
+                    unpaidCount++;
+                }
+            }
+        });
 
         const generateRowHtml = (b) => {
             const paymentStatus = b?.isPaid ? "PAID" : "UNPAID";
@@ -418,6 +436,7 @@ export function AdminDashboard() {
             const dateStr = b?.from && b?.to ? `${format(b.from, 'MMM d')} - ${format(b.to, 'MMM d, yyyy')}` : "N/A";
             const statusLabel = b.isFinalized ? "Finalized" : "Draft";
             const nights = (b.from && b.to) ? differenceInDays(b.to, b.from) : 0;
+            const totalPrice = b.totalPrice || "-";
 
             return `
             <tr style="background-color: #fff;">
@@ -426,9 +445,10 @@ export function AdminDashboard() {
                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${b.guests || 1}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${nights}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">$${totalPrice}</td>
                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${statusLabel}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                    <span style="background-color: ${paymentColor}; padding: 2px 6px; borderRadius: 4px; font-size: 11px;">${paymentStatus}</span>
+                    <span style="background-color: ${paymentColor}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${paymentStatus}</span>
                 </td>
             </tr>
             `;
@@ -451,11 +471,11 @@ export function AdminDashboard() {
                         <div style="display: flex; gap: 20px; margin: 30px 0; flex-wrap: wrap;">
                              <div style="background-color: #f0fdf4; border: 1px solid #dcfce7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="color: #166534; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Fees Collected</div>
-                                <div style="color: #166534; font-size: 24px; font-weight: bold;">$${analytics.totalRevenue.toLocaleString()}</div>
+                                <div style="color: #166534; font-size: 24px; font-weight: bold;">$${totalRevenue.toLocaleString()}</div>
                              </div>
                              <div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="color: #92400e; font-size: 11px; font-weight: bold; text-transform: uppercase;">Unpaid Fees</div>
-                                <div style="color: #92400e; font-size: 24px; font-weight: bold;">$${analytics.outstandingFees.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${analytics.unpaidCount})</span></div>
+                                <div style="color: #92400e; font-size: 24px; font-weight: bold;">$${outstandingFees.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${unpaidCount})</span></div>
                              </div>
                              <div style="background-color: #feffff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Bookings</div>
@@ -463,7 +483,7 @@ export function AdminDashboard() {
                              </div>
                              <div style="background-color: #feffff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Total Nights</div>
-                                <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${analytics.totalNights}</div>
+                                <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${totalNights}</div>
                              </div>
                         </div>
                         
@@ -475,6 +495,7 @@ export function AdminDashboard() {
                                      <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Guests</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Dates</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Nights</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Total Price</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Status</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Fee Status</th>
                                 </tr>
@@ -487,14 +508,14 @@ export function AdminDashboard() {
 
                     await emailService.sendEmail({
                         to: { name: "Admin", email: recipient },
-                        subject: `Date-Ordered Booking Report - ${format(new Date(), 'MMM d')}`,
+                        subject: `2026 Season Booking Report - ${format(new Date(), 'MMM d')}`,
                         htmlContent: htmlTable
                     });
 
                     triggerAlert("Success", `Report sent to ${recipient}`);
                 } catch (err) {
                     console.error("Report fail", err);
-                    triggerAlert("Error", "Failed to send report.");
+                    triggerAlert("Error", "Failed to send report: " + err.message);
                 }
             },
             "text",
@@ -554,12 +575,12 @@ export function AdminDashboard() {
 
     const generateAndDownloadCSV = (silent = false) => {
         try {
-            const headers = ["Shareholder,Cabin,Check In,Check Out,Nights,Status,Fee Status"];
+            const headers = ["Shareholder,Cabin,Guests,Check In,Check Out,Nights,Total Price,Status,Fee Status,Round"];
             const rows = allBookings
                 .sort((a, b) => {
                     const da = a.from ? new Date(a.from) : new Date(0);
-                    const db = b.from ? new Date(b.from) : new Date(0);
-                    return da - db;
+                    const dB = b.from ? new Date(b.from) : new Date(0);
+                    return da - dB;
                 })
                 .map(b => {
                     const checkIn = (b.type !== 'pass' && b.type !== 'auto-pass' && b.from) ? (b.from instanceof Date ? format(b.from, 'yyyy-MM-dd') : formatDate(b.from)) : "";
@@ -573,8 +594,11 @@ export function AdminDashboard() {
                     else if (b.isFinalized) status = "Finalized";
 
                     const payment = b.isPaid ? "PAID" : (status === "Finalized" ? "UNPAID" : "-");
+                    const guests = b.guests || 1;
+                    const totalPrice = b.totalPrice || "";
+                    const round = b.round || "";
 
-                    return `"${b.shareholderName}","${b.cabinNumber || ''}","${checkIn}","${checkOut}","${nights}","${status}","${payment}"`;
+                    return `"${b.shareholderName}","${b.cabinNumber || ''}","${guests}","${checkIn}","${checkOut}","${nights}","${totalPrice}","${status}","${payment}","${round}"`;
                 });
 
             const csvContent = [headers, ...rows].join("\n");

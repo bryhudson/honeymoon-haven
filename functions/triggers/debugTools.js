@@ -86,7 +86,6 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
                 allBookings,
                 new Date(),
                 settings.draftStartDate?.toDate(),
-                settings.fastTestingMode,
                 settings.bypassTenAM
             );
             log(`Schedule Calc: Active=${schedule.activePicker}, Next=${schedule.nextPicker}`);
@@ -180,7 +179,6 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
                 allBookings,
                 new Date(),
                 settings.draftStartDate?.toDate(),
-                settings.fastTestingMode,
                 settings.bypassTenAM
             );
 

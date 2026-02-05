@@ -12,7 +12,8 @@ import { httpsCallable } from 'firebase/functions';
 export const emailService = {
     // 1. Generic Send Email (Calls Backend)
     // Uses backend templates defined in functions/helpers/emailTemplates.js
-    sendEmail: async ({ to, templateId, params }) => {
+    // OR accepts raw subject/htmlContent for custom reports
+    sendEmail: async ({ to, templateId, params, subject, htmlContent }) => {
         try {
 
             // 'to' can be string (email) or object { name, email }
@@ -21,7 +22,9 @@ export const emailService = {
             const result = await sendEmailFn({
                 to,
                 templateId,
-                params
+                params,
+                subject,       // Pass raw subject for custom emails
+                htmlContent    // Pass raw HTML for custom emails
             });
             return result.data;
         } catch (error) {

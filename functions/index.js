@@ -39,6 +39,16 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 
     const { to, subject, htmlContent, templateId, params } = request.data;
 
+    // Debug logging - CRITICAL
+    logger.warn("=== sendEmail RAW INPUT ===", {
+        hasTo: !!to,
+        to: JSON.stringify(to),
+        subject: subject ? subject.substring(0, 50) : "MISSING",
+        htmlContentLength: htmlContent?.length || 0,
+        templateId: templateId || "none",
+        paramsKeys: params ? Object.keys(params) : []
+    });
+
     // Note: gmail helper expects { to: {name, email}, subject, htmlContent }
     let finalSubject = subject;
     let finalHtml = htmlContent;
@@ -49,14 +59,8 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
             let templateFn;
             switch (templateId) {
                 case 1: templateFn = emailTemplates.turnStarted; break;
-                // Reminder needs logic to distinguish morning/evening if mapped strictly by ID?
-                // emailService.js passes params... let's see. 
-                // Ah, emailService.js ID 2/3 both map to `reminder` but likely distinct params.
-                // Wait, emailService.js: "ID 2: Morning, ID 3: Evening". 
-                // emailTemplates.reminder takes `data` and checks `data.type`. 
-                // So we can map both to reminder, but we need to ensure `params` has the right data.
                 case 2: templateFn = emailTemplates.reminder; if (params) params.type = 'morning'; break;
-                case 3: templateFn = emailTemplates.reminder; if (params) params.type = 'evening'; break; // Assuming 'evening' default or explicit
+                case 3: templateFn = emailTemplates.reminder; if (params) params.type = 'evening'; break;
                 case 4: templateFn = emailTemplates.finalWarning; break;
                 case 5: templateFn = emailTemplates.bookingConfirmed; break;
                 case 'paymentReceived': templateFn = emailTemplates.paymentReceived; break;
@@ -74,10 +78,23 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
             }
         } catch (err) {
             logger.error("Failed to hydrate template", err);
-            // Fallback to sending what we have, or error out?
             if (!finalHtml) throw new HttpsError('invalid-argument', 'Failed to generate email content');
         }
     }
+
+    // VALIDATION: Reject if no subject or content
+    if (!finalSubject || !finalHtml) {
+        logger.error("=== MISSING EMAIL CONTENT ===", {
+            finalSubject: finalSubject ? "PRESENT" : "MISSING",
+            finalHtml: finalHtml ? "PRESENT (length: " + finalHtml.length + ")" : "MISSING"
+        });
+        throw new HttpsError('invalid-argument', 'Email subject and HTML content are required.');
+    }
+
+    logger.info("=== sendEmail FINAL OUTPUT ===", {
+        finalSubject: finalSubject.substring(0, 50),
+        finalHtmlLength: finalHtml.length
+    });
 
     try {
         const result = await sendGmail({

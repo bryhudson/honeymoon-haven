@@ -44,9 +44,7 @@ exports.autosyncDraftStatus = onSchedule(
                 bookings,
                 new Date(), // now
                 settings.draftStartDate?.toDate(),
-                settings.fastTestingMode,
-                settings.fastTestingMode,
-                false // Strict 10AM Enforcement
+                settings.bypassTenAM // bypassTenAM for test simulation
             );
 
             // 4. Write to Firestore

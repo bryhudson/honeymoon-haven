@@ -161,7 +161,7 @@ export function Dashboard() {
     const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
 
     // Using Custom Hook for Realtime Data
-    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, fastTestingMode, bypassTenAM } = useBookingRealtime();
+    const { allDraftRecords, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM } = useBookingRealtime();
 
     const handleCelebrated = async (bookingId) => {
         if (!bookingId) return;
@@ -639,7 +639,6 @@ export function Dashboard() {
                                     allDraftRecords={allDraftRecords}
                                     status={status}
                                     startDateOverride={startDateOverride}
-                                    fastTestingMode={fastTestingMode}
                                     bypassTenAM={bypassTenAM}
                                 />
                             </div>

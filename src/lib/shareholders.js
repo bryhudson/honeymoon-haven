@@ -135,16 +135,15 @@ export function getOfficialStart(finishTime) {
     return getTenAmPtForDay(target);
 }
 
-export function getPickDurationMS(fastTestingMode) {
-    return fastTestingMode
-        ? (10 * 60 * 1000) // Fast mode: 10 minutes
-        : (DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000); // Normal: 48 hours
+export function getPickDurationMS() {
+    // Always use 48-hour windows (fast testing mode removed)
+    return DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000; // 48 hours
 }
 
 
-export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
+export function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, bypassTenAM = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
-    const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
+    const PICK_DURATION_MS = getPickDurationMS();
 
 
     // Build the full turn order (Round 1 + Round 2 Snake)
@@ -172,8 +171,8 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     */
 
     // STRICT RULE: The calculation cycle must effectively start from an Official 10 AM block.
-    // RELAXED RULE: In fastTestingMode OR if bypassTenAM is specified, we bypass the 10 AM rounding for immediate testing.
-    const startAnchor = (time) => (fastTestingMode || bypassTenAM) ? new Date(time) : getOfficialStart(time);
+    // RULE: bypassTenAM allows test simulation to start immediately without waiting for 10 AM anchor
+    const startAnchor = (time) => bypassTenAM ? new Date(time) : getOfficialStart(time);
     let currentWindowStart = startAnchor(DRAFT_START);
 
     let activePicker = null;
@@ -289,9 +288,9 @@ export function adjustForCourtesy(date) {
     return getOfficialStart(date);
 }
 
-export function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null, fastTestingMode = false, bypassTenAM = false) {
+export function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null, bypassTenAM = false) {
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
-    const PICK_DURATION_MS = getPickDurationMS(fastTestingMode);
+    const PICK_DURATION_MS = getPickDurationMS();
 
     const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];
     const schedule = [];
@@ -302,8 +301,8 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
 
 
 
-    // RELAXED RULE: In fastTestingMode OR bypassTenAM, we bypass the 10 AM rounding
-    const startAnchor = (time) => (fastTestingMode || bypassTenAM) ? new Date(time) : getOfficialStart(time);
+    // RULE: bypassTenAM allows test simulation to start immediately
+    const startAnchor = (time) => bypassTenAM ? new Date(time) : getOfficialStart(time);
 
     // Mirror calculateDraftSchedule logic: Start cursor aligned to Official rule
     let currentWindowStart = startAnchor(DRAFT_START);

@@ -31,11 +31,18 @@ description: Expert-level capability for auditing communication stacks, enforcin
 
 ## 🧠 Logic Steps (The Skill Workflow)
 
+0.  **Credential Verification** (CRITICAL - Run First):
+    * Check Firebase secrets exist: `firebase functions:secrets:access GMAIL_EMAIL`
+    * Verify sender matches expected: `honeymoonhavenresort.lc@gmail.com`
+    * Check for 535-5.7.8 errors in recent logs: `firebase functions:log -n 20 | grep -i "535\|BadCredentials\|Invalid login"`
+    * If credentials fail, guide user to regenerate app password in Google Account > Security > App Passwords
+    * After fix: `firebase functions:secrets:set GMAIL_APP_PASSWORD` then redeploy
+
 1.  **Discovery**: Scan `/functions` and `/src/emails` to index all templates and their triggers (Timed vs. Transactional).
 2.  **Timing Audit**: Cross-reference triggers against the **10 AM PST Anchor**. Flag any "Fast Mode" or `Date.now()` logic that ignores the anchor.
 3.  **Tonal Translation**:
     * **Scan**: Identify "robotic" or "dry" phrasing.
-    * **Refactor**: Rewrite into the "HHR Fun Voice" (e.g., change "1 Hour Remaining" to "Clock's ticking! ⏳ You’ve got just one hour left.").
+    * **Refactor**: Rewrite into the "HHR Fun Voice" (e.g., change "1 Hour Remaining" to "Clock's ticking! ⏳ You've got just one hour left.").
 4.  **Structural Alignment**: Compare headers/footers against the HHR Master Component. Ensure the "Round" and "Product Name" are correct.
 5.  **Open Season Check**: Ensure the post-Round 2 "First-Come, First-Served" template exists and matches the system style.
 

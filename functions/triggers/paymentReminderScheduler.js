@@ -119,6 +119,15 @@ exports.paymentReminderScheduler = onSchedule(
                     await sendFundingReminder(booking, "final");
                     await doc.ref.update({ "remindersSent.final": admin.firestore.Timestamp.now() });
                     logger.info(`Sent Final Urgent Reminder for booking ${bookingId}`);
+                    continue;
+                }
+
+                // --- OVERDUE ALERT: T-48h+ (Admin Only) ---
+                // If booking is > 48 hours old and still unpaid, alert admins
+                if (hoursSinceCreation >= 48 && !remindersSent.overdueAdminAlert) {
+                    await sendOverdueAdminAlert(booking, doc.id, hoursSinceCreation);
+                    await doc.ref.update({ "remindersSent.overdueAdminAlert": admin.firestore.Timestamp.now() });
+                    logger.info(`Sent Overdue Admin Alert for booking ${bookingId}`);
                 }
             }
 
@@ -186,4 +195,60 @@ async function sendFundingReminder(booking, type) {
         subject: subject,
         htmlContent: htmlContent
     });
+}
+
+// --- ADMIN ALERT FOR OVERDUE PAYMENTS ---
+async function sendOverdueAdminAlert(booking, bookingId, hoursSinceCreation) {
+    const timeZone = "America/Vancouver";
+
+    // Calculate deadline
+    const createdAt = booking.createdAt.toDate();
+    const deadline = new Date(createdAt.getTime() + 48 * 60 * 60 * 1000);
+
+    // Format dates nicely
+    const formatDate = (date) => date.toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone
+    });
+
+    // Prepare template data
+    const templateData = {
+        name: booking.shareholderName,
+        cabin_number: booking.cabinNumber,
+        check_in: booking.startDate || 'Not specified',
+        check_out: booking.endDate || 'Not specified',
+        guests: booking.guestCount || booking.guests || 'Not specified',
+        total_price: booking.totalPrice || 0,
+        price_breakdown: booking.priceDetails || null,
+        created_at: formatDate(createdAt),
+        deadline: formatDate(deadline),
+        hours_overdue: Math.floor(hoursSinceCreation - 48)
+    };
+
+    const { subject, htmlContent } = emailTemplates.paymentOverdueAdmin(templateData);
+
+    // Send to BOTH admins
+    const adminEmails = [
+        { name: 'Bryan Hudson', email: 'bryan.m.hudson@gmail.com' },
+        { name: 'HHR Admin', email: 'honeymoonhavenresort.lc@gmail.com' }
+    ];
+
+    for (const admin of adminEmails) {
+        try {
+            await sendGmail({
+                to: admin,
+                subject: subject,
+                htmlContent: htmlContent,
+                bypassTestMode: true // Always send to real admins, even in test mode
+            });
+            logger.info(`Overdue admin alert sent to ${admin.email}`);
+        } catch (error) {
+            logger.error(`Failed to send overdue alert to ${admin.email}:`, error);
+        }
+    }
 }

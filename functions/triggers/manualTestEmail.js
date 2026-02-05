@@ -184,6 +184,20 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
             case 'openSeasonStarted':
                 ({ subject, htmlContent } = emailTemplates.openSeasonStarted({}));
                 break;
+            case 'paymentOverdueAdmin':
+                ({ subject, htmlContent } = emailTemplates.paymentOverdueAdmin({
+                    name: shareholderName,
+                    cabin_number: 3,
+                    check_in: "June 15, 2026",
+                    check_out: "June 22, 2026",
+                    guests: 4,
+                    total_price: 650,
+                    price_breakdown: { weeknights: 5, weeknightTotal: 500, weekends: 2, weekendTotal: 250, discount: 100 },
+                    created_at: "Wed, Feb 3, 10:30 AM",
+                    deadline: "Fri, Feb 5, 10:30 AM",
+                    hours_overdue: 12
+                }));
+                break;
             default:
                 throw new HttpsError('invalid-argument', `Unknown email type: ${emailType}`);
         }

@@ -59,7 +59,7 @@ exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request
             type: ['day2', 'final6am', 'final9am'].includes(notificationType) ? 'morning' : 'evening', // Infer type
             hours_remaining: Math.round((deadlineDateObj - Date.now()) / (1000 * 60 * 60)),
             deadline_date: deadlineDateObj.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Vancouver' }),
-            deadline_time: deadlineDateObj.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Vancouver' }),
+            deadline_time: '10:00 AM', // HHR anchor: Always 10 AM PT
             status_message: "Admin manually triggered this notification.",
             urgency_message: notificationType === 'urgent' ? "⚠️ URGENT REMINDER" : "Friendly Reminder",
             dashboard_url: "https://hhr-trailer-booking.web.app/"
@@ -78,6 +78,9 @@ exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request
             case 'urgent':
             case 'final9am':
                 templateFn = emailTemplates.finalWarning;
+                break;
+            case 'autoPassCurrent':
+                templateFn = emailTemplates.autoPassCurrent;
                 break;
             default:
                 throw new HttpsError('invalid-argument', `Unknown notification type: ${notificationType}`);
