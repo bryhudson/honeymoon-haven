@@ -153,19 +153,23 @@ exports.turnReminderScheduler = onSchedule(
             const isNewTurn = !lastTurnStartTime || lastTurnStartTime.getTime() !== turnStart.getTime();
 
             if (isNewTurn) {
-                logger.info("New turn detected, sending turn start notification");
-                await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, isTestMode, cabinNumber);
+                logger.info("New turn detected, checking for Early Access vs Official Start...");
+
+                // CRITICAL: Determine which template to use based on isGracePeriod
+                const isGrace = draftStatus.isGracePeriod === true;
+                await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, isTestMode, cabinNumber, isGrace);
 
                 // Update notification log
                 await notificationLogRef.set({
                     shareholderName: activePicker,
                     round: round,
-                    phase: phase, // Store phase for robustness
+                    phase: phase,
                     turnStartTime: admin.firestore.Timestamp.fromDate(turnStart),
-                    lastTurnStartSent: admin.firestore.Timestamp.now()
+                    lastTurnStartSent: admin.firestore.Timestamp.now(),
+                    isEarlyAccess: isGrace // Log it for auditing
                 }, { merge: true });
 
-                return; // Don't send other reminders in the same run
+                return;
             }
 
             // 6. Send reminders based on 48-hour schedule
@@ -258,18 +262,19 @@ async function handleNormalModeReminders(
 /**
  * Send Turn Start Email
  */
-async function sendTurnStartEmail(email, shareholderName, deadline, round, phase, isTestMode, cabinNumber) {
+async function sendTurnStartEmail(email, shareholderName, deadline, round, phase, isTestMode, cabinNumber, isGrace = false) {
     const templateData = {
         name: shareholderName,
         round: round,
-        phase: phase,
         phase: phase,
         deadline_date: formatDeadlineDate(deadline),
         deadline_time: formatDeadlineTime(deadline),
         dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
     };
 
-    const { subject, htmlContent } = emailTemplates.turnStarted(templateData);
+    // CRITICAL: Use the Early Access (Bonus Time) template if in grace period
+    const emailFunction = isGrace ? emailTemplates.turnPassedNext : emailTemplates.turnStarted;
+    const { subject, htmlContent } = emailFunction(templateData);
 
     // SAFETY: We pass the REAL recipient. 
     // The 'sendGmail' helper will check 'isTestMode' and intercept it if necessary.
@@ -277,12 +282,12 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
     const finalSubject = subject;
 
     await sendGmail({
-        to: { name: shareholderName, email: recipient, cabinNumber }, // ADDED cabinNumber
+        to: { name: shareholderName, email: recipient, cabinNumber },
         subject: finalSubject,
         htmlContent: htmlContent
     });
 
-    logger.info(`Turn start email sent to: ${recipient}`);
+    logger.info(`Turn start email (${isGrace ? 'EARLY ACCESS' : 'STANDARD'}) sent to: ${recipient}`);
 }
 
 /**

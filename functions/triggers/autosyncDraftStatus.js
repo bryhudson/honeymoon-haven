@@ -53,6 +53,7 @@ exports.autosyncDraftStatus = onSchedule(
                 nextPicker: calculatedStatus.nextPicker,
                 phase: calculatedStatus.phase,
                 round: calculatedStatus.round,
+                isGracePeriod: calculatedStatus.isGracePeriod || false,
                 windowStarts: calculatedStatus.windowStarts ? admin.firestore.Timestamp.fromDate(calculatedStatus.windowStarts) : null,
                 windowEnds: calculatedStatus.windowEnds ? admin.firestore.Timestamp.fromDate(calculatedStatus.windowEnds) : null,
                 lastSynced: admin.firestore.Timestamp.now()

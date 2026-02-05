@@ -89,50 +89,53 @@ export function getOfficialStart(finishTime) {
     if (!finishTime) return null;
     const date = new Date(finishTime);
 
-    // Convert finishTime to Pacific Time 'Wall Clock' components
-    // We use toLocaleString with America/Vancouver to get the local date/hour in PT
-    const options = { timeZone: 'America/Vancouver', hour12: false, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+    // Get current hour in PT (America/Los_Angeles is used for HHR standard)
+    const hourPT = parseInt(new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles',
+        hour: 'numeric',
+        hour12: false
+    }).format(date));
 
-    // 1. Create a "Today 10 AM PT" target for the given date
-    // We do this by getting the YMD parts in PT
-    const ymdOptions = { timeZone: 'America/Vancouver', year: 'numeric', month: 'numeric', day: 'numeric' };
-    const ptDateString = date.toLocaleString('en-US', ymdOptions); // e.g., "3/15/2026"
+    // Rule: If finished strictly BEFORE 10:00 AM PT -> Start 10:00 AM Today.
+    // Otherwise -> Start 10:00 AM Tomorrow.
+    const isBeforeTen = (hourPT < 10);
 
-    const hourInPT = parseInt(date.toLocaleString('en-US', { timeZone: 'America/Vancouver', hour: 'numeric', hour12: false }));
-    const minutesInPT = parseInt(date.toLocaleString('en-US', { timeZone: 'America/Vancouver', minute: 'numeric' }));
+    return getTargetPstTime(date, 10, isBeforeTen ? 0 : 1);
+}
 
-    let isBeforeTen = false;
-    if (hourInPT < 10) isBeforeTen = true;
-    else if (hourInPT === 10 && minutesInPT === 0 && date.getSeconds() === 0) isBeforeTen = true;
+/**
+ * Helper to get a clean 10 AM (or any hour) Date object in PST/PDT.
+ */
+function getTargetPstTime(baseDate, targetHour, daysOffset = 0) {
+    const adjustedDate = new Date(baseDate);
+    adjustedDate.setDate(adjustedDate.getDate() + daysOffset);
 
-    // Function to get "10 AM PT" for a given JS Date object's Day
-    const getTenAmPtForDay = (baseDate) => {
-        // Base guess: Set UTC to 18:00 (Safe PST guess, 10 AM)
-        const guess = new Date(baseDate);
-        guess.setUTCHours(18, 0, 0, 0);
+    // Get the year/month/day components in PT
+    const ptParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles',
+        year: 'numeric', month: 'numeric', day: 'numeric'
+    }).formatToParts(adjustedDate);
 
-        // Check what time this is in Vancouver
-        const parts = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'America/Vancouver', hour: 'numeric', hour12: false
-        }).formatToParts(guess);
-        const h = parseInt(parts.find(p => p.type === 'hour').value);
+    const year = parseInt(ptParts.find(p => p.type === 'year').value);
+    const month = parseInt(ptParts.find(p => p.type === 'month').value);
+    const day = parseInt(ptParts.find(p => p.type === 'day').value);
 
-        if (h === 11) {
-            guess.setUTCHours(17, 0, 0, 0); // PDT adjustment
-        } else if (h !== 10) {
-            const diff = 10 - h;
-            guess.setUTCHours(18 + diff, 0, 0, 0);
-        }
-        return guess;
-    };
+    // 1. Initial guess: Target time in UTC-8 (PST)
+    const guess = new Date(Date.UTC(year, month - 1, day, targetHour + 8, 0, 0, 0));
 
-    let target = new Date(date);
-    if (!isBeforeTen) {
-        // Move to tomorrow first
-        target.setDate(target.getDate() + 1);
+    // 2. Refine based on actual PT hour in that guess (handles DST automatically)
+    const checkParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles',
+        hour: 'numeric', hour12: false
+    }).formatToParts(guess);
+    const actualHour = parseInt(checkParts.find(p => p.type === 'hour').value);
+
+    if (actualHour !== targetHour) {
+        // Correct for PDT (-7) vs PST (-8)
+        guess.setUTCHours(guess.getUTCHours() + (targetHour - actualHour));
     }
 
-    return getTenAmPtForDay(target);
+    return guess;
 }
 
 export function getPickDurationMS() {
@@ -218,6 +221,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                 }
 
                 if (!isNaN(pTime.getTime())) {
+                    // CRITICAL: Update currentWindowStart to the NEXT official 10 AM block
                     currentWindowStart = startAnchor(pTime);
                 }
             } else {
