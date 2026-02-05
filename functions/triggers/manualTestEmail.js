@@ -135,6 +135,14 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
                     deadline_time: "10:00 AM"
                 }));
                 break;
+            case 'autoPassNext':
+                ({ subject, htmlContent } = emailTemplates.autoPassNext({
+                    ...testData,
+                    previous_shareholder: "Previous Person",
+                    deadline_date: "Jan 25",
+                    deadline_time: "10:00 AM"
+                }));
+                break;
             case 'paymentReminder':
                 ({ subject, htmlContent } = emailTemplates.paymentReminder({
                     ...testData,
