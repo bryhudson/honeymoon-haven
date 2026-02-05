@@ -117,7 +117,7 @@ export function Dashboard() {
             const myRecord = shareholders.find(s => s.name === loggedInShareholder);
             if (myRecord) {
                 setCurrentShareholderDoc(myRecord);
-                // Check if they've seen the welcome modal
+                // Show welcome modal on every login UNLESS user has permanently dismissed it
                 if (!myRecord.seenWelcome) {
                     // Small delay for effect
                     const timer = setTimeout(() => setShowWelcomeModal(true), 1500);
@@ -127,7 +127,13 @@ export function Dashboard() {
         }
     }, [loggedInShareholder, shareholders, masqueradeAs]);
 
-    const handleWelcomeSeen = async () => {
+    // Just close the modal (will show again next login)
+    const handleWelcomeClose = () => {
+        setShowWelcomeModal(false);
+    };
+
+    // Permanently dismiss (won't show again)
+    const handleWelcomeDismissPermanently = async () => {
         setShowWelcomeModal(false);
         if (currentShareholderDoc?.id) {
             try {
@@ -866,7 +872,8 @@ export function Dashboard() {
                     {/* SHAREHOLDER WELCOME MODAL */}
                     <WelcomeModal
                         isOpen={showWelcomeModal}
-                        onClose={handleWelcomeSeen}
+                        onClose={handleWelcomeClose}
+                        onDismissPermanently={handleWelcomeDismissPermanently}
                         userName={loggedInShareholder}
                     />
 

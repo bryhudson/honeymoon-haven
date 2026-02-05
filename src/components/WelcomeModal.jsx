@@ -2,7 +2,7 @@ import React from 'react';
 import { Sparkles, ArrowRight, Zap, Palmtree, Anchor } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export function WelcomeModal({ isOpen, onClose, userName }) {
+export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }) {
     if (!isOpen) return null;
 
     // Trigger confetti on mount
@@ -109,6 +109,14 @@ export function WelcomeModal({ isOpen, onClose, userName }) {
                         Let's Get Started
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
+                    {onDismissPermanently && (
+                        <button
+                            onClick={onDismissPermanently}
+                            className="w-full py-2 text-xs text-indigo-300/60 hover:text-indigo-200 transition-colors"
+                        >
+                            Don't show this again
+                        </button>
+                    )}
                     {/* Safe area spacer for mobile */}
                     <div className="md:hidden h-2"></div>
                 </div>
