@@ -207,7 +207,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                 const renderMobileStatus = (entry, roundLabel) => {
                                     if (!entry) return null;
                                     let statusColor = "text-slate-500";
-                                    let statusText = "Pending";
+                                    let statusText = "Future";
 
                                     if (entry.status === 'COMPLETED') { statusColor = "text-green-600 font-medium"; statusText = "✓ Done"; }
                                     else if (entry.status === 'ACTIVE') { statusColor = "text-blue-600 font-bold animate-pulse"; statusText = "Active Now"; }

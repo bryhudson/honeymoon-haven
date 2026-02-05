@@ -15,16 +15,9 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
                 </span>
             );
         }
-        if (booking.isFinalized) {
-            return (
-                <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                    Confirmed
-                </span>
-            );
-        }
         return (
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/20">
-                Queued
+            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                Confirmed
             </span>
         );
     };
@@ -37,7 +30,7 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">Bookings</h2>
-                    <p className="text-sm text-muted-foreground">View all finalized and pending bookings for the season.</p>
+                    <p className="text-sm text-muted-foreground">View all confirmed bookings for the season.</p>
                 </div>
 
                 {/* View Toggle */}

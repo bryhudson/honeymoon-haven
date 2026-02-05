@@ -710,11 +710,10 @@ export function AdminDashboard() {
                     const checkOut = (b.type !== 'pass' && b.type !== 'auto-pass' && b.to) ? (b.to instanceof Date ? format(b.to, 'yyyy-MM-dd') : formatDate(b.to)) : "";
                     const nights = (b.from && b.to && b.type !== 'pass' && b.type !== 'auto-pass') ? Math.round((new Date(b.to) - new Date(b.from)) / (1000 * 60 * 60 * 24)) : 0;
 
-                    let status = "Draft";
+                    let status = "Confirmed";
                     if (b.type === 'cancelled') status = "Cancelled";
                     else if (b.type === 'pass') status = "Passed";
                     else if (b.type === 'auto-pass') status = "Auto-Passed";
-                    else if (b.isFinalized) status = "Finalized";
 
                     const payment = b.isPaid ? "PAID" : (status === "Finalized" ? "UNPAID" : "-");
                     const guests = b.guests || 1;

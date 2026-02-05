@@ -116,14 +116,14 @@ export function LiveTurnMonitor() {
         let status = 'future'; // default
         if (isSent) status = 'sent';
         else if (expectedTime && now > expectedTime) status = 'overdue';
-        else if (expectedTime && now <= expectedTime) status = 'pending';
+        else if (expectedTime && now <= expectedTime) status = 'scheduled';
 
         // Styling
         let icon = <Clock className="w-5 h-5 text-slate-300" />;
         let bgColor = "bg-white";
         let borderColor = "border-slate-100";
         let titleColor = "text-slate-500";
-        let timeText = expectedTime ? `Scheduled: ${expectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${expectedTime.toLocaleDateString([], { weekday: 'short' })}` : 'Pending schedule...';
+        let timeText = expectedTime ? `Scheduled: ${expectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${expectedTime.toLocaleDateString([], { weekday: 'short' })}` : 'Scheduling...';
 
         if (status === 'sent') {
             icon = <CheckCircle className="w-5 h-5 text-green-500" />;
@@ -137,8 +137,8 @@ export function LiveTurnMonitor() {
             borderColor = "border-red-200";
             titleColor = "text-red-700";
             timeText = <span className="font-bold text-red-600">Missed: {expectedTime.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>;
-        } else if (status === 'pending') {
-            // Future / Pending
+        } else if (status === 'scheduled') {
+            // Future / Scheduled
             icon = <Clock className="w-5 h-5 text-indigo-400" />;
             bgColor = "bg-slate-50";
             borderColor = "border-slate-200";
