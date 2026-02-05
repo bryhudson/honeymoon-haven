@@ -357,7 +357,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">Login to Web App</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Sign In</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -399,6 +399,10 @@ const emailTemplates = {
          <p style="${THEME.typography.body} margin: 0; font-weight: 600; color: ${THEME.colors.textLight}; font-size: 12px; text-transform: uppercase;">Send E-Transfer To</p>
          <p style="${THEME.typography.h2} color: ${THEME.colors.primary}; margin: 8px 0; font-size: 18px; word-break: break-all;">honeymoonhavenresort.lc@gmail.com</p>
       </div>
+
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">View Booking</a>
+      </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
@@ -417,7 +421,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">View Receipt</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">View Booking</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -465,7 +469,7 @@ const emailTemplates = {
        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f5f5f7;">
           <strong style="display: block; margin-bottom: 4px;">Address</strong>
           <p style="${THEME.typography.body}">10257 South Shore Road, Honeymoon Bay, BC</p>
-          <a href="https://www.google.com/maps/search/?api=1&query=Honeymoon+Haven+Resort+10257+South+Shore+Road+Honeymoon+Bay+BC+V0R+1Y0" style="${THEME.typography.link}">Open in Maps &rarr;</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Honeymoon+Haven+Resort+10257+South+Shore+Road+Honeymoon+Bay+BC+V0R+1Y0" style="${THEME.components.button}">Open in Maps</a>
        </div>
     `;
 
