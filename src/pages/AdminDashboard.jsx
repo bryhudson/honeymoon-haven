@@ -1698,7 +1698,7 @@ export function AdminDashboard() {
                                             // Helper for payment status style
                                             const paymentClass = booking?.isPaid
                                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                                                : 'bg-white text-slate-500 border-slate-200';
+                                                : 'bg-rose-100 text-rose-800 border-rose-200';
 
                                             return (
                                                 <div key={`${slot.name}-${slot.round}`} className="bg-white p-5 rounded-xl border shadow-sm space-y-4 relative overflow-hidden">
@@ -1862,7 +1862,7 @@ export function AdminDashboard() {
                                                                     {(() => {
                                                                         const statusConfig = {
                                                                             'ACTIVE': { label: 'Active Now', className: 'bg-emerald-100 text-emerald-700 border-emerald-200 animate-pulse' },
-                                                                            'GRACE_PERIOD': { label: 'Grace Period', className: 'bg-amber-100 text-amber-700 border-amber-200' },
+                                                                            'GRACE_PERIOD': { label: 'Early Access', className: 'bg-amber-100 text-amber-700 border-amber-200' },
                                                                             'SKIPPED': { label: 'Skipped', className: 'bg-rose-100 text-rose-700 border-rose-200' },
                                                                             'FUTURE': { label: 'Pending', className: 'bg-slate-100 text-slate-400 border-slate-200' },
                                                                             'PASSED': { label: 'Passed', className: 'bg-slate-100 text-slate-500 border-slate-200' },
@@ -1949,8 +1949,8 @@ export function AdminDashboard() {
                                                                     <span className="text-slate-400">—</span>
                                                                 ) : (
                                                                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${booking.isPaid
-                                                                        ? 'bg-green-100 text-green-800 border-green-200'
-                                                                        : 'bg-white text-slate-500 border-slate-200'
+                                                                        ? 'bg-green-50 text-green-700 border-green-200'
+                                                                        : 'bg-rose-50 text-rose-700 border-rose-200'
                                                                         }`}>
                                                                         {booking.isPaid ? 'PAID' : 'UNPAID'}
                                                                         {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
