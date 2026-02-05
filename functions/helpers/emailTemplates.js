@@ -217,7 +217,7 @@ const emailTemplates = {
   // 4. Booking Confirmed
   bookingConfirmed: (data) => {
     const roundLabel = data.round ? `[Round ${data.round}]` : '';
-    const subject = `${roundLabel} Your Trailer Dates Are Locked In! 🎉`;
+    const subject = `HHR Trailer Booking App ${roundLabel}: Your Trailer Dates Are Locked In! 🎉`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -241,12 +241,12 @@ const emailTemplates = {
       </div>
 
       <div style="margin: 32px 0;">
-        ${dataItem('Check In', data.check_in)}
-        ${dataItem('Check Out', data.check_out)}
-        ${dataItem('Trailer', `Cabin #${data.cabin_number}`)}
+        ${dataItem('CHECK IN', data.check_in)}
+        ${dataItem('CHECK OUT', data.check_out)}
+        ${dataItem('TRAILER', `Cabin #${data.cabin_number}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
-          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Maintenance Fee</span>
+          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">MAINTENANCE FEE</span>
           <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.total_price}</span>
           ${breakdownHtml}
         </div>
@@ -373,15 +373,15 @@ const emailTemplates = {
 
   // 9. Booking Cancelled
   bookingCancelled: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}] ` : '';
+    const roundLabel = data.round ? `[Round ${data.round}]` : '';
     const subject = `HHR Trailer Booking App ${roundLabel}: Cancellation Confirmed`;
     const body = `
       <h1 style="${THEME.typography.h1}">Booking Cancelled.</h1>
       <p style="${THEME.typography.body}">Hi ${data.name}, we've released your dates back to the pool as requested.</p>
 
       <div style="margin: 32px 0;">
-         ${dataItem('Cancelled Dates', `${data.check_in} - ${data.check_out}`)}
-         ${dataItem('Refund Status', 'Processed (if applicable)', true)}
+         ${dataItem('CANCELLED DATES', `${data.check_in} - ${data.check_out}`)}
+         ${dataItem('REFUND STATUS', 'Processed (if applicable)', true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">

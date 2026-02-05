@@ -39,8 +39,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const wasConfirmed = beforeData?.status === 'confirmed' || beforeData?.isFinalized === true;
     const isConfirmed = afterData?.status === 'confirmed' || afterData?.isFinalized === true;
 
-    const wasCancelled = beforeData?.status === 'cancelled';
-    const isCancelled = afterData?.status === 'cancelled';
+    const wasCancelled = beforeData?.status === 'cancelled' || beforeData?.type === 'cancelled';
+    const isCancelled = afterData?.status === 'cancelled' || afterData?.type === 'cancelled';
 
     // Allow 'pass' to be a status OR a booking type 'pass' logic? 
     // Usually 'Pass' is a document creation with type='pass'. 
@@ -48,6 +48,11 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const isPassType = afterData?.type === 'pass';
     const wasPassType = beforeData?.type === 'pass';
     const isNewPass = !wasPassType && isPassType;
+
+    // Fetch Current Draft Status once for all emails
+    const statusDoc = await db.collection("status").doc("draftStatus").get();
+    const statusData = statusDoc.exists ? statusDoc.data() : { round: 1, phase: 'ROUND_1' };
+    const currentRound = statusData.round || 1;
 
     // 1. Booking Confirmation Email (To Current User)
     if (!wasConfirmed && isConfirmed) {
@@ -64,6 +69,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             nights: afterData.nights || calculateNights(afterData.from || afterData.checkInDate, afterData.to || afterData.checkOutDate),
             total_price: afterData.totalPrice,
             price_breakdown: afterData.priceBreakdown, // New field
+            round: currentRound,
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 
@@ -81,14 +87,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
 
         // LOGGING
         if (afterData.shareholderName) {
-            // Need round info? statusData might not be fetched yet.
-            // We can try to guess or just log generic "booking_confirmed" if we don't have round.
-            // But we want to match `{activePicker}-{round}` pattern.
-            // Let's assume current global round is relevant, or pass it?
-            // Actually, querying draftStatus is fast.
-            const statusDoc = await db.collection("status").doc("draftStatus").get();
-            const round = statusDoc.exists ? statusDoc.data().round : 1;
-            const logId = `${afterData.shareholderName}-${round}`;
+            const logId = `${afterData.shareholderName}-${currentRound}`;
             await db.collection("notification_log").doc(logId).set({
                 bookingConfirmedSent: admin.firestore.Timestamp.now(),
                 bookingId: bookingId
@@ -107,6 +106,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             check_out: formatDate(afterData.to || afterData.checkOutDate),
             cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
             cancelled_date: formatDate(new Date().toISOString()),
+            round: currentRound,
             within_turn_window: false,
             next_shareholder: "Next Shareholder",
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
@@ -126,9 +126,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
 
         // LOGGING
         if (afterData.shareholderName) {
-            const statusDoc = await db.collection("status").doc("draftStatus").get();
-            const round = statusDoc.exists ? statusDoc.data().round : 1;
-            const logId = `${afterData.shareholderName}-${round}`;
+            const logId = `${afterData.shareholderName}-${currentRound}`;
             await db.collection("notification_log").doc(logId).set({
                 bookingCancelledSent: admin.firestore.Timestamp.now(),
                 bookingId: bookingId
