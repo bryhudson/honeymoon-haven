@@ -78,7 +78,7 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                             <div>
                                 <h3 className="font-bold text-white text-sm md:text-base">Maximum Lake Time</h3>
                                 <p className="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">
-                                    Less time at the desk, more time on the dock.
+                                    No more month-long email chains. The system handles scheduling automatically.
                                 </p>
                             </div>
                         </div>
