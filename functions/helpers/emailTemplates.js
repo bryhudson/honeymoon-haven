@@ -291,20 +291,25 @@ const emailTemplates = {
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
 
-  // 6. Turn Passed - Next (Early Start)
+  // 6. Turn Passed - Next (Early Access / Bonus Time)
   turnPassedNext: (data) => {
-    const subject = `HHR Trailer Booking App: You're Up Early! 🚀`;
+    const subject = `HHR Trailer Booking App: Early Access Unlocked! 🎁`;
     const body = `
-      <h1 style="${THEME.typography.h1}">The stage is yours, ${data.name}.</h1>
-      <p style="${THEME.typography.body}">The previous shareholder passed their turn, so you're on the clock earlier than expected!</p>
+      <h1 style="${THEME.typography.h1}">Good news, ${data.name}!</h1>
+      <p style="${THEME.typography.body}">The previous shareholder just passed their turn, which means you now have <strong>early access</strong> to start planning your dates.</p>
+
+      <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🎁 Bonus Time!</strong><br>
+        This is extra time to browse the calendar and plan - no pressure. Your official 48-hour window doesn't start until <strong>${data.deadline_date} at 10:00 AM PT</strong>.</p>
+      </div>
 
       <div style="margin: 32px 0;">
-        ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
+        ${dataItem('Official Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
         ${dataItem('Round', data.round, true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Start Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Start Planning</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
