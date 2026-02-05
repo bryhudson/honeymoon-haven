@@ -70,13 +70,8 @@ export function AdminCalendarView({ bookings, onNotify }) {
                     let info = "";
 
                     if (b) {
-                        if (b.isFinalized) {
-                            bg = "#22c55e"; // green-500
-                            color = "#ffffff";
-                        } else {
-                            bg = "#fbbf24"; // amber-400
-                            color = "#78350f"; // amber-900
-                        }
+                        bg = "#22c55e"; // green-500
+                        color = "#ffffff";
                         info = `<div style="font-size: 8px; line-height: 1;">${b.cabinNumber}</div>`;
                     }
 
@@ -161,11 +156,7 @@ export function AdminCalendarView({ bookings, onNotify }) {
                         // Determine styling based on booking status
                         let bgClass = "bg-white hover:bg-slate-50 text-slate-700";
                         if (booking) {
-                            if (booking.isFinalized) {
-                                bgClass = "bg-green-500 text-white hover:bg-green-600";
-                            } else {
-                                bgClass = "bg-amber-400 text-amber-900 hover:bg-amber-500";
-                            }
+                            bgClass = "bg-green-500 text-white hover:bg-green-600";
                         }
 
                         // Tooltip text
@@ -185,9 +176,6 @@ export function AdminCalendarView({ bookings, onNotify }) {
                                     <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50 w-max max-w-[150px] bg-slate-900 text-white text-[10px] p-2 rounded shadow-lg pointer-events-none text-center">
                                         <div className="font-bold">{booking.shareholderName}</div>
                                         <div className="opacity-75">Cabin #{booking.cabinNumber}</div>
-                                        <div className="opacity-75 mt-1 text-[9px] uppercase border-t border-slate-700 pt-1">
-                                            {booking.isFinalized ? "Finalized" : "Draft"}
-                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -211,11 +199,7 @@ export function AdminCalendarView({ bookings, onNotify }) {
                 <div className="flex gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-green-500"></div>
-                        <span>Finalized</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-amber-400"></div>
-                        <span>Draft</span>
+                        <span>Confirmed Booking</span>
                     </div>
                 </div>
             </div>
