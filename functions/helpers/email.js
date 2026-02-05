@@ -16,7 +16,7 @@ const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
  * @param {string} data.htmlContent - HTML body
  * @returns {Promise<{success: boolean, messageId: string}>}
  */
-async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven", replyTo, bypassTestMode = false }) {
+async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, bypassTestMode = false }) {
     const user = gmailEmail.value();
     const pass = gmailAppPassword.value();
 
