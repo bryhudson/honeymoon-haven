@@ -546,7 +546,7 @@ export function ShareholderHero({
                         </p>
                     </div>
 
-                    <div id="tour-actions" className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
+                    <div id="tour-deadline" className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <Clock className="w-5 h-5 text-blue-400" />

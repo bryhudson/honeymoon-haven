@@ -22,26 +22,32 @@ export function OnboardingTour({ currentUser, defer = false }) {
     const steps = [
         {
             target: '#tour-status',
-            title: 'Your Status & Queue',
-            content: "Check here for your current status, queue position, or the time remaining to make your booking.",
+            title: '👋 Your Status at a Glance',
+            content: "This shows where you are in the draft! You'll see if it's your turn, or how many folks are ahead of you in line.",
+            disableBeacon: true,
+        },
+        {
+            target: '#tour-deadline',
+            title: '⏰ Keep an Eye on the Clock!',
+            content: "When it's your turn, this is your countdown! You've got 48 hours to book or pass. Don't worry - we'll send reminders too!",
             disableBeacon: true,
         },
         {
             target: '#tour-schedule',
-            title: 'New Season Schedule',
-            content: "Click this tab to view the full 2026 Season Schedule, including round dates and draft rules.",
+            title: '📅 2026 Season Schedule',
+            content: "Curious about the full draft order? Tap here to see the complete 2026 schedule, round dates, and how the snake draft works.",
             disableBeacon: true,
         },
         {
             target: '#tour-recent',
-            title: 'Recent Activity',
-            content: 'Click here to see who has booked recently. If you have an active booking, you can also modify or cancel it from here.',
+            title: '📋 Bookings & Activity',
+            content: "See who's booked what! You can also view, modify, or cancel your own bookings right from this tab. Super handy!",
             disableBeacon: true,
         },
         {
             target: '#tour-guide',
-            title: 'Trailer Guide & Rules',
-            content: 'Need to check the rules? Find the complete Trailer Guide and operational rules here.',
+            title: '📖 Trailer Guide & Rules',
+            content: "Need a refresher on check-in times, amenities, or the house rules? It's all right here. Happy booking! 🎉",
             disableBeacon: true,
         },
     ];
