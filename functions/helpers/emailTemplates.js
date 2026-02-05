@@ -330,12 +330,17 @@ const emailTemplates = {
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
 
-  // 8. Auto Pass - Next (Timeout from Prev)
+  // 8. Auto Pass - Next (Timeout from Prev) - NO BONUS TIME, clock starts now
   autoPassNext: (data) => {
-    const subject = `HHR Trailer Booking App: It's Finally Time! ✨`;
+    const subject = `HHR Trailer Booking App: It's Your Turn! 🎯`;
     const body = `
-      <h1 style="${THEME.typography.h1}">You're up, ${data.name}.</h1>
-      <p style="${THEME.typography.body}">The previous window closed, and the drafting order has arrived at you.</p>
+      <h1 style="${THEME.typography.h1}">You're up, ${data.name}!</h1>
+      <p style="${THEME.typography.body}">The previous shareholder's window has expired, and it's now officially your turn to book.</p>
+
+      <div style="background-color: #FFF4E5; border: 1px solid #FFE0B2; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; color: #9A3412;"><strong>⏰ Your 48-Hour Window Has Started</strong><br>
+        The clock is ticking! Make sure to complete your booking or pass before the deadline.</p>
+      </div>
 
       <div style="margin: 32px 0;">
         ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
