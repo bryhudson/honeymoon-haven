@@ -454,6 +454,125 @@ export function AdminDashboard() {
             `;
         };
 
+        // Generate Calendar View HTML
+        const generateCalendarHtml = () => {
+            const months = [
+                { name: 'May 2026', year: 2026, month: 4 },
+                { name: 'June 2026', year: 2026, month: 5 },
+                { name: 'July 2026', year: 2026, month: 6 },
+                { name: 'August 2026', year: 2026, month: 7 },
+                { name: 'September 2026', year: 2026, month: 8 }
+            ];
+
+            // Color palette for shareholders
+            const shareholderColors = {};
+            const colorPalette = ['#dbeafe', '#dcfce7', '#fef3c7', '#fce7f3', '#e0e7ff', '#ccfbf1', '#fecaca', '#fed7aa'];
+            let colorIndex = 0;
+
+            // Helper to get booking for a specific date
+            const getBookingForDate = (date) => {
+                return reportBookings.find(b => {
+                    if (!b.from || !b.to) return false;
+                    const from = new Date(b.from);
+                    const to = new Date(b.to);
+                    return date >= from && date < to;
+                });
+            };
+
+            // Get initials from name
+            const getInitials = (name) => {
+                return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            };
+
+            // Get color for shareholder
+            const getColor = (name) => {
+                if (!shareholderColors[name]) {
+                    shareholderColors[name] = colorPalette[colorIndex % colorPalette.length];
+                    colorIndex++;
+                }
+                return shareholderColors[name];
+            };
+
+            let calendarHtml = `
+                <h3 style="margin-top: 40px; margin-bottom: 20px; color: #1e293b;">Calendar View</h3>
+            `;
+
+            months.forEach(m => {
+                const firstDay = new Date(m.year, m.month, 1);
+                const lastDay = new Date(m.year, m.month + 1, 0);
+                const startPadding = firstDay.getDay(); // 0 = Sunday
+                const daysInMonth = lastDay.getDate();
+
+                calendarHtml += `
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="margin-bottom: 8px; color: #475569; font-size: 14px;">${m.name}</h4>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color: #f8fafc;">
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Sun</th>
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Mon</th>
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Tue</th>
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Wed</th>
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Thu</th>
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Fri</th>
+                                    <th style="padding: 4px; border: 1px solid #e2e8f0; width: 14.28%;">Sat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                let dayCounter = 1;
+                let weekRowsHtml = '';
+
+                for (let week = 0; week < 6 && dayCounter <= daysInMonth; week++) {
+                    weekRowsHtml += '<tr>';
+                    for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+                        if ((week === 0 && dayOfWeek < startPadding) || dayCounter > daysInMonth) {
+                            weekRowsHtml += '<td style="padding: 4px; border: 1px solid #e2e8f0; background-color: #f9fafb;"></td>';
+                        } else {
+                            const currentDate = new Date(m.year, m.month, dayCounter);
+                            const booking = getBookingForDate(currentDate);
+
+                            if (booking) {
+                                const bgColor = getColor(booking.shareholderName);
+                                const initials = getInitials(booking.shareholderName);
+                                weekRowsHtml += `
+                                    <td style="padding: 4px; border: 1px solid #e2e8f0; background-color: ${bgColor}; text-align: center; vertical-align: top;">
+                                        <div style="font-weight: bold;">${dayCounter}</div>
+                                        <div style="font-size: 9px; color: #475569;">${initials}</div>
+                                    </td>
+                                `;
+                            } else {
+                                weekRowsHtml += `
+                                    <td style="padding: 4px; border: 1px solid #e2e8f0; text-align: center; vertical-align: top; color: #94a3b8;">
+                                        ${dayCounter}
+                                    </td>
+                                `;
+                            }
+                            dayCounter++;
+                        }
+                    }
+                    weekRowsHtml += '</tr>';
+                }
+
+                calendarHtml += weekRowsHtml + '</tbody></table></div>';
+            });
+
+            // Add legend
+            const legendItems = Object.entries(shareholderColors).map(([name, color]) =>
+                `<span style="display: inline-block; margin-right: 15px; margin-bottom: 5px;"><span style="display: inline-block; width: 12px; height: 12px; background-color: ${color}; border: 1px solid #ccc; margin-right: 4px;"></span>${name}</span>`
+            ).join('');
+
+            calendarHtml += `
+                <div style="margin-top: 15px; font-size: 11px; color: #64748b;">
+                    <strong>Legend:</strong><br/>
+                    ${legendItems || '<span style="color: #94a3b8;">No bookings to display</span>'}
+                </div>
+            `;
+
+            return calendarHtml;
+        };
+
         triggerPrompt(
             "Email Season Report",
             "Enter recipient email:",
@@ -462,6 +581,7 @@ export function AdminDashboard() {
                 if (!recipient) return;
                 try {
                     const rows = reportBookings.map(generateRowHtml).join("");
+                    const calendarSection = generateCalendarHtml();
 
                     const htmlTable = `
                         <h2>2026 Season Booking Report</h2>
@@ -486,8 +606,9 @@ export function AdminDashboard() {
                                 <div style="color: #0f172a; font-size: 24px; font-weight: bold;">${totalNights}</div>
                              </div>
                         </div>
-                        
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px; margin-top: 20px;">
+
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: #1e293b;">Booking List</h3>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 14px;">
                             <thead>
                                 <tr style="background-color: #f8fafc;">
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0;">Shareholder</th>
@@ -504,11 +625,13 @@ export function AdminDashboard() {
                                 ${rows}
                             </tbody>
                         </table>
+
+                        ${calendarSection}
                     `;
 
                     await emailService.sendEmail({
                         to: { name: "Admin", email: recipient },
-                        subject: `2026 Season Booking Report - ${format(new Date(), 'MMM d')}`,
+                        subject: `[Admin] 2026 Season Booking Report - ${format(new Date(), 'MMM d')}`,
                         htmlContent: htmlTable
                     });
 
