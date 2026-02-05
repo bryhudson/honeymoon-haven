@@ -991,6 +991,7 @@ export function AdminDashboard() {
                                 check_in: format(start, 'MMM d, yyyy'),
                                 check_out: format(end, 'MMM d, yyyy'),
                                 cabin_number: booking.cabinNumber,
+                                price_breakdown: cost.breakdown,
                                 dashboard_url: window.location.origin
                             }
                         });

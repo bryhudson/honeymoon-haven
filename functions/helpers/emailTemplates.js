@@ -438,18 +438,45 @@ const emailTemplates = {
   // 11. Payment Received
   paymentReceived: (data) => {
     const subject = `HHR Trailer Booking App: Maintenance Fee Received! ✅`;
-    const body = `
-      <h1 style="${THEME.typography.h1}">Maintenance Fee Received.</h1>
-      <p style="${THEME.typography.body}">Thanks, ${data.name}. You're all set for simpler times at the lake.</p>
 
-      <div style="margin: 32px 0;">
-        ${dataItem('Maintenance Fee Received', `$${data.amount}`)}
-        ${dataItem('Dates', `${data.check_in || 'TBD'} - ${data.check_out || 'TBD'}`)}
-        ${dataItem('Cabin', `Cabin #${data.cabin_number}`, true)}
+    // Breakdown HTML (Consistent with bookingConfirmed)
+    let breakdownHtml = '';
+    if (data.price_breakdown) {
+      const bd = data.price_breakdown;
+      breakdownHtml = `
+         <div style="background-color: #F5F5F7; border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 13px; color: #1d1d1f;">
+            ${bd.weeknights > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>${bd.weeknights} Weeknight${bd.weeknights !== 1 ? 's' : ''} x $100</span><span>$${bd.weeknightTotal}</span></div>` : ''}
+            ${bd.weekends > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>${bd.weekends} Weekend${bd.weekends !== 1 ? 's' : ''} x $125</span><span>$${bd.weekendTotal}</span></div>` : ''}
+            ${bd.discount > 0 ? `<div style="display: flex; justify-content: space-between; color: #34c759; font-weight: 600; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #d2d2d7;"><span>Weekly Discount</span><span>-$${bd.discount}</span></div>` : ''}
+         </div>
+       `;
+    }
+
+    const body = `
+      <h1 style="${THEME.typography.h1}">Dates officially locked in! 🏔️🎉</h1>
+      <p style="${THEME.typography.body}">Great news, ${data.name}! We've officially received your e-transfer and your spot at the lake is confirmed.</p>
+      
+      <p style="${THEME.typography.body}">Get ready for simpler times! We're so excited for you to share our lakeside paradise with your guests—we just know they're going to have an amazing time. 🌲✨</p>
+
+      <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🗓️ Your Confirmed Booking</strong></p>
       </div>
 
+      <div style="margin: 32px 0;">
+        ${dataItem('Dates', `${data.check_in || 'TBD'} - ${data.check_out || 'TBD'}`)}
+        ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
+        
+        <div style="${THEME.components.dataRow} border-bottom: none;">
+          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Total Paid</span>
+          <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.amount}</span>
+          ${breakdownHtml}
+        </div>
+      </div>
+
+      <p style="${THEME.typography.body}">We hope you have an incredible stay. If you need anything at all as you get ready for your trip, just let us know!</p>
+
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">View Booking</a>
+        <a href="${data.dashboard_url}/dashboard" style="${THEME.components.button}">View Your Reservation</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
