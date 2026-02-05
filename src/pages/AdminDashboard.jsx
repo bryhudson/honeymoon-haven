@@ -1581,7 +1581,7 @@ export function AdminDashboard() {
 
                             <div className="bg-white p-6 rounded-xl border shadow-sm">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-amber-100 text-amber-700 rounded-lg">
+                                    <div className="p-3 bg-rose-100 text-rose-700 rounded-lg">
                                         <AlertTriangle className="w-6 h-6" />
                                     </div>
                                     <div>
