@@ -174,9 +174,10 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
     */
 
     // STRICT RULE: The calculation cycle must effectively start from an Official 10 AM block.
-    // RULE: bypassTenAM allows test simulation to start immediately without waiting for 10 AM anchor
-    const startAnchor = (time) => bypassTenAM ? new Date(time) : getOfficialStart(time);
+    // RULE: bypassTenAM is now ignored for the startAnchor to enforce the 10 AM snap for deadlines.
+    const startAnchor = (time) => getOfficialStart(time);
     let currentWindowStart = startAnchor(DRAFT_START);
+    let lastCompletionTime = null; // Track actual previous finish for Early Access display
 
     let activePicker = null;
     let nextPicker = null;
@@ -213,19 +214,15 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
                 if (!actionTime) actionTime = currentWindowStart;
 
                 // Safe Date Conversion (Handle Firestore Timestamp)
-                let pTime;
-                if (actionTime?.toDate) {
-                    pTime = actionTime.toDate();
-                } else {
-                    pTime = new Date(actionTime);
-                }
+                let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
 
                 if (!isNaN(pTime.getTime())) {
-                    // CRITICAL: Update currentWindowStart to the NEXT official 10 AM block
+                    lastCompletionTime = pTime;
                     currentWindowStart = startAnchor(pTime);
                 }
             } else {
                 // Booking exists but is NOT finalized (Draft Mode).
+                // FIXED: Use currentWindowStart (Official 10 AM Snap) for the limit calculation
                 const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);
 
                 if (now > windowLimit) {
@@ -249,6 +246,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
             if (now > windowLimit) {
                 // TIMEOUT / IMPLICIT PASS
+                lastCompletionTime = windowLimit;
                 currentWindowStart = startAnchor(windowLimit);
             } else {
                 // THEY ARE ACTIVE
@@ -305,17 +303,19 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
 
 
 
-    // RULE: bypassTenAM allows test simulation to start immediately
-    const startAnchor = (time) => bypassTenAM ? new Date(time) : getOfficialStart(time);
+    // RULE: Snap all windows to 10AM Official rule
+    const startAnchor = (time) => getOfficialStart(time);
 
     // Mirror calculateDraftSchedule logic: Start cursor aligned to Official rule
     let currentWindowStart = startAnchor(DRAFT_START);
     let hasFoundActive = false;
+    let lastCompletionTime = null;
 
     for (let i = 0; i < fullTurnOrder.length; i++) {
         const name = fullTurnOrder[i];
         const turnIndex = userTurnCounts[name];
         userTurnCounts[name]++;
+        let returnStart = null;
 
         // Find match
         const userActions = bookings
@@ -345,22 +345,32 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
             const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
             windowEnd = pTime instanceof Date && !isNaN(pTime) ? pTime : new Date();
 
+            lastCompletionTime = windowEnd;
             currentWindowStart = startAnchor(windowEnd);
         } else {
             // Not completed. Check if this is the ACTIVE window or GRACE PERIOD
             const now = new Date();
             const projectedLimit = new Date(windowStart.getTime() + PICK_DURATION_MS);
+
+            // ADJUST START: If someone finished early, this person's PHYSICAL window started then
+            const realStart = lastCompletionTime || windowStart;
+
             if (now > projectedLimit && windowStart < now) {
                 // Past / Timed Out
                 status = 'SKIPPED';
                 windowEnd = projectedLimit;
+                lastCompletionTime = projectedLimit;
                 currentWindowStart = startAnchor(projectedLimit);
             } else if (!hasFoundActive) {
                 // This is the first person who isn't done.
                 hasFoundActive = true;
                 const isFirst = (i === 0);
-                // If first person, force ACTIVE (Early Access), otherwise check grace period
+
+                // CRITICAL STATUS LOGIC:
+                // Now strictly follows the SNAP for the status, but display uses realStart
                 status = (isFirst || now >= windowStart) ? 'ACTIVE' : 'GRACE_PERIOD';
+
+                returnStart = realStart; // Display from actual start
                 windowEnd = projectedLimit;
                 currentWindowStart = startAnchor(projectedLimit);
             } else {
@@ -374,11 +384,12 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
         schedule.push({
             name,
             round: i < shareholders.length ? 1 : 2,
-            start: windowStart,
+            start: returnStart || windowStart,
             end: windowEnd,
+            officialStart: windowStart,
             status,
             isCompleted,
-            booking: action || null // Expose full booking object (includes id, isPaid, etc.)
+            booking: action || null
         });
     }
 

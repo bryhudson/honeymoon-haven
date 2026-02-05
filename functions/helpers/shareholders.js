@@ -107,7 +107,8 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
     const round2Order = [...shareholders].reverse();
     const fullTurnOrder = [...round1Order, ...round2Order];
 
-    const startAnchor = (time) => bypassTenAM ? new Date(time) : getOfficialStart(time);
+    // RULE: bypassTenAM is now ignored for the startAnchor to enforce the 10 AM snap for deadlines.
+    const startAnchor = (time) => getOfficialStart(time);
     let currentWindowStart = startAnchor(DRAFT_START);
 
     let activePicker = null;
