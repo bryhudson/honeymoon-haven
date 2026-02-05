@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowRight, Zap, Palmtree, Anchor } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Palmtree, Anchor, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }) {
@@ -112,8 +112,9 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                     {onDismissPermanently && (
                         <button
                             onClick={onDismissPermanently}
-                            className="w-full py-2 text-xs text-indigo-300/60 hover:text-indigo-200 transition-colors"
+                            className="w-full py-2.5 text-sm text-indigo-300/80 hover:text-white hover:bg-white/5 rounded-lg transition-all flex items-center justify-center gap-2 group"
                         >
+                            <EyeOff className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity" />
                             Don't show this again
                         </button>
                     )}
