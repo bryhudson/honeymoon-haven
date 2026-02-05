@@ -85,10 +85,12 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                 const typeMap = {
                     'turnStarted': 'turnStarted',
                     'turnPassed': 'turnPassedNext',
+                    'autoPass': 'autoPassNext',
                     'bookingConfirmed': 'bookingConfirmed',
                     'paymentReceived': 'paymentReceived',
                     'bookingCancelled': 'bookingCancelled',
-                    'paymentReminder': 'paymentReminder'
+                    'paymentReminder': 'paymentReminder',
+                    'openSeasonStarted': 'openSeasonStarted'
                 };
                 const backendType = typeMap[type] || type;
                 await sendTestEmailFn({ emailType: backendType, testEmail: testRecipient });
@@ -378,7 +380,8 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
                             <div className="grid grid-cols-1 gap-2">
                                 {[
                                     { id: "turnStarted", name: "Turn Started", desc: "When active status begins", subject: "It's YOUR Turn! 🎉" },
-                                    { id: "turnPassed", name: "Turn Passed (Next)", desc: "Notify next user", subject: "It's Your Turn! (Passed)" },
+                                    { id: "turnPassed", name: "Turn Passed (Next)", desc: "Bonus Time - user passed early", subject: "Early Access Unlocked! 🎁" },
+                                    { id: "autoPass", name: "Auto Pass (Next)", desc: "Clock Started - timeout from prev", subject: "It's Your Turn! 🎯" },
                                     { id: "bookingConfirmed", name: "Booking Confirmed", desc: "User finalizes dates", subject: "Booking Confirmed" },
                                     { id: "paymentReminder", name: "Maintenance Fee Reminder", desc: "Manually triggered / Auto", subject: "E-Transfer Due" },
                                     { id: "paymentReceived", name: "Maintenance Fee Received", desc: "Admin marks as Paid", subject: "Fee Received" },
