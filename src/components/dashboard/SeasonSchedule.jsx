@@ -48,7 +48,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                 <div>
                                     <h4 className="font-bold text-slate-900 text-sm">Structure & Rotation</h4>
                                     <p className="text-xs text-slate-500 leading-relaxed mt-1">
-                                        Two rounds of bookings (Snake Draft). Order rotates annually.
+                                        Two rounds of bookings (Snake Schedule). Order rotates annually.
                                     </p>
                                 </div>
                             </div>

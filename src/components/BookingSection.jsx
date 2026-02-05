@@ -232,7 +232,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         }
     }
 
-    // Priority / Draft Logic
+    // Priority / Schedule Logic
     const [bookingStatus, setBookingStatus] = useState({ canBook: true, message: '' });
 
     useEffect(() => {
@@ -273,7 +273,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             setIsDraftActive(true);
             setBookingStatus({ canBook: false, message: `Booking schedule begins on ${format(schedule.draftStart, 'PPP')}` });
         } else {
-            // DRAFT IS ACTIVE (Round 1 or 2)
+            // SCHEDULE IS ACTIVE (Round 1 or 2)
 
 
             if (schedule.activePicker) {
@@ -293,12 +293,12 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     canBook: true,
                     message: schedule.isGracePeriod
                         ? `✨ Early Access: Locked to ${schedule.activePicker}`
-                        : `Draft Round Active: Locked to ${schedule.activePicker}`
+                        : `Schedule Round Active: Locked to ${schedule.activePicker}`
                 });
                 setIsDraftActive(true);
             } else {
                 setIsDraftActive(true);
-                setBookingStatus({ canBook: false, message: 'Draft Active: transitioning...' });
+                setBookingStatus({ canBook: false, message: 'Schedule Active: transitioning...' });
             }
         }
     }, [formData.shareholderName, bookings]); // Add dependencies to re-run on user change or new booking

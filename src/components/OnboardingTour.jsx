@@ -21,9 +21,9 @@ export function OnboardingTour({ currentUser, defer = false }) {
 
     const steps = [
         {
-            target: '#tour-status',
+            target: '[data-tour="status-hero"]',
             title: '👋 Your Status at a Glance',
-            content: "This shows where you are in the draft! You'll see if it's your turn, or how many folks are ahead of you in line.",
+            content: "This shows where you are in the booking order! You'll see if it's your turn, or how many folks are ahead of you in line.",
             disableBeacon: true,
         },
         {
@@ -33,9 +33,9 @@ export function OnboardingTour({ currentUser, defer = false }) {
             disableBeacon: true,
         },
         {
-            target: '#tour-schedule',
+            target: '[data-tour="season-tab"]',
             title: '📅 2026 Season Schedule',
-            content: "Curious about the full draft order? Tap here to see the complete 2026 schedule, round dates, and how the snake draft works.",
+            content: "Curious about the full booking schedule? Tap here to see the complete 2026 order, round dates, and how the snake schedule works.",
             disableBeacon: true,
         },
         {

@@ -84,9 +84,7 @@ export function HistoricalOrders() {
                                 <Trophy className="w-6 h-6 text-yellow-300" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">2026 is Live!</h3>
-                            <p className="text-indigo-100 text-sm mb-6 leading-relaxed">
-                                The 2026 season draft is currently active. Check the "Season Schedule" tab for real-time updates.
-                            </p>
+                            <p className="text-indigo-100/80 mb-4">The 2026 booking schedule is currently active. Check the "Season Schedule" tab for real-time updates.</p>
                         </div>
                     </div>
 

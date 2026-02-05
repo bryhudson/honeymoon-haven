@@ -170,7 +170,7 @@ const emailTemplates = {
       
       <div style="margin: 32px 0;">
         ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
-        ${dataItem('Phase', data.round === 1 ? 'Round 1 (Standard Draft)' : 'Round 2 (Snake Draft)', true)}
+        ${dataItem('Phase', data.round === 1 ? 'Round 1 (Standard Schedule)' : 'Round 2 (Snake Schedule)', true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
@@ -326,7 +326,7 @@ const emailTemplates = {
 
     // Dynamic "next opportunity" based on which round they timed out in
     const isRound1 = data.round === 1;
-    const nextOpportunityTitle = isRound1 ? 'Your Next Pick: Round 2 (Snake Draft)' : 'Open Season Awaits';
+    const nextOpportunityTitle = isRound1 ? 'Your Next Pick: Round 2 (Snake Schedule)' : 'Open Season Awaits';
     const nextOpportunityText = isRound1
       ? "You still have your <strong>Round 2</strong> pick coming up - the draft order reverses, so hang tight. We'll let you know when it's your turn again."
       : "The draft phase has finished, but you can still book any remaining dates during <strong>Open Season</strong> - first come, first served.";
@@ -535,7 +535,7 @@ const emailTemplates = {
   openSeasonStarted: (data) => {
     const subject = `HHR Trailer Booking App: Open Season is Here! 🌲`;
     const body = `
-      <h1 style="${THEME.typography.h1}">The Draft is Complete.</h1>
+      <h1 style="${THEME.typography.h1}">The Booking Schedule is Complete.</h1>
       <p style="${THEME.typography.body}">All rounds are finished, and Open Season has officially begun.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">

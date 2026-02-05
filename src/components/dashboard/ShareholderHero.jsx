@@ -151,16 +151,16 @@ export function ShareholderHero({
                             ⏳ Coming Soon
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
-                            Draft Hasn't Started
+                            {title}
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
-                            The 2026 booking season hasn't officially begun yet. Sit tight, we'll notify you when the draft kicks off!
+                            The 2026 booking season hasn't officially begun yet. Sit tight, we'll notify you when the schedule kicks off!
                         </p>
                     </div>
 
                     {status.windowStarts && (
                         <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm inline-block">
-                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Draft Starts</p>
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Schedule Starts</p>
                             <div className="text-xl font-bold text-white mt-1">
                                 {format(new Date(status.windowStarts), 'MMMM d, yyyy @ h:mm a')}
                             </div>

@@ -409,7 +409,7 @@ export function Dashboard() {
 
         // Duration Check (7 days max)
         const days = (end - start) / (1000 * 60 * 60 * 24);
-        if (days > 7) return triggerAlert("Booking Limit Exceeded", "To ensure everyone has a fair chance, bookings are limited to a maximum of 7 days during the draft.");
+        if (days > 7) return triggerAlert("Booking Limit Exceeded", "To ensure everyone has a fair chance, bookings are limited to a maximum of 7 days during the schedule.");
 
         // Overlap Check
         const isOverlap = allBookings.some(b => {
@@ -832,7 +832,7 @@ export function Dashboard() {
                         closeOnConfirm={confirmation.closeOnConfirm}
                     />
 
-                    {/* Pre-Draft Modal */}
+                    {/* Pre-Schedule Modal */}
                     {
                         showPreDraftModal && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
