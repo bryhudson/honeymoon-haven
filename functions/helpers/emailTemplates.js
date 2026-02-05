@@ -285,7 +285,7 @@ const emailTemplates = {
       </div>
       
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.secondaryButton}">Sign In</a>
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Sign In</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
