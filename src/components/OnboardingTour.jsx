@@ -41,7 +41,7 @@ export function OnboardingTour({ currentUser, defer = false }) {
         {
             target: '#tour-recent',
             title: '📋 Bookings & Activity',
-            content: "See what everyone's booked! Got a draft? You can review and edit it here. Already confirmed? View your details or cancel if plans change.",
+            content: "Check out the calendar to see who's booked what dates! Great for planning around other shareholders. Your booking actions live in the banner above.",
             disableBeacon: true,
         },
         {
