@@ -222,8 +222,8 @@ const emailTemplates = {
 
   // 4. Booking Confirmed
   bookingConfirmed: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}] ` : '';
-    const subject = `HHR Trailer Booking App ${roundLabel}: You're Going to the Lake! 🌊`;
+    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const subject = `${roundLabel} Pack Your Bags - You're Lake Bound! 🎉🌊`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -239,29 +239,36 @@ const emailTemplates = {
     }
 
     const body = `
-      <h1 style="${THEME.typography.h1}">You're all set! 🏔️</h1>
-      <p style="${THEME.typography.body}">We've got you down for your dates. Here are your details:</p>
+      <h1 style="${THEME.typography.h1}">Woohoo! You did it, ${data.name || 'friend'}! 🎊</h1>
+      <p style="${THEME.typography.body}">Your summer escape is officially locked in. Time to start dreaming about those lake sunsets, morning coffee on the dock, and way too many s'mores. 🏕️</p>
+
+      <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🗓️ Your Trip at a Glance</strong></p>
+      </div>
 
       <div style="margin: 32px 0;">
         ${dataItem('Check In', data.check_in)}
         ${dataItem('Check Out', data.check_out)}
-        ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
+        ${dataItem('Your Home', `Cabin #${data.cabin_number}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
-          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Maintenance Fee Breakdown</span>
+          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Maintenance Fee</span>
           <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.total_price}</span>
           ${breakdownHtml}
         </div>
       </div>
 
-      <div style="background-color: #FFF4E5; border: 1px solid #FFE0B2; border-radius: 8px; padding: 16px; margin: 24px 0; text-align: center;">
+      <div style="background-color: #FFF4E5; border: 1px solid #FFE0B2; border-radius: 12px; padding: 20px; margin: 24px 0;">
          <p style="${THEME.typography.body} margin: 0; color: #9A3412;">
-           <strong>Action Required:</strong> Please complete your e-transfer within 48 hours to secure your booking.
+           <strong>💸 One Quick Thing!</strong><br>
+           Pop over an e-transfer within the next 48 hours to make it official. Easy peasy!
          </p>
       </div>
 
+      <p style="${THEME.typography.body}">We're so stoked you're coming! If you have any questions before your trip, just holler. See you at the lake!</p>
+
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/dashboard" style="${THEME.components.button}">View Itinerary</a>
+        <a href="https://hhr-trailer-booking.web.app/dashboard" style="${THEME.components.button}">View My Trip Details</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
