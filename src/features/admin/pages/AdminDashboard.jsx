@@ -17,6 +17,7 @@ import { CreateUserModal } from '../components/CreateUserModal';
 import { ShareholderHero } from '../../dashboard/components/ShareholderHero';
 import { AdminTurnHero } from '../../dashboard/components/AdminTurnHero';
 import { SeasonSchedule } from '../../dashboard/components/SeasonSchedule';
+import { backupBookingsToFirestore, exportBookingsToCSV } from '../services/backupService';
 import { SystemTab } from '../components/SystemTab';
 import { NotificationsTab } from '../components/NotificationsTab';
 import { AdminStatsGrid } from '../components/AdminStatsGrid';
@@ -229,8 +230,22 @@ export function AdminDashboard() {
         requireAuth("ACTIVATE PRODUCTION", "Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA. Date will be set to April 13, 2026.", async () => {
             triggerConfirm("CONFIRM WIPE + START", "This will DELETE ALL DATA and start Production.", async () => {
                 try {
-                    // 1. Wipe DB (Clean Slate)
+                    // Safety Net: Backup First
+                    triggerAlert("Info", "Creating Backup...");
+                    const backupId = await backupBookingsToFirestore();
+
+                    // Safety Net: CSV Download
                     const snap = await getDocs(collection(db, "bookings"));
+                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    exportBookingsToCSV(currentBookings);
+
+                    if (backupId) {
+                        triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
+                    } else {
+                        triggerAlert("Info", "Backups skipped (Default Empty). Proceeding.");
+                    }
+
+                    // 1. Wipe DB (Clean Slate)
                     const batch = writeBatch(db);
                     snap.docs.forEach(d => batch.delete(d.ref));
                     await batch.commit();
@@ -247,7 +262,7 @@ export function AdminDashboard() {
                     }, { merge: true });
                     setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
                     triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped. Date set to April 13, 2026.");
-                } catch (e) { triggerAlert("Error", "Failed to activate Production."); }
+                } catch (e) { triggerAlert("Error", "Failed to activate Production: " + e.message); }
             }, true, "START PRODUCTION", "start production");
         });
     };
@@ -257,8 +272,20 @@ export function AdminDashboard() {
         requireAuth("ACTIVATE TEST MODE", "WIPE DATABASE and reset to Today @ 10am?", async () => {
             triggerConfirm("CONFIRM WIPE + RESET", "This will DELETE ALL DATA and reset the clock.", async () => {
                 try {
-                    // 1. Wipe DB
+                    // Safety Net: Backup First
+                    triggerAlert("Info", "Creating Backup...");
+                    const backupId = await backupBookingsToFirestore();
+
+                    // Safety Net: CSV Download
                     const snap = await getDocs(collection(db, "bookings"));
+                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    exportBookingsToCSV(currentBookings);
+
+                    if (backupId) {
+                        triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
+                    }
+
+                    // 1. Wipe DB
                     const batch = writeBatch(db);
                     snap.docs.forEach(d => batch.delete(d.ref));
                     await batch.commit();
