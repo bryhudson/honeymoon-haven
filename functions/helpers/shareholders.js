@@ -3,6 +3,14 @@
 // PORTED FROM src/lib/shareholders.js to ensure Logic Parity
 // CommonJS Format for Cloud Functions
 
+function normalizeName(name) {
+    if (!name) return "";
+    return name.toString().toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
 const SHAREHOLDERS_2025 = [
     "Janelle and Mike",
     "Julia, Mandy and Bryan",
@@ -137,7 +145,7 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
         userTurnCounts[shareholderName]++;
 
         const userActions = bookings
-            .filter(b => b.shareholderName === shareholderName)
+            .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
             .sort((a, b) => a.createdAt - b.createdAt);
 
         const action = userActions[bookingIndex];
@@ -188,11 +196,98 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
     };
 }
 
+function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null, bypassTenAM = false) {
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
+    const PICK_DURATION_MS = getPickDurationMS();
+
+    const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];
+    const schedule = [];
+
+    const userTurnCounts = {};
+    shareholders.forEach(s => userTurnCounts[s] = 0);
+
+    const startAnchor = (time) => getOfficialStart(time);
+
+    let currentWindowStart = startAnchor(DRAFT_START);
+    let hasFoundActive = false;
+    let lastCompletionTime = null;
+
+    for (let i = 0; i < fullTurnOrder.length; i++) {
+        const name = fullTurnOrder[i];
+        const turnIndex = userTurnCounts[name];
+        userTurnCounts[name]++;
+        let returnStart = null;
+
+        const userActions = bookings
+            .filter(b => normalizeName(b.shareholderName) === normalizeName(name))
+            .sort((a, b) => a.createdAt - b.createdAt);
+
+        const action = userActions[turnIndex];
+        const isCompleted = action && (action.type === 'pass' || action.type === 'cancelled' || action.isFinalized !== false);
+
+        const windowStart = new Date(currentWindowStart);
+        let windowEnd;
+
+        let status = 'FUTURE';
+
+        if (isCompleted) {
+            if (action.type === 'cancelled') {
+                status = 'CANCELLED';
+            } else {
+                status = action.type === 'pass' ? 'PASSED' : 'COMPLETED';
+            }
+            let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
+            if (!actionTime) actionTime = windowStart;
+            const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
+            windowEnd = pTime instanceof Date && !isNaN(pTime) ? pTime : new Date();
+            lastCompletionTime = windowEnd;
+            currentWindowStart = startAnchor(windowEnd);
+        } else {
+            const now = new Date();
+            const projectedLimit = new Date(windowStart.getTime() + PICK_DURATION_MS);
+            const realStart = lastCompletionTime || windowStart;
+
+            if (now > projectedLimit && windowStart < now) {
+                status = 'SKIPPED';
+                windowEnd = projectedLimit;
+                lastCompletionTime = projectedLimit;
+                currentWindowStart = startAnchor(projectedLimit);
+            } else if (!hasFoundActive) {
+                hasFoundActive = true;
+                const isFirst = (i === 0);
+                status = (isFirst || now >= windowStart) ? 'ACTIVE' : 'GRACE_PERIOD';
+                returnStart = realStart;
+                windowEnd = projectedLimit;
+                currentWindowStart = startAnchor(projectedLimit);
+            } else {
+                status = 'FUTURE';
+                windowEnd = projectedLimit;
+                currentWindowStart = startAnchor(projectedLimit);
+            }
+        }
+
+        schedule.push({
+            name,
+            round: i < shareholders.length ? 1 : 2,
+            start: returnStart || windowStart,
+            end: windowEnd,
+            officialStart: windowStart,
+            status,
+            isCompleted,
+            booking: action || null
+        });
+    }
+
+    return schedule;
+}
+
 module.exports = {
     SHAREHOLDERS_2025,
     getShareholderOrder,
     DRAFT_CONFIG,
     getOfficialStart,
     getPickDurationMS,
-    calculateDraftSchedule
+    calculateDraftSchedule,
+    mapOrderToSchedule,
+    normalizeName
 };

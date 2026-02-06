@@ -11,7 +11,7 @@ if (admin.apps.length === 0) {
     admin.initializeApp();
 }
 const db = admin.firestore();
-const { calculateDraftSchedule, getShareholderOrder } = require("../helpers/shareholders");
+const { calculateDraftSchedule, getShareholderOrder, normalizeName } = require("../helpers/shareholders");
 
 // --- Constants ---
 const SEASON_CONFIG = {
@@ -269,9 +269,11 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
             logger.info(`Next Picker Identified: ${nextPickerName}`);
 
             // 3. Get Next Shareholder Email
-            const nextUserQuery = await db.collection("shareholders").where("name", "==", nextPickerName).limit(1).get();
-            if (!nextUserQuery.empty) {
-                const nextUser = nextUserQuery.docs[0].data();
+            const nextUserQuery = await db.collection("shareholders").get();
+            const nextUserDoc = nextUserQuery.docs.find(d => normalizeName(d.data().name) === normalizeName(nextPickerName));
+
+            if (nextUserDoc) {
+                const nextUser = nextUserDoc.data();
                 const nextEmail = nextUser.email;
 
                 // 4. Send Email
@@ -361,8 +363,9 @@ async function getUserProfile(uid, shareholderName) {
 
     // Fallback: Lookup by Shareholder Name
     if (shareholderName) {
-        const query = await db.collection("shareholders").where("name", "==", shareholderName).limit(1).get();
-        if (!query.empty) return query.docs[0].data();
+        const query = await db.collection("shareholders").get();
+        const doc = query.docs.find(d => normalizeName(d.data().name) === normalizeName(shareholderName));
+        if (doc) return doc.data();
     }
 
     return { displayName: shareholderName || "Shareholder", email: "bryan.m.hudson@gmail.com" };

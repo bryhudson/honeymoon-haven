@@ -106,7 +106,8 @@ export function Dashboard() {
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
         if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
         // Use dynamic list
-        const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
+        const userEmail = currentUser.email.toLowerCase();
+        const owner = shareholders.find(o => o.email && o.email.toLowerCase().includes(userEmail));
         return owner ? owner.name : null;
     }, [currentUser, shareholders, masqueradeAs]);
 
@@ -114,7 +115,7 @@ export function Dashboard() {
     useEffect(() => {
         if (loggedInShareholder && shareholders.length > 0 && !masqueradeAs) {
             // Find the robust shareholder object (with ID)
-            const myRecord = shareholders.find(s => s.name === loggedInShareholder);
+            const myRecord = shareholders.find(s => normalizeName(s.name) === normalizeName(loggedInShareholder));
             if (myRecord) {
                 setCurrentShareholderDoc(myRecord);
                 // Show welcome modal on every login UNLESS user has permanently dismissed it
@@ -154,7 +155,7 @@ export function Dashboard() {
     // Determine if we should defer the tour
     const isWelcomePending = React.useMemo(() => {
         if (!loggedInShareholder || shareholders.length === 0) return false;
-        const myRecord = shareholders.find(s => s.name === loggedInShareholder);
+        const myRecord = shareholders.find(s => normalizeName(s.name) === normalizeName(loggedInShareholder));
         return myRecord && !myRecord.seenWelcome;
     }, [loggedInShareholder, shareholders]);
 
@@ -191,7 +192,7 @@ export function Dashboard() {
     // UI Layout State
     const [activeTab, setActiveTab] = useState('schedule'); // bookings, schedule, guide
 
-    // SYSTEM SAFETY: Build v2.76.00
+    // SYSTEM SAFETY: Build v2.77.00
     // Force Regular Users to Production Mode always
     useEffect(() => {
         if (!loading && currentUser && !isSuperAdmin) {
@@ -426,7 +427,7 @@ export function Dashboard() {
             `Lock in ${format(start, 'MMM d')} - ${format(end, 'MMM d')}?\n\nThis will officially finish your turn and notify the next shareholder.`,
             async () => {
                 try {
-                    const owner = shareholders.find(o => o.name === status.activePicker);
+                    const owner = shareholders.find(o => normalizeName(o.name) === normalizeName(status.activePicker));
                     await addDoc(collection(db, "bookings"), {
                         shareholderName: status.activePicker,
                         cabinNumber: owner ? owner.cabin : "?",

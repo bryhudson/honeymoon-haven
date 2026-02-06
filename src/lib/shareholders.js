@@ -1,4 +1,12 @@
 
+export function normalizeName(name) {
+    if (!name) return "";
+    return name.toString().toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
 export const SHAREHOLDERS_2025 = [
     "Janelle and Mike",
     "Julia, Mandy and Bryan",
@@ -205,7 +213,7 @@ export function calculateDraftSchedule(shareholders, bookings = [], now = new Da
 
         // Find if they have a booking/pass for this slot
         const userActions = bookings
-            .filter(b => b.shareholderName === shareholderName) // Allow cancelled to be seen
+            .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName)) // Allow cancelled to be seen
             .sort((a, b) => a.createdAt - b.createdAt);
 
         const action = userActions[bookingIndex];
@@ -301,7 +309,7 @@ export function mapOrderToSchedule(shareholders, bookings = [], startDateOverrid
 
         // Find match
         const userActions = bookings
-            .filter(b => b.shareholderName === name) // Allow cancelled
+            .filter(b => normalizeName(b.shareholderName) === normalizeName(name)) // Allow cancelled
             .sort((a, b) => a.createdAt - b.createdAt);
 
         const action = userActions[turnIndex];

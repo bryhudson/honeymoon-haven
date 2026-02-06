@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail } from 'lucide-react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
+import { normalizeName } from '../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -33,7 +34,7 @@ export function ShareholderHero({
     React.useEffect(() => {
         // Find the most recent finalized, paid, but uncelebrated booking
         const paidBooking = bookings?.find(b =>
-            b.shareholderName === shareholderName &&
+            normalizeName(b.shareholderName) === normalizeName(shareholderName) &&
             b.isFinalized &&
             b.isPaid &&
             !b.celebrated &&
@@ -76,7 +77,8 @@ export function ShareholderHero({
     };
 
     // --- QUEUE CALCULATION ---
-    const isAdminPersona = !isReadOnly && (shareholderName === 'HHR Admin' || shareholderName === 'Bryan');
+    const normalizedMe = normalizeName(shareholderName);
+    const isAdminPersona = !isReadOnly && (normalizedMe === 'hhr admin' || normalizedMe === 'bryan');
 
     const queueInfo = React.useMemo(() => {
         if (!currentOrder || !status || !shareholderName) return null;
@@ -89,16 +91,16 @@ export function ShareholderHero({
         } else if (status.activePicker) {
             const round1Len = currentOrder.length;
             if (status.phase === 'ROUND_1') {
-                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i < round1Len);
+                activeIndex = fullTurnOrder.findIndex((n, i) => normalizeName(n) === normalizeName(status.activePicker) && i < round1Len);
             } else {
-                activeIndex = fullTurnOrder.findIndex((n, i) => n === status.activePicker && i >= round1Len);
-                if (activeIndex === -1) activeIndex = fullTurnOrder.findIndex(n => n === status.activePicker);
+                activeIndex = fullTurnOrder.findIndex((n, i) => normalizeName(n) === normalizeName(status.activePicker) && i >= round1Len);
+                if (activeIndex === -1) activeIndex = fullTurnOrder.findIndex(n => normalizeName(n) === normalizeName(status.activePicker));
             }
         }
 
         let myNextIndex = -1;
         for (let i = 0; i < fullTurnOrder.length; i++) {
-            if (fullTurnOrder[i] === shareholderName && i > activeIndex) {
+            if (normalizeName(fullTurnOrder[i]) === normalizedMe && i > activeIndex) {
                 myNextIndex = i;
                 break;
             }
@@ -220,13 +222,13 @@ export function ShareholderHero({
     const phaseLabel = getPhaseLabel(status.phase);
 
     // 3. User State Logic
-    const isYourTurn = status.activePicker === shareholderName;
+    const isYourTurn = normalizeName(status.activePicker) === normalizedMe;
 
     // Determine completed status
     let roundTarget = 1;
     if (status.phase === 'ROUND_2') roundTarget = 2;
     const myActions = bookings.filter(b =>
-        b.shareholderName === shareholderName &&
+        normalizeName(b.shareholderName) === normalizedMe &&
         (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
     ).sort((a, b) => a.createdAt - b.createdAt);
     const isDoneForRound = myActions.length >= roundTarget;
@@ -234,13 +236,13 @@ export function ShareholderHero({
 
     // Get the absolute most recent action (including cancellations and skips) for generic state detection
     const latestAction = bookings
-        .filter(b => b.shareholderName === shareholderName && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
+        .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
 
     // Helper: Render Round Status Badges
     const renderBadges = () => {
-        const cancelledActions = bookings.filter(b => b.shareholderName === shareholderName && (b.type === 'cancelled' || b.status === 'cancelled')).sort((a, b) => a.createdAt - b.createdAt);
+        const cancelledActions = bookings.filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.type === 'cancelled' || b.status === 'cancelled')).sort((a, b) => a.createdAt - b.createdAt);
 
         return (
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
@@ -257,8 +259,8 @@ export function ShareholderHero({
                         if (['ROUND_2', 'OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
                             isR1SkippedImplicitly = true;
                         } else if (status.phase === 'ROUND_1') {
-                            const myIndex = currentOrder.indexOf(shareholderName);
-                            const activeIndex = currentOrder.indexOf(status.activePicker);
+                            const myIndex = currentOrder.findIndex(n => normalizeName(n) === normalizedMe);
+                            const activeIndex = currentOrder.findIndex(n => normalizeName(n) === normalizeName(status.activePicker));
                             if (myIndex !== -1 && activeIndex !== -1 && myIndex < activeIndex) {
                                 isR1SkippedImplicitly = true;
                             }
@@ -326,8 +328,8 @@ export function ShareholderHero({
                         } else if (status.phase === 'ROUND_2') {
                             // Round 2 is reversed order
                             const r2Order = [...currentOrder].reverse();
-                            const myIndex = r2Order.indexOf(shareholderName);
-                            const activeIndex = r2Order.indexOf(status.activePicker);
+                            const myIndex = r2Order.findIndex(n => normalizeName(n) === normalizedMe);
+                            const activeIndex = r2Order.findIndex(n => normalizeName(n) === normalizeName(status.activePicker));
                             if (myIndex !== -1 && activeIndex !== -1 && myIndex < activeIndex) {
                                 isR2SkippedImplicitly = true;
                             }
@@ -643,7 +645,7 @@ export function ShareholderHero({
 
     // --- CASE E: Waiting (Queue) ---
     const upcomingBooking = bookings
-        .filter(b => b.shareholderName === shareholderName && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
+        .filter(b => normalizeName(b.shareholderName) === normalizedMe && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     const isUpNext = queueInfo?.diff === 1;
