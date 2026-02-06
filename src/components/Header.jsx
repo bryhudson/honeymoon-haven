@@ -6,6 +6,7 @@ import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { db } from '../lib/firebase';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { FeedbackModal } from './FeedbackModal';
+import { formatNameForDisplay } from '../lib/shareholders';
 
 export function Header() {
     const { currentUser, logout } = useAuth();
@@ -38,7 +39,7 @@ export function Header() {
         if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
         if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
         const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
-        return owner ? owner.name : null;
+        return owner ? formatNameForDisplay(owner.name) : null;
     }, [currentUser, shareholders]);
 
     // Hardcoded Admin Check (for now)

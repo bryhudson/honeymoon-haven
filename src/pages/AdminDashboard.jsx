@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import { version } from '../../package.json'; // Removed to use global __APP_VERSION__
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule, calculateDraftSchedule } from '../lib/shareholders';
+import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule, calculateDraftSchedule, normalizeName, formatNameForDisplay } from '../lib/shareholders';
 import { emailService } from '../services/emailService';
 import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -1009,15 +1009,16 @@ export function AdminDashboard() {
 
     const handleSendPaymentReminder = async (booking) => {
         triggerConfirm(
-            "Send Maintenance Fee Reminder?",
-            `Send an email reminder to ${booking.shareholderName} (Cabin #${booking.cabinNumber}) for $${booking.totalPrice}?`,
+            "Confirm Reminder",
+            `Send an email reminder to ${formatNameForDisplay(booking.shareholderName)} (Cabin #${booking.cabinNumber}) for $${booking.totalPrice}?`,
             async () => {
                 try {
-                    const owner = shareholders.find(o => o.name === booking.shareholderName);
+                    const owner = shareholders.find(o => normalizeName(o.name) === normalizeName(booking.shareholderName));
                     const emailTo = "bryan.m.hudson@gmail.com"; // OVERRIDE for safety/demo
 
                     await emailService.sendEmail({
-                        to: { name: booking.shareholderName, email: emailTo },
+                        to: { name: formatNameForDisplay(booking.shareholderName), email: emailTo },
+                        subject: `Payment Reminder: Honeymoon Haven Trailer Booking`,
                         templateId: 'paymentReminder',
                         params: {
                             name: booking.shareholderName,
@@ -1065,8 +1066,8 @@ export function AdminDashboard() {
 
     const handleCancelBooking = (booking) => {
         triggerConfirm(
-            "Cancel Booking?",
-            `Are you sure you want to CANCEL the booking for ${booking.shareholderName}? This will free up the dates but keep a record.`,
+            "Confirm Cancellation",
+            `Are you sure you want to CANCEL the booking for ${formatNameForDisplay(booking.shareholderName)}? This will free up the dates but keep a record.`,
             async () => {
                 try {
                     // 1. Update Database (Priority)
@@ -1080,7 +1081,7 @@ export function AdminDashboard() {
 
                     // 2. Send "Booking Cancelled" Email (Non-Blocking)
                     try {
-                        const owner = shareholders.find(o => o.name === booking.shareholderName);
+                        const owner = shareholders.find(o => normalizeName(o.name) === normalizeName(booking.shareholderName));
                         const emailTo = {
                             name: booking.shareholderName,
                             email: owner?.email || "bryan.m.hudson@gmail.com"
@@ -1559,6 +1560,7 @@ export function AdminDashboard() {
                         doc={doc}
                         setDoc={setDoc}
                         format={format}
+                        shareholders={shareholders}
                     />
                 )}
 
@@ -1873,7 +1875,7 @@ export function AdminDashboard() {
                                                                 <td className="px-6 py-5">
                                                                     <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
                                                                     <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">
-                                                                        Cabin #{CABIN_OWNERS.find(o => o.name === slot.name)?.cabin || "?"}
+                                                                        Cabin #{CABIN_OWNERS.find(o => normalizeName(o.name) === normalizeName(slot.name))?.cabin || "?"}
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-6 py-5 text-slate-400">—</td>
@@ -1906,9 +1908,9 @@ export function AdminDashboard() {
                                                     return (
                                                         <tr key={booking.id} className="hover:bg-muted/10 transition-colors bg-white">
                                                             <td className="px-6 py-5">
-                                                                <div className="font-semibold text-slate-900 text-base">{booking.shareholderName}</div>
+                                                                <div className="font-semibold text-slate-900 text-base">{formatNameForDisplay(booking.shareholderName)}</div>
                                                                 <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                                                                    Cabin #{booking.cabinNumber || CABIN_OWNERS.find(o => o.name === booking.shareholderName)?.cabin || "?"}
+                                                                    Cabin #{booking.cabinNumber || CABIN_OWNERS.find(o => normalizeName(o.name) === normalizeName(booking.shareholderName))?.cabin || "?"}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-5">
@@ -2050,7 +2052,7 @@ export function AdminDashboard() {
                                     <div key={person.id} className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h3 className="font-bold text-slate-900 text-lg">{person.name}</h3>
+                                                <h3 className="font-bold text-slate-900 text-lg">{formatNameForDisplay(person.name)}</h3>
                                                 <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mt-1 inline-block">
                                                     Cabin #{person.cabin}
                                                 </span>
@@ -2102,7 +2104,7 @@ export function AdminDashboard() {
                                                 shareholders.map((person) => (
                                                     <tr key={person.id} className="hover:bg-slate-50/50 transition-colors">
                                                         <td className="px-6 py-3 font-mono text-slate-400">#{person.cabin}</td>
-                                                        <td className="px-6 py-3 font-semibold text-slate-900">{person.name}</td>
+                                                        <td className="px-6 py-3 font-semibold text-slate-900">{formatNameForDisplay(person.name)}</td>
                                                         <td className="px-6 py-3">
                                                             {editingShareholder?.id === person.id ? (
                                                                 <div className="flex gap-2">

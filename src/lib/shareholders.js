@@ -1,7 +1,29 @@
 
+const NAME_MAP = {
+    "Gerry & Georgina": "Georgina and Jerry",
+    "Georgina & Jerry": "Georgina and Jerry",
+    "Gerry and Georgina": "Georgina and Jerry",
+    "David & Gayla": "Gayla and David",
+    "David and Gayla": "Gayla and David",
+    "Gayla & David": "Gayla and David"
+};
+
 export function normalizeName(name) {
     if (!name) return "";
-    return name.toString().toLowerCase()
+    let n = name.toString().trim();
+    if (NAME_MAP[n]) n = NAME_MAP[n];
+    return n.toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+/**
+ * Format a name for display: Convert & to 'and' but preserve casing.
+ */
+export function formatNameForDisplay(name) {
+    if (!name) return "";
+    return name.toString()
         .replace(/&/g, "and")
         .replace(/\s+/g, " ")
         .trim();

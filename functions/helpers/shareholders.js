@@ -3,9 +3,28 @@
 // PORTED FROM src/lib/shareholders.js to ensure Logic Parity
 // CommonJS Format for Cloud Functions
 
+const NAME_MAP = {
+    "Gerry & Georgina": "Georgina and Jerry",
+    "Georgina & Jerry": "Georgina and Jerry",
+    "Gerry and Georgina": "Georgina and Jerry",
+    "David & Gayla": "Gayla and David",
+    "David and Gayla": "Gayla and David",
+    "Gayla & David": "Gayla and David"
+};
+
 function normalizeName(name) {
     if (!name) return "";
-    return name.toString().toLowerCase()
+    let n = name.toString().trim();
+    if (NAME_MAP[n]) n = NAME_MAP[n];
+    return n.toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function formatNameForDisplay(name) {
+    if (!name) return "";
+    return name.toString()
         .replace(/&/g, "and")
         .replace(/\s+/g, " ")
         .trim();
@@ -282,12 +301,13 @@ function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = nul
 }
 
 module.exports = {
+    normalizeName,
+    formatNameForDisplay,
     SHAREHOLDERS_2025,
     getShareholderOrder,
-    DRAFT_CONFIG,
     getOfficialStart,
     getPickDurationMS,
     calculateDraftSchedule,
-    mapOrderToSchedule,
-    normalizeName
+    adjustForCourtesy,
+    mapOrderToSchedule
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail } from 'lucide-react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
-import { normalizeName } from '../../lib/shareholders';
+import { normalizeName, formatNameForDisplay } from '../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -395,7 +395,7 @@ export function ShareholderHero({
     const renderHeader = () => (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h1 className="text-xl md:text-2xl font-normal text-white/80">
-                Welcome to the 2026 Season, <span className="text-white font-bold">{shareholderName}</span>
+                Welcome to the 2026 Season, <span className="text-white font-bold">{formatNameForDisplay(shareholderName)}</span>
             </h1>
             <div id="tour-status" className="flex-shrink-0">
                 {renderBadges()}
