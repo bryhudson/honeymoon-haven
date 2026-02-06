@@ -121,35 +121,42 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
                 {!isCancelled && (
                     <div className="space-y-6">
-                        {/* Cost Breakdown */}
-                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Maintenance Fee Breakdown</span>
+                        {/* Cost Breakdown - Compact Accordion */}
+                        <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
+                            <details className="group">
+                                <summary className="flex items-center justify-between p-5 cursor-pointer list-none hover:bg-slate-100/50 transition-colors">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total Maintenance Fee</span>
+                                        <span className="text-2xl font-black text-slate-900 leading-tight">${displayedTotal.toLocaleString()}</span>
+                                    </div>
+                                    <div className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 group-open:bg-indigo-100 transition-colors">
+                                        <span className="group-open:hidden">See Breakdown</span>
+                                        <span className="hidden group-open:block">Hide Breakdown</span>
+                                    </div>
+                                </summary>
 
-                            <div className="space-y-2 mb-4 border-b border-slate-200 pb-4">
-                                {priceDetails?.breakdown?.weeknights > 0 && (
-                                    <div className="flex justify-between text-sm text-slate-600">
-                                        <span>{priceDetails.breakdown.weeknights} Weeknights x $100</span>
-                                        <span className="font-bold text-slate-900">${priceDetails.breakdown.weeknightTotal}</span>
-                                    </div>
-                                )}
-                                {priceDetails?.breakdown?.weekends > 0 && (
-                                    <div className="flex justify-between text-sm text-slate-600">
-                                        <span>{priceDetails.breakdown.weekends} Weekends x $125</span>
-                                        <span className="font-bold text-slate-900">${priceDetails.breakdown.weekendTotal}</span>
-                                    </div>
-                                )}
-                                {priceDetails?.breakdown?.discount > 0 && (
-                                    <div className="flex justify-between text-sm text-emerald-600 font-bold">
-                                        <span>Weekly Discount</span>
-                                        <span>-${priceDetails.breakdown.discount}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm font-black text-slate-400 uppercase tracking-widest">Total</span>
-                                <span className="text-2xl font-black text-slate-900">${displayedTotal.toLocaleString()}</span>
-                            </div>
+                                <div className="px-5 pb-5 pt-0 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                                    <div className="h-px bg-slate-200 my-2"></div>
+                                    {priceDetails?.breakdown?.weeknights > 0 && (
+                                        <div className="flex justify-between text-sm text-slate-600">
+                                            <span>{priceDetails.breakdown.weeknights} Weeknights x $100</span>
+                                            <span className="font-bold text-slate-900">${priceDetails.breakdown.weeknightTotal}</span>
+                                        </div>
+                                    )}
+                                    {priceDetails?.breakdown?.weekends > 0 && (
+                                        <div className="flex justify-between text-sm text-slate-600">
+                                            <span>{priceDetails.breakdown.weekends} Weekends x $125</span>
+                                            <span className="font-bold text-slate-900">${priceDetails.breakdown.weekendTotal}</span>
+                                        </div>
+                                    )}
+                                    {priceDetails?.breakdown?.discount > 0 && (
+                                        <div className="flex justify-between text-sm text-emerald-600 font-bold">
+                                            <span>Weekly Discount</span>
+                                            <span>-${priceDetails.breakdown.discount}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </details>
                         </div>
 
                         {/* Status Label */}
