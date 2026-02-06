@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight, Info } from 'lucide-react';
-import { collection, onSnapshot, getDocs, getDoc, Timestamp, writeBatch, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, getDocs, getDoc, Timestamp, writeBatch, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { calculateDraftSchedule, getShareholderOrder } from '../../../lib/shareholders';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { useAuth } from '../../auth/AuthContext';
+import { getAvailableBackups, restoreBackup } from '../services/backupService';
+import { db } from '../../../lib/firebase';
 
 export function SystemTab({
     isTestMode,
