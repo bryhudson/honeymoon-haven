@@ -390,6 +390,7 @@ export function AdminDashboard() {
                     isSystemFrozen={isSystemFrozen}
                     toggleSystemFreeze={handleToggleFreeze}
                     IS_SITE_OWNER={IS_SITE_OWNER}
+                    triggerAlert={triggerAlert}
                 />
             )}
 

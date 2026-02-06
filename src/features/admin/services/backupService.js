@@ -40,6 +40,16 @@ export const backupBookingsToFirestore = async () => {
 
         if (count > 0) chunks.push(batch);
 
+        // Save Metadata Doc so we can list backups easily
+        const metaBatch = writeBatch(db);
+        metaBatch.set(doc(db, '_backups', timestampId), {
+            createdAt: serverTimestamp(),
+            timestampId,
+            count: snapshot.size,
+            type: 'manual_wipe_safety'
+        });
+        chunks.push(metaBatch);
+
         await Promise.all(chunks.map(b => b.commit()));
         console.log(`Backup completed: ${timestampId} (${snapshot.size} records)`);
         return timestampId;
@@ -47,6 +57,68 @@ export const backupBookingsToFirestore = async () => {
     } catch (error) {
         console.error("Backup failed:", error);
         throw new Error("Backup failed: " + error.message);
+    }
+};
+
+/**
+ * Returns a list of available backups ordered by date (newest first).
+ */
+export const getAvailableBackups = async () => {
+    try {
+        const snap = await getDocs(collection(db, '_backups'));
+        return snap.docs
+            .map(d => d.data())
+            .sort((a, b) => (b.timestampId > a.timestampId ? 1 : -1)); // String sort works for ISO-like timestamps
+    } catch (e) {
+        console.error("Failed to list backups:", e);
+        return [];
+    }
+};
+
+/**
+ * Restores a specific backup, OVERWRITING current bookings.
+ * @param {string} timestampId 
+ */
+export const restoreBackup = async (timestampId) => {
+    try {
+        const backupPath = `_backups/${timestampId}/bookings`;
+        const backupSnap = await getDocs(collection(db, backupPath));
+
+        if (backupSnap.empty) throw new Error("Backup is empty or not found.");
+
+        // 1. Wipe current bookings
+        const currentSnap = await getDocs(collection(db, 'bookings'));
+        const batch1 = writeBatch(db);
+        currentSnap.docs.forEach(d => batch1.delete(d.ref));
+        await batch1.commit();
+
+        // 2. Restore from backup
+        const chunks = [];
+        let batch2 = writeBatch(db);
+        let count = 0;
+
+        backupSnap.docs.forEach(d => {
+            const data = d.data();
+            // Remove backup metadata if any
+            delete data._backupAt;
+
+            const ref = doc(db, 'bookings', d.id);
+            batch2.set(ref, data);
+
+            count++;
+            if (count >= 490) {
+                chunks.push(batch2);
+                batch2 = writeBatch(db);
+                count = 0;
+            }
+        });
+
+        if (count > 0) chunks.push(batch2);
+        await Promise.all(chunks.map(b => b.commit()));
+
+        return backupSnap.size;
+    } catch (e) {
+        throw new Error("Restore failed: " + e.message);
     }
 };
 

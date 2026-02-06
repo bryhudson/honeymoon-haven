@@ -11,7 +11,8 @@ export function SystemTab({
     toggleSystemFreeze,
     handleActivateProductionMode,
     handleActivateTestMode,
-    IS_SITE_OWNER
+    IS_SITE_OWNER,
+    triggerAlert
 }) {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -105,7 +106,80 @@ export function SystemTab({
                         </button>
                     </div>
                 </div>
+
+                {/* 3. Data Recovery Zone (New) */}
+                <RecoveryZone
+                    restoreBackup={restoreBackup}
+                    getAvailableBackups={getAvailableBackups}
+                    triggerAlert={triggerAlert || console.log}
+                />
             </div>
+        </div>
+    );
+}
+
+function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
+    const [backups, setBackups] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const loadBackups = async () => {
+        setIsLoading(true);
+        const data = await getAvailableBackups();
+        setBackups(data);
+        setIsLoading(false);
+    };
+
+    const handleRestore = async (id, count) => {
+        if (!confirm(`Restore backup from ${id}? This will OVERWRITE all current data.`)) return;
+        try {
+            await restoreBackup(id);
+            triggerAlert("Success", `Restored ${count} bookings from ${id}.`);
+        } catch (e) {
+            triggerAlert("Error", "Restore failed: " + e.message);
+        }
+    };
+
+    // Load available backups on mount
+    useEffect(() => { loadBackups(); }, []);
+
+    return (
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Data Recovery Zone</h3>
+                    <p className="text-sm text-slate-500">Restore points created automatically before wipes.</p>
+                </div>
+                <button onClick={loadBackups} className="text-indigo-600 text-xs font-bold hover:underline">
+                    ↻ Refresh List
+                </button>
+            </div>
+
+            {isLoading ? (
+                <p className="text-xs text-slate-400 italic">Loading available backups...</p>
+            ) : backups.length === 0 ? (
+                <div className="p-4 bg-slate-50 rounded-lg text-center border border-dashed border-slate-200">
+                    <p className="text-xs text-slate-400">No backup snapshots found.</p>
+                </div>
+            ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    {backups.map((b) => (
+                        <div key={b.timestampId} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg hover:border-slate-300 transition-colors">
+                            <div>
+                                <p className="font-mono text-xs font-bold text-slate-700">{b.timestampId}</p>
+                                <p className="text-[10px] text-slate-500">
+                                    {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : 'Manual'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => handleRestore(b.timestampId, b.count)}
+                                className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all"
+                            >
+                                Restore
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
