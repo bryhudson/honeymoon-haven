@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TestTube, Clock, Zap, Settings, Bell, Info } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../features/auth/AuthContext';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { LiveTurnMonitor } from './LiveTurnMonitor';
 import { EmailHistoryTab } from './EmailHistoryTab';

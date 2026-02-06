@@ -8,7 +8,7 @@ import { addHours } from 'date-fns';
 import { db, functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../features/auth/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { WelcomeModal } from '../components/WelcomeModal';

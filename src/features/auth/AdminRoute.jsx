@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './AuthContext';
 
 export function AdminRoute({ children }) {
     const { currentUser } = useAuth();
@@ -26,7 +26,7 @@ export function AdminRoute({ children }) {
                 // Import db here to avoid circular dep issues if any, or just use context? 
                 // We need to import db from lib/firebase
                 const { doc, getDoc } = await import('firebase/firestore');
-                const { db } = await import('../lib/firebase');
+                const { db } = await import('../../lib/firebase');
 
                 const docRef = doc(db, 'shareholders', currentUser.email);
                 const snapshot = await getDoc(docRef);

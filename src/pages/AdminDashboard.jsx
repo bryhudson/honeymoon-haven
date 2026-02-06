@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import { version } from '../../package.json'; // Removed to use global __APP_VERSION__
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../features/auth/AuthContext';
 import { CABIN_OWNERS, DRAFT_CONFIG, getShareholderOrder, mapOrderToSchedule, calculateDraftSchedule, normalizeName, formatNameForDisplay } from '../lib/shareholders';
 import { emailService } from '../services/emailService';
 import { db, functions } from '../lib/firebase';

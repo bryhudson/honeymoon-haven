@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Bug, Lightbulb, Send, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { emailService } from '../services/emailService';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../features/auth/AuthContext';
 import { ConfirmationModal } from './ConfirmationModal';
 
 export function FeedbackModal({ isOpen, onClose, shareholderName }) {

@@ -3,7 +3,7 @@ import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDow
 import { collection, onSnapshot, getDocs, getDoc, Timestamp, writeBatch, updateDoc, deleteDoc } from 'firebase/firestore';
 import { calculateDraftSchedule, getShareholderOrder } from '../../lib/shareholders';
 import { ConfirmationModal } from '../ConfirmationModal';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../features/auth/AuthContext';
 
 export function SystemTab({
     simStartDate,

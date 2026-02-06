@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { format, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay, addMonths, startOfDay, isWithinInterval } from 'date-fns';
 import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../features/auth/AuthContext';
 import { functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { PromptModal } from './PromptModal';

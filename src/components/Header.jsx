@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Caravan, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../features/auth/AuthContext';
 import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { db } from '../lib/firebase';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
