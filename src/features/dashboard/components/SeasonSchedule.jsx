@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap } from 'lucide-react';
+import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign } from 'lucide-react';
 import { format, differenceInHours, addDays, isPast } from 'date-fns';
 import { DRAFT_CONFIG, getOfficialStart } from '../../../lib/shareholders';
 
