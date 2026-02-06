@@ -1,11 +1,24 @@
 
 const NAME_MAP = {
     "Gerry & Georgina": "Georgina and Jerry",
-    "Georgina & Jerry": "Georgina and Jerry",
     "Gerry and Georgina": "Georgina and Jerry",
+    "Mike & Janelle": "Janelle and Mike",
+    "Mike and Janelle": "Janelle and Mike",
+    "Brian & Monique": "Monique and Brian",
+    "Brian and Monique": "Monique and Brian",
+    "Brian & Sam": "Sam and Brian",
+    "Brian and Sam": "Sam and Brian",
+    "Ernest & Sandy": "Sandy and Ernest",
+    "Ernest and Sandy": "Sandy and Ernest",
+    "Jeff & Lori": "Lori and Jeff",
+    "Jeff and Lori": "Lori and Jeff",
     "David & Gayla": "Gayla and David",
     "David and Gayla": "Gayla and David",
-    "Gayla & David": "Gayla and David"
+    "Saurabh & Jessica": "Jessica and Saurabh",
+    "Saurabh and Jessica": "Jessica and Saurabh",
+    "Dom & Melanie": "Melanie and Dom",
+    "Dom and Melanie": "Melanie and Dom",
+    "Julia, Mandy & Bryan": "Julia, Mandy and Bryan"
 };
 
 export function normalizeName(name) {
@@ -23,10 +36,12 @@ export function normalizeName(name) {
  */
 export function formatNameForDisplay(name) {
     if (!name) return "";
-    return name.toString()
+    let n = name.toString()
         .replace(/&/g, "and")
         .replace(/\s+/g, " ")
         .trim();
+    if (NAME_MAP[n]) n = NAME_MAP[n];
+    return n;
 }
 
 export const SHAREHOLDERS_2025 = [

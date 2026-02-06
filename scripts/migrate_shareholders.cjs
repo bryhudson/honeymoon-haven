@@ -20,15 +20,24 @@ const db = admin.firestore();
 
 const NAME_MAP = {
     "Gerry & Georgina": "Georgina and Jerry",
+    "Gerry and Georgina": "Georgina and Jerry",
     "Mike & Janelle": "Janelle and Mike",
+    "Mike and Janelle": "Janelle and Mike",
     "Brian & Monique": "Monique and Brian",
+    "Brian and Monique": "Monique and Brian",
     "Brian & Sam": "Sam and Brian",
+    "Brian and Sam": "Sam and Brian",
     "Ernest & Sandy": "Sandy and Ernest",
+    "Ernest and Sandy": "Sandy and Ernest",
     "Jeff & Lori": "Lori and Jeff",
-    "Julia, Mandy & Bryan": "Julia, Mandy and Bryan",
+    "Jeff and Lori": "Lori and Jeff",
     "David & Gayla": "Gayla and David",
+    "David and Gayla": "Gayla and David",
     "Saurabh & Jessica": "Jessica and Saurabh",
-    "Dom & Melanie": "Melanie and Dom"
+    "Saurabh and Jessica": "Jessica and Saurabh",
+    "Dom & Melanie": "Melanie and Dom",
+    "Dom and Melanie": "Melanie and Dom",
+    "Julia, Mandy & Bryan": "Julia, Mandy and Bryan"
 };
 
 async function migrate() {
