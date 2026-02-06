@@ -458,7 +458,7 @@ export function ShareholderHero({
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
                             {status.isGracePeriod
-                                ? "You finished your previous round early! The clock doesn't officially start until 10:00 AM."
+                                ? "The clock doesn't officially start until 10:00 AM."
                                 : "The calendar is yours! Please select your dates or pass your turn to the next shareholder."}
                         </p>
                     </div>
