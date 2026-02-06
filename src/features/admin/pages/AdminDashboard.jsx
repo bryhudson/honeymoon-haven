@@ -206,7 +206,7 @@ export function AdminDashboard() {
     // Handlers: System Actions
     const handleToggleFreeze = async () => {
         requireAuth("Maintenance Mode", "Toggle system maintenance?", async () => {
-            try { const ref = doc(db, "settings", "general"); const snap = await getDoc(ref); const cur = snap.exists() ? snap.data().isSystemFrozen : false; await setDoc(ref, { isSystemFrozen: !cur }, { merge: true }); triggerAlert("Success", `System ${!cur ? 'FROZEN' : 'ACTIVE'}`); }
+            try { const ref = doc(db, "settings", "general"); const snap = await getDoc(ref); const cur = snap.exists() ? snap.data().isSystemFrozen : false; await setDoc(ref, { isSystemFrozen: !cur }, { merge: true }); triggerAlert("Success", !cur ? "System is in Maintenance Mode" : "System is ACTIVE"); }
             catch (e) { triggerAlert("Error", "Failed."); }
         });
     };
