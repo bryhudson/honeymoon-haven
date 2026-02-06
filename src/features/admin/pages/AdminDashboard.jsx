@@ -226,17 +226,29 @@ export function AdminDashboard() {
     };
 
     const handleActivateProductionMode = async () => {
-        requireAuth("ACTIVATE PRODUCTION", "Switch to LIVE PRODUCTION? Date will be set to April 13, 2026.", async () => {
-            try {
-                const ref = doc(db, "settings", "general");
-                const prodDate = new Date("2026-04-13T10:00:00");
-                await setDoc(ref, {
-                    isTestMode: false,
-                    draftStartDate: Timestamp.fromDate(prodDate)
-                }, { merge: true });
-                setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
-                triggerAlert("Success", "Production Mode ACTIVATED. Date set to April 13, 2026.");
-            } catch (e) { triggerAlert("Error", "Failed to activate Production."); }
+        requireAuth("ACTIVATE PRODUCTION", "Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA. Date will be set to April 13, 2026.", async () => {
+            triggerConfirm("CONFIRM WIPE + START", "This will DELETE ALL DATA and start Production.", async () => {
+                try {
+                    // 1. Wipe DB (Clean Slate)
+                    const snap = await getDocs(collection(db, "bookings"));
+                    const batch = writeBatch(db);
+                    snap.docs.forEach(d => batch.delete(d.ref));
+                    await batch.commit();
+
+                    // 2. Reset Status
+                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+
+                    // 3. Set Production Mode + Date
+                    const ref = doc(db, "settings", "general");
+                    const prodDate = new Date("2026-04-13T10:00:00");
+                    await setDoc(ref, {
+                        isTestMode: false,
+                        draftStartDate: Timestamp.fromDate(prodDate)
+                    }, { merge: true });
+                    setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
+                    triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped. Date set to April 13, 2026.");
+                } catch (e) { triggerAlert("Error", "Failed to activate Production."); }
+            }, true, "START PRODUCTION", "start production");
         });
     };
 

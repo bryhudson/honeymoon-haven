@@ -56,14 +56,13 @@ export function SystemTab({
                             <p className="text-xs text-slate-600 mb-6 leading-relaxed">
                                 - <strong>Start Date:</strong> April 13, 2026<br />
                                 - <strong>Emails:</strong> Sent to REAL SHAREHOLDERS<br />
-                                - <strong>Data:</strong> Persistent (No Wipes)
+                                - <strong>Action:</strong> <span className="text-red-600 font-bold">WIPES DB ON ACTIVATION</span>
                             </p>
                             <button
                                 onClick={handleActivateProductionMode}
-                                disabled={!isTestMode}
-                                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${!isTestMode ? 'bg-green-600 text-white shadow-lg shadow-green-500/30 cursor-default' : 'bg-white text-slate-700 border border-slate-200 hover:border-green-500 hover:text-green-700 shadow-sm'}`}
+                                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${!isTestMode ? 'bg-green-600 text-white shadow-lg shadow-green-500/30 hover:bg-green-700' : 'bg-white text-slate-700 border border-slate-200 hover:border-green-500 hover:text-green-700 shadow-sm'}`}
                             >
-                                {!isTestMode ? "✓ Active" : "Activate Production"}
+                                {!isTestMode ? "↻ Reset & Start Production" : "Activate Production (Wipe DB)"}
                             </button>
                         </div>
 
