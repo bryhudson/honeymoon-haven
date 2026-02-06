@@ -26,6 +26,7 @@ export function BaseModal({
     closeOnBackdrop = true,
     containerClassName = '',
     scrollable = true,
+    footer,
     children
 }) {
     const [shouldRender, setShouldRender] = useState(isOpen);
@@ -67,6 +68,13 @@ export function BaseModal({
                 <div className={`p-6 ${title ? 'pt-4' : ''} ${scrollable ? 'overflow-y-auto' : 'overflow-hidden'}`}>
                     {children}
                 </div>
+
+                {/* Sticky Footer */}
+                {footer && (
+                    <div className="p-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl shrink-0">
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>,
         document.body
