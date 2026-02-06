@@ -3,6 +3,7 @@ const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
+const { normalizeName } = require("../helpers/shareholders");
 
 // Ensure admin is initialized
 if (admin.apps.length === 0) {
