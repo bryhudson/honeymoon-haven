@@ -191,7 +191,7 @@ export function Dashboard() {
     // UI Layout State
     const [activeTab, setActiveTab] = useState('schedule'); // bookings, schedule, guide
 
-    // SYSTEM SAFETY: Build v2.75.00
+    // SYSTEM SAFETY: Build v2.76.00
     // Force Regular Users to Production Mode always
     useEffect(() => {
         if (!loading && currentUser && !isSuperAdmin) {

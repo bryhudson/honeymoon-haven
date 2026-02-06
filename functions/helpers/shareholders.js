@@ -4,35 +4,35 @@
 // CommonJS Format for Cloud Functions
 
 const SHAREHOLDERS_2025 = [
-    "Mike & Janelle",
-    "Julia, Mandy & Bryan",
-    "Brian & Monique",
-    "Brian & Sam",
-    "Jeff & Lori",
-    "David & Gayla",
+    "Janelle and Mike",
+    "Julia, Mandy and Bryan",
+    "Monique and Brian",
+    "Sam and Brian",
+    "Lori and Jeff",
+    "Gayla and David",
     "Barb",
-    "Steve & Kate",
-    "Ernest & Sandy",
-    "Gerry & Georgina",
-    "Saurabh & Jessica",
-    "Dom & Melanie"
+    "Steve and Kate",
+    "Sandy and Ernest",
+    "Georgina and Jerry",
+    "Jessica and Saurabh",
+    "Melanie and Dom"
 ];
 
 function getShareholderOrder(year) {
     if (year === 2026) {
         return [
-            "Julia, Mandy & Bryan",
-            "Brian & Monique",
-            "Brian & Sam",
-            "Jeff & Lori",
-            "David & Gayla",
+            "Julia, Mandy and Bryan",
+            "Monique and Brian",
+            "Sam and Brian",
+            "Lori and Jeff",
+            "Gayla and David",
             "Barb",
-            "Steve & Kate",
-            "Ernest & Sandy",
-            "Gerry & Georgina",
-            "Saurabh & Jessica",
-            "Dom & Melanie",
-            "Mike & Janelle"
+            "Steve and Kate",
+            "Sandy and Ernest",
+            "Georgina and Jerry",
+            "Jessica and Saurabh",
+            "Melanie and Dom",
+            "Janelle and Mike"
         ];
     }
 

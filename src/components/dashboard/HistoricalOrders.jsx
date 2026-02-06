@@ -3,18 +3,18 @@ import { History, Trophy, Info } from 'lucide-react';
 
 export function HistoricalOrders() {
     const ORDER_2025 = [
-        { order: 1, cabin: "2", name: "Mike & Janelle" },
-        { order: 2, cabin: "8", name: "Julia, Mandy & Bryan" },
-        { order: 3, cabin: "3", name: "Brian & Monique" },
-        { order: 4, cabin: "4", name: "Brian & Sam" },
-        { order: 5, cabin: "7", name: "Jeff & Lori" },
-        { order: 6, cabin: "9", name: "David & Gayla" },
+        { order: 1, cabin: "2", name: "Janelle and Mike" },
+        { order: 2, cabin: "8", name: "Julia, Mandy and Bryan" },
+        { order: 3, cabin: "3", name: "Monique and Brian" },
+        { order: 4, cabin: "4", name: "Sam and Brian" },
+        { order: 5, cabin: "7", name: "Lori and Jeff" },
+        { order: 6, cabin: "9", name: "Gayla and David" },
         { order: 7, cabin: "6", name: "Barb" },
-        { order: 8, cabin: "12", name: "Steve & Kate" },
-        { order: 9, cabin: "5", name: "Ernest & Sandy" },
-        { order: 10, cabin: "1", name: "Gerry & Georgina" },
-        { order: 11, cabin: "10", name: "Saurabh & Jessica" },
-        { order: 12, cabin: "11", name: "Dom & Melanie" }
+        { order: 8, cabin: "12", name: "Steve and Kate" },
+        { order: 9, cabin: "5", name: "Sandy and Ernest" },
+        { order: 10, cabin: "1", name: "Georgina and Jerry" },
+        { order: 11, cabin: "10", name: "Jessica and Saurabh" },
+        { order: 12, cabin: "11", name: "Melanie and Dom" }
     ];
 
     return (

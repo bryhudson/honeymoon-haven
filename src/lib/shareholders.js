@@ -1,35 +1,35 @@
 
 export const SHAREHOLDERS_2025 = [
-    "Mike & Janelle",
-    "Julia, Mandy & Bryan",
-    "Brian & Monique",
-    "Brian & Sam",
-    "Jeff & Lori",
-    "David & Gayla",
+    "Janelle and Mike",
+    "Julia, Mandy and Bryan",
+    "Monique and Brian",
+    "Sam and Brian",
+    "Lori and Jeff",
+    "Gayla and David",
     "Barb",
-    "Steve & Kate",
-    "Ernest & Sandy",
-    "Gerry & Georgina",
-    "Saurabh & Jessica",
-    "Dom & Melanie"
+    "Steve and Kate",
+    "Sandy and Ernest",
+    "Georgina and Jerry",
+    "Jessica and Saurabh",
+    "Melanie and Dom"
 ];
 
 export function getShareholderOrder(year) {
     // TESTING OVERRIDE: For 2026, start with Julia, Mandy & Bryan
     if (year === 2026) {
         return [
-            "Julia, Mandy & Bryan",
-            "Brian & Monique",
-            "Brian & Sam",
-            "Jeff & Lori",
-            "David & Gayla",
+            "Julia, Mandy and Bryan",
+            "Monique and Brian",
+            "Sam and Brian",
+            "Lori and Jeff",
+            "Gayla and David",
             "Barb",
-            "Steve & Kate",
-            "Ernest & Sandy",
-            "Gerry & Georgina",
-            "Saurabh & Jessica",
-            "Dom & Melanie",
-            "Mike & Janelle"
+            "Steve and Kate",
+            "Sandy and Ernest",
+            "Georgina and Jerry",
+            "Jessica and Saurabh",
+            "Melanie and Dom",
+            "Janelle and Mike"
         ];
     }
 
@@ -55,18 +55,18 @@ export function getShareholderOrder(year) {
 // DEPRECATED: Use Firestore 'shareholders' collection instead.
 // This constant is now only used as a fallback for initial migration.
 export const CABIN_OWNERS = [
-    { cabin: "1", name: "Gerry & Georgina" },
-    { cabin: "2", name: "Mike & Janelle" },
-    { cabin: "3", name: "Brian & Monique" },
-    { cabin: "4", name: "Brian & Sam" },
-    { cabin: "5", name: "Ernest & Sandy" },
+    { cabin: "1", name: "Georgina and Jerry" },
+    { cabin: "2", name: "Janelle and Mike" },
+    { cabin: "3", name: "Monique and Brian" },
+    { cabin: "4", name: "Sam and Brian" },
+    { cabin: "5", name: "Sandy and Ernest" },
     { cabin: "6", name: "Barb" },
-    { cabin: "7", name: "Jeff & Lori" },
-    { cabin: "8", name: "Julia, Mandy & Bryan" },
-    { cabin: "9", name: "David & Gayla" },
-    { cabin: "10", name: "Saurabh & Jessica" },
-    { cabin: "11", name: "Dom & Melanie" },
-    { cabin: "12", name: "Steve & Kate" }
+    { cabin: "7", name: "Lori and Jeff" },
+    { cabin: "8", name: "Julia, Mandy and Bryan" },
+    { cabin: "9", name: "Gayla and David" },
+    { cabin: "10", name: "Jessica and Saurabh" },
+    { cabin: "11", name: "Melanie and Dom" },
+    { cabin: "12", name: "Steve and Kate" }
 ];
 
 // --- DRAFT CONFIGURATION ---
