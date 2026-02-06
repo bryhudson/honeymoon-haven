@@ -82,10 +82,10 @@ export function SystemTab({
                             </p>
                             <button
                                 onClick={handleActivateTestMode}
-                                disabled={!IS_SITE_OWNER || isTestMode}
-                                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${isTestMode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 cursor-default' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-500 hover:text-amber-700 shadow-sm'}`}
+                                disabled={!IS_SITE_OWNER}
+                                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${isTestMode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-500 hover:text-amber-700 shadow-sm'}`}
                             >
-                                {isTestMode ? "✓ Active" : "Activate & Wipe DB"}
+                                {isTestMode ? "↻ Reset & Wipe Database" : "Activate & Wipe DB"}
                             </button>
                         </div>
                     </div>
