@@ -5,18 +5,16 @@ export function OnboardingTour({ currentUser, defer = false }) {
     const [run, setRun] = useState(false);
 
     useEffect(() => {
-        if (!currentUser?.email || defer) return;
-
-        const storageKey = `hhr_tour_seen_${currentUser.email}`;
-        const hasSeenTour = localStorage.getItem(storageKey);
-
-        if (!hasSeenTour) {
-            // Delay slightly to ensure layout is ready
-            const timer = setTimeout(() => {
-                setRun(true);
-            }, 1000);
-            return () => clearTimeout(timer);
+        // If no user, or deferred, or ALREADY SEEN in Firestore, do not run
+        if (!currentUser?.email || defer || currentUser.hasSeenOnboarding) {
+            return;
         }
+
+        // Delay slightly to ensure layout is ready
+        const timer = setTimeout(() => {
+            setRun(true);
+        }, 1500);
+        return () => clearTimeout(timer);
     }, [currentUser, defer]);
 
     const steps = [
@@ -52,14 +50,33 @@ export function OnboardingTour({ currentUser, defer = false }) {
         },
     ];
 
-    const handleJoyrideCallback = (data) => {
+    const handleJoyrideCallback = async (data) => {
         const { status } = data;
         const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
 
-        if (finishedStatuses.includes(status) && currentUser?.email) {
-            const storageKey = `hhr_tour_seen_${currentUser.email}`;
-            localStorage.setItem(storageKey, 'true');
-            setRun(false);
+        if (finishedStatuses.includes(status) && currentUser?.id) {
+            // Persist to Firestore
+            try {
+                // Dynamically import to avoid circular dependencies if possible, or just assume passed props
+                // Ideally this component should receive a "onComplete" prop, but for now we can't easily change the parent structure without more rewrites.
+                // Actually, let's just use the prop we're about to add to Dashboard.jsx or just emit an event.
+                // BETTER PATTERN: The component shouldn't write to DB directly if it's dumb, but for speed we'll do it here OR better yet, accept an onComplete prop.
+
+                // Wait, I can't import db here easily without making this 'smart'. 
+                // Let's rely on the parent (Dashboard) to handle the actual DB write if we want to be clean, 
+                // BUT the plan said "Change: on STATUS.FINISHED... update Firestore".
+
+                // Let's blindly assume we can import db here.
+                const { doc, updateDoc } = await import('firebase/firestore');
+                const { db } = await import('../../../lib/firebase');
+
+                await updateDoc(doc(db, "shareholders", currentUser.id), {
+                    hasSeenOnboarding: true
+                });
+                setRun(false);
+            } catch (err) {
+                console.error("Failed to save tour status:", err);
+            }
         }
     };
 

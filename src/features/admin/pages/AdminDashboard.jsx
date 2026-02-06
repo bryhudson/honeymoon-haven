@@ -204,6 +204,11 @@ export function AdminDashboard() {
         catch (e) { triggerAlert("Error", "Failed."); }
     };
 
+    const handleResetOnboarding = async (user) => {
+        try { await updateDoc(doc(db, "shareholders", user.id), { hasSeenOnboarding: deleteField() }); triggerAlert("Success", "Tour reset."); }
+        catch (e) { triggerAlert("Error", "Failed."); }
+    };
+
     // Handlers: System Actions
     const handleToggleFreeze = async () => {
         requireAuth("Maintenance Mode", "Toggle system maintenance?", async () => {
@@ -390,6 +395,7 @@ export function AdminDashboard() {
                     handlePasswordChange={handlePasswordChange}
                     handleDeleteUser={handleDeleteUser}
                     handleResetWelcomeBanner={handleResetWelcomeBanner}
+                    handleResetOnboarding={handleResetOnboarding}
                     setIsCreateUserModalOpen={setIsCreateUserModalOpen}
                     IS_SITE_OWNER={IS_SITE_OWNER}
                 />

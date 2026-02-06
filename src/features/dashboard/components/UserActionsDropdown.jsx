@@ -2,7 +2,7 @@ import React from 'react';
 import { Edit, Key, Trash2, Eye, Sparkles } from 'lucide-react';
 import { MenuDropdown } from '../../../components/ui/MenuDropdown';
 
-export function UserActionsDropdown({ user, onEdit, onPassword, onDelete, onResetBanner }) {
+export function UserActionsDropdown({ user, onEdit, onPassword, onDelete, onResetBanner, onResetOnboarding }) {
     const handleViewAs = () => {
         window.location.href = `#/?masquerade=${encodeURIComponent(user.name)}`;
     };
@@ -32,6 +32,13 @@ export function UserActionsDropdown({ user, onEdit, onPassword, onDelete, onRese
             onClick: () => onResetBanner(user),
             hidden: !onResetBanner,
             className: "text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+        },
+        {
+            label: "Reset Onboarding",
+            icon: Sparkles,
+            onClick: () => onResetOnboarding(user),
+            hidden: !onResetOnboarding,
+            className: "text-slate-700 hover:bg-teal-50 hover:text-teal-600"
         },
         {
             label: "Delete User",
