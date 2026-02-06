@@ -26,83 +26,6 @@ export function SystemTab({
     format,
     shareholders = []
 }) {
-    const NAME_MAP = {
-        "Gerry & Georgina": "Georgina and Jerry",
-        "Gerry and Georgina": "Georgina and Jerry",
-        "Mike & Janelle": "Janelle and Mike",
-        "Mike and Janelle": "Janelle and Mike",
-        "Brian & Monique": "Monique and Brian",
-        "Brian and Monique": "Monique and Brian",
-        "Brian & Sam": "Sam and Brian",
-        "Brian and Sam": "Sam and Brian",
-        "Ernest & Sandy": "Sandy and Ernest",
-        "Ernest and Sandy": "Sandy and Ernest",
-        "Jeff & Lori": "Lori and Jeff",
-        "Jeff and Lori": "Lori and Jeff",
-        "David & Gayla": "Gayla and David",
-        "David and Gayla": "Gayla and David",
-        "Saurabh & Jessica": "Jessica and Saurabh",
-        "Saurabh and Jessica": "Jessica and Saurabh",
-        "Dom & Melanie": "Melanie and Dom",
-        "Dom and Melanie": "Melanie and Dom",
-        "Julia, Mandy & Bryan": "Julia, Mandy and Bryan"
-    };
-
-    const handleRunMigration = async () => {
-        requireAuth(
-            "Execute Data Migration",
-            "This will update all shareholder names in Firestore to the new standard format. This is a one-time operation.",
-            async () => {
-                try {
-                    triggerAlert("Migration Started", "Updating shareholders, bookings, and logs. Please wait...");
-
-                    // 1. Shareholders
-                    const shSnap = await getDocs(collection(db, "shareholders"));
-                    const shBatch = writeBatch(db);
-                    let shCount = 0;
-                    shSnap.docs.forEach(d => {
-                        const data = d.data();
-                        if (NAME_MAP[data.name]) {
-                            shBatch.update(d.ref, { name: NAME_MAP[data.name] });
-                            shCount++;
-                        }
-                    });
-                    await shBatch.commit();
-
-                    // 2. Bookings
-                    const bSnap = await getDocs(collection(db, "bookings"));
-                    const bBatch = writeBatch(db);
-                    let bCount = 0;
-                    bSnap.docs.forEach(d => {
-                        const data = d.data();
-                        if (NAME_MAP[data.shareholderName]) {
-                            bBatch.update(d.ref, { shareholderName: NAME_MAP[data.shareholderName] });
-                            bCount++;
-                        }
-                    });
-                    await bBatch.commit();
-
-                    // 3. Draft Status
-                    const statusRef = doc(db, "status", "draftStatus");
-                    const statusDoc = await getDoc(statusRef);
-                    if (statusDoc.exists()) {
-                        const data = statusDoc.data();
-                        const updates = {};
-                        if (NAME_MAP[data.activePicker]) updates.activePicker = NAME_MAP[data.activePicker];
-                        if (NAME_MAP[data.nextPicker]) updates.nextPicker = NAME_MAP[data.nextPicker];
-                        if (Object.keys(updates).length > 0) {
-                            await updateDoc(statusRef, updates);
-                        }
-                    }
-
-                    triggerAlert("Success", `Migration complete! Updated ${shCount} shareholders and ${bCount} bookings.`);
-                } catch (err) {
-                    console.error("Migration failed:", err);
-                    triggerAlert("Error", "Migration failed: " + err.message);
-                }
-            }
-        );
-    };
 
     const { currentUser } = useAuth();
 
@@ -234,30 +157,6 @@ export function SystemTab({
                             </button>
                         </div>
 
-                        {/* Name Normalization Migration */}
-                        <div className="bg-amber-50/50 rounded-xl border border-amber-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <RefreshCw className="w-5 h-5 text-amber-600" />
-                                    <h4 className="font-bold text-amber-900">Normalize Shareholder Names</h4>
-                                </div>
-                                <p className="text-sm text-amber-800/70 leading-relaxed mb-2">
-                                    One-time migration to sync Firestore names with the new "Georgina and Jerry" format.
-                                    Fixes discrepancies in the Users & Roles table.
-                                </p>
-                                <div className="flex items-center gap-2 text-xs font-medium">
-                                    <span className="text-amber-400/80">Production Impact:</span>
-                                    <span className="text-amber-700 bg-amber-100 px-2 py-0.5 rounded">⚡ Moderate - Database Update</span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={handleRunMigration}
-                                className="shrink-0 w-full md:w-48 justify-center px-5 py-2.5 bg-amber-600 text-white rounded-lg font-bold text-sm hover:bg-amber-700 transition-all shadow-sm border border-transparent flex items-center gap-2"
-                            >
-                                <Zap className="w-4 h-4" />
-                                Run Migration
-                            </button>
-                        </div>
                     </div>
 
                 </div>
