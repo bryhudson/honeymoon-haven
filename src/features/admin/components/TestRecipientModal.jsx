@@ -1,3 +1,4 @@
+import React from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { TestTube, Zap, User } from 'lucide-react';
 
@@ -30,13 +31,13 @@ export function TestRecipientModal({
                             <label
                                 key={r.email}
                                 className={`flex items-center gap-4 p-4 rounded-xl border transition-all cursor-pointer group ${testRecipient === r.email
-                                        ? 'bg-white border-indigo-200 shadow-sm ring-1 ring-indigo-100'
-                                        : 'bg-white/50 border-slate-100 hover:border-slate-300'
+                                    ? 'bg-white border-indigo-200 shadow-sm ring-1 ring-indigo-100'
+                                    : 'bg-white/50 border-slate-100 hover:border-slate-300'
                                     }`}
                             >
                                 <div className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all ${testRecipient === r.email
-                                        ? 'border-indigo-600 bg-indigo-600'
-                                        : 'border-slate-300 group-hover:border-slate-400'
+                                    ? 'border-indigo-600 bg-indigo-600'
+                                    : 'border-slate-300 group-hover:border-slate-400'
                                     }`}>
                                     {testRecipient === r.email && <div className="w-2 h-2 bg-white rounded-full" />}
                                     <input

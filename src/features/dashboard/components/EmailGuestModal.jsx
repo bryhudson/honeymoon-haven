@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { Mail, Send, Loader2, CheckCircle2, AlertTriangle, User, ShieldCheck } from 'lucide-react';
 import { emailService } from '../../../services/emailService';

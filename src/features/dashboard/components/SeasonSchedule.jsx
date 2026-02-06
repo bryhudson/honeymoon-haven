@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History } from 'lucide-react';
+import { format, differenceInHours, addDays, isPast } from 'date-fns';
+import { DRAFT_CONFIG, getOfficialStart } from '../../../lib/shareholders';
 
 export function SeasonSchedule({ currentOrder, allBookings, status, startDateOverride, onAction, bypassTenAM = false }) {
     const [view, setView] = useState('current'); // 'current' | 'history'

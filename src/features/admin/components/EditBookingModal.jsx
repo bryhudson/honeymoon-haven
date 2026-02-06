@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
-import { Calendar, Users, Home, Clock, Info, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
+import { Calendar, User, Users, Home, Clock, Info, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
 import { CABIN_OWNERS } from '../../../lib/shareholders';
 import { db } from '../../../lib/firebase';
 
