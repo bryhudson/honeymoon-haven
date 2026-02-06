@@ -1344,6 +1344,25 @@ export function AdminDashboard() {
         );
     };
 
+    const handleResetWelcomeBanner = (user) => {
+        triggerConfirm(
+            "Reset Welcome Banner?",
+            `This will force the "Welcome" confetti banner to appear for ${user.name} next time they log in. Proceed?`,
+            async () => {
+                try {
+                    await updateDoc(doc(db, "shareholders", user.id), {
+                        seenWelcome: false
+                    });
+                    triggerAlert("Success", `Welcome banner reset for ${user.name}.`);
+                } catch (err) {
+                    triggerAlert("Error", "Failed to reset banner.");
+                }
+            },
+            false,
+            "Reset Banner"
+        );
+    };
+
     const handleRoleChange = async (user, newRole) => {
         try {
             await updateDoc(doc(db, "shareholders", user.id), { role: newRole });
@@ -2052,6 +2071,7 @@ export function AdminDashboard() {
                                                 onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
                                                 onPassword={handlePasswordChange}
                                                 onDelete={handleDeleteUser}
+                                                onResetBanner={handleResetWelcomeBanner}
                                             />
                                         </div>
                                     </div>
@@ -2120,10 +2140,10 @@ export function AdminDashboard() {
                                                                 <div className="flex justify-end pr-2">
                                                                     <UserActionsDropdown
                                                                         user={person}
-
                                                                         onEdit={(u) => setEditingShareholder({ id: u.id, email: u.email })}
                                                                         onPassword={handlePasswordChange}
                                                                         onDelete={handleDeleteUser}
+                                                                        onResetBanner={handleResetWelcomeBanner}
                                                                     />
                                                                 </div>
                                                             )}
