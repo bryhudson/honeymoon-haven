@@ -40,12 +40,12 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                 </div>
 
                 {/* Scrollable Content Area */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 relative z-10 space-y-6">
+                <div className="flex-1 overflow-y-auto p-5 md:p-6 relative z-10 space-y-5">
 
                     {/* Header */}
-                    <div className="text-center space-y-4">
-                        <div className="mx-auto w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 mb-2">
-                            <Sparkles className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                    <div className="text-center space-y-2">
+                        <div className="mx-auto w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 mb-2">
+                            <Sparkles className="w-6 h-6 md:w-7 h-7 text-white" />
                         </div>
                         <div>
                             <h2 className="text-2xl md:text-3xl font-black tracking-tight">
@@ -58,7 +58,7 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                     </div>
 
                     {/* Features Grid - Compact */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-5 space-y-4">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 md:p-4 space-y-3">
                         <div className="flex gap-4">
                             <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300 shrink-0 h-fit">
                                 <Zap className="w-5 h-5" />
@@ -98,7 +98,7 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                 </div>
 
                 {/* Sticky Footer */}
-                <div className="p-6 md:p-8 pt-2 md:pt-2 border-t border-white/5 bg-slate-900/50 backdrop-blur-md sticky bottom-0 z-20 shrink-0 space-y-3">
+                <div className="p-4 md:p-6 pt-2 md:pt-2 border-t border-white/5 bg-slate-900/50 backdrop-blur-md sticky bottom-0 z-20 shrink-0 space-y-2">
                     <p className="text-xs text-center text-indigo-300/80 italic">
                         Need a hand? Click the <strong>Feedback</strong> button in the header.
                     </p>
