@@ -16,7 +16,7 @@ import { useBookingRealtime } from '../hooks/useBookingRealtime';
 import { StatusCard } from '../components/dashboard/StatusCard';
 import { RecentBookings } from '../components/dashboard/RecentBookings';
 import { SeasonSchedule } from '../components/dashboard/SeasonSchedule';
-import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS } from '../lib/shareholders';
+import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName } from '../lib/shareholders';
 import { BookingDetailsModal } from '../components/dashboard/BookingDetailsModal';
 import { TrailerGuide } from '../components/dashboard/TrailerGuide';
 import { ShareholderHero } from '../components/dashboard/ShareholderHero';
@@ -192,7 +192,7 @@ export function Dashboard() {
     // UI Layout State
     const [activeTab, setActiveTab] = useState('schedule'); // bookings, schedule, guide
 
-    // SYSTEM SAFETY: Build v2.77.00
+    // SYSTEM SAFETY: Build v2.78.00
     // Force Regular Users to Production Mode always
     useEffect(() => {
         if (!loading && currentUser && !isSuperAdmin) {
