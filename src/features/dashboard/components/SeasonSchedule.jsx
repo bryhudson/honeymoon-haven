@@ -12,14 +12,14 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                 <div className="flex items-center bg-slate-100 p-1 rounded-lg">
                     <button
                         onClick={() => setView('current')}
-                        className={`px - 4 py - 2 rounded - md text - sm font - bold flex items - center gap - 2 transition - all ${view === 'current' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'} `}
+                        className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${view === 'current' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
                         <Calendar className="w-4 h-4" />
                         2026 Season
                     </button>
                     <button
                         onClick={() => setView('history')}
-                        className={`px - 4 py - 2 rounded - md text - sm font - bold flex items - center gap - 2 transition - all ${view === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'} `}
+                        className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${view === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
                         <History className="w-4 h-4" />
                         Archives

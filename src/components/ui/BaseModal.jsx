@@ -33,9 +33,9 @@ export function BaseModal({
     // ... (keep existing effects) ...
 
     return createPortal(
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div
-                className={`fixed inset-0`}
+                className={`fixed inset-0 ${isOpen ? '' : 'pointer-events-none'}`}
                 onClick={closeOnBackdrop ? onClose : undefined}
             />
 
