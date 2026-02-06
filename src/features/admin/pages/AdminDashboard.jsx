@@ -225,13 +225,49 @@ export function AdminDashboard() {
         });
     };
 
-    const handleToggleTestMode = async () => {
-        requireAuth("Toggle Test Mode", `Switch to ${!isTestMode ? 'TEST' : 'PRODUCTION'} mode?`, async () => {
+    const handleActivateProductionMode = async () => {
+        requireAuth("ACTIVATE PRODUCTION", "Switch to LIVE PRODUCTION? Date will be set to April 13, 2026.", async () => {
             try {
                 const ref = doc(db, "settings", "general");
-                await setDoc(ref, { isTestMode: !isTestMode }, { merge: true });
-                triggerAlert("Success", `Switched to ${!isTestMode ? 'TEST' : 'PRODUCTION'} mode.`);
-            } catch (e) { triggerAlert("Error", "Failed to toggle mode."); }
+                const prodDate = new Date("2026-04-13T10:00:00");
+                await setDoc(ref, {
+                    isTestMode: false,
+                    draftStartDate: Timestamp.fromDate(prodDate)
+                }, { merge: true });
+                setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
+                triggerAlert("Success", "Production Mode ACTIVATED. Date set to April 13, 2026.");
+            } catch (e) { triggerAlert("Error", "Failed to activate Production."); }
+        });
+    };
+
+    const handleActivateTestMode = async () => {
+        if (!IS_SITE_OWNER) return;
+        requireAuth("ACTIVATE TEST MODE", "WIPE DATABASE and reset to Today @ 10am?", async () => {
+            triggerConfirm("CONFIRM WIPE + RESET", "This will DELETE ALL DATA and reset the clock.", async () => {
+                try {
+                    // 1. Wipe DB
+                    const snap = await getDocs(collection(db, "bookings"));
+                    const batch = writeBatch(db);
+                    snap.docs.forEach(d => batch.delete(d.ref));
+                    await batch.commit();
+
+                    // 2. Reset Status
+                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+
+                    // 3. Set Test Mode + Today's Date @ 10am
+                    const todayTenAm = new Date();
+                    todayTenAm.setHours(10, 0, 0, 0);
+
+                    const ref = doc(db, "settings", "general");
+                    await setDoc(ref, {
+                        isTestMode: true,
+                        draftStartDate: Timestamp.fromDate(todayTenAm)
+                    }, { merge: true });
+
+                    setSimStartDate(format(todayTenAm, "yyyy-MM-dd'T'HH:mm"));
+                    triggerAlert("Success", "Test Mode ACTIVATED. DB Wiped. Clock Reset.");
+                } catch (e) { triggerAlert("Error", e.message); }
+            }, true, "NUKE & RESET", "wipe database");
         });
     };
 
@@ -308,7 +344,14 @@ export function AdminDashboard() {
             {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={draftStatus || { phase: 'PRE_DRAFT' }} startDateOverride={currentSimDate} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
             {activeTab === 'notifications' && <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />}
             {activeTab === 'system' && (
-                <SystemTab simStartDate={simStartDate} setSimStartDate={setSimStartDate} fastTestingMode={fastTestingMode} setFastTestingMode={setFastTestingMode} isTestMode={isTestMode} toggleTestMode={handleToggleTestMode} isSystemFrozen={isSystemFrozen} toggleSystemFreeze={handleToggleFreeze} handleWipeDatabase={handleWipeDatabase} requireAuth={requireAuth} triggerAlert={triggerAlert} IS_SITE_OWNER={IS_SITE_OWNER} db={db} doc={doc} setDoc={setDoc} format={format} shareholders={shareholders} />
+                <SystemTab
+                    isTestMode={isTestMode}
+                    handleActivateProductionMode={handleActivateProductionMode}
+                    handleActivateTestMode={handleActivateTestMode}
+                    isSystemFrozen={isSystemFrozen}
+                    toggleSystemFreeze={handleToggleFreeze}
+                    IS_SITE_OWNER={IS_SITE_OWNER}
+                />
             )}
 
             <ConfirmationModal isOpen={confirmation.isOpen} onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))} onConfirm={confirmation.onConfirm} title={confirmation.title} message={confirmation.message} isDanger={confirmation.isDanger} confirmText={confirmation.confirmText} showCancel={confirmation.showCancel} requireTyping={confirmation.requireTyping} />
