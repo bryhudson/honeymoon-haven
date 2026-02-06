@@ -227,86 +227,82 @@ export function AdminDashboard() {
     };
 
     const handleActivateProductionMode = async () => {
-        requireAuth("ACTIVATE PRODUCTION", "Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA. Date will be set to April 13, 2026.", async () => {
-            triggerConfirm("CONFIRM WIPE + START", "This will DELETE ALL DATA and start Production.", async () => {
-                try {
-                    // Safety Net: Backup First
-                    triggerAlert("Info", "Creating Backup...");
-                    const backupId = await backupBookingsToFirestore();
+        requireAuth("ACTIVATE PRODUCTION", "⚠️ DANGER: Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA (Bookings, Logs, Status) and set the date to April 13, 2026. This action cannot be undone.", async () => {
+            try {
+                // Safety Net: Backup First
+                triggerAlert("Info", "Creating Backup...");
+                const backupId = await backupBookingsToFirestore();
 
-                    // Safety Net: CSV Download
-                    const snap = await getDocs(collection(db, "bookings"));
-                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    exportBookingsToCSV(currentBookings);
+                // Safety Net: CSV Download
+                const snap = await getDocs(collection(db, "bookings"));
+                const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                exportBookingsToCSV(currentBookings);
 
-                    if (backupId) {
-                        triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
-                    } else {
-                        triggerAlert("Info", "Backups skipped (Default Empty). Proceeding.");
-                    }
+                if (backupId) {
+                    triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
+                } else {
+                    triggerAlert("Info", "Backups skipped (Default Empty). Proceeding.");
+                }
 
-                    // 1. Wipe DB (Clean Slate)
-                    const batch = writeBatch(db);
-                    snap.docs.forEach(d => batch.delete(d.ref));
-                    await batch.commit();
+                // 1. Wipe DB (Clean Slate)
+                const batch = writeBatch(db);
+                snap.docs.forEach(d => batch.delete(d.ref));
+                await batch.commit();
 
-                    // 2. Reset Status
-                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+                // 2. Reset Status
+                await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
 
-                    // 3. Set Production Mode + Date
-                    const ref = doc(db, "settings", "general");
-                    const prodDate = new Date("2026-04-13T10:00:00");
-                    await setDoc(ref, {
-                        isTestMode: false,
-                        draftStartDate: Timestamp.fromDate(prodDate)
-                    }, { merge: true });
-                    setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
-                    triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped. Date set to April 13, 2026.");
-                } catch (e) { triggerAlert("Error", "Failed to activate Production: " + e.message); }
-            }, true, "START PRODUCTION", "start production");
+                // 3. Set Production Mode + Date
+                const ref = doc(db, "settings", "general");
+                const prodDate = new Date("2026-04-13T10:00:00");
+                await setDoc(ref, {
+                    isTestMode: false,
+                    draftStartDate: Timestamp.fromDate(prodDate)
+                }, { merge: true });
+                setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
+                triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped. Date set to April 13, 2026.");
+            } catch (e) { triggerAlert("Error", "Failed to activate Production: " + e.message); }
         });
     };
 
     const handleActivateTestMode = async () => {
         if (!IS_SITE_OWNER) return;
-        requireAuth("ACTIVATE TEST MODE", "WIPE DATABASE and reset to Today @ 10am?", async () => {
-            triggerConfirm("CONFIRM WIPE + RESET", "This will DELETE ALL DATA and reset the clock.", async () => {
-                try {
-                    // Safety Net: Backup First
-                    triggerAlert("Info", "Creating Backup...");
-                    const backupId = await backupBookingsToFirestore();
+        requireAuth("ACTIVATE TEST MODE", "⚠️ DANGER: WIPE DATABASE + RESET CLOCK? This will DELETE ALL DATA and set the clock to Today @ 10am. This action cannot be undone.", async () => {
+            try {
+                // Safety Net: Backup First
+                triggerAlert("Info", "Creating Backup...");
+                const backupId = await backupBookingsToFirestore();
 
-                    // Safety Net: CSV Download
-                    const snap = await getDocs(collection(db, "bookings"));
-                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    exportBookingsToCSV(currentBookings);
+                // Safety Net: CSV Download
+                const snap = await getDocs(collection(db, "bookings"));
+                const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                exportBookingsToCSV(currentBookings);
 
-                    if (backupId) {
-                        triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
-                    }
+                if (backupId) {
+                    triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
+                }
 
-                    // 1. Wipe DB
-                    const batch = writeBatch(db);
-                    snap.docs.forEach(d => batch.delete(d.ref));
-                    await batch.commit();
+                // 1. Wipe DB
+                const batch = writeBatch(db);
+                snap.docs.forEach(d => batch.delete(d.ref));
+                await batch.commit();
 
-                    // 2. Reset Status
-                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+                // 2. Reset Status
+                await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
 
-                    // 3. Set Test Mode + Today's Date @ 10am
-                    const todayTenAm = new Date();
-                    todayTenAm.setHours(10, 0, 0, 0);
+                // 3. Set Test Mode + Today's Date @ 10am
+                const todayTenAm = new Date();
+                todayTenAm.setHours(10, 0, 0, 0);
 
-                    const ref = doc(db, "settings", "general");
-                    await setDoc(ref, {
-                        isTestMode: true,
-                        draftStartDate: Timestamp.fromDate(todayTenAm)
-                    }, { merge: true });
+                const ref = doc(db, "settings", "general");
+                await setDoc(ref, {
+                    isTestMode: true,
+                    draftStartDate: Timestamp.fromDate(todayTenAm)
+                }, { merge: true });
 
-                    setSimStartDate(format(todayTenAm, "yyyy-MM-dd'T'HH:mm"));
-                    triggerAlert("Success", "Test Mode ACTIVATED. DB Wiped. Clock Reset.");
-                } catch (e) { triggerAlert("Error", e.message); }
-            }, true, "NUKE & RESET", "wipe database");
+                setSimStartDate(format(todayTenAm, "yyyy-MM-dd'T'HH:mm"));
+                triggerAlert("Success", "Test Mode ACTIVATED. DB Wiped. Clock Reset.");
+            } catch (e) { triggerAlert("Error", e.message); }
         });
     };
 
