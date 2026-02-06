@@ -217,47 +217,91 @@ async function handleNormalModeReminders(
 
     logger.info(`Normal Mode - Checking reminders at ${now.toISOString()}`);
 
-    // Check each reminder time (in priority order - most urgent first)
+    if (isTestMode) {
+        // --- TEST MODE: SEQUENTIAL CATCH-UP LOGIC ---
+        // Checks ALL milestones in order. If they are overdue and not sent, send them NOW.
+        // This allows "Fast Forwarding" time to trigger multiple emails in sequence.
 
-    // 1. Final Morning 9 AM (Urgent 1h)
-    if (now >= finalMorning9am && now < turnEnd && !notificationLog.finalMorning9amSent) {
-        logger.info("Sending final urgent reminder (9 AM)");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, 'morning', cabinNumber);
-        await notificationLogRef.update({
-            finalMorning9amSent: admin.firestore.Timestamp.now()
-        });
-    }
-    // 2. Final Morning 6 AM (4h)
-    else if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
-        logger.info("Sending final morning reminder (6 AM)");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, 'morning', cabinNumber);
-        await notificationLogRef.update({
-            finalMorning6amSent: admin.firestore.Timestamp.now()
-        });
-    }
-    // 3. Day 2 Evening (7 PM)
-    else if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
-        logger.info("Sending Day 2 evening reminder (7 PM)");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'evening', cabinNumber);
-        await notificationLogRef.update({
-            nextDayEveningSent: admin.firestore.Timestamp.now()
-        });
-    }
-    // 4. Day 2 Morning (9 AM)
-    else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
-        logger.info("Sending next day 9am reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
-        await notificationLogRef.update({
-            nextDayMorningSent: admin.firestore.Timestamp.now()
-        });
-    }
-    // 5. Day 1 Evening (7 PM)
-    else if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
-        logger.info("Sending same day 7pm reminder");
-        await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
-        await notificationLogRef.update({
-            sameDayEveningSent: admin.firestore.Timestamp.now()
-        });
+        // 1. Day 1 Evening (7 PM)
+        if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
+            logger.info("[TEST MODE] Sending Day 1 evening reminder (Catch-Up)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
+            await notificationLogRef.update({ sameDayEveningSent: admin.firestore.Timestamp.now() });
+        }
+
+        // 2. Day 2 Morning (9 AM)
+        if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
+            logger.info("[TEST MODE] Sending Day 2 morning reminder (Catch-Up)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
+            await notificationLogRef.update({ nextDayMorningSent: admin.firestore.Timestamp.now() });
+        }
+
+        // 3. Day 2 Evening (7 PM)
+        if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
+            logger.info("[TEST MODE] Sending Day 2 evening reminder (Catch-Up)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'evening', cabinNumber);
+            await notificationLogRef.update({ nextDayEveningSent: admin.firestore.Timestamp.now() });
+        }
+
+        // 4. Final Morning 6 AM (4h)
+        if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
+            logger.info("[TEST MODE] Sending final morning reminder (6 AM) (Catch-Up)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, 'morning', cabinNumber);
+            await notificationLogRef.update({ finalMorning6amSent: admin.firestore.Timestamp.now() });
+        }
+
+        // 5. Final Morning 9 AM (Urgent 1h)
+        if (now >= finalMorning9am && !notificationLog.finalMorning9amSent) {
+            logger.info("[TEST MODE] Sending final urgent reminder (9 AM) (Catch-Up)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, 'morning', cabinNumber);
+            await notificationLogRef.update({ finalMorning9amSent: admin.firestore.Timestamp.now() });
+        }
+
+    } else {
+        // --- PRODUCTION MODE: PRIORITY LOGIC ---
+        // Only checks the MOST URGENT deadline first. Stops after sending one.
+        // Prevents spamming users if the cron job was down for a while.
+
+        // 1. Final Morning 9 AM (Urgent 1h)
+        if (now >= finalMorning9am && now < turnEnd && !notificationLog.finalMorning9amSent) {
+            logger.info("Sending final urgent reminder (9 AM)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, 'morning', cabinNumber);
+            await notificationLogRef.update({
+                finalMorning9amSent: admin.firestore.Timestamp.now()
+            });
+        }
+        // 2. Final Morning 6 AM (4h)
+        else if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
+            logger.info("Sending final morning reminder (6 AM)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, 'morning', cabinNumber);
+            await notificationLogRef.update({
+                finalMorning6amSent: admin.firestore.Timestamp.now()
+            });
+        }
+        // 3. Day 2 Evening (7 PM)
+        else if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
+            logger.info("Sending Day 2 evening reminder (7 PM)");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'evening', cabinNumber);
+            await notificationLogRef.update({
+                nextDayEveningSent: admin.firestore.Timestamp.now()
+            });
+        }
+        // 4. Day 2 Morning (9 AM)
+        else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
+            logger.info("Sending next day 9am reminder");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
+            await notificationLogRef.update({
+                nextDayMorningSent: admin.firestore.Timestamp.now()
+            });
+        }
+        // 5. Day 1 Evening (7 PM)
+        else if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
+            logger.info("Sending same day 7pm reminder");
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
+            await notificationLogRef.update({
+                sameDayEveningSent: admin.firestore.Timestamp.now()
+            });
+        }
     }
 }
 
