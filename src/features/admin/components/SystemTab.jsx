@@ -84,7 +84,97 @@ export function SystemTab({
             </div>
 
             <div className="space-y-8">
-                {/* System Controls sections go here... simplified for now since the full component logic is large but we just need to fix imports */}
+                {/* 1. Simulation & Testing Box (Restored) */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <TestTube className="w-24 h-24 text-slate-900" />
+                    </div>
+
+                    <div className="flex items-center gap-3 mb-6 relative z-10">
+                        <div className="p-2 bg-indigo-100 rounded-lg">
+                            <TestTube className="w-6 h-6 text-indigo-700" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900">Simulation & Testing</h3>
+                            <p className="text-sm text-slate-500">Manage time travel and test modes</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                        {/* A) Test Mode Toggle */}
+                        <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-bold text-slate-700 text-sm">Operation Mode</span>
+                                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full ${isTestMode ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                                    {isTestMode ? 'TEST MODE' : 'PRODUCTION'}
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mb-4 h-8">
+                                {isTestMode ? "Emails redirected to Admin (Bryan)." : "Emails sent to REAL SHAREHOLDERS."}
+                            </p>
+                            <button
+                                onClick={toggleTestMode}
+                                className={`w-full py-2 rounded-lg font-bold text-xs transition-all ${isTestMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                            >
+                                Switch to {isTestMode ? 'Production' : 'Test Mode'}
+                            </button>
+                        </div>
+
+                        {/* B) Start Date Picker */}
+                        <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-bold text-slate-700 text-sm">Draft Start Date</span>
+                                <Clock className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <p className="text-xs text-slate-500 mb-4 h-8">
+                                Determines the "Day 0" for the draft schedule.
+                            </p>
+                            <input
+                                type="datetime-local"
+                                value={simStartDate}
+                                onChange={(e) => {
+                                    setSimStartDate(e.target.value);
+                                    // Debounce or confirm? For now let's confirm to save interactions.
+                                    // Actually, let's just save it on blur or have a save button?
+                                    // User wants "Production Mode" to set date to April 12.
+                                }}
+                                onBlur={async (e) => {
+                                    if (!e.target.value) return;
+                                    try {
+                                        const d = new Date(e.target.value);
+                                        await updateDoc(doc(db, "settings", "general"), {
+                                            draftStartDate: Timestamp.fromDate(d)
+                                        });
+                                        triggerAlert("Success", "Start date updated.");
+                                    } catch (err) {
+                                        triggerAlert("Error", "Failed to update date.");
+                                    }
+                                }}
+                                className="w-full text-xs p-2 border rounded font-mono bg-white mb-2"
+                            />
+                        </div>
+
+                        {/* C) Fast Testing Mode */}
+                        <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-bold text-slate-700 text-sm">Fast Testing (1m = 1h)</span>
+                                <Zap className={`w-4 h-4 ${fastTestingMode ? 'text-amber-500' : 'text-slate-300'}`} />
+                            </div>
+                            <button
+                                onClick={() => {
+                                    requireAuth("Toggle Fast Mode", "Enable rapid time simulation?", async () => {
+                                        await updateDoc(doc(db, "settings", "general"), { fastTestingMode: !fastTestingMode });
+                                        if (setFastTestingMode) setFastTestingMode(!fastTestingMode);
+                                    });
+                                }}
+                                className={`w-full py-2 rounded-lg font-bold text-xs transition-all ${fastTestingMode ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-200 text-slate-500'}`}
+                            >
+                                {fastTestingMode ? "Active" : "Disabled"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>

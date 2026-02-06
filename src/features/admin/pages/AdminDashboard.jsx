@@ -148,9 +148,26 @@ export function AdminDashboard() {
     };
 
     const handleSendPaymentReminder = async (booking) => {
-        triggerConfirm("Send Reminder?", `Send reminder to ${booking.shareholderName}?`, async () => {
-            try { await emailService.sendEmail({ to: { name: booking.shareholderName, email: "bryan.m.hudson@gmail.com" }, templateId: 'paymentReminder', params: { name: booking.shareholderName, total_price: booking.totalPrice || 0, cabin_number: booking.cabinNumber || "?", check_in: booking.from ? format(booking.from, 'PPP') : "N/A", dashboard_url: window.location.origin } }); triggerAlert("Success", "Reminder sent."); }
-            catch (e) { triggerAlert("Error", "Failed to send."); }
+        // Find shareholder email
+        const shareholder = shareholders.find(s => s.name === booking.shareholderName);
+        const targetEmail = isTestMode ? "bryan.m.hudson@gmail.com" : (shareholder?.email || "bryan.m.hudson@gmail.com");
+        const targetName = isTestMode ? `[TEST] ${booking.shareholderName}` : booking.shareholderName;
+
+        triggerConfirm("Send Reminder?", `Send reminder to ${targetName} (${targetEmail})?`, async () => {
+            try {
+                await emailService.sendEmail({
+                    to: { name: targetName, email: targetEmail },
+                    templateId: 'paymentReminder',
+                    params: {
+                        name: booking.shareholderName,
+                        total_price: booking.totalPrice || 0,
+                        cabin_number: booking.cabinNumber || "?",
+                        check_in: booking.from ? format(booking.from, 'PPP') : "N/A",
+                        dashboard_url: window.location.origin
+                    }
+                });
+                triggerAlert("Success", "Reminder sent.");
+            } catch (e) { triggerAlert("Error", "Failed to send."); }
         });
     };
 
@@ -205,6 +222,16 @@ export function AdminDashboard() {
                     triggerAlert("Success", "Wiped.");
                 } catch (e) { triggerAlert("Error", e.message); }
             }, true, "NUKE", "wipe database");
+        });
+    };
+
+    const handleToggleTestMode = async () => {
+        requireAuth("Toggle Test Mode", `Switch to ${!isTestMode ? 'TEST' : 'PRODUCTION'} mode?`, async () => {
+            try {
+                const ref = doc(db, "settings", "general");
+                await setDoc(ref, { isTestMode: !isTestMode }, { merge: true });
+                triggerAlert("Success", `Switched to ${!isTestMode ? 'TEST' : 'PRODUCTION'} mode.`);
+            } catch (e) { triggerAlert("Error", "Failed to toggle mode."); }
         });
     };
 
@@ -281,7 +308,7 @@ export function AdminDashboard() {
             {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={draftStatus || { phase: 'PRE_DRAFT' }} startDateOverride={currentSimDate} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
             {activeTab === 'notifications' && <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />}
             {activeTab === 'system' && (
-                <SystemTab simStartDate={simStartDate} setSimStartDate={setSimStartDate} fastTestingMode={fastTestingMode} setFastTestingMode={setFastTestingMode} isTestMode={isTestMode} isSystemFrozen={isSystemFrozen} toggleSystemFreeze={handleToggleFreeze} handleWipeDatabase={handleWipeDatabase} requireAuth={requireAuth} triggerAlert={triggerAlert} IS_SITE_OWNER={IS_SITE_OWNER} db={db} doc={doc} setDoc={setDoc} format={format} shareholders={shareholders} />
+                <SystemTab simStartDate={simStartDate} setSimStartDate={setSimStartDate} fastTestingMode={fastTestingMode} setFastTestingMode={setFastTestingMode} isTestMode={isTestMode} toggleTestMode={handleToggleTestMode} isSystemFrozen={isSystemFrozen} toggleSystemFreeze={handleToggleFreeze} handleWipeDatabase={handleWipeDatabase} requireAuth={requireAuth} triggerAlert={triggerAlert} IS_SITE_OWNER={IS_SITE_OWNER} db={db} doc={doc} setDoc={setDoc} format={format} shareholders={shareholders} />
             )}
 
             <ConfirmationModal isOpen={confirmation.isOpen} onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))} onConfirm={confirmation.onConfirm} title={confirmation.title} message={confirmation.message} isDanger={confirmation.isDanger} confirmText={confirmation.confirmText} showCancel={confirmation.showCancel} requireTyping={confirmation.requireTyping} />
