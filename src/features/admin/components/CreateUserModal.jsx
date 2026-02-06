@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { User, Mail, Lock, Shield, Loader2 } from 'lucide-react';
 import { httpsCallable } from 'firebase/functions';
