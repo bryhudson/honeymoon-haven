@@ -67,12 +67,13 @@ export function BaseModal({
 
             <div className={`bg-white rounded-2xl shadow-xl w-full ${maxSize} relative z-10 
                 animate-in zoom-in-95 fade-in duration-200 
+                flex flex-col max-h-[90vh]
                 ${containerClassName}
                 ${!isOpen ? 'animate-out zoom-out-95 fade-out' : ''}`}>
 
                 {/* Header */}
                 {(title || showClose) && (
-                    <div className="flex items-center justify-between p-6 pb-2">
+                    <div className="flex items-center justify-between p-6 pb-2 shrink-0">
                         <div>
                             {title && <h3 className="text-xl font-bold text-slate-900 leading-none">{title}</h3>}
                             {description && <p className="text-sm text-slate-500 mt-1.5">{description}</p>}
@@ -89,7 +90,7 @@ export function BaseModal({
                 )}
 
                 {/* Content */}
-                <div className={`p-6 ${title ? 'pt-4' : ''}`}>
+                <div className={`p-6 ${title ? 'pt-4' : ''} overflow-y-auto`}>
                     {children}
                 </div>
             </div>
