@@ -88,12 +88,12 @@ exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request
 
         const { subject, htmlContent } = templateFn(emailData);
 
-        // 5. SEND TO REAL EMAIL (No Test Mode Check)
+        // 5. SEND TO REAL EMAIL (Respects Test Mode)
         await sendGmail({
             to: { name: targetShareholder, email: realEmail },
             subject: subject,
-            htmlContent: htmlContent,
-            bypassTestMode: true // Force Real Send
+            htmlContent: htmlContent
+            // bypassTestMode removed: let sendGmail check DB settings for safety
         });
 
         // 6. Log the Force Action

@@ -217,7 +217,7 @@ export function AdminDashboard() {
         requireAuth("WIPE DATABASE", "EXTREME DANGER", () => {
             triggerConfirm("NUKE DATA?", "Type 'wipe database' to confirm.", async () => {
                 try {
-                    const clearCollections = ["bookings", "email_logs", "shareholder_status"];
+                    const clearCollections = ["bookings", "email_logs", "shareholder_status", "notification_log"];
                     const batch = writeBatch(db);
 
                     for (const colName of clearCollections) {
@@ -252,7 +252,7 @@ export function AdminDashboard() {
                 }
 
                 // 1. Wipe DB (Clean Slate - Bookings, Logs, Status)
-                const clearCollections = ["bookings", "email_logs", "shareholder_status"];
+                const clearCollections = ["bookings", "email_logs", "shareholder_status", "notification_log"];
                 const batch = writeBatch(db);
 
                 for (const colName of clearCollections) {
@@ -296,7 +296,7 @@ export function AdminDashboard() {
                 }
 
                 // 1. Wipe DB (Clean Slate - Bookings, Logs, Status)
-                const clearCollections = ["bookings", "email_logs", "shareholder_status"];
+                const clearCollections = ["bookings", "email_logs", "shareholder_status", "notification_log"];
                 const batch = writeBatch(db);
 
                 for (const colName of clearCollections) {
