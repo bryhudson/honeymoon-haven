@@ -95,18 +95,19 @@ exports.turnReminderScheduler = onSchedule(
             const settings = settingsDoc.exists ? settingsDoc.data() : {};
             const isTestMode = settings.isTestMode !== false; // Default to true for safety
 
-            // 3. Get shareholder email
-            const shareholderDoc = await db.collection("shareholders")
-                .where("name", "==", activePicker)
-                .limit(1)
-                .get();
+            // 3. Get shareholder email (Robust Lookup)
+            // Fetch all (only ~12) and find via normalized name to handle "&" vs "and" mismatch
+            const allShareholdersSnap = await db.collection("shareholders").get();
+            const shareholderDoc = allShareholdersSnap.docs.find(d =>
+                normalizeName(d.data().name) === normalizeName(activePicker)
+            );
 
-            if (shareholderDoc.empty) {
-                logger.error(`Shareholder not found: ${activePicker}`);
+            if (!shareholderDoc) {
+                logger.error(`Shareholder not found: ${activePicker} (Normalized: ${normalizeName(activePicker)})`);
                 return;
             }
 
-            const shareholder = shareholderDoc.docs[0].data();
+            const shareholder = shareholderDoc.data();
             const shareholderEmail = shareholder.email;
             const cabinNumber = shareholder.cabin || shareholder.cabinNumber || shareholder.defaultCabin;
 
