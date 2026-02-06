@@ -4,7 +4,7 @@ import { CABIN_OWNERS, getShareholderOrder, mapOrderToSchedule, normalizeName, f
 import { emailService } from '../../../services/emailService';
 import { db, functions } from '../../../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, deleteField, getDoc } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, deleteField, getDoc, Timestamp } from 'firebase/firestore';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { format, differenceInDays } from 'date-fns';
 import { List, Calendar, Users, CheckCircle, XCircle, Mail, Download, Settings, Bell, PlusCircle } from 'lucide-react';
