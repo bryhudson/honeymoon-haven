@@ -1,11 +1,11 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Layout } from './components/Layout';
+import { Layout } from './components/layout/Layout';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 
-const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
-const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const Dashboard = lazy(() => import('./features/dashboard/pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Login = lazy(() => import('./features/auth/pages/Login').then(module => ({ default: module.Login })));
+const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 
 import { AuthProvider } from './features/auth/AuthContext';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';

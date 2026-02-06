@@ -30,14 +30,23 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // READ: Publicly readable (required for Dashboard)
+      // READ: Publicly readable (required for Dashboard to show calendar)
       allow read: if true;
 
-      // WRITE: Allow if authenticated AND validates schema
+      // CREATE: Allow if authenticated AND validates schema
+      // We should eventually enforce that data.uid match request.auth.uid here
       allow create: if request.auth != null && isValidBooking();
-      allow update: if request.auth != null && isValidBooking();
+
+      // UPDATE: Allow if Admin OR the owner of the booking
+      // Note: HHR bookings currently track 'shareholderName', but we should transition to 'uid' verification
+      allow update: if request.auth != null && (
+        isAdmin() || 
+        (resource.data.uid == request.auth.uid) || 
+        // Fallback for legacy data with email
+        (resource.data.email == request.auth.token.email)
+      ) && isValidBooking();
       
-      // DELETE: Admins only
+      // DELETE: Admins only (as per current system policy)
       allow delete: if isAdmin();
     }
 
