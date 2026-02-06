@@ -248,14 +248,12 @@ export function ShareholderHero({
                 {(() => {
                     const hasRoundData = myActions.some(b => b.round !== undefined);
                     const r1Action = hasRoundData ? myActions.find(b => b.round === 1) : myActions[0];
-                    const r1Cancelled = !r1Action && cancelledActions.length > 0;
                     const isR1Queue = queueInfo && queueInfo.round === 1;
                     const isR1Turn = status.phase === 'ROUND_1' && isYourTurn;
 
                     // Implicit Skip Detection (Round 1)
-                    // If no action taken, and we are past Round 1 (or past my turn in Round 1), it's a skip
                     let isR1SkippedImplicitly = false;
-                    if (!r1Action && !r1Cancelled) {
+                    if (!r1Action) {
                         if (['ROUND_2', 'OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
                             isR1SkippedImplicitly = true;
                         } else if (status.phase === 'ROUND_1') {
@@ -280,16 +278,16 @@ export function ShareholderHero({
                             badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
                             icon = <XCircle className="w-4 h-4" />;
                             text = "Skipped";
+                        } else if (r1Action.type === 'cancelled' || r1Action.status === 'cancelled') {
+                            badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
+                            icon = <XCircle className="w-4 h-4" />;
+                            text = "Cancelled";
                         } else {
                             const isPaid = r1Action.paymentStatus === 'paid';
                             badgeClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
                             icon = <CheckCircle className="w-4 h-4" />;
                             text = isPaid ? "Paid" : "Confirmed";
                         }
-                    } else if (r1Cancelled) {
-                        badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
-                        icon = <XCircle className="w-4 h-4" />;
-                        text = "Cancelled";
                     } else if (isR1SkippedImplicitly) {
                         badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
                         icon = <XCircle className="w-4 h-4" />;
@@ -317,14 +315,12 @@ export function ShareholderHero({
                 {(() => {
                     const hasRoundData = myActions.some(b => b.round !== undefined);
                     const r2Action = hasRoundData ? myActions.find(b => b.round === 2) : (myActions.length > 1 ? myActions[1] : null);
-                    const r1DoneOrCancelled = myActions.length > 0 || cancelledActions.length > 0;
-                    const isR2Cancelled = (myActions.length === 1 && cancelledActions.length >= 1) || (myActions.length === 0 && cancelledActions.length >= 2);
                     const isR2Queue = queueInfo && queueInfo.round === 2;
                     const isR2Turn = status.phase === 'ROUND_2' && isYourTurn;
 
                     // Implicit Skip Detection (Round 2)
                     let isR2SkippedImplicitly = false;
-                    if (!r2Action && !isR2Cancelled) {
+                    if (!r2Action) {
                         if (['OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
                             isR2SkippedImplicitly = true;
                         } else if (status.phase === 'ROUND_2') {
@@ -351,16 +347,16 @@ export function ShareholderHero({
                             badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
                             icon = <XCircle className="w-4 h-4" />;
                             text = "Skipped";
+                        } else if (r2Action.type === 'cancelled' || r2Action.status === 'cancelled') {
+                            badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
+                            icon = <XCircle className="w-4 h-4" />;
+                            text = "Cancelled";
                         } else {
                             const isPaid = r2Action.paymentStatus === 'paid';
                             badgeClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
                             icon = <CheckCircle className="w-4 h-4" />;
                             text = isPaid ? "Paid" : "Confirmed";
                         }
-                    } else if (isR2Cancelled) {
-                        badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
-                        icon = <XCircle className="w-4 h-4" />;
-                        text = "Cancelled";
                     } else if (isR2SkippedImplicitly) {
                         badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
                         icon = <XCircle className="w-4 h-4" />;
