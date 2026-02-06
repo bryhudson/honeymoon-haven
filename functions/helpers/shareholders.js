@@ -300,6 +300,10 @@ function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = nul
     return schedule;
 }
 
+function adjustForCourtesy(shareholders, bookings) {
+    return shareholders; // Default implementation
+}
+
 module.exports = {
     normalizeName,
     formatNameForDisplay,
