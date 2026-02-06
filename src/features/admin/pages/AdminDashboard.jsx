@@ -217,8 +217,15 @@ export function AdminDashboard() {
         requireAuth("WIPE DATABASE", "EXTREME DANGER", () => {
             triggerConfirm("NUKE DATA?", "Type 'wipe database' to confirm.", async () => {
                 try {
-                    const snap = await getDocs(collection(db, "bookings"));
-                    const batch = writeBatch(db); snap.docs.forEach(d => batch.delete(d.ref)); await batch.commit();
+                    const clearCollections = ["bookings", "email_logs", "shareholder_status"];
+                    const batch = writeBatch(db);
+
+                    for (const colName of clearCollections) {
+                        const colSnap = await getDocs(collection(db, colName));
+                        colSnap.docs.forEach(d => batch.delete(d.ref));
+                    }
+
+                    await batch.commit();
                     await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
                     triggerAlert("Success", "Wiped.");
                 } catch (e) { triggerAlert("Error", e.message); }
@@ -244,9 +251,15 @@ export function AdminDashboard() {
                     triggerAlert("Info", "Backups skipped (Default Empty). Proceeding.");
                 }
 
-                // 1. Wipe DB (Clean Slate)
+                // 1. Wipe DB (Clean Slate - Bookings, Logs, Status)
+                const clearCollections = ["bookings", "email_logs", "shareholder_status"];
                 const batch = writeBatch(db);
-                snap.docs.forEach(d => batch.delete(d.ref));
+
+                for (const colName of clearCollections) {
+                    const colSnap = await getDocs(collection(db, colName));
+                    colSnap.docs.forEach(d => batch.delete(d.ref));
+                }
+
                 await batch.commit();
 
                 // 2. Reset Status
@@ -282,9 +295,15 @@ export function AdminDashboard() {
                     triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
                 }
 
-                // 1. Wipe DB
+                // 1. Wipe DB (Clean Slate - Bookings, Logs, Status)
+                const clearCollections = ["bookings", "email_logs", "shareholder_status"];
                 const batch = writeBatch(db);
-                snap.docs.forEach(d => batch.delete(d.ref));
+
+                for (const colName of clearCollections) {
+                    const colSnap = await getDocs(collection(db, colName));
+                    colSnap.docs.forEach(d => batch.delete(d.ref));
+                }
+
                 await batch.commit();
 
                 // 2. Reset Status
