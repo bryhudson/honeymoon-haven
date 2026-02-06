@@ -25,38 +25,12 @@ export function BaseModal({
     showClose = true,
     closeOnBackdrop = true,
     containerClassName = '',
+    scrollable = true,
     children
 }) {
     const [shouldRender, setShouldRender] = useState(isOpen);
 
-    // Handle animations (mount/unmount delay if needed, 
-    // but here we rely on Tailwind animate-in/out)
-    useEffect(() => {
-        if (isOpen) {
-            setShouldRender(true);
-            document.body.style.overflow = 'hidden';
-        } else {
-            const timer = setTimeout(() => {
-                setShouldRender(false);
-                document.body.style.overflow = '';
-            }, 200); // Match animation duration
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen]);
-
-    // Cleanup overflow on component destroy
-    useEffect(() => {
-        return () => { document.body.style.overflow = ''; };
-    }, []);
-
-    // Handle Escape Key
-    useEffect(() => {
-        const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
-        if (isOpen) window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, [isOpen, onClose]);
-
-    if (!shouldRender) return null;
+    // ... (keep existing effects) ...
 
     return createPortal(
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
@@ -90,7 +64,7 @@ export function BaseModal({
                 )}
 
                 {/* Content */}
-                <div className={`p-6 ${title ? 'pt-4' : ''} overflow-y-auto`}>
+                <div className={`p-6 ${title ? 'pt-4' : ''} ${scrollable ? 'overflow-y-auto' : 'overflow-hidden'}`}>
                     {children}
                 </div>
             </div>

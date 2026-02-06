@@ -32,9 +32,10 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
             onClose={onClose}
             showClose={false}
             maxSize="max-w-md" // Ultra compact
-            containerClassName="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white border-white/10 p-0 overflow-hidden"
+            scrollable={false} // STRICT NO SCROLL
+            containerClassName="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white border-white/10 p-0"
         >
-            <div className="relative h-[480px] md:h-auto flex flex-col">
+            <div className="relative flex flex-col">
                 {/* Background Decor */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
