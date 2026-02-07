@@ -429,9 +429,12 @@ export function ShareholderHero({
     // --- CASE B: Your Turn (No Draft) ---
     if (isYourTurn) {
         // Calculate time remaining
-        const timeRemaining = status.windowEnds ? (() => {
-            const end = new Date(status.windowEnds);
-            if (end <= now) return 'Ending...';
+        // Calculate time remaining
+        const targetDate = status.isGracePeriod ? status.windowStarts : status.windowEnds;
+
+        const timeRemaining = targetDate ? (() => {
+            const end = new Date(targetDate);
+            if (end <= now) return status.isGracePeriod ? 'Starting...' : 'Ending...';
             const diff = intervalToDuration({ start: now, end });
             const parts = [];
             if (diff.days > 0) parts.push(`${diff.days}d`);
@@ -469,7 +472,7 @@ export function ShareholderHero({
                                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{timerLabel}</p>
                                     <div className="flex items-center gap-3 mt-1">
                                         <span className="text-xl font-bold text-white">
-                                            {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                            {targetDate && format(new Date(targetDate), 'MMM d, h:mm a')}
                                         </span>
                                         {timeRemaining && (
                                             <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-lg border border-emerald-500/30">
