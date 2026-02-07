@@ -429,12 +429,12 @@ export function ShareholderHero({
     // --- CASE B: Your Turn (No Draft) ---
     if (isYourTurn) {
         // Calculate time remaining
-        // Calculate time remaining
-        const targetDate = status.isGracePeriod ? status.windowStarts : status.windowEnds;
+        // Calculate time remaining (Always target deadline)
+        const targetDate = status.windowEnds;
 
         const timeRemaining = targetDate ? (() => {
             const end = new Date(targetDate);
-            if (end <= now) return status.isGracePeriod ? 'Starting...' : 'Ending...';
+            if (end <= now) return 'Ending...';
             const diff = intervalToDuration({ start: now, end });
             const parts = [];
             if (diff.days > 0) parts.push(`${diff.days}d`);
@@ -444,7 +444,7 @@ export function ShareholderHero({
         })() : null;
 
         const theme = status.isGracePeriod ? 'green' : 'red';
-        const timerLabel = status.isGracePeriod ? 'Official Turn Start' : 'Official Turn Ends';
+        const timerLabel = "Official Turn Ends";
 
         return (
             <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
@@ -475,11 +475,8 @@ export function ShareholderHero({
                                             {targetDate && format(new Date(targetDate), 'MMM d, h:mm a')}
                                         </span>
                                         {timeRemaining && (
-                                            <span className={`px-3 py-1 text-xs font-bold rounded-lg border ${status.isGracePeriod
-                                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                                                : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                                                }`}>
-                                                {status.isGracePeriod ? 'Starts in' : 'Ends in'} {timeRemaining}
+                                            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs font-bold rounded-lg border">
+                                                Ends in {timeRemaining}
                                             </span>
                                         )}
                                     </div>
