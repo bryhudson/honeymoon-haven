@@ -669,32 +669,32 @@ export function ShareholderHero({
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                <div className="grid md:grid-cols-2 gap-4">
                     {/* Left Card: Your Position */}
-                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 md:p-6 backdrop-blur-sm flex flex-col justify-center h-full transition-all hover:bg-slate-800/60">
-                        <div className="space-y-3">
-                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Your Position</p>
+                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm flex flex-col justify-center h-full transition-all hover:bg-slate-800/60 group">
+                        <div className="space-y-2">
+                            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Your Position</p>
 
                             {isUpNext ? (
                                 <>
-                                    <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
+                                    <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight">
                                         You're Up Next for {queueInfo?.round === 1 ? 'Round 1' : 'Round 2'}!
                                     </div>
-                                    <p className="text-sm text-white/60">
+                                    <p className="text-sm text-white/60 font-medium">
                                         Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking.
                                     </p>
                                 </>
                             ) : (
                                 <>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                                        <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 tracking-tight">
                                             {getOrdinal(queueInfo?.diff || 1)}
                                         </span>
                                         <span className="text-xl font-bold text-white/60">
                                             in Line ({queueInfo?.round === 1 ? 'Round 1' : 'Round 2'})
                                         </span>
                                     </div>
-                                    <p className="text-sm text-white/60">Sit tight! We'll email you when it's your turn.</p>
+                                    <p className="text-sm text-white/60 font-medium mb-1">Sit tight! We'll email you when it's your turn.</p>
                                 </>
                             )}
                         </div>
@@ -702,20 +702,20 @@ export function ShareholderHero({
 
                     {/* Right Card: Currently Picking */}
                     {!isYourTurn && status.activePicker && (
-                        <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5 md:p-6 backdrop-blur-sm flex flex-col justify-center h-full relative overflow-hidden transition-all hover:border-indigo-500/30 group">
+                        <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5 backdrop-blur-sm flex flex-col justify-center h-full relative overflow-hidden transition-all hover:border-indigo-500/30 group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-                            <div className="space-y-4 relative z-10 hidden md:block border-l border-white/10 md:border-none pl-6 md:pl-0">
+                            <div className="space-y-3 relative z-10 hidden md:block border-l border-white/10 md:border-none pl-6 md:pl-0">
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Currently Picking</p>
-                                    <h3 className="text-2xl font-bold text-white mt-1">{status.activePicker}</h3>
+                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Currently Picking</p>
+                                    <h3 className="text-2xl font-bold text-white mt-0.5 tracking-tight">{status.activePicker}</h3>
                                 </div>
 
                                 {status.windowEnds && (
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5 pt-1">
                                         <div>
-                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Selection By</div>
-                                            <div className="text-base font-bold text-white mt-1">
+                                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Complete Selection By</div>
+                                            <div className="text-base font-bold text-white">
                                                 {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                             </div>
                                         </div>
