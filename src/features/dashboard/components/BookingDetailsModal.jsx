@@ -28,39 +28,6 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     const canPass = !isReadOnly && !isFinalized && !isCancelled && onPass && (isAdmin || isOwner);
     const canEdit = !isReadOnly && !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
 
-    // Email Logic
-    const [showEmailForm, setShowEmailForm] = React.useState(false);
-    const [guestEmail, setGuestEmail] = React.useState('');
-    const [guestName, setGuestName] = React.useState('Guest'); // Default
-    const [sending, setSending] = React.useState(false);
-    const [sentSuccess, setSentSuccess] = React.useState(false);
-    const [alertData, setAlertData] = React.useState(null);
-
-    const handleSendEmail = async () => {
-        if (!guestEmail) return;
-        setSending(true);
-        try {
-            // Simulated delay (logic usually in external service)
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            setSentSuccess(true);
-            setTimeout(() => {
-                setShowEmailForm(false);
-                setSentSuccess(false);
-                setGuestEmail('');
-                setGuestName('Guest');
-            }, 2000);
-        } catch (error) {
-            console.error("Error sending email:", error);
-            setAlertData({
-                title: "Error Sending Email",
-                message: `Failed to send email: ${error.message}`,
-                isDanger: true
-            });
-        } finally {
-            setSending(false);
-        }
-    };
-
     return (
         <BaseModal
             isOpen={!!booking}
@@ -89,7 +56,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
                         {booking.isFinalized && booking.isPaid && onEmail && (
                             <button
-                                onClick={() => setShowEmailForm(true)}
+                                onClick={onEmail}
                                 className="flex-1 py-3.5 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 rounded-2xl text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                             >
                                 <Mail className="w-4 h-4" />
@@ -245,102 +212,6 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                 {/* Footer Controls */}
 
             </div>
-
-            {/* Nested Email Form Modal */}
-            <BaseModal
-                isOpen={showEmailForm}
-                onClose={() => setShowEmailForm(false)}
-                title="Guest Guide"
-                description="Email rules and checklist to your guests"
-                maxSize="max-w-sm"
-            >
-                <div className="space-y-6">
-                    {!sentSuccess ? (
-                        <>
-                            <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
-                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                                <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                                    Financial and fee details are <strong>never</strong> included in guest guide emails.
-                                </p>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Guest Email</label>
-                                    <input
-                                        type="email"
-                                        placeholder="guest@example.com"
-                                        value={guestEmail}
-                                        onChange={(e) => setGuestEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 font-medium"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Guest Name</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. John"
-                                        value={guestName}
-                                        onChange={(e) => setGuestName(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 font-medium"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={handleSendEmail}
-                                disabled={!guestEmail || sending}
-                                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10"
-                            >
-                                {sending ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        Sending...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-4 h-4" />
-                                        Send Guide
-                                    </>
-                                )}
-                            </button>
-                        </>
-                    ) : (
-                        <div className="text-center py-6 space-y-4 animate-in zoom-in-95 duration-500">
-                            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto ring-4 ring-emerald-50/50">
-                                <CheckCircle2 className="w-8 h-8" />
-                            </div>
-                            <div>
-                                <h4 className="font-black text-slate-900 text-xl tracking-tight">Email Sent!</h4>
-                                <p className="text-sm text-slate-500 mt-1">
-                                    Sent to <strong>{guestEmail}</strong>
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setShowEmailForm(false);
-                                    setSentSuccess(false);
-                                    setGuestEmail('');
-                                }}
-                                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-sm"
-                            >
-                                Done
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </BaseModal>
-
-            <ConfirmationModal
-                isOpen={!!alertData}
-                onClose={() => setAlertData(null)}
-                onConfirm={() => setAlertData(null)}
-                title={alertData?.title}
-                message={alertData?.message}
-                isDanger={alertData?.isDanger}
-                confirmText="OK"
-                showCancel={false}
-            />
-        </BaseModal>
+        </BaseModal >
     );
 }

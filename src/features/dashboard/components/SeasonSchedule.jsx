@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, differenceInHours, addDays, isPast } from 'date-fns';
 import { DRAFT_CONFIG, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
+import { HistoricalOrders } from './HistoricalOrders';
 
 export function SeasonSchedule({ currentOrder, allBookings, status, startDateOverride, onAction, bypassTenAM = false }) {
     const [view, setView] = useState('current'); // 'current' | 'history'
