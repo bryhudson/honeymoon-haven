@@ -475,8 +475,11 @@ export function ShareholderHero({
                                             {targetDate && format(new Date(targetDate), 'MMM d, h:mm a')}
                                         </span>
                                         {timeRemaining && (
-                                            <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-lg border border-emerald-500/30">
-                                                Starts in {timeRemaining}
+                                            <span className={`px-3 py-1 text-xs font-bold rounded-lg border ${status.isGracePeriod
+                                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                                    : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                                }`}>
+                                                {status.isGracePeriod ? 'Starts in' : 'Ends in'} {timeRemaining}
                                             </span>
                                         )}
                                     </div>
