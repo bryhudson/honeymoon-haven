@@ -441,7 +441,7 @@ export function ShareholderHero({
         })() : null;
 
         const theme = status.isGracePeriod ? 'green' : 'red';
-        const timerLabel = status.isGracePeriod ? 'Bonus Time Remaining' : 'Official Turn Ends';
+        const timerLabel = status.isGracePeriod ? 'Official Turn Start' : 'Official Turn Ends';
 
         return (
             <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
@@ -472,8 +472,8 @@ export function ShareholderHero({
                                             {status.windowEnds && format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                         </span>
                                         {timeRemaining && (
-                                            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-lg border border-blue-500/30">
-                                                Time remaining: {timeRemaining}
+                                            <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-lg border border-emerald-500/30">
+                                                + {timeRemaining} Bonus Time
                                             </span>
                                         )}
                                     </div>
