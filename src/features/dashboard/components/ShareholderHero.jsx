@@ -669,9 +669,9 @@ export function ShareholderHero({
                     </p>
                 </div>
 
-                <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {/* Left: Your Position */}
+                <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                    {/* Left Card: Your Position */}
+                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 md:p-6 backdrop-blur-sm flex flex-col justify-center h-full transition-all hover:bg-slate-800/60">
                         <div className="space-y-3">
                             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Your Position</p>
 
@@ -698,12 +698,18 @@ export function ShareholderHero({
                                 </>
                             )}
                         </div>
+                    </div>
 
-                        {/* Right: Currently Picking */}
-                        {!isYourTurn && status.activePicker && (
-                            <div className="space-y-3 md:border-l md:border-white/10 md:pl-6">
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Currently Picking</p>
-                                <h3 className="text-2xl font-bold text-white">{status.activePicker}</h3>
+                    {/* Right Card: Currently Picking */}
+                    {!isYourTurn && status.activePicker && (
+                        <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5 md:p-6 backdrop-blur-sm flex flex-col justify-center h-full relative overflow-hidden transition-all hover:border-indigo-500/30 group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+
+                            <div className="space-y-4 relative z-10 hidden md:block border-l border-white/10 md:border-none pl-6 md:pl-0">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Currently Picking</p>
+                                    <h3 className="text-2xl font-bold text-white mt-1">{status.activePicker}</h3>
+                                </div>
 
                                 {status.windowEnds && (
                                     <div className="space-y-2">
@@ -729,8 +735,41 @@ export function ShareholderHero({
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
+
+                            {/* Mobile Layout Fix: Ensure content isn't hidden on small screens because of 'hidden md:block' above. 
+                                Wait, looking at original code it was: div className="space-y-3 md:border-l md:border-white/10 md:pl-6"
+                                I should make sure it renders on mobile too.
+                            */}
+                            <div className="space-y-4 relative z-10 md:hidden block">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Currently Picking</p>
+                                    <h3 className="text-2xl font-bold text-white mt-1">{status.activePicker}</h3>
+                                </div>
+                                {status.windowEnds && (
+                                    <div className="space-y-2">
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Selection By</div>
+                                            <div className="text-base font-bold text-white mt-1">
+                                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
+                                            </div>
+                                        </div>
+                                        <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 border-blue-500/30 px-3 py-1.5 rounded-lg border text-xs font-bold">
+                                            {(() => {
+                                                const end = new Date(status.windowEnds);
+                                                if (end <= now) return 'Ending...';
+                                                const diff = intervalToDuration({ start: now, end });
+                                                const parts = [];
+                                                if (diff.days > 0) parts.push(`${diff.days}d`);
+                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                                return `Ends in ${parts.join(' ') || '< 1m'}`;
+                                            })()}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {upcomingBooking && (
