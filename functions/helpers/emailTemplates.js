@@ -526,7 +526,7 @@ const emailTemplates = {
        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f5f5f7;">
           <strong style="display: block; margin-bottom: 4px;">Address</strong>
           <p style="${THEME.typography.body}">10257 South Shore Road, Honeymoon Bay, BC</p>
-          <a href="https://www.google.com/maps/search/?api=1&query=Honeymoon+Haven+Resort+10257+South+Shore+Road+Honeymoon+Bay+BC+V0R+1Y0" style="${THEME.components.button}">Open in Maps</a>
+          <a href="https://maps.app.goo.gl/1qPPvqUXByHCPAUp6" style="${THEME.components.button}">Open in Maps</a>
        </div>
     `;
 
