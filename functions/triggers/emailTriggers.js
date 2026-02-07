@@ -2,7 +2,10 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { onDocumentWritten, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { logger } = require("firebase-functions");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+
+const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
 
@@ -24,7 +27,7 @@ const SEASON_CONFIG = {
  * 1. Database Trigger: Monitor Booking Changes
  * Listens for changes in the 'bookings' collection.
  */
-exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookingId}", secrets: gmailSecrets }, async (event) => {
+exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookingId}", secrets: [gmailSecrets[0], gmailSecrets[1], superAdminEmail] }, async (event) => {
     logger.info("TRIGGER FIRED: onBookingChangeTrigger", { eventId: event.id });
     const snapshot = event.data;
     if (!snapshot) {
@@ -79,7 +82,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             await sendGmail({
                 to: { name: afterData.shareholderName || userProfile.displayName || userProfile.name || "Shareholder", email: userProfile.email },
                 subject: subject,
-                htmlContent: htmlContent
+                htmlContent: htmlContent,
+                templateId: 'bookingConfirmed'
             });
         } catch (error) {
             logger.error(`Failed to send confirmation for ${bookingId}`, error);
@@ -118,7 +122,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             await sendGmail({
                 to: { name: afterData.shareholderName || userProfile.displayName || "Shareholder", email: userProfile.email },
                 subject: subject,
-                htmlContent: htmlContent
+                htmlContent: htmlContent,
+                templateId: 'bookingCancelled'
             });
         } catch (error) {
             logger.error(`Failed to send cancellation for ${bookingId}`, error);
@@ -140,10 +145,6 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
         const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
 
         // Logic for Next Opportunity Message
-        // If current phase is Round 1, next is Round 2. If Round 2, next is Open Season.
-        // We need 'phase' and 'round' from somewhere, but 'afterData' just has booking info.
-        // We can infer or fetch current status, OR make the template generic. 
-        // Let's fetch current status quickly for accuracy.
         const statusDoc = await db.collection("status").doc("draftStatus").get();
         const statusData = statusDoc.exists ? statusDoc.data() : { phase: 'ROUND_1', round: 1 };
 
@@ -163,7 +164,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             await sendGmail({
                 to: { name: afterData.shareholderName || userProfile.displayName || "Shareholder", email: userProfile.email },
                 subject: subject,
-                htmlContent: htmlContent
+                htmlContent: htmlContent,
+                templateId: 'passConfirmed'
             });
         } catch (error) {
             logger.error(`Failed to send pass confirmation for ${bookingId}`, error);
@@ -171,12 +173,44 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
 
         // LOGGING
         if (afterData.shareholderName) {
-            // we already fetched statusData in line 121
             const round = statusData.round || 1;
             const logId = `${afterData.shareholderName}-${round}`;
             await db.collection("notification_log").doc(logId).set({
                 passConfirmedSent: admin.firestore.Timestamp.now()
             }, { merge: true });
+        }
+    }
+
+    // 2c. Payment Received Email (New Trigger)
+    const wasPaid = beforeData?.isPaid === true;
+    const isPaid = afterData?.isPaid === true;
+
+    if (!wasPaid && isPaid) {
+        logger.info(`Sending Payment Received Confirmation for ${bookingId}`);
+        const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
+
+        const templateData = {
+            name: afterData.shareholderName || userProfile.displayName || "Shareholder",
+            booking_ref: bookingId,
+            amount: afterData.totalPrice || "0",
+            check_in: formatDate(afterData.from || afterData.checkInDate),
+            check_out: formatDate(afterData.to || afterData.checkOutDate),
+            cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
+            dashboard_url: "https://honeymoon-haven.web.app/dashboard"
+        };
+
+        const { subject, htmlContent } = emailTemplates.paymentReceived(templateData);
+
+        try {
+            await sendGmail({
+                to: { name: afterData.shareholderName || userProfile.displayName || "Shareholder", email: userProfile.email },
+                subject: subject,
+                htmlContent: htmlContent,
+                templateId: 'paymentReceived'
+            });
+            logger.info(`Payment confirmation sent to ${userProfile.email}`);
+        } catch (error) {
+            logger.error(`Failed to send payment confirmation for ${bookingId}`, error);
         }
     }
 
@@ -282,6 +316,8 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                     previous_shareholder: "Previous Shareholder",
                     deadline_date: formatDate(schedule.windowEnds),
                     deadline_time: formatTime(schedule.windowEnds),
+                    official_start_date: formatDate(schedule.officialStart), // FIX: Pass Official Start Date
+                    official_start_time: formatTime(schedule.officialStart),
                     round: schedule.round,
                     phase: schedule.phase
                 };
@@ -300,9 +336,13 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                     ({ subject, htmlContent } = emailTemplates.turnStarted(emailParams));
                 }
 
-                // [DUPLICATE FIX] Disabling this immediate email. 
-                // We will rely on turnReminderScheduler.js to send the "Turn Started" email.
-                logger.info(`[DEBOUNCE] Identifying next picker ${nextPickerName}, but waiting for Scheduler to send email to avoid duplicates.`);
+                try {
+                    // [DUPLICATE FIX] Disabling this immediate email. 
+                    // We will rely on turnReminderScheduler.js to send the "Turn Started" email.
+                    logger.info(`[DEBOUNCE] Identifying next picker ${nextPickerName}, but waiting for Scheduler to send email to avoid duplicates.`);
+                } catch (e) {
+                    logger.error("Error in duplicate fix logic", e);
+                }
 
             } else {
                 logger.warn(`Next picker ${nextPickerName} not found in shareholders collection.`);
@@ -326,7 +366,9 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                     sendGmail({
                         to: recipient,
                         subject: subject,
-                        htmlContent: htmlContent
+                        subject: subject,
+                        htmlContent: htmlContent,
+                        templateId: 'openSeasonBlast'
                     })
                         .catch(e => logger.error(`Failed to send Open Season email to ${recipient.email}`, e))
                 );
@@ -368,7 +410,7 @@ async function getUserProfile(uid, shareholderName) {
         if (doc) return doc.data();
     }
 
-    return { displayName: shareholderName || "Shareholder", email: "bryan.m.hudson@gmail.com" };
+    return { displayName: shareholderName || "Shareholder", email: superAdminEmail.value() };
 }
 
 /**
@@ -400,7 +442,8 @@ exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) 
             subject: subject,
             htmlContent: htmlContent,
             senderName: senderName,
-            replyTo: request.auth.token.email
+            replyTo: request.auth.token.email,
+            templateId: 'guestGuide'
         });
         return { success: true, message: `Guest Guide sent to ${guestEmail}` };
     } catch (error) {
@@ -448,7 +491,7 @@ function calculateNights(start, end) {
  * Listens for changes in Active Picker (Draft Status) to detect Timeouts.
  * If the user changes BUT they didn't make a booking/pass (checked via logs), they were SKIPPED.
  */
-exports.onDraftStatusChange = onDocumentUpdated({ document: "status/draftStatus", secrets: gmailSecrets }, async (event) => {
+exports.onDraftStatusChange = onDocumentUpdated({ document: "status/draftStatus", secrets: [gmailSecrets[0], gmailSecrets[1], superAdminEmail] }, async (event) => {
     logger.info("TRIGGER FIRED: onDraftStatusChange");
 
     const before = event.data.before.data();
@@ -502,7 +545,8 @@ exports.onDraftStatusChange = onDocumentUpdated({ document: "status/draftStatus"
                 await sendGmail({
                     to: { name: previousPicker, email: email },
                     subject: subject,
-                    htmlContent: htmlContent
+                    htmlContent: htmlContent,
+                    templateId: 'turnSkipped'
                 });
 
                 // Mark log

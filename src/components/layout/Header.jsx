@@ -78,23 +78,25 @@ export function Header() {
                                         <div className="flex bg-slate-100 p-1 rounded-lg items-center gap-1">
                                             <Link
                                                 to="/admin"
-                                                className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${location.pathname.startsWith('/admin')
+                                                className={`p-2 md:px-3 md:py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${location.pathname.startsWith('/admin')
                                                     ? 'bg-white text-slate-900 shadow-sm'
                                                     : 'text-slate-500 hover:text-slate-900'
                                                     }`}
+                                                title="Admin Dashboard"
                                             >
-                                                <LayoutDashboard className="w-3.5 h-3.5" />
-                                                Admin
+                                                <LayoutDashboard className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                                <span className="hidden md:inline">Admin</span>
                                             </Link>
                                             <Link
                                                 to={viewAsLink}
-                                                className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${!location.pathname.startsWith('/admin')
+                                                className={`p-2 md:px-3 md:py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${!location.pathname.startsWith('/admin')
                                                     ? 'bg-white text-slate-900 shadow-sm'
                                                     : 'text-slate-500 hover:text-slate-900'
                                                     }`}
+                                                title="View as Shareholder"
                                             >
-                                                <User className="w-3.5 h-3.5" />
-                                                View as Shareholder
+                                                <User className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                                <span className="hidden md:inline">View as Shareholder</span>
                                             </Link>
                                         </div>
                                     )}

@@ -1,5 +1,6 @@
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { logger } = require("firebase-functions");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
@@ -11,10 +12,14 @@ if (admin.apps.length === 0) {
 }
 const db = admin.firestore();
 
+// Define Secrets
+const hhrAdminEmail = defineSecret("HHR_ADMIN_EMAIL");
+const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
+
 exports.paymentReminderScheduler = onSchedule(
     {
         schedule: "0 * * * *", // Every hour at :00
-        secrets: gmailSecrets,
+        secrets: [gmailSecrets[0], gmailSecrets[1], hhrAdminEmail, superAdminEmail],
         timeZone: "America/Vancouver" // Ensure scheduler aligns with PST generally
     },
     async (event) => {
@@ -152,6 +157,7 @@ async function sendFundingReminder(booking, type) {
         // Let's calc deadline for template:
         // createdAt + 48h
         deadline_time: "48 Hours Total",
+        admin_email: hhrAdminEmail.value() // Pass secret to template
     };
 
     // Refined Deadline Display
@@ -234,8 +240,8 @@ async function sendOverdueAdminAlert(booking, bookingId, hoursSinceCreation) {
 
     // Send to BOTH admins
     const adminEmails = [
-        { name: 'Bryan Hudson', email: 'bryan.m.hudson@gmail.com' },
-        { name: 'HHR Admin', email: 'honeymoonhavenresort.lc@gmail.com' }
+        { name: 'Bryan Hudson', email: superAdminEmail.value() },
+        { name: 'HHR Admin', email: hhrAdminEmail.value() }
     ];
 
     for (const admin of adminEmails) {

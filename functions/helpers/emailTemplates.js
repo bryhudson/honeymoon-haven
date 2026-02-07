@@ -410,6 +410,8 @@ const emailTemplates = {
        `;
     }
 
+    const adminEmail = data.admin_email || "honeymoonhavenresort.lc@gmail.com"; // Fallback if missing
+
     const body = `
       <h1 style="${THEME.typography.h1}">Maintenance Fee Due</h1>
       <p style="${THEME.typography.body}">Hi ${data.name}, please complete your e-transfer to finalize the booking.</p>
@@ -425,7 +427,7 @@ const emailTemplates = {
 
       <div style="text-align: center; margin-top: 32px; background-color: #F5F5F7; padding: 24px; border-radius: 12px; border: 1px solid #e5e5ea;">
          <p style="${THEME.typography.body} margin: 0; font-weight: 600; color: ${THEME.colors.textLight}; font-size: 12px; text-transform: uppercase;">Send E-Transfer To</p>
-         <p style="${THEME.typography.h2} color: ${THEME.colors.primary}; margin: 8px 0; font-size: 18px; word-break: break-all;">honeymoonhavenresort.lc@gmail.com</p>
+         <p style="${THEME.typography.h2} color: ${THEME.colors.primary}; margin: 8px 0; font-size: 18px; word-break: break-all;">${adminEmail}</p>
       </div>
 
       <div style="text-align: center; margin-top: 32px;">

@@ -3,6 +3,9 @@ const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
+const { defineSecret } = require("firebase-functions/params");
+
+const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
 
 // Ensure admin is initialized
 if (admin.apps.length === 0) {
@@ -15,9 +18,9 @@ const db = admin.firestore();
  * DANGER: This bypasses Test Mode and sends real emails to shareholders.
  * Used by Admin to recover from failed/skipped notifications.
  */
-exports.forceSendNotification = onCall({ secrets: gmailSecrets }, async (request) => {
+exports.forceSendNotification = onCall({ secrets: [gmailSecrets[0], gmailSecrets[1], superAdminEmail] }, async (request) => {
     // 1. Security: Only Super Admin (Strict)
-    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
+    if (!request.auth || request.auth.token.email !== superAdminEmail.value()) {
         throw new HttpsError('permission-denied', 'Only the Super Admin can force send notifications.');
     }
 

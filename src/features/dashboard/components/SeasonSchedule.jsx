@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign } from 'lucide-react';
+import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, differenceInHours, addDays, isPast } from 'date-fns';
 import { DRAFT_CONFIG, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
 
 export function SeasonSchedule({ currentOrder, allBookings, status, startDateOverride, onAction, bypassTenAM = false }) {
     const [view, setView] = useState('current'); // 'current' | 'history'
+    const [isInfoExpanded, setIsInfoExpanded] = useState(false); // Collapsed by default on mobile feel
+
+    // Expand info by default on large screens
+    useEffect(() => {
+        if (window.innerWidth >= 1024) {
+            setIsInfoExpanded(true);
+        }
+    }, []);
 
     return (
         <div id="tour-schedule" className="">
@@ -35,11 +43,20 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
             ) : (
                 <div className="bg-card border rounded-lg shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div className="p-6 bg-slate-50 border-b">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <Info className="w-4 h-4 text-slate-500" />
-                            How the Schedule Works
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <button
+                            onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+                            className="w-full flex items-center justify-between text-left mb-4 focus:outline-none group"
+                        >
+                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                                <Info className="w-4 h-4 text-slate-500" />
+                                How the Schedule Works
+                            </h3>
+                            <div className={`p-1 rounded-full text-slate-400 group-hover:bg-slate-100 transition-colors`}>
+                                {isInfoExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </div>
+                        </button>
+
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300 ease-in-out overflow-hidden ${isInfoExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                             <div className="flex items-start gap-3">
                                 <div className="p-2 bg-blue-100/50 text-blue-600 rounded-lg shrink-0">
                                     <RotateCw className="w-5 h-5" />
@@ -104,7 +121,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                         </div>
                     </div>
 
-                    <div className="hidden md:block overflow-x-auto">
+                    <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
                                 <tr>
@@ -135,13 +152,13 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                             let badge = null;
 
                                             if (entry.status === 'COMPLETED') {
-                                                cellBg = "bg-green-50 text-green-700";
+                                                cellBg = "bg-green-50 text-green-700 border border-green-200";
                                                 badge = "✓ Done";
                                             } else if (entry.status === 'CANCELLED') {
-                                                cellBg = "bg-red-50 text-red-600 line-through";
+                                                cellBg = "bg-red-50 text-red-600 line-through border border-red-200";
                                                 badge = "Cancelled";
                                             } else if (entry.status === 'PASSED') {
-                                                cellBg = "bg-gray-100 text-gray-500 line-through";
+                                                cellBg = "bg-slate-100 text-slate-500 line-through border border-slate-200";
                                                 badge = "Passed";
                                             } else if (entry.status === 'ACTIVE') {
                                                 cellBg = "bg-blue-100 text-blue-900 font-bold ring-2 ring-blue-500 ring-inset animate-pulse";
@@ -150,18 +167,18 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                                 cellBg = "bg-amber-50 text-amber-900 font-bold ring-2 ring-amber-500 ring-inset animate-pulse";
                                                 badge = "Early Access";
                                             } else if (entry.status === 'SKIPPED') {
-                                                cellBg = "bg-red-50 text-red-400";
+                                                cellBg = "bg-red-50 text-red-400 border border-red-100";
                                                 badge = "Skipped";
                                             } else {
                                                 cellBg = "text-muted-foreground";
                                             }
 
                                             return (
-                                                <div className={`px - 3 py - 2 rounded w - fit ${cellBg} `}>
-                                                    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5 opacity-70">
+                                                <div className={`px-4 py-2 rounded-md w-fit flex flex-col gap-1 ${cellBg}`}>
+                                                    <div className="text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                                                         {badge || label}
                                                     </div>
-                                                    <div className="text-xs text-slate-500">
+                                                    <div className="text-xs opacity-90 whitespace-nowrap">
                                                         {format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}
                                                     </div>
                                                 </div>
@@ -169,7 +186,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                         };
 
                                         return (
-                                            <tr key={name} className={`transition - colors border - l - 4 ${isActive ? "bg-blue-50/50 border-l-blue-600 shadow-sm" : "hover:bg-muted/10 border-l-transparent"} `}>
+                                            <tr key={name} className={`transition-colors border-l-4 ${isActive ? "bg-blue-50/50 border-l-blue-600 shadow-sm" : "hover:bg-muted/10 border-l-transparent"}`}>
                                                 <td className="px-6 py-4 font-mono text-muted-foreground">
                                                     #{index + 1}
                                                 </td>
@@ -191,8 +208,8 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                         </table>
                     </div>
 
-                    {/* Mobile Card View */}
-                    <div className="md:hidden space-y-4 p-4 bg-slate-50/50">
+                    {/* Mobile/Tablet Card View (Visible up to LG) */}
+                    <div className="lg:hidden space-y-4 p-4 bg-slate-50/50">
                         {(() => {
                             const fullSchedule = mapOrderToSchedule(currentOrder, allBookings, startDateOverride, bypassTenAM);
                             return currentOrder.map((name, index) => {
@@ -207,38 +224,44 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                     if (!entry) return null;
                                     let statusColor = "text-slate-500";
                                     let statusText = "Future";
+                                    let bgClass = "bg-transparent";
 
-                                    if (entry.status === 'COMPLETED') { statusColor = "text-green-600 font-medium"; statusText = "✓ Done"; }
-                                    else if (entry.status === 'ACTIVE') { statusColor = "text-blue-600 font-bold animate-pulse"; statusText = "Active Now"; }
-                                    else if (entry.status === 'GRACE_PERIOD') { statusColor = "text-amber-600 font-bold animate-pulse"; statusText = "Early Access"; }
+                                    if (entry.status === 'COMPLETED') { statusColor = "text-green-700 font-bold"; statusText = "✓ Done"; bgClass = "bg-green-50 border border-green-200 p-2 rounded"; }
+                                    else if (entry.status === 'ACTIVE') { statusColor = "text-blue-700 font-bold animate-pulse"; statusText = "Active Now"; bgClass = "bg-blue-50 border border-blue-200 p-2 rounded ring-1 ring-blue-500"; }
+                                    else if (entry.status === 'GRACE_PERIOD') { statusColor = "text-amber-700 font-bold animate-pulse"; statusText = "Early Access"; bgClass = "bg-amber-50 border border-amber-200 p-2 rounded ring-1 ring-amber-500"; }
                                     else if (entry.status === 'PASSED') { statusColor = "text-slate-400 line-through"; statusText = "Passed"; }
                                     else if (entry.status === 'SKIPPED') { statusColor = "text-red-400 line-through"; statusText = "Skipped"; }
 
                                     return (
-                                        <div className="flex justify-between items-center py-2 border-b last:border-0 border-slate-100">
-                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{roundLabel}</span>
-                                            <div className="text-right">
-                                                <div className={`text - xs ${statusColor} `}>{statusText}</div>
-                                                <div className="text-sm text-slate-700">
+                                        <div className="flex flex-col py-2 border-b last:border-0 border-slate-100 gap-1">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{roundLabel}</span>
+                                                <span className={`text-[10px] uppercase tracking-wider font-bold ${statusColor} ${bgClass === "bg-transparent" ? "" : "px-1.5 py-0.5"}`}>
+                                                    {statusText}
+                                                </span>
+                                            </div>
+                                            <div className={`flex items-center gap-1.5 text-xs ${bgClass !== "bg-transparent" ? "bg-white/60 p-1.5 rounded mt-0.5" : "text-slate-600 pl-0"} `}>
+                                                <Calendar className="w-3 h-3 text-slate-400" />
+                                                <span>
                                                     {format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}
-                                                </div>
+                                                </span>
                                             </div>
                                         </div>
                                     );
                                 };
 
                                 return (
-                                    <div key={name} className={`bg - white rounded - lg border shadow - sm overflow - hidden ${isActive ? 'ring-2 ring-blue-500 border-transparent' : 'border-slate-200'} `}>
-                                        <div className={`px - 4 py - 3 flex justify - between items - center ${isActive ? 'bg-blue-50/50' : 'bg-slate-50/50 border-b border-slate-100'} `}>
-                                            <div className="flex items-center gap-3">
-                                                <span className="font-mono text-xs text-slate-400 font-bold">#{index + 1}</span>
-                                                <span className="font-bold text-slate-800">{name}</span>
+                                    <div key={name} className={`bg-white rounded-lg border shadow-sm overflow-hidden ${isActive ? 'ring-2 ring-blue-500 border-transparent shadow-md' : 'border-slate-200'}`}>
+                                        <div className={`px-3 py-2 flex justify-between items-center ${isActive ? 'bg-blue-50/50' : 'bg-slate-50/30 border-b border-slate-100'}`}>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono text-[10px] text-slate-400 font-bold bg-slate-100 px-1 py-0.5 rounded">#{index + 1}</span>
+                                                <span className="font-bold text-sm text-slate-900 line-clamp-1">{name}</span>
                                             </div>
-                                            <div className="text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded border">
+                                            <div className="text-[10px] font-bold text-slate-500 bg-white px-1.5 py-0.5 rounded border shadow-sm whitespace-nowrap">
                                                 Cabin {cabinNumber}
                                             </div>
                                         </div>
-                                        <div className="px-4 py-2">
+                                        <div className="px-3 pb-1">
                                             {renderMobileStatus(r1Entry, "Round 1")}
                                             {renderMobileStatus(r2Entry, "Round 2")}
                                         </div>

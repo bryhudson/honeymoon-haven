@@ -330,7 +330,8 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
     await sendGmail({
         to: { name: shareholderName, email: recipient, cabinNumber },
         subject: finalSubject,
-        htmlContent: htmlContent
+        htmlContent: htmlContent,
+        templateId: isGrace ? 'turnStartedEarlyAccess' : 'turnStarted'
     });
 
     logger.info(`Turn start email (${isGrace ? 'EARLY ACCESS' : 'STANDARD'}) sent to: ${recipient}`);
@@ -373,7 +374,8 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
     await sendGmail({
         to: { name: shareholderName, email: recipient, cabinNumber }, // ADDED cabinNumber
         subject: finalSubject,
-        htmlContent: htmlContent
+        htmlContent: htmlContent,
+        templateId: isUrgent ? 'turnReminderUrgent' : 'turnReminder'
     });
 
     logger.info(`Reminder email (${timeRemaining}) sent to: ${recipient}`);

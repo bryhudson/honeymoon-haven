@@ -3,6 +3,9 @@ const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
+const { defineSecret } = require("firebase-functions/params");
+
+const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
 
 // Ensure admin is initialized
 if (admin.apps.length === 0) {
@@ -14,7 +17,7 @@ const db = admin.firestore();
  * Manual Test Email Trigger
  * Allows admins to send test emails from Notifications tab
  */
-exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
+exports.sendTestEmail = onCall({ secrets: [gmailSecrets[0], gmailSecrets[1], superAdminEmail] }, async (request) => {
     // 1. Security: Check for Admin Role (Any Admin)
     if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Must be logged in to send test emails.');
@@ -47,7 +50,7 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         if (!shareholderName) {
             // Use Super Admin as default test target
             shareholderName = "Bryan Hudson";
-            shareholderEmail = testEmail || "bryan.m.hudson@gmail.com";
+            shareholderEmail = testEmail || superAdminEmail.value();
         } else {
             // 3. Get shareholder email from database
             const shareholderQuery = await db.collection("shareholders")
@@ -206,7 +209,7 @@ exports.sendTestEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         }
 
         // 7. Use testEmail if provided, otherwise apply test mode override
-        const recipient = testEmail || (isTestMode ? "bryan.m.hudson@gmail.com" : shareholderEmail);
+        const recipient = testEmail || (isTestMode ? superAdminEmail.value() : shareholderEmail);
         const finalSubject = subject;
 
         await sendGmail({
@@ -324,7 +327,7 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
         const { subject, htmlContent } = emailFunction(testData);
 
         // Use provided test email or default to Super Admin
-        const recipient = request.data.testEmail || "bryan.m.hudson@gmail.com";
+        const recipient = request.data.testEmail || superAdminEmail.value();
         const finalSubject = subject;
 
         await sendGmail({

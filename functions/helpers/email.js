@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 // Note: You must set these using `firebase functions:secrets:set GMAIL_EMAIL` etc.
 const gmailEmail = defineSecret("GMAIL_EMAIL");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
+const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
 
 /**
  * Sends an email via Gmail SMTP using Nodemailer.
@@ -16,7 +17,7 @@ const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
  * @param {string} data.htmlContent - HTML body
  * @returns {Promise<{success: boolean, messageId: string}>}
  */
-async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, bypassTestMode = false }) {
+async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, bypassTestMode = false, templateId = null }) {
     const user = gmailEmail.value();
     const pass = gmailAppPassword.value();
 
@@ -39,7 +40,7 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
 
     // Check Firestore for Test Mode and Override Email
     let isTestMode = true; // Default to TRUE (Safety First)
-    let dynamicOverride = "bryan.m.hudson@gmail.com"; // Default fallback
+    let dynamicOverride = superAdminEmail.value(); // Default fallback to Super Admin
 
     if (bypassTestMode) {
         isTestMode = false; // TRUST THE CALLER
@@ -109,8 +110,8 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
                 status: 'sent',
                 messageId: info.messageId,
                 isTestMode: isTestMode,
-                templateId: null, // Basic logging doesn't know template ID unless passed. 
-                // We rely on 'subject' to identify type for now, or could pass metadata later.
+                isTestMode: isTestMode,
+                templateId: templateId || null, // Log template ID if provided
                 cabinNumber: to?.cabinNumber || null // Capture cabin number if available
             });
         } catch (logErr) {
@@ -144,5 +145,5 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
 
 module.exports = {
     sendGmail,
-    gmailSecrets: [gmailEmail, gmailAppPassword] // Export secrets for consumers
+    gmailSecrets: [gmailEmail, gmailAppPassword, superAdminEmail] // Export secrets for consumers
 };

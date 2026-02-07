@@ -9,7 +9,10 @@
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { logger } = require("firebase-functions");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+
+const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
 
 // Initialize Admin SDK once here
 if (admin.apps.length === 0) {
@@ -100,7 +103,8 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         const result = await sendGmail({
             to,
             subject: finalSubject,
-            htmlContent: finalHtml
+            htmlContent: finalHtml,
+            templateId: templateId // Pass templateId for logging
         });
         return result;
 
@@ -130,9 +134,9 @@ exports.deleteAccount = deleteAccount;
  * Admin: Update user password
  * Can only be called by the Super Admin.
  */
-exports.adminUpdatePassword = onCall(async (request) => {
+exports.adminUpdatePassword = onCall({ secrets: [superAdminEmail] }, async (request) => {
     // 1. Authenticate that the caller is the Super Admin
-    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
+    if (!request.auth || request.auth.token.email !== superAdminEmail.value()) {
         throw new HttpsError('permission-denied', 'Only the Super Admin can perform this action.');
     }
 
@@ -172,9 +176,9 @@ exports.adminUpdatePassword = onCall(async (request) => {
 /**
  * Admin: Update shareholder email (Sync Auth)
  */
-exports.adminUpdateShareholderEmail = onCall(async (request) => {
+exports.adminUpdateShareholderEmail = onCall({ secrets: [superAdminEmail] }, async (request) => {
     // 1. Authenticate that the caller is the Super Admin
-    if (!request.auth || request.auth.token.email !== 'bryan.m.hudson@gmail.com') {
+    if (!request.auth || request.auth.token.email !== superAdminEmail.value()) {
         throw new HttpsError('permission-denied', 'Only the Super Admin can perform this action.');
     }
 
