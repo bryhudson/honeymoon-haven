@@ -142,7 +142,7 @@ export function ShareholderHero({
     // 1b. Pre-Draft / Waiting for Start (Null Active Picker)
     if (status.phase === 'PRE_DRAFT' || (!status.activePicker && status.phase !== 'OPEN_SEASON')) {
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('indigo')}
 
                 <div className="relative z-10 space-y-6">
@@ -176,7 +176,7 @@ export function ShareholderHero({
     // 2. Open Season
     if (status.phase === 'OPEN_SEASON') {
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('green')}
 
                 <div className="relative z-10 space-y-6">
@@ -444,7 +444,7 @@ export function ShareholderHero({
         const timerLabel = status.isGracePeriod ? 'Bonus Time Remaining' : 'Official Turn Ends';
 
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground(theme)}
 
                 <div className="relative z-10 space-y-6">
@@ -534,7 +534,7 @@ export function ShareholderHero({
         const theme = isPassed ? 'indigo' : (isSkipped ? 'red' : 'green');
 
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white">
                 {renderBackground(theme)}
 
                 <div className="relative z-10 space-y-8">
@@ -611,7 +611,7 @@ export function ShareholderHero({
     // --- CASE D: Booking Cancelled ---
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
         return (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('red')}
 
                 <div className="relative z-10 space-y-6">
@@ -651,7 +651,7 @@ export function ShareholderHero({
     const isUpNext = queueInfo?.diff === 1;
 
     return (
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
+        <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
             {renderBackground('indigo')}
 
             <div className="relative z-10 space-y-6">

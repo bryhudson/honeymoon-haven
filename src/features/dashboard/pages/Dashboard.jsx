@@ -600,6 +600,7 @@ export function Dashboard() {
                         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
                             <button
                                 id="tour-schedule"
+                                data-tour="season-tab"
                                 onClick={() => setActiveTab('schedule')}
                                 className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                             >
