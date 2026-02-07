@@ -459,7 +459,7 @@ export function ShareholderHero({
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
                             {status.isGracePeriod
-                                ? "The clock doesn't officially start until 10:00 AM."
+                                ? `You have early access... your official booking window doesn't start until ${status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10:00 AM.`
                                 : "The calendar is yours! Please select your dates or pass your turn to the next shareholder."}
                         </p>
                     </div>
@@ -476,8 +476,8 @@ export function ShareholderHero({
                                         </span>
                                         {timeRemaining && (
                                             <span className={`px-3 py-1 text-xs font-bold rounded-lg border ${status.isGracePeriod
-                                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                                                    : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                                : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
                                                 }`}>
                                                 {status.isGracePeriod ? 'Starts in' : 'Ends in'} {timeRemaining}
                                             </span>
