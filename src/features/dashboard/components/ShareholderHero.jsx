@@ -444,7 +444,7 @@ export function ShareholderHero({
         })() : null;
 
         const theme = status.isGracePeriod ? 'green' : 'red';
-        const timerLabel = "Official Turn Ends";
+        const timerLabel = "Complete Selection By";
 
         return (
             <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
@@ -459,7 +459,7 @@ export function ShareholderHero({
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
                             {status.isGracePeriod
-                                ? `You have early access... your official booking window doesn't start until ${status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10:00 AM.`
+                                ? <span>You're ahead of schedule! The official window begins <strong>{status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10:00 AM</strong>.</span>
                                 : "The calendar is yours! Please select your dates or pass your turn to the next shareholder."}
                         </p>
                     </div>
