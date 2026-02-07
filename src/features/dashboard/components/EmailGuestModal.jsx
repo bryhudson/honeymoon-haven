@@ -30,9 +30,7 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
                 shareholderName: currentUser
             });
             setSentSuccess(true);
-            setTimeout(() => {
-                onClose();
-            }, 2500);
+
         } catch (err) {
             console.error("Error sending email:", err);
             setError(err.message || "Failed to send guest guide.");
