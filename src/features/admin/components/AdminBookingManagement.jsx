@@ -56,12 +56,12 @@ export function AdminBookingManagement({
                     {isSlotBooked ? (
                         (() => {
                             if (booking.type === 'pass' || booking.type === 'auto-pass') {
-                                return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">PASSED</div>;
+                                return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200 w-24 justify-center flex">PASSED</div>;
                             }
                             if (booking.type === 'cancelled') {
-                                return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-red-50 text-red-700 border-red-200">CANCELLED</div>;
+                                return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-red-50 text-red-700 border-red-200 w-24 justify-center flex">CANCELLED</div>;
                             }
-                            return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">CONFIRMED</div>;
+                            return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-green-50 text-green-700 border-green-200 w-24 justify-center flex">CONFIRMED</div>;
                         })()
                     ) : (
                         <span className="text-xs text-slate-400 font-medium italic pr-2">Pending</span>
@@ -88,7 +88,7 @@ export function AdminBookingManagement({
                                         })()}
                                     </div>
                                 ) : (
-                                    <span className={`px-3 py-1 rounded text-xs font-bold border ${paymentClass}`}>
+                                    <span className={`px-3 py-1 rounded text-xs font-bold border w-24 justify-center flex ${paymentClass}`}>
                                         {booking.isPaid ? "PAID" : "UNPAID"}
                                     </span>
                                 )}
@@ -146,7 +146,7 @@ export function AdminBookingManagement({
                     <td className="px-6 py-5 text-slate-400">—</td>
                     <td className="px-6 py-5 text-slate-400">—</td>
                     <td className="px-6 py-5 text-center">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${config.className}`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border w-24 justify-center ${config.className}`}>
                             {config.label}
                         </span>
                     </td>
@@ -194,17 +194,17 @@ export function AdminBookingManagement({
                 </td>
                 <td className="px-6 py-5 text-center">
                     {booking.type === 'pass' || booking.type === 'auto-pass' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default w-24 justify-center">
                             <XCircle className="w-3 h-3 mr-1.5" />
                             Passed
                         </span>
                     ) : booking.type === 'cancelled' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100 cursor-default w-24 justify-center">
                             <Ban className="w-3 h-3 mr-1.5" />
                             Cancelled
                         </span>
                     ) : (
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${booking.isFinalized
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border w-24 justify-center ${booking.isFinalized
                             ? 'bg-green-50 text-green-700 border-green-200'
                             : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}>
@@ -217,9 +217,9 @@ export function AdminBookingManagement({
                     {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
                         <span className="text-slate-400">—</span>
                     ) : (
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${paymentClass}`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border w-24 justify-center ${paymentClass}`}>
                             {booking.isPaid ? 'PAID' : 'UNPAID'}
-                            {booking.isPaid && <span className="ml-1 text-[10px] opacity-75">via {booking.paymentMethod || 'Manual'}</span>}
+                            {booking.isPaid && <span className="ml-1 text-[10px] opacity-75 hidden xl:inline">via {booking.paymentMethod || 'Manual'}</span>}
                         </span>
                     )}
                 </td>
