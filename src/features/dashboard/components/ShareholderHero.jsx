@@ -708,14 +708,13 @@ export function ShareholderHero({
                                 {status.windowEnds && (
                                     <div className="space-y-2">
                                         <div>
-                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Turn Ends</div>
+                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Selection By</div>
                                             <div className="text-base font-bold text-white mt-1">
                                                 {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                             </div>
                                         </div>
 
-                                        <div className="inline-flex items-center gap-2 bg-slate-700/40 px-3 py-1.5 rounded-lg border border-white/10 text-xs font-semibold text-white">
-                                            <Clock className="w-3.5 h-3.5" />
+                                        <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 border-blue-500/30 px-3 py-1.5 rounded-lg border text-xs font-bold">
                                             {(() => {
                                                 const end = new Date(status.windowEnds);
                                                 if (end <= now) return 'Ending...';
@@ -724,7 +723,7 @@ export function ShareholderHero({
                                                 if (diff.days > 0) parts.push(`${diff.days}d`);
                                                 if (diff.hours > 0) parts.push(`${diff.hours}h`);
                                                 if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                return parts.join(' ') || '< 1m';
+                                                return `Ends in ${parts.join(' ') || '< 1m'}`;
                                             })()}
                                         </div>
                                     </div>

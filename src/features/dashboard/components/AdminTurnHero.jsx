@@ -94,12 +94,10 @@ export function AdminTurnHero({
                                     <div className="text-xl font-bold text-white tabular-nums tracking-tight">
                                         {format(new Date(activeTurn.end), 'MMM d, h:mm a')}
                                     </div>
-                                    <div className="text-sm text-indigo-200 mt-1 font-medium flex items-center justify-center lg:justify-start gap-1.5">
-                                        <span>Time remaining:</span>
-                                        <span className="text-white font-bold">
-                                            {(() => {
+                                    <div className="flex items-center justify-center lg:justify-start mt-2">
+                                        <span className="inline-flex items-center px-3 py-1 bg-indigo-500/20 text-indigo-200 border-indigo-400/30 text-xs font-bold rounded-lg border">
+                                            Ends in {(() => {
                                                 const end = new Date(activeTurn.end);
-                                                // Used 'now' from state
                                                 if (end <= now) return 'Ended';
                                                 const diff = intervalToDuration({ start: now, end });
                                                 const parts = [];
