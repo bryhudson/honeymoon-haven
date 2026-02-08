@@ -144,7 +144,8 @@ exports.paymentReminderScheduler = onSchedule(
 
 async function sendFundingReminder(booking, type) {
     const isUrgent = type === 'final';
-    const emailFunction = isUrgent ? emailTemplates.finalWarning : emailTemplates.paymentReminder;
+    // CRITICAL FIX: Use 'paymentUrgent' for final payment warning, NOT 'finalWarning' (which is for turns)
+    const emailFunction = isUrgent ? emailTemplates.paymentUrgent : emailTemplates.paymentReminder;
 
     // Prepare Data
     // We need price breakdown if available.
@@ -199,7 +200,8 @@ async function sendFundingReminder(booking, type) {
     await sendGmail({
         to: { name: booking.shareholderName, email: recipient, cabinNumber: booking.cabinNumber },
         subject: subject,
-        htmlContent: htmlContent
+        htmlContent: htmlContent,
+        templateId: isUrgent ? 'paymentUrgent' : 'paymentReminder'
     });
 }
 

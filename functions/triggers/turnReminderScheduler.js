@@ -265,7 +265,8 @@ async function handleNormalModeReminders(
         // 1. Final Morning 9 AM (Urgent 1h)
         if (now >= finalMorning9am && now < turnEnd && !notificationLog.finalMorning9amSent) {
             logger.info("Sending final urgent reminder (9 AM)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, 'morning', cabinNumber);
+            // Note: 'finalWarning' template is triggered by isUrgent=true, so type string matters less here but good for consistency
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, '1 hour', cabinNumber);
             await notificationLogRef.update({
                 finalMorning9amSent: admin.firestore.Timestamp.now()
             });
@@ -273,7 +274,7 @@ async function handleNormalModeReminders(
         // 2. Final Morning 6 AM (4h)
         else if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
             logger.info("Sending final morning reminder (6 AM)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, 'morning', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, '4 hours', cabinNumber);
             await notificationLogRef.update({
                 finalMorning6amSent: admin.firestore.Timestamp.now()
             });
@@ -281,7 +282,7 @@ async function handleNormalModeReminders(
         // 3. Day 2 Evening (7 PM)
         else if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
             logger.info("Sending Day 2 evening reminder (7 PM)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'evening', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'day2evening', cabinNumber);
             await notificationLogRef.update({
                 nextDayEveningSent: admin.firestore.Timestamp.now()
             });
@@ -289,7 +290,7 @@ async function handleNormalModeReminders(
         // 4. Day 2 Morning (9 AM)
         else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
             logger.info("Sending next day 9am reminder");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'day2', cabinNumber);
             await notificationLogRef.update({
                 nextDayMorningSent: admin.firestore.Timestamp.now()
             });
