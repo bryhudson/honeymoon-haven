@@ -54,12 +54,19 @@ exports.forceSendNotification = onCall({ secrets: [gmailSecrets[0], gmailSecrets
         // If we force send, we probably want to match the *actual* deadline in DB.
         const deadlineDateObj = statusData.windowEnds ? statusData.windowEnds.toDate() : new Date(Date.now() + 48 * 60 * 60 * 1000);
 
+        // MAP Frontend Types -> Template Types
+        let templateType = 'morning'; // Default fallback
+        if (notificationType === 'evening') templateType = 'evening';
+        if (notificationType === 'day2') templateType = 'day2';
+        if (notificationType === 'evening2') templateType = 'day2evening';
+        if (notificationType === 'final6am') templateType = '4 hours';
+        if (notificationType === 'final9am') templateType = '1 hour';
+
         const emailData = {
             name: targetShareholder,
             round: round || statusData.round || 1, // Allow override or fetch
             phase: statusData.phase || 'ROUND_1',
-            phase: statusData.phase || 'ROUND_1',
-            type: ['day2', 'final6am', 'final9am'].includes(notificationType) ? 'morning' : 'evening', // Infer type
+            type: templateType,
             hours_remaining: Math.round((deadlineDateObj - Date.now()) / (1000 * 60 * 60)),
             deadline_date: deadlineDateObj.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Vancouver' }),
             deadline_time: '10:00 AM', // HHR anchor: Always 10 AM PT
