@@ -75,6 +75,7 @@ exports.sendTestEmail = onCall({ secrets: [gmailSecrets[0], gmailSecrets[1], sup
         // 5. Prepare test email data
         const testDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h from now
 
+        const statusDoc = await db.collection("status").doc("draftStatus").get();
         const currentRound = statusDoc.exists ? (statusDoc.data().round || 1) : 1;
         const currentPhase = statusDoc.exists ? (statusDoc.data().phase || 'ROUND_1') : 'ROUND_1';
 
