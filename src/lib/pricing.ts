@@ -20,9 +20,9 @@ export interface BookingCost {
  * Calculates the maintenance fee for a given booking range.
  * 
  * Rules (2026):
- * - Weeknights (Sun-Thu): $100
- * - Weekends (Fri-Sat): $125
- * - Weekly Discount: Bookings of 7 consecutive nights get $100 off (1 free weeknight).
+ * - Weeknights (Sun-Thu): $100 Maintenance Fee
+ * - Weekends (Fri-Sat): $125 Maintenance Fee
+ * - Weekly Discount: Stays of 7 consecutive nights get $100 off (1 free weeknight).
  * 
  * @param {Date|string} start - Check-in date
  * @param {Date|string} end - Check-out date

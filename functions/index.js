@@ -35,10 +35,10 @@ const { debugShareholder, diagnoseScheduler } = require("./triggers/debugTools")
  * This function is callable securely from the client.
  */
 exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
-    // 1. Authentication Check (Optional: enforce valid user)
-    // if (!request.auth) {
-    //     throw new HttpsError('unauthenticated', 'The function must be called while authenticated.');
-    // }
+    // 1. Authentication Check
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'The function must be called while authenticated.');
+    }
 
     const { to, subject, htmlContent, templateId, params } = request.data;
 
