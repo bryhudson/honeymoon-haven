@@ -204,7 +204,130 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
     } catch (error) {
         res.status(500).json({ error: error.message, stack: error.stack });
     }
+
 });
+
+// Helper for Scheduler Logic Inspection
+exports.diagnoseScheduler = onRequest({ secrets: gmailSecrets }, async (req, res) => {
+    try {
+        const result = {
+            now: new Date().toISOString(),
+            nowPST: new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }),
+            checks: []
+        };
+
+        // 1. Fetch Status
+        const statusDoc = await db.collection("status").doc("draftStatus").get();
+        if (!statusDoc.exists) {
+            return res.json({ error: "No draftStatus found." });
+        }
+        const status = statusDoc.data();
+        result.status = {
+            activePicker: status.activePicker,
+            round: status.round,
+            windowStarts: status.windowStarts ? status.windowStarts.toDate().toISOString() : null,
+            windowEnds: status.windowEnds ? status.windowEnds.toDate().toISOString() : null,
+            testMode: status.testMode || false
+        };
+
+        if (!status.activePicker || !status.windowStarts) {
+            return res.json({ ...result, error: "Missing activePicker or windowStarts" });
+        }
+
+        // 2. Fetch Log
+        const logId = `${status.activePicker}-${status.round}`;
+        const logDoc = await db.collection("notification_log").doc(logId).get();
+        const logData = logDoc.exists ? logDoc.data() : {};
+        result.log = logData;
+
+        // 3. Calculate Targets (Replicating Scheduler Logic)
+        const turnStart = status.windowStarts.toDate();
+        const turnEnd = status.windowEnds ? status.windowEnds.toDate() : new Date(turnStart.getTime() + 48 * 60 * 60 * 1000);
+
+        // Define Helper (Inline for safety/fidelity)
+        function getTargetPstTime(baseDate, targetHour, daysOffset = 0) {
+            const adjustedDate = new Date(baseDate);
+            adjustedDate.setDate(adjustedDate.getDate() + daysOffset);
+
+            const ptParts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Los_Angeles',
+                year: 'numeric', month: 'numeric', day: 'numeric'
+            }).formatToParts(adjustedDate);
+
+            const year = parseInt(ptParts.find(p => p.type === 'year').value);
+            const month = parseInt(ptParts.find(p => p.type === 'month').value);
+            const day = parseInt(ptParts.find(p => p.type === 'day').value);
+
+            // Initial guess: UTC = Target + 8h (Standard PST offset)
+            const guess = new Date(Date.UTC(year, month - 1, day, targetHour + 8, 0, 0, 0));
+
+            // Verify
+            const checkParts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Los_Angeles', hour: 'numeric', hour12: false
+            }).formatToParts(guess);
+            const actualHour = parseInt(checkParts.find(p => p.type === 'hour').value);
+
+            if (actualHour !== targetHour) {
+                guess.setUTCHours(guess.getUTCHours() + (targetHour - actualHour));
+            }
+            return guess;
+        }
+
+        const targets = {
+            sameDayEvening: { time: getTargetPstTime(turnStart, 19, 0), key: 'sameDayEveningSent', label: 'Day 1 Evening (7pm)' },
+            officialTurnStart: { time: getTargetPstTime(turnStart, 10, 0), key: 'officialStartSent', label: 'Official Start (10am)' },
+            nextDayMorning: { time: getTargetPstTime(turnStart, 9, 1), key: 'nextDayMorningSent', label: 'Day 2 Morning (9am)' },
+            nextDayEvening: { time: getTargetPstTime(turnStart, 19, 1), key: 'nextDayEveningSent', label: 'Day 2 Evening (7pm)' },
+            finalMorning6am: { time: getTargetPstTime(turnEnd, 6, 0), key: 'finalMorning6amSent', label: 'Day 3 Morning (6am)' }, // Note: Logic might be T-4h
+            finalMorning9am: { time: getTargetPstTime(turnEnd, 9, 0), key: 'finalMorning9amSent', label: 'Day 3 Urgent (9am)' }
+        };
+
+        // Note: verify final logic in scheduler uses turnEnd or getTargetPstTime?
+        // Scheduler uses: const finalMorning9am = new Date(turnEnd.getTime() - 60 * 60 * 1000); // T-1h
+        // Scheduler uses: const finalMorning6am = new Date(turnEnd.getTime() - 4 * 60 * 60 * 1000); // T-4h
+        // Let's match scheduler EXACTLY for finals
+        targets.finalMorning9am.time = new Date(turnEnd.getTime() - 60 * 60 * 1000);
+        targets.finalMorning6am.time = new Date(turnEnd.getTime() - 4 * 60 * 60 * 1000);
+
+        result.targets = {};
+        const now = new Date();
+
+        // 4. Evaluate Conditions
+        for (const [key, def] of Object.entries(targets)) {
+            const isSent = !!logData[def.key];
+            const isDue = now >= def.time;
+            const pastDueHours = (now - def.time) / (1000 * 60 * 60);
+
+            result.targets[key] = {
+                label: def.label,
+                scheduledTime: def.time.toISOString(),
+                scheduledTimePST: def.time.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }),
+                sent: isSent,
+                due: isDue,
+                pastDueHours: pastDueHours.toFixed(2),
+                wouldSendNow: isDue && !isSent
+            };
+        }
+
+        // 5. Simulate Priority Chain (Normal Mode)
+        // If multiple are true, which one WINS?
+        let winner = null;
+        if (result.targets.finalMorning9am.wouldSendNow) winner = "finalMorning9am";
+        else if (result.targets.finalMorning6am.wouldSendNow) winner = "finalMorning6am";
+        else if (result.targets.nextDayEvening.wouldSendNow) winner = "nextDayEvening";
+        else if (result.targets.nextDayMorning.wouldSendNow) winner = "nextDayMorning";
+        else if (result.targets.sameDayEvening.wouldSendNow) winner = "sameDayEvening";
+        else if (result.targets.officialTurnStart.wouldSendNow && logData.isEarlyAccess) winner = "officialTurnStart";
+
+        result.priorityWinner = winner || "NONE";
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message, stack: error.stack });
+    }
+});
+
 
 function toDate(input) {
     if (!input) return null;

@@ -28,7 +28,7 @@ const { paymentReminderScheduler } = require("./triggers/paymentReminderSchedule
 const { autosyncTurnStatus } = require("./triggers/autosyncTurnStatus");
 const { sendTestEmail, sendTestReminder } = require("./triggers/manualTestEmail");
 const { forceSendNotification } = require("./triggers/adminForceSend");
-const { debugShareholder } = require("./triggers/debugTools");
+const { debugShareholder, diagnoseScheduler } = require("./triggers/debugTools");
 
 /**
  * Sends an email via Gmail SMTP.
@@ -125,6 +125,7 @@ exports.sendTestEmail = sendTestEmail;
 exports.sendTestReminder = sendTestReminder;
 exports.forceSendNotification = forceSendNotification;
 exports.debugShareholder = debugShareholder;
+exports.diagnoseScheduler = diagnoseScheduler;
 
 // User Management
 exports.createAccount = createAccount;

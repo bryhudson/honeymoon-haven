@@ -203,6 +203,10 @@ async function handleNormalModeReminders(
     // Day 1: 7 PM PST (same day as turn start)
     const sameDayEvening = getTargetPstTime(turnStart, 19, 0);
 
+    // CRITICAL: Official Start Email (10 AM PST Day 1)
+    // Only applies if they had Early Access (notificationLog.isEarlyAccess)
+    const officialStart = getTargetPstTime(turnStart, 10, 0);
+
     // Day 2: 9 AM PST
     const nextDayMorning = getTargetPstTime(turnStart, 9, 1);
 
@@ -303,7 +307,42 @@ async function handleNormalModeReminders(
                 sameDayEveningSent: admin.firestore.Timestamp.now()
             });
         }
+        // 6. OFFICIAL START (10 AM Day 1) - Only if Early Access
+        else if (now >= officialStart && notificationLog.isEarlyAccess && !notificationLog.officialStartSent) {
+            logger.info("Sending Official Start (10 AM) email to Early Access user");
+            await sendOfficialStartEmail(email, shareholderName, turnEnd, round, phase, isTestMode, cabinNumber);
+            await notificationLogRef.update({
+                officialStartSent: admin.firestore.Timestamp.now()
+            });
+        }
     }
+}
+
+/**
+ * Send Official Turn Start Email (10 AM Follow-up)
+ */
+async function sendOfficialStartEmail(email, shareholderName, deadline, round, phase, isTestMode, cabinNumber) {
+    const templateData = {
+        name: shareholderName,
+        round: round,
+        phase: phase,
+        deadline_date: formatDeadlineDate(deadline),
+        deadline_time: formatDeadlineTime(deadline),
+        dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
+    };
+
+    const { subject, htmlContent } = emailTemplates.officialTurnStart(templateData);
+
+    const recipient = email;
+
+    await sendGmail({
+        to: { name: shareholderName, email: recipient, cabinNumber },
+        subject: subject,
+        htmlContent: htmlContent,
+        templateId: 'officialTurnStart'
+    });
+
+    logger.info(`Official Start email sent to: ${recipient}`);
 }
 
 /**

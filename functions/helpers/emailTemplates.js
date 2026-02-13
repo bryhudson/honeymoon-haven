@@ -600,6 +600,31 @@ const emailTemplates = {
     return { subject, htmlContent: wrapHtml(subject, customContent) };
   },
 
+  // 13. Official Start (Early Access Follow-up)
+  officialTurnStart: (data) => {
+    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const subject = `HHR Trailer Booking App ${roundLabel}: Your 48-Hour Window Has Begun ⏰`;
+    const body = `
+      <h1 style="${THEME.typography.h1}">The clock is officially ticking...</h1>
+      <p style="${THEME.typography.body}">Hi ${data.name}, your early access bonus time has ended.</p>
+      
+      <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>⏱️ 48-Hour Window Started</strong><br>
+        You now have until <strong>${data.deadline_date} at 10:00 AM PT</strong> to lock in your dates.</p>
+      </div>
+
+      <div style="margin: 32px 0;">
+        ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
+        ${dataItem('Round', data.round, true)}
+      </div>
+
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Now</a>
+      </div>
+    `;
+    return { subject, htmlContent: wrapHtml(subject, body) };
+  },
+
   // 14. Open Season Started (NEW)
   openSeasonStarted: (data) => {
     const subject = `HHR Trailer Booking App: Open Season is Here! 🌲`;
