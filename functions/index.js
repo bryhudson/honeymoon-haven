@@ -42,8 +42,8 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 
     const { to, subject, htmlContent, templateId, params } = request.data;
 
-    // Debug logging - CRITICAL
-    logger.warn("=== sendEmail RAW INPUT ===", {
+    // Debug logging
+    logger.debug("=== sendEmail RAW INPUT ===", {
         hasTo: !!to,
         to: JSON.stringify(to),
         subject: subject ? subject.substring(0, 50) : "MISSING",
@@ -94,7 +94,7 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
         throw new HttpsError('invalid-argument', 'Email subject and HTML content are required.');
     }
 
-    logger.info("=== sendEmail FINAL OUTPUT ===", {
+    logger.debug("=== sendEmail FINAL OUTPUT ===", {
         finalSubject: finalSubject.substring(0, 50),
         finalHtmlLength: finalHtml.length
     });
