@@ -38,6 +38,40 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const afterData = snapshot.after.data();
     const bookingId = event.params.bookingId;
 
+    // --- SERVER-SIDE OVERLAP DETECTION ---
+    // Prevent double-bookings by checking if a new/updated booking overlaps existing ones
+    const isNewBooking = !beforeData && afterData;
+    const isNewlyFinalized = !beforeData?.isFinalized && afterData?.isFinalized;
+    if ((isNewBooking || isNewlyFinalized) && afterData?.from && afterData?.to && afterData?.type !== 'pass' && afterData?.type !== 'cancelled' && afterData?.type !== 'auto-pass') {
+        try {
+            const newFrom = toDate(afterData.from);
+            const newTo = toDate(afterData.to);
+            if (newFrom && newTo) {
+                const allBookingsSnap = await db.collection("bookings").get();
+                const overlap = allBookingsSnap.docs.find(d => {
+                    if (d.id === bookingId) return false;
+                    const b = d.data();
+                    if (b.type === 'pass' || b.type === 'cancelled' || b.type === 'auto-pass') return false;
+                    const bFrom = toDate(b.from);
+                    const bTo = toDate(b.to);
+                    if (!bFrom || !bTo) return false;
+                    return newFrom < bTo && newTo > bFrom;
+                });
+                if (overlap) {
+                    logger.warn(`OVERLAP DETECTED: Booking ${bookingId} overlaps with ${overlap.id}. Auto-cancelling.`);
+                    await db.collection("bookings").doc(bookingId).update({
+                        type: 'cancelled',
+                        cancelledAt: admin.firestore.Timestamp.now(),
+                        cancelReason: `Auto-cancelled: overlaps with booking ${overlap.id}`
+                    });
+                    return; // Stop processing — booking is cancelled
+                }
+            }
+        } catch (overlapErr) {
+            logger.error("Overlap check failed (non-blocking):", overlapErr);
+        }
+    }
+
     // Detect Status Changes
     const wasConfirmed = beforeData?.status === 'confirmed' || beforeData?.isFinalized === true;
     const isConfirmed = afterData?.status === 'confirmed' || afterData?.isFinalized === true;

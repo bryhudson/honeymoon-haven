@@ -136,14 +136,21 @@ export function AdminDashboard() {
     const handleTogglePaid = async (booking) => {
         const isPaid = !booking.isPaid;
         triggerConfirm(isPaid ? "Confirm Payment" : "Revert Payment", isPaid ? "Mark as PAID?" : "Mark as UNPAID?", async () => {
-            try { await updateDoc(doc(db, "bookings", booking.id), { isPaid }); triggerAlert("Success", "Payment updated."); }
+            try {
+                // Fetch fresh data to prevent stale-state race condition
+                const freshSnap = await getDoc(doc(db, "bookings", booking.id));
+                if (!freshSnap.exists()) { triggerAlert("Error", "Booking not found."); return; }
+                const freshIsPaid = !freshSnap.data().isPaid;
+                await updateDoc(doc(db, "bookings", booking.id), { isPaid: freshIsPaid });
+                triggerAlert("Success", "Payment updated.");
+            }
             catch (e) { triggerAlert("Error", e.message); }
         }, !isPaid);
     };
 
     const handleCancelBooking = (booking) => {
         triggerConfirm("Cancel Booking?", `Are you sure?`, async () => {
-            try { await updateDoc(doc(db, "bookings", booking.id), { type: 'cancelled', isFinalized: false, isPaid: false }); triggerAlert("Success", "Cancelled."); }
+            try { await updateDoc(doc(db, "bookings", booking.id), { type: 'cancelled', isFinalized: false, cancelledAt: new Date(), previousIsPaid: booking.isPaid || false }); triggerAlert("Success", "Cancelled."); }
             catch (e) { triggerAlert("Error", e.message); }
         }, true, "Cancel Booking", "cancel");
     };

@@ -30,8 +30,8 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // READ: Publicly readable (required for Dashboard to show calendar)
-      allow read: if true;
+      // READ: Authenticated users only (SECURITY FIX: was publicly readable)
+      allow read: if request.auth != null;
 
       // CREATE: Allow if authenticated AND validates schema AND matches user ID
       // Rule: You can only create a booking for YOURSELF.
@@ -67,9 +67,10 @@ service cloud.firestore {
     }
 
     // SETTINGS (Global Config)
-    // Publicly readable (required for frontend config). Only Admins can write.
+    // Authenticated users can read. Only Admins can write.
+    // SECURITY FIX: was publicly readable
     match /settings/{docId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow write: if isAdmin();
     }
 

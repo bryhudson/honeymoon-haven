@@ -93,6 +93,9 @@ exports.deleteAccount = onCall(async (request) => {
 
     // Role Check
     const callerDoc = await admin.firestore().collection('shareholders').doc(request.auth.token.email).get();
+    if (!callerDoc.exists) {
+        throw new HttpsError('permission-denied', 'Caller not found in database.');
+    }
     const callerRole = callerDoc.data().role;
 
     if (callerRole !== 'super_admin' && callerRole !== 'admin') {

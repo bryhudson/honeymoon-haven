@@ -9,7 +9,30 @@ if (admin.apps.length === 0) {
 }
 const db = admin.firestore();
 
+// Auth guard for onRequest debug endpoints
+async function verifyAdminRequest(req, res) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return false;
+    }
+    try {
+        const decoded = await admin.auth().verifyIdToken(authHeader.split('Bearer ')[1]);
+        const callerDoc = await db.collection('shareholders').doc(decoded.email).get();
+        if (!callerDoc.exists || !['admin', 'super_admin'].includes(callerDoc.data().role)) {
+            res.status(403).json({ error: 'Forbidden' });
+            return false;
+        }
+        return true;
+    } catch (e) {
+        res.status(401).json({ error: 'Invalid token' });
+        return false;
+    }
+}
+
 exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res) => {
+    if (!(await verifyAdminRequest(req, res))) return;
+
     try {
         const targetName = req.query.name || "Jeff & Lori";
         const action = req.query.action || "inspect"; // 'inspect' or 'simulate'
@@ -209,6 +232,8 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
 
 // Helper for Scheduler Logic Inspection
 exports.diagnoseScheduler = onRequest({ secrets: gmailSecrets }, async (req, res) => {
+    if (!(await verifyAdminRequest(req, res))) return;
+
     try {
         const result = {
             now: new Date().toISOString(),
