@@ -723,6 +723,7 @@ export function Dashboard() {
                                             }}
                                             bookings={allBookings}
                                             startDateOverride={startDateOverride}
+                                            currentUser={currentUser}
                                         />
                                     </div>
                                 </div>

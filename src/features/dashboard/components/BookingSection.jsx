@@ -16,7 +16,7 @@ import ErrorBoundary from '../../../components/ui/ErrorBoundary';
 // Helper removed - using direct handlers
 
 
-export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, startDateOverride, bookings, status }) {
+export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, startDateOverride, bookings, status, currentUser }) {
     // Parse initial booking synchronously to prevent render race conditions
     const getInitialRange = (booking) => {
         if (!booking?.from || !booking?.to) return undefined;
@@ -336,6 +336,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             // Sanitize Payload
             const payload = {
                 ...newBooking,
+                uid: currentUser?.uid || initialBooking?.uid, // Attach User ID for security rules
+                type: 'booking', // explicit type for security rules
                 totalPrice: totalPrice, // Use calculated dynamic price
                 priceBreakdown: priceDetails?.breakdown || null, // Save detailed breakdown
                 guests: parseInt(formData.guests) || 1, // Ensure number
