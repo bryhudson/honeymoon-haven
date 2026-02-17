@@ -436,7 +436,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             {step === 2 && "How Many Guests?"}
                             {step === 3 && "Review & Confirm"}
                         </h2>
-                        <p className="text-[10px] text-muted-foreground font-medium mt-1">
+                        <p className="text-xs md:text-sm text-muted-foreground font-medium mt-1">
                             {step === 1 && <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> Mar 1 - Oct 31</span>}
                             {step === 2 && <span>Max 6 guests per booking</span>}
                             {step === 3 && <span>Guest: <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>}
@@ -637,7 +637,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         <div className="bg-slate-50/80 rounded-xl p-0 overflow-hidden border border-slate-200 shadow-sm">
                                             {/* Header Row: Cabin Info */}
                                             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
-                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cabin Assignment</span>
+                                                <span className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider">Cabin Assignment</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-black text-slate-800 text-xl">{formData.cabinNumber || "?"}</span>
                                                 </div>
@@ -649,11 +649,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 {/* Row: Dates */}
                                                 <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                                                     <div>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dates</span>
+                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dates</span>
                                                         <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
                                                             {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d')}
                                                         </div>
-                                                        <div className="text-xs text-slate-500 font-medium mt-0.5">
+                                                        <div className="text-sm text-slate-500 font-medium mt-0.5">
                                                             {differenceInCalendarDays(selectedRange.to, selectedRange.from)} nights • {format(selectedRange.to, 'yyyy')}
                                                         </div>
                                                     </div>
@@ -668,11 +668,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 {/* Row: Guests */}
                                                 <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                                                     <div>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guests</span>
+                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Guests</span>
                                                         <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
                                                             {formData.guests} {parseInt(formData.guests) === 1 ? 'Guest' : 'Guests'}
                                                         </div>
-                                                        <div className="text-xs text-slate-500 font-medium mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
+                                                        <div className="text-sm text-slate-500 font-medium mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
                                                             Registered to: {formData.shareholderName}
                                                         </div>
                                                     </div>
@@ -695,19 +695,19 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                         <div className="flex flex-col items-end gap-0.5 opacity-80">
                                                             {/* Weeknights */}
                                                             {priceDetails?.breakdown?.weeknights > 0 && (
-                                                                <div className="text-[10px] text-slate-500 font-medium">
+                                                                <div className="text-xs text-slate-500 font-medium">
                                                                     {priceDetails.breakdown.weeknights} Weeknight{priceDetails.breakdown.weeknights !== 1 ? 's' : ''} x $100
                                                                 </div>
                                                             )}
                                                             {/* Weekends */}
                                                             {priceDetails?.breakdown?.weekends > 0 && (
-                                                                <div className="text-[10px] text-slate-500 font-medium">
+                                                                <div className="text-xs text-slate-500 font-medium">
                                                                     {priceDetails.breakdown.weekends} Weekend{priceDetails.breakdown.weekends !== 1 ? 's' : ''} x $125
                                                                 </div>
                                                             )}
                                                             {/* Discount */}
                                                             {priceDetails?.breakdown?.discount > 0 && (
-                                                                <div className="text-[10px] text-green-600 font-bold">
+                                                                <div className="text-xs text-green-600 font-bold">
                                                                     -${priceDetails.breakdown.discount} Weekly Discount
                                                                 </div>
                                                             )}
