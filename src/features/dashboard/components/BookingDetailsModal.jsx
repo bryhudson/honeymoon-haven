@@ -52,7 +52,15 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                             >
                                 Cancel Booking
                             </button>
-                        ) : null}
+                        ) : (
+                            <div className="text-[10px] text-slate-400 p-2 border border-slate-200 rounded bg-slate-50">
+                                DEBUG: Fin:{isFinalized.toString()} Canc:{isCancelled.toString()} Adm:{isAdmin?.toString()} Own:{isOwner.toString()} Fut:{isFuture.toString()}
+                                <br />
+                                User: "{currentUser}" vs Book: "{booking.shareholderName}"
+                                <br />
+                                HasCancelFunc: {(!!onCancel).toString()}
+                            </div>
+                        )}
 
                         {booking.isFinalized && booking.isPaid && onEmail && (
                             <button
