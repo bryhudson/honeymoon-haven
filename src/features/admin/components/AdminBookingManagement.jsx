@@ -217,9 +217,8 @@ export function AdminBookingManagement({
                     {(booking.type === 'pass' || booking.type === 'auto-pass' || booking.type === 'cancelled') ? (
                         <span className="text-slate-400">—</span>
                     ) : (
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border w-24 justify-center ${paymentClass}`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border w-24 justify-center ${paymentClass}`}>
                             {booking.isPaid ? 'PAID' : 'UNPAID'}
-                            {booking.isPaid && <span className="ml-1 text-[10px] opacity-75 hidden xl:inline">via {booking.paymentMethod || 'Manual'}</span>}
                         </span>
                     )}
                 </td>
