@@ -24,9 +24,11 @@ import { AdminStatsGrid } from '../components/AdminStatsGrid';
 import { AdminBookingManagement } from '../components/AdminBookingManagement';
 import { AdminUserManagement } from '../components/AdminUserManagement';
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
+
 export function AdminDashboard() {
     const { currentUser } = useAuth();
-    const IS_SITE_OWNER = currentUser?.email === 'bryan.m.hudson@gmail.com';
+    const IS_SITE_OWNER = ADMIN_EMAILS[0] === currentUser?.email?.toLowerCase();
 
     // UI State
     const [activeTab, setActiveTab] = useState('bookings');
@@ -158,7 +160,8 @@ export function AdminDashboard() {
     const handleSendPaymentReminder = async (booking) => {
         // Find shareholder email
         const shareholder = shareholders.find(s => s.name === booking.shareholderName);
-        const targetEmail = isTestMode ? "bryan.m.hudson@gmail.com" : (shareholder?.email || "bryan.m.hudson@gmail.com");
+        const fallbackEmail = import.meta.env.VITE_SUPPORT_EMAIL || ADMIN_EMAILS[0];
+        const targetEmail = isTestMode ? fallbackEmail : (shareholder?.email || fallbackEmail);
         const targetName = isTestMode ? `[TEST] ${booking.shareholderName}` : booking.shareholderName;
 
         triggerConfirm("Send Reminder?", `Send reminder to ${targetName} (${targetEmail})?`, async () => {
@@ -245,95 +248,206 @@ export function AdminDashboard() {
         });
     };
 
-    const handleActivateProductionMode = async () => {
-        requireAuth("ACTIVATE PRODUCTION", "⚠️ DANGER: Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA (Bookings, Logs, Status) and set the date to April 13, 2026. This action cannot be undone.", async () => {
-            try {
-                // Safety Net: Backup First
-                triggerAlert("Info", "Creating Backup...");
-                const backupId = await backupBookingsToFirestore();
+    const checkAdminStatus = async () => {
+        if (!currentUser?.email) throw new Error("No authenticated user.");
 
-                // Safety Net: CSV Download
-                const snap = await getDocs(collection(db, "bookings"));
-                const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                exportBookingsToCSV(currentBookings);
+        const email = currentUser.email;
+        const lowerEmail = email.toLowerCase();
+
+        const exactRef = doc(db, "shareholders", email);
+        const lowerRef = doc(db, "shareholders", lowerEmail);
+
+        const [exactSnap, lowerSnap] = await Promise.all([getDoc(exactRef), getDoc(lowerRef)]);
+
+        const exactRole = exactSnap.exists() ? exactSnap.data().role : null;
+        const lowerRole = lowerSnap.exists() ? lowerSnap.data().role : null;
+
+        const isAuthorized = (exactRole === 'admin' || exactRole === 'super_admin' || lowerRole === 'admin' || lowerRole === 'super_admin');
+
+        if (!isAuthorized) {
+            let msg = "DB PERMISSION DENIED.\n";
+            msg += `Auth: ${email}\n`;
+            msg += `Exact Doc: ${exactSnap.exists() ? exactRole : "MISSING"}\n`;
+            msg += `Lower Doc: ${lowerSnap.exists() ? lowerRole : "MISSING"}\n`;
+            throw new Error(msg);
+        }
+        return true;
+    };
+
+    const handleActivateProductionMode = async () => {
+        requireAuth("ACTIVATE PRODUCTION", "⚠️ DANGER: Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA and set date to April 13, 2026.", async () => {
+            try {
+                // STEP 1: PERMISSIONS CHECK
+                try {
+                    await checkAdminStatus();
+                } catch (e) {
+                    throw new Error("PRE-FLIGHT CHECK FAILED: " + e.message);
+                }
+
+                // STEP 2: BACKUP
+                let backupId = null;
+                try {
+                    triggerAlert("Info", "Step 1/5: Creating Backup...");
+                    backupId = await backupBookingsToFirestore();
+                } catch (e) {
+                    // Backup failure shouldn't necessarily block wipe if user forces, but we'll stop for safety
+                    throw new Error("BACKUP FAILED: " + e.message);
+                }
+
+                // STEP 3: CSV EXPORT (Client side, unlikely to fail)
+                try {
+                    const snap = await getDocs(collection(db, "bookings"));
+                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    exportBookingsToCSV(currentBookings);
+                } catch (e) { console.warn("CSV Error", e); }
 
                 if (backupId) {
-                    triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
+                    // triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe...`);
+                    // Don't interrupt flow with alert
                 } else {
-                    triggerAlert("Info", "Backups skipped (Default Empty). Proceeding.");
+                    // triggerAlert("Info", "Backups skipped. Proceeding...");
                 }
 
-                // 1. Wipe DB (Clean Slate - Bookings, Logs, Status)
+                // STEP 4: WIPE COLLECTIONS
                 const clearCollections = ["bookings", "email_logs", "shareholder_status", "notification_log"];
-                const batch = writeBatch(db);
 
                 for (const colName of clearCollections) {
-                    const colSnap = await getDocs(collection(db, colName));
-                    colSnap.docs.forEach(d => batch.delete(d.ref));
+                    try {
+                        // console.log("Wiping " + colName);
+                        // triggerAlert("Info", `Step 3/5: Wiping ${colName}...`);
+                        const colSnap = await getDocs(collection(db, colName));
+
+                        // Delete in batches of 400 to avoid limits
+                        const chunks = [];
+                        let batch = writeBatch(db);
+                        let count = 0;
+                        colSnap.docs.forEach(d => {
+                            batch.delete(d.ref);
+                            count++;
+                            if (count >= 400) { chunks.push(batch); batch = writeBatch(db); count = 0; }
+                        });
+                        if (count > 0) chunks.push(batch);
+
+                        await Promise.all(chunks.map(b => b.commit()));
+
+                    } catch (e) {
+                        throw new Error(`WIPE FAILED (${colName}): ` + e.message);
+                    }
                 }
 
-                await batch.commit();
+                // STEP 5: RESET STATUS
+                try {
+                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+                } catch (e) {
+                    throw new Error("STATUS RESET FAILED: " + e.message);
+                }
 
-                // 2. Reset Status
-                await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+                // STEP 6: SETTINGS UPDATE
+                try {
+                    const ref = doc(db, "settings", "general");
+                    const prodDate = new Date("2026-04-13T10:00:00");
+                    await setDoc(ref, {
+                        isTestMode: false,
+                        draftStartDate: Timestamp.fromDate(prodDate)
+                    }, { merge: true });
+                    setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
+                } catch (e) {
+                    throw new Error("SETTINGS UPDATE FAILED: " + e.message);
+                }
 
-                // 3. Set Production Mode + Date
-                const ref = doc(db, "settings", "general");
-                const prodDate = new Date("2026-04-13T10:00:00");
-                await setDoc(ref, {
-                    isTestMode: false,
-                    draftStartDate: Timestamp.fromDate(prodDate)
-                }, { merge: true });
-                setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
-                triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped. Date set to April 13, 2026.");
-            } catch (e) { triggerAlert("Error", "Failed to activate Production: " + e.message); }
+                triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped.");
+
+            } catch (e) {
+                console.error(e);
+                triggerAlert("System Error", e.message);
+            }
         });
     };
 
     const handleActivateTestMode = async () => {
         if (!IS_SITE_OWNER) return;
-        requireAuth("ACTIVATE TEST MODE", "⚠️ DANGER: WIPE DATABASE + RESET CLOCK? This will DELETE ALL DATA and set the clock to Today @ 10am. This action cannot be undone.", async () => {
+        requireAuth("ACTIVATE TEST MODE", "⚠️ DANGER: WIPE DATABASE + RESET CLOCK? This will DELETE ALL DATA and set the clock to Today @ 10am.", async () => {
             try {
-                // Safety Net: Backup First
-                triggerAlert("Info", "Creating Backup...");
-                const backupId = await backupBookingsToFirestore();
+                // STEP 1: PERMISSIONS CHECK
+                try {
+                    await checkAdminStatus();
+                } catch (e) {
+                    throw new Error("PRE-FLIGHT CHECK FAILED: " + e.message);
+                }
 
-                // Safety Net: CSV Download
-                const snap = await getDocs(collection(db, "bookings"));
-                const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                exportBookingsToCSV(currentBookings);
+                // STEP 2: BACKUP
+                let backupId = null;
+                try {
+                    triggerAlert("Info", "Step 1/5: Creating Backup...");
+                    backupId = await backupBookingsToFirestore();
+                } catch (e) {
+                    throw new Error("BACKUP FAILED: " + e.message);
+                }
+
+                // STEP 3: CSV
+                try {
+                    const snap = await getDocs(collection(db, "bookings"));
+                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    exportBookingsToCSV(currentBookings);
+                } catch (e) { console.warn("CSV Error", e); }
 
                 if (backupId) {
-                    triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding to Wipe.`);
+                    // triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding...`);
                 }
 
-                // 1. Wipe DB (Clean Slate - Bookings, Logs, Status)
+                // STEP 4: WIPE COLLECTIONS
                 const clearCollections = ["bookings", "email_logs", "shareholder_status", "notification_log"];
-                const batch = writeBatch(db);
 
                 for (const colName of clearCollections) {
-                    const colSnap = await getDocs(collection(db, colName));
-                    colSnap.docs.forEach(d => batch.delete(d.ref));
+                    try {
+                        const colSnap = await getDocs(collection(db, colName));
+
+                        const chunks = [];
+                        let batch = writeBatch(db);
+                        let count = 0;
+                        colSnap.docs.forEach(d => {
+                            batch.delete(d.ref);
+                            count++;
+                            if (count >= 400) { chunks.push(batch); batch = writeBatch(db); count = 0; }
+                        });
+                        if (count > 0) chunks.push(batch);
+
+                        await Promise.all(chunks.map(b => b.commit()));
+
+                    } catch (e) {
+                        throw new Error(`WIPE FAILED (${colName}): ` + e.message);
+                    }
                 }
 
-                await batch.commit();
+                // STEP 5: RESET STATUS
+                try {
+                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+                } catch (e) {
+                    throw new Error("STATUS RESET FAILED: " + e.message);
+                }
 
-                // 2. Reset Status
-                await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
+                // STEP 6: SETTINGS UPDATE
+                try {
+                    const todayTenAm = new Date();
+                    todayTenAm.setHours(10, 0, 0, 0);
 
-                // 3. Set Test Mode + Today's Date @ 10am
-                const todayTenAm = new Date();
-                todayTenAm.setHours(10, 0, 0, 0);
+                    const ref = doc(db, "settings", "general");
+                    await setDoc(ref, {
+                        isTestMode: true,
+                        draftStartDate: Timestamp.fromDate(todayTenAm)
+                    }, { merge: true });
 
-                const ref = doc(db, "settings", "general");
-                await setDoc(ref, {
-                    isTestMode: true,
-                    draftStartDate: Timestamp.fromDate(todayTenAm)
-                }, { merge: true });
+                    setSimStartDate(format(todayTenAm, "yyyy-MM-dd'T'HH:mm"));
+                } catch (e) {
+                    throw new Error("SETTINGS UPDATE FAILED: " + e.message);
+                }
 
-                setSimStartDate(format(todayTenAm, "yyyy-MM-dd'T'HH:mm"));
                 triggerAlert("Success", "Test Mode ACTIVATED. DB Wiped. Clock Reset.");
-            } catch (e) { triggerAlert("Error", e.message); }
+
+            } catch (e) {
+                console.error(e);
+                triggerAlert("System Error", e.message);
+            }
         });
     };
 

@@ -10,10 +10,8 @@ export function TestRecipientModal({
     setTestRecipient,
     label
 }) {
-    const recipients = [
-        { name: "Bryan Hudson", email: "bryan.m.hudson@gmail.com" },
-        { name: "HHR Admin", email: "honeymoonhavenresort.lc@gmail.com" }
-    ];
+    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
+    const recipients = adminEmails.map(email => ({ name: email.split('@')[0], email }));
 
     return (
         <BaseModal

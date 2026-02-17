@@ -83,7 +83,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess, initialRole = 'sha
                                 type="email"
                                 required
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => setEmail(e.target.value.toLowerCase())}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
                                 placeholder="john@example.com"
                                 disabled={loading}

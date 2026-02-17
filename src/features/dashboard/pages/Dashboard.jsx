@@ -27,6 +27,8 @@ import { ShareholderCalendarView } from '../components/ShareholderCalendarView';
 
 import { FeedbackModal } from '../../feedback/components/FeedbackModal';
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
+
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -99,16 +101,16 @@ export function Dashboard() {
     // Resolve logged in share holder name from email
     // Handle multiple emails in one string (comma separated)
     const loggedInShareholder = React.useMemo(() => {
-        // Masquerade Override (Admin Only feature really, but logic lives here)
+        // Masquerade Override (Admin Only feature)
         if (masqueradeAs) return masqueradeAs;
 
         if (!currentUser?.email) return null;
-        if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
-        if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
-        // Use dynamic list
-        const userEmail = currentUser.email.toLowerCase();
-        const owner = shareholders.find(o => o.email && o.email.toLowerCase().includes(userEmail));
-        return owner ? owner.name : null;
+        const userEmail = currentUser.email.toLowerCase().trim();
+        const owner = shareholders.find(o => o.email && o.email.toLowerCase().trim() === userEmail);
+        if (owner) return owner.name;
+        // Fallback for admin accounts not in shareholders list
+        if (ADMIN_EMAILS.includes(userEmail)) return 'Admin';
+        return null;
     }, [currentUser, shareholders, masqueradeAs]);
 
     // --- WELCOME MODAL LOGIC ---
@@ -159,7 +161,11 @@ export function Dashboard() {
         return myRecord && !myRecord.seenWelcome;
     }, [loggedInShareholder, shareholders]);
 
-    const isSuperAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com';
+    const isSuperAdmin = React.useMemo(() => {
+        if (!currentUser?.email) return false;
+        const match = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+        return match?.role === 'super_admin' || currentUser.email.toLowerCase() === ADMIN_EMAILS[0];
+    }, [currentUser, shareholders]);
 
     // Using Custom Hook for Realtime Data
     const { allBookings, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM } = useBookingRealtime();
@@ -208,11 +214,7 @@ export function Dashboard() {
     // Auto-redirect admins to Admin Dashboard (unless masquerading as shareholder)
     useEffect(() => {
         if (!loading && currentUser && !masqueradeAs) {
-            const isAdmin = currentUser.email === 'bryan.m.hudson@gmail.com' ||
-                currentUser.email === 'honeymoonhavenresort.lc@gmail.com';
-
-            if (isAdmin) {
-
+            if (ADMIN_EMAILS.includes(currentUser.email?.toLowerCase())) {
                 navigate('/admin', { replace: true });
             }
         }

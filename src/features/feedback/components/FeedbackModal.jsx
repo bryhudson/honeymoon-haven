@@ -46,7 +46,7 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
             const finalEmail = email.trim() || currentUser?.email || 'N/A';
 
             await emailService.sendEmail({
-                to: { name: 'Super Admin', email: 'bryan.m.hudson@gmail.com' },
+                to: { name: 'Super Admin', email: import.meta.env.VITE_SUPPORT_EMAIL || 'bryan.m.hudson@gmail.com' },
                 templateId: 'feedback',
                 params: {
                     name: finalName,
@@ -64,7 +64,7 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
             console.error("Failed to send feedback:", error);
             setAlertData({
                 title: "Feedback Error",
-                message: "Failed to send feedback. Please try again or email bryan.m.hudson@gmail.com directly.",
+                message: `Failed to send feedback. Please try again or email ${import.meta.env.VITE_SUPPORT_EMAIL || 'bryan.m.hudson@gmail.com'} directly.`,
                 isDanger: true
             });
         } finally {

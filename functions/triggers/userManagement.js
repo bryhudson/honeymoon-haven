@@ -34,6 +34,7 @@ exports.createAccount = onCall(async (request) => {
     }
 
     const { email, password, name, role } = request.data;
+    const normalizedEmail = email.toLowerCase();
 
     // Validate Role Assignment
     if (role === 'super_admin' && !isSuperAdmin) {
@@ -48,21 +49,21 @@ exports.createAccount = onCall(async (request) => {
     try {
         // 3. Create Auth User
         const userRecord = await admin.auth().createUser({
-            email,
+            email: normalizedEmail,
             password,
             displayName: name,
         });
 
         // 4. Create Firestore Document
-        await admin.firestore().collection('shareholders').doc(email).set({
-            email,
+        await admin.firestore().collection('shareholders').doc(normalizedEmail).set({
+            email: normalizedEmail,
             displayName: name,
             role: role || 'shareholder',
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             createdBy: callerEmail
         });
 
-        logger.info(`User created: ${email} by ${callerEmail}`);
+        logger.info(`User created: ${normalizedEmail} by ${callerEmail}`);
         return { success: true, uid: userRecord.uid };
 
     } catch (error) {

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
 
 export function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, logout, updateUserPassword } = useAuth();
+    const { login, logout } = useAuth();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -19,61 +20,51 @@ export function Login() {
         setLoading(true);
 
         try {
-            // Priority 1: Try Logging in with current input
             await login(email, password);
 
-            // SECURITY CHECK: Verify user is a shareholder
-            if (email === 'bryan.m.hudson@gmail.com' || email === 'honeymoonhavenresort.lc@gmail.com') {
-                navigate('/admin');
-            } else {
-                // Check if email exists in shareholders collection
-                try {
-                    const shareholdersRef = collection(db, 'shareholders');
-                    // We can't do a simple array-contains because the field is a string "email1, email2"
-                    // So we must fetch all and check locally, or rely on the Dashboard check?
-                    // Relying on Dashboard check is "soft". We want "hard" denial here.
-
-                    // Fetch all shareholders (it's a small list, ~12 items)
-                    const snapshot = await getDocs(shareholdersRef);
-                    const allShareholders = snapshot.docs.map(doc => doc.data());
-
-                    const isShareholder = allShareholders.some(s =>
-                        s.email && s.email.toLowerCase().includes(email.toLowerCase())
-                    );
-
-                    if (!isShareholder) {
-                        // Force Logout immediately
-                        await updateUserPassword('FORCE_LOGOUT_IF_POSSIBLE'); // Just logout
-                        // actually context `logout` is not destructured, let's look at `login` usage.
-                        // Ah, I need `logout` from useAuth
-                        throw new Error("Access Denied: You are not a registered shareholder.");
-                    }
-
-                    navigate('/');
-                } catch (accessErr) {
-                    console.error("Access Check Failed:", accessErr);
-                    // Determine if it was our validation error or a network error
-                    if (accessErr.message.includes("Access Denied")) {
-                        setError("Access Denied: Your email is not linked to a shareholder account.");
-                        // Sign out to clean up the auth state
-                        // We need to access logout function.
-                        // It is not destructured above.
-                    } else {
-                        // Allow through? No, fail safe.
-                        setError("System Error: Could not verify shareholder status.");
-                    }
-                    // Clean up session if possible, but we don't have logout here easily without destabilizing the component?
-                    // Wait, I can destructure logout from useAuth.
+            // Check if user is an admin via Firestore role
+            const shareholderDoc = await getDoc(doc(db, 'shareholders', email));
+            if (shareholderDoc.exists()) {
+                const role = shareholderDoc.data().role;
+                if (role === 'admin' || role === 'super_admin') {
+                    navigate('/admin');
+                    setLoading(false);
                     return;
                 }
             }
-        } catch (err) {
-            // ... existing migration logic ...
-            if (email === 'bryan.m.hudson@gmail.com' && password === 'H00li@') {
-                // ...
+
+            // Fallback: check admin env list
+            if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+                navigate('/admin');
+                setLoading(false);
+                return;
             }
+
+            // Verify user is a shareholder (exact email match)
+            try {
+                const snapshot = await getDocs(collection(db, 'shareholders'));
+                const allShareholders = snapshot.docs.map(d => d.data());
+                const isShareholder = allShareholders.some(s =>
+                    s.email && s.email.toLowerCase().trim() === email.toLowerCase().trim()
+                );
+
+                if (!isShareholder) {
+                    await logout();
+                    setError("Access Denied: Your email is not linked to a shareholder account.");
+                    setLoading(false);
+                    return;
+                }
+
+                navigate('/');
+            } catch (accessErr) {
+                console.error("Access Check Failed:", accessErr);
+                await logout();
+                setError("System Error: Could not verify shareholder status.");
+                setLoading(false);
+                return;
+            }
+        } catch (err) {
             console.error(err);
-            // If we already set a specific error, keep it. Otherwise generic.
             if (!error) setError('Failed to sign in. Please check your credentials.');
         }
 

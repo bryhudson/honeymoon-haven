@@ -27,7 +27,7 @@ export function useBookingRealtime(): BookingRealtimeHook {
     const [bypassTenAM, setBypassTenAM] = useState<boolean>(false);
 
     useEffect(() => {
-        // Fetch Settings
+        // Fetch Settings (public read)
         const unsubSettings = onSnapshot(doc(db, "settings", "general"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
@@ -43,9 +43,11 @@ export function useBookingRealtime(): BookingRealtimeHook {
                 setIsSystemFrozen(false);
                 setBypassTenAM(false);
             }
+        }, (error) => {
+            console.error("Error fetching settings:", error);
         });
 
-        // Fetch Bookings
+        // Fetch Bookings (requires auth — gracefully fails if not logged in)
         const q = query(collection(db, "bookings"), orderBy("from"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const records: Booking[] = snapshot.docs.map(doc => {

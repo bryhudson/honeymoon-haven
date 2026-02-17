@@ -3,11 +3,17 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Helper: Check if user is an admin
-    // This assumes admins have a field 'role' == 'admin' or 'super_admin' in the 'users' collection
+    // Shareholders collection is keyed by email, with 'role' field ('admin' or 'super_admin')
     function isAdmin() {
-      return request.auth != null && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
+      // Check for admin role on EITHER the exact email OR the lowercase email
+      return request.auth != null && (
+        (exists(/databases/$(database)/documents/shareholders/$(request.auth.token.email)) &&
+         (get(/databases/$(database)/documents/shareholders/$(request.auth.token.email)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/shareholders/$(request.auth.token.email)).data.role == 'super_admin')) ||
+        (exists(/databases/$(database)/documents/shareholders/$(request.auth.token.email.lower())) &&
+         (get(/databases/$(database)/documents/shareholders/$(request.auth.token.email.lower())).data.role == 'admin' ||
+          get(/databases/$(database)/documents/shareholders/$(request.auth.token.email.lower())).data.role == 'super_admin'))
+      );
     }
 
     // Helper: Basic Schema Validation
@@ -30,8 +36,8 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // READ: Authenticated users only (SECURITY FIX: was publicly readable)
-      allow read: if request.auth != null;
+      // READ: Publicly readable (required for calendar display pre-auth)
+      allow read: if true;
 
       // CREATE: Allow if authenticated AND validates schema AND matches user ID
       // Rule: You can only create a booking for YOURSELF.
@@ -64,13 +70,13 @@ service cloud.firestore {
     match /notification_log/{logId} {
       allow read: if isAdmin();
       allow create: if request.auth != null; // Allow creation for email triggers
+      allow delete: if isAdmin();
     }
 
     // SETTINGS (Global Config)
-    // Authenticated users can read. Only Admins can write.
-    // SECURITY FIX: was publicly readable
+    // Publicly readable (required for frontend config pre-login). Only Admins can write.
     match /settings/{docId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
@@ -90,12 +96,28 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ALLOW ADMINS TO WIPE SHAREHOLDER STATUS
+    match /shareholder_status/{docId} {
+      allow read, write: if request.auth != null; // Authenticated users can update their status
+      allow delete: if isAdmin(); // Admins need delete for wipe
+    }
+
+    // BACKUPS (created during database wipe/reset)
+    // Only Admins can read/write backup data.
+    match /_backups/{backupId} {
+      allow read, write: if isAdmin();
+      match /{document=**} {
+        allow read, write: if isAdmin();
+      }
+    }
+
     // EMAIL LOGS
     // Only Admins can read email history.
     // Authenticated users (Cloud Functions service accounts) can create logs.
     match /email_logs/{logId} {
       allow read: if isAdmin();
       allow create: if request.auth != null;
+      allow delete: if isAdmin();
     }
   }
 }

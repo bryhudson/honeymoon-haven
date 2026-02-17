@@ -8,6 +8,8 @@ import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
 import { formatNameForDisplay } from '../../lib/shareholders';
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
+
 export function Header() {
     const { currentUser, logout } = useAuth();
     const navigate = useNavigate();
@@ -36,14 +38,20 @@ export function Header() {
     // Resolve logged in shareholder name from email
     const loggedInShareholder = React.useMemo(() => {
         if (!currentUser?.email) return null;
-        if (currentUser.email === 'bryan.m.hudson@gmail.com') return 'Bryan';
-        if (currentUser.email === 'honeymoonhavenresort.lc@gmail.com') return 'HHR Admin';
-        const owner = shareholders.find(o => o.email && o.email.includes(currentUser.email));
-        return owner ? formatNameForDisplay(owner.name) : null;
+        const owner = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+        if (owner) return formatNameForDisplay(owner.name);
+        // Fallback for admin accounts not in shareholders list
+        if (ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) return 'Admin';
+        return null;
     }, [currentUser, shareholders]);
 
-    // Hardcoded Admin Check (for now)
-    const isAdmin = currentUser?.email === 'bryan.m.hudson@gmail.com' || currentUser?.email === 'honeymoonhavenresort.lc@gmail.com';
+    // Admin check: Firestore role or env var fallback
+    const isAdmin = React.useMemo(() => {
+        if (!currentUser?.email) return false;
+        const match = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+        if (match && (match.role === 'admin' || match.role === 'super_admin')) return true;
+        return ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+    }, [currentUser, shareholders]);
 
     // Fetch Active Picker for Masquerade (Admin Only) using the robust hook
     // Note: This adds a listener to bookings/settings even on non-dashboard pages, 

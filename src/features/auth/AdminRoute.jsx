@@ -2,6 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
+
 export function AdminRoute({ children }) {
     const { currentUser } = useAuth();
     const [isAdmin, setIsAdmin] = React.useState(null); // null = loading
@@ -12,8 +14,8 @@ export function AdminRoute({ children }) {
             return;
         }
 
-        // Hardcode fallback for safety during migration
-        if (currentUser.email === 'bryan.m.hudson@gmail.com') {
+        // Env var fallback for admin access
+        if (ADMIN_EMAILS.includes(currentUser.email?.toLowerCase())) {
             setIsAdmin(true);
             return;
         }

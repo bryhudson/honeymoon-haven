@@ -8,15 +8,13 @@ import { TestRecipientModal } from './TestRecipientModal';
 
 export function NotificationsTab({ triggerAlert, isTestMode = true }) {
     const { currentUser } = useAuth();
-    const [testRecipient, setTestRecipient] = useState('bryan.m.hudson@gmail.com');
+    const [testRecipient, setTestRecipient] = useState(import.meta.env.VITE_SUPPORT_EMAIL || '');
     const [pendingTest, setPendingTest] = useState(null); // { type, category, label }
     const [activeTab, setActiveTab] = useState('monitor'); // 'monitor' | 'testing' | 'history'
 
     useEffect(() => {
         if (currentUser?.email) {
-            setTestRecipient(currentUser.email === 'honeymoonhavenresort.lc@gmail.com'
-                ? 'honeymoonhavenresort.lc@gmail.com'
-                : 'bryan.m.hudson@gmail.com');
+            setTestRecipient(currentUser.email);
         }
     }, [currentUser]);
 

@@ -38,8 +38,14 @@ exports.sendTestEmail = onCall({ secrets: [gmailSecrets[0], gmailSecrets[1], sup
 
     const { emailType, targetShareholder, testEmail } = request.data;
 
-    if (!emailType) {
+    if (!emailType || typeof emailType !== 'string') {
         throw new HttpsError('invalid-argument', 'Email type is required.');
+    }
+    if (targetShareholder && (typeof targetShareholder !== 'string' || targetShareholder.length > 100)) {
+        throw new HttpsError('invalid-argument', 'Invalid shareholder name.');
+    }
+    if (testEmail && (typeof testEmail !== 'string' || testEmail.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail))) {
+        throw new HttpsError('invalid-argument', 'Invalid email format.');
     }
 
     try {

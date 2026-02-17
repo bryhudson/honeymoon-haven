@@ -115,6 +115,8 @@ export function SystemTab({
                     getAvailableBackups={getAvailableBackups}
                     triggerAlert={triggerAlert || console.log}
                 />
+
+                <PermissionDebugger />
             </div>
         </div>
     );
@@ -184,4 +186,76 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
             )}
         </div>
     );
+}
+
+function PermissionDebugger() {
+    const { currentUser } = useAuth();
+    const [dbUser, setDbUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!currentUser?.email) return;
+
+        const checkUser = async () => {
+            setLoading(true);
+            try {
+                // Check both exact and lowercase
+                const exactRef = doc(db, "shareholders", currentUser.email);
+                const lowerRef = doc(db, "shareholders", currentUser.email.toLowerCase());
+
+                const exactSnap = await getDoc(exactRef);
+                const lowerSnap = await getDoc(lowerRef);
+
+                setDbUser({
+                    email: currentUser.email,
+                    exactMatch: exactSnap.exists() ? exactSnap.data() : null,
+                    exactId: exactSnap.exists() ? exactSnap.id : "MISSING",
+                    lowerMatch: lowerSnap.exists() ? lowerSnap.data() : null,
+                    lowerId: lowerSnap.exists() ? lowerSnap.id : "MISSING"
+                });
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkUser();
+    }, [currentUser]);
+
+    if (!currentUser) return null;
+
+    return (
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-8">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Permission Debugger</h3>
+            <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+                <div>
+                    <span className="text-slate-500">Auth Email:</span><br />
+                    <span className="font-bold text-slate-800">{currentUser.email}</span>
+                </div>
+                <div>
+                    <span className="text-slate-500">Firestore Role (Exact):</span><br />
+                    <span className={`font-bold ${dbUser?.exactMatch?.role === 'admin' || dbUser?.exactMatch?.role === 'super_admin' ? 'text-green-600' : 'text-red-600'}`}>
+                        {dbUser?.exactMatch?.role || "MISSING / NO ROLE"}
+                    </span>
+                </div>
+                <div>
+                    <span className="text-slate-500">Firestore Role (Lower):</span><br />
+                    <span className={`font-bold ${dbUser?.lowerMatch?.role === 'admin' || dbUser?.lowerMatch?.role === 'super_admin' ? 'text-green-600' : 'text-red-600'}`}>
+                        {dbUser?.lowerMatch?.role || "MISSING / NO ROLE"}
+                    </span>
+                </div>
+                <div>
+                    <span className="text-slate-500">Admin Status:</span><br />
+                    {(dbUser?.exactMatch?.role === 'admin' || dbUser?.exactMatch?.role === 'super_admin' || dbUser?.lowerMatch?.role === 'admin' || dbUser?.lowerMatch?.role === 'super_admin')
+                        ? <span className="text-green-600 font-bold">✅ AUTHORIZED</span>
+                        : <span className="text-red-600 font-bold">❌ UNAUTHORIZED</span>
+                    }
+                </div>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-2">
+                If "Firestore Role" is MISSING or not 'admin'/'super_admin', the backup will fail.
+            </p>
+        </div>
+    )
 }

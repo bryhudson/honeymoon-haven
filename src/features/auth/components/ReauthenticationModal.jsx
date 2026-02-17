@@ -16,8 +16,8 @@ export function ReauthenticationModal({ isOpen, onClose, onConfirm, title, messa
         const auth = getAuth();
         const user = auth.currentUser;
 
-        if (!user || user.email !== "bryan.m.hudson@gmail.com") {
-            setError("Unauthorized user.");
+        if (!user) {
+            setError("Not authenticated. Please sign in again.");
             setIsLoading(false);
             return;
         }

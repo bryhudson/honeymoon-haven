@@ -33,8 +33,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
     const [selectedRange, setSelectedRange] = useState(() => getInitialRange(initialBooking));
 
-    // START STEP LOGIC: If we have a valid range, start at Step 2 (Details)
-    const [step, setStep] = useState(() => getInitialRange(initialBooking) ? 2 : 1);
+    // START STEP LOGIC: 
+    // Step 1: Dates
+    // Step 2: Guests
+    // Step 3: Review & Confirm
+    const [step, setStep] = useState(() => getInitialRange(initialBooking) ? 3 : 1);
 
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -390,14 +393,22 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     };
 
     const handleContinue = () => {
-        if (selectedRange?.from && selectedRange?.to && !isTooLong && !isTooShort && !isOverlap) {
-            setStep(2);
+        if (step === 1) {
+            if (selectedRange?.from && selectedRange?.to && !isTooLong && !isTooShort && !isOverlap) {
+                setStep(2);
+            }
+        } else if (step === 2) {
+            setStep(3);
         }
     };
 
     const handleBack = () => {
-        setStep(1);
-        setIsSuccess(false);
+        if (isSuccess) {
+            setIsSuccess(false);
+            setStep(1); // Reset to start if backing out of success
+        } else {
+            setStep(prev => Math.max(1, prev - 1));
+        }
     };
 
     // STRICT SAFETY for DayPicker selection
@@ -418,23 +429,30 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             <div className="container mx-auto px-0 max-w-md">
 
                 {/* Compact Header */}
-                <div className="flex items-center justify-between mb-2 px-2">
+                <div className="flex items-center justify-between mb-4 px-2">
                     <div className="text-left">
-                        <h2 className="text-lg font-black tracking-tight text-foreground leading-none">
-                            {step === 1 ? "Select Dates" : "Finalize Booking"}
+                        <h2 className="text-xl font-black tracking-tight text-foreground leading-none">
+                            {step === 1 && "Select Dates"}
+                            {step === 2 && "How Many Guests?"}
+                            {step === 3 && "Review & Confirm"}
                         </h2>
                         <p className="text-[10px] text-muted-foreground font-medium mt-1">
-                            {step === 1
-                                ? <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> Mar 1 - Oct 31</span>
-                                : <span>Guest: <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>
-                            }
+                            {step === 1 && <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> Mar 1 - Oct 31</span>}
+                            {step === 2 && <span>Max 6 guests per booking</span>}
+                            {step === 3 && <span>Guest: <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>}
+                            {isSuccess && <span>Booking Complete!</span>}
                         </p>
                     </div>
 
                     {/* Compact Steps */}
                     <div className="flex gap-1.5">
-                        <div className={`h-1.5 w-6 rounded-full transition-all ${step === 1 ? "bg-primary" : "bg-slate-200"}`}></div>
-                        <div className={`h-1.5 w-6 rounded-full transition-all ${step === 2 ? "bg-primary" : "bg-slate-200"}`}></div>
+                        {[1, 2, 3].map((s) => (
+                            <div
+                                key={s}
+                                className={`h-1.5 w-6 rounded-full transition-all duration-300 ${step >= s ? "bg-primary" : "bg-slate-200"
+                                    }`}
+                            />
+                        ))}
                     </div>
                 </div>
 
@@ -498,15 +516,59 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                     disabled={!selectedRange?.from || !selectedRange?.to || isTooLong || isTooShort || isOverlap}
                                     className="w-full py-4 bg-primary text-primary-foreground text-lg font-bold rounded-xl shadow-lg hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
                                 >
-                                    Continue
+                                    Next: Guest Details
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 2: DETAILS */}
+                    {/* STEP 2: GUESTS */}
                     {step === 2 && (
+                        <div className="w-full bg-card rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="p-6 md:p-8 flex flex-col items-center justify-center space-y-8 min-h-[300px]">
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-2xl font-black text-slate-800">Who's joining you?</h3>
+                                    <p className="text-slate-500 font-medium text-sm">Cabin occupancy limit is 6 guests.</p>
+                                </div>
+
+                                <div className="flex items-center gap-6">
+                                    <button
+                                        onClick={() => handleInputChange({ target: { name: 'guests', value: Math.max(1, parseInt(formData.guests) - 1) } })}
+                                        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
+                                        disabled={formData.guests <= 1}
+                                    >
+                                        <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M20 12H4" /></svg>
+                                    </button>
+
+                                    <div className="w-20 md:w-24 text-center">
+                                        <span className="text-5xl md:text-6xl font-black text-slate-800 tracking-tighter">{formData.guests}</span>
+                                    </div>
+
+                                    <button
+                                        onClick={() => handleInputChange({ target: { name: 'guests', value: Math.min(6, parseInt(formData.guests) + 1) } })}
+                                        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center transition-all shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-50"
+                                        disabled={formData.guests >= 6}
+                                    >
+                                        <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                                    </button>
+                                </div>
+
+                                <div className="w-full pt-4">
+                                    <button
+                                        onClick={handleContinue}
+                                        className="w-full py-4 bg-primary text-primary-foreground text-lg font-bold rounded-xl shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        Review Details
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 3: REVIEW & CONFIRM */}
+                    {step === 3 && (
                         <div className="w-full bg-card rounded-2xl shadow-xl border animate-in fade-in slide-in-from-right-4 duration-300">
 
 
@@ -573,88 +635,84 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                     <>
                                         {/* Unified Details Card */}
                                         <div className="bg-slate-50/80 rounded-xl p-0 overflow-hidden border border-slate-200 shadow-sm">
-                                            {/* Header Row: Back + Cabin */}
-                                            <div className="flex items-center justify-between p-3 border-b border-slate-200/60 bg-white">
-                                                <button onClick={handleBack} className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium transition-colors">
-                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                                                    Change Dates
-                                                </button>
+                                            {/* Header Row: Cabin Info */}
+                                            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
+                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cabin Assignment</span>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400">Cabin</span>
-                                                    <span className="font-black text-slate-800 text-lg">{formData.cabinNumber || "?"}</span>
+                                                    <span className="font-black text-slate-800 text-xl">{formData.cabinNumber || "?"}</span>
                                                 </div>
                                             </div>
 
                                             {/* Details Body */}
-                                            <div className="p-4 space-y-3">
+                                            <div className="p-5 space-y-5">
 
                                                 {/* Row: Dates */}
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm font-medium text-slate-500">Dates</span>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-sm font-bold text-slate-900">
-                                                            {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d, yyyy')}
-                                                        </span>
-                                                        <button
-                                                            onClick={handleBack}
-                                                            className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
-                                                        >
-                                                            Change
-                                                        </button>
+                                                <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dates</span>
+                                                        <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
+                                                            {format(selectedRange.from, 'MMM d')} - {format(selectedRange.to, 'MMM d')}
+                                                        </div>
+                                                        <div className="text-xs text-slate-500 font-medium mt-0.5">
+                                                            {differenceInCalendarDays(selectedRange.to, selectedRange.from)} nights • {format(selectedRange.to, 'yyyy')}
+                                                        </div>
                                                     </div>
+                                                    <button
+                                                        onClick={() => setStep(1)}
+                                                        className="text-xs font-bold text-primary hover:text-primary/80 bg-primary/5 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors"
+                                                    >
+                                                        Edit
+                                                    </button>
                                                 </div>
 
-                                                {/* Row: Guests (Integrated Input) */}
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm font-medium text-slate-500">Guests</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => handleInputChange({ target: { name: 'guests', value: Math.max(1, parseInt(formData.guests) - 1) } })}
-                                                            className="w-6 h-6 flex items-center justify-center rounded bg-slate-200 text-slate-600 hover:bg-slate-300 font-bold"
-                                                        >-</button>
-                                                        <span className="w-4 text-center font-bold text-slate-800">{formData.guests}</span>
-                                                        <button
-                                                            onClick={() => handleInputChange({ target: { name: 'guests', value: Math.min(6, parseInt(formData.guests) + 1) } })}
-                                                            className="w-6 h-6 flex items-center justify-center rounded bg-slate-200 text-slate-600 hover:bg-slate-300 font-bold"
-                                                        >+</button>
+                                                {/* Row: Guests */}
+                                                <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guests</span>
+                                                        <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
+                                                            {formData.guests} {parseInt(formData.guests) === 1 ? 'Guest' : 'Guests'}
+                                                        </div>
+                                                        <div className="text-xs text-slate-500 font-medium mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
+                                                            Registered to: {formData.shareholderName}
+                                                        </div>
                                                     </div>
+                                                    <button
+                                                        onClick={() => setStep(2)}
+                                                        className="text-xs font-bold text-primary hover:text-primary/80 bg-primary/5 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors"
+                                                    >
+                                                        Edit
+                                                    </button>
                                                 </div>
 
-                                                {/* Row: Rate */}
                                                 {/* Row: Maintenance Fee Breakdown */}
-                                                <div className="flex justify-between items-start">
-                                                    <span className="text-sm font-medium text-slate-500 pt-1">Maintenance Fee Breakdown</span>
+                                                <div className="flex justify-between items-start pt-1">
+                                                    <span className="text-sm font-bold text-slate-500 pt-1">Total Fee</span>
                                                     <div className="text-right space-y-1">
-                                                        {/* Weeknights */}
-                                                        {priceDetails?.breakdown?.weeknights > 0 && (
-                                                            <div className="text-xs text-slate-700">
-                                                                <span className="font-bold">{priceDetails.breakdown.weeknights}</span> Weeknight{priceDetails.breakdown.weeknights !== 1 ? 's' : ''} x $100
-                                                            </div>
-                                                        )}
+                                                        <div className="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                                            ${totalPrice.toLocaleString()}
+                                                        </div>
 
-                                                        {/* Weekends */}
-                                                        {priceDetails?.breakdown?.weekends > 0 && (
-                                                            <div className="text-xs text-slate-700">
-                                                                <span className="font-bold">{priceDetails.breakdown.weekends}</span> Weekend{priceDetails.breakdown.weekends !== 1 ? 's' : ''} x $125
-                                                            </div>
-                                                        )}
-
-                                                        {/* Discount */}
-                                                        {priceDetails?.breakdown?.discount > 0 && (
-                                                            <div className="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded inline-block">
-                                                                -${priceDetails.breakdown.discount} Weekly Discount
-                                                            </div>
-                                                        )}
+                                                        <div className="flex flex-col items-end gap-0.5 opacity-80">
+                                                            {/* Weeknights */}
+                                                            {priceDetails?.breakdown?.weeknights > 0 && (
+                                                                <div className="text-[10px] text-slate-500 font-medium">
+                                                                    {priceDetails.breakdown.weeknights} Weeknight{priceDetails.breakdown.weeknights !== 1 ? 's' : ''} x $100
+                                                                </div>
+                                                            )}
+                                                            {/* Weekends */}
+                                                            {priceDetails?.breakdown?.weekends > 0 && (
+                                                                <div className="text-[10px] text-slate-500 font-medium">
+                                                                    {priceDetails.breakdown.weekends} Weekend{priceDetails.breakdown.weekends !== 1 ? 's' : ''} x $125
+                                                                </div>
+                                                            )}
+                                                            {/* Discount */}
+                                                            {priceDetails?.breakdown?.discount > 0 && (
+                                                                <div className="text-[10px] text-green-600 font-bold">
+                                                                    -${priceDetails.breakdown.discount} Weekly Discount
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-
-                                                {/* Divider */}
-                                                <div className="border-t border-slate-200 my-2"></div>
-
-                                                {/* Row: Total */}
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-base font-bold text-slate-700">Total Fee</span>
-                                                    <span className="text-2xl font-black text-primary tracking-tight">${totalPrice.toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         </div>

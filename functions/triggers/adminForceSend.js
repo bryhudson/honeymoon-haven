@@ -26,8 +26,11 @@ exports.forceSendNotification = onCall({ secrets: [gmailSecrets[0], gmailSecrets
 
     const { targetShareholder, notificationType, round } = request.data;
 
-    if (!targetShareholder || !notificationType) {
-        throw new HttpsError('invalid-argument', 'Target Shareholder and Notification Type are required.');
+    if (!targetShareholder || typeof targetShareholder !== 'string' || targetShareholder.length > 100) {
+        throw new HttpsError('invalid-argument', 'Valid target shareholder name is required.');
+    }
+    if (!notificationType || typeof notificationType !== 'string') {
+        throw new HttpsError('invalid-argument', 'Notification type is required.');
     }
 
     logger.warn(`FORCE SEND INITIATED: ${notificationType} to ${targetShareholder} by ${request.auth.token.email}`);
