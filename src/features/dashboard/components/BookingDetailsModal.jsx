@@ -37,6 +37,9 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     const isOwner = (currentUid && booking.uid && currentUid === booking.uid) ||
         booking.shareholderName === currentUser ||
         areNamesEquivalent(currentUser, booking.shareholderName);
+
+    const isFuture = start > new Date();
+    const isFinalized = booking.isFinalized;
     const isCancelled = booking.type === 'cancelled';
 
     // Permission Logic
