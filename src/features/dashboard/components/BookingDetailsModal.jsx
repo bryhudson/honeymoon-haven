@@ -3,7 +3,6 @@ import { BaseModal } from '../../../components/ui/BaseModal';
 import { Mail, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateBookingCost } from '../../../lib/pricing';
-import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 
 export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin, isReadOnly }) {
     if (!booking) return null;

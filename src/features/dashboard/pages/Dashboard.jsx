@@ -474,7 +474,7 @@ export function Dashboard() {
                 // Double Confirmation
                 triggerConfirm(
                     "Final Confirmation: Cancel Booking",
-                    "This is your final confirmation. Cancelling this booking will open these dates to other shareholders and cannot be undone via this dashboard.\n\nProceed?",
+                    "This is your final confirmation. Doing so removes you from the booking calendar and you cannot rebook until the next round or open season.\n\nAre you sure you want to cancel?",
                     async () => {
                         try {
                             // 1. Update Database (Priority)
