@@ -1,6 +1,6 @@
 import React from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { Home, Mail, AlertTriangle, Loader2, CheckCircle2, Send } from 'lucide-react';
+import { Mail, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateBookingCost } from '../../../lib/pricing';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
@@ -41,14 +41,14 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         {canPass ? (
                             <button
                                 onClick={onPass}
-                                className="flex-1 py-3.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-2xl text-sm font-black uppercase tracking-widest transition-all active:scale-95"
+                                className="flex-1 py-3.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-black uppercase tracking-widest transition-all active:scale-95"
                             >
                                 Pass Turn
                             </button>
                         ) : canCancel ? (
                             <button
                                 onClick={onCancel}
-                                className="flex-1 py-3.5 bg-white border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-2xl text-sm font-black uppercase tracking-widest transition-all active:scale-95"
+                                className="flex-1 py-3.5 bg-white border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-xl text-sm font-black uppercase tracking-widest transition-all active:scale-95"
                             >
                                 Cancel Booking
                             </button>
@@ -57,7 +57,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         {booking.isFinalized && booking.isPaid && onEmail && (
                             <button
                                 onClick={onEmail}
-                                className="flex-1 py-3.5 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 rounded-2xl text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                className="flex-1 py-3.5 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                             >
                                 <Mail className="w-4 h-4" />
                                 Email Guest
@@ -67,7 +67,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
                     <button
                         onClick={onClose}
-                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        className="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                     >
                         Return to Dashboard
                     </button>
@@ -76,7 +76,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
         >
             <div className="space-y-6">
                 {isCancelled && (
-                    <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3">
+                    <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-3">
                         <div className="p-2 bg-white rounded-xl text-rose-500 shadow-sm mt-0.5">
                             <AlertTriangle className="h-4 w-4" />
                         </div>
@@ -94,115 +94,120 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                     </div>
                 )}
 
-                {/* Main Details Card */}
-                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-5">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shareholder</p>
-                            <p className="font-black text-xl text-slate-900 leading-tight">{booking.shareholderName}</p>
+                {/* Unified Details Card */}
+                <div className="bg-slate-50/80 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                    {/* Header Row: Shareholder & Cabin */}
+                    <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Shareholder</span>
+                            {/* Mobile: Truncate, Desktop: Full */}
+                            <span className="font-black text-slate-700 text-sm md:text-base md:truncate max-w-[150px] md:max-w-none">
+                                {booking.shareholderName}
+                            </span>
                         </div>
-                        <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Cabin</p>
-                            <div className="inline-flex items-center gap-2 font-black text-xl bg-white px-3 py-1 rounded-lg shadow-sm border border-slate-100 text-indigo-600">
-                                <Home className="w-4 h-4" />
-                                #{booking.cabinNumber}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cabin</span>
+                            <span className="font-black text-slate-800 text-xl">#{booking.cabinNumber}</span>
+                        </div>
+                    </div>
+
+                    {/* Details Body */}
+                    <div className="p-5 space-y-5">
+
+                        {/* Row: Dates */}
+                        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                            <div>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dates</span>
+                                <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
+                                    {format(start, 'MMM d')} - {format(end, 'MMM d, yyyy')}
+                                </div>
+                                <div className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
+                                    {/* Duration Calc */}
+                                    {Math.round((end - start) / (1000 * 60 * 60 * 24))} nights
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-                        <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Dates</p>
-                            <p className="font-bold text-slate-700 text-sm">
-                                {format(start, 'MMM d')} - {format(end, 'MMM d, yyyy')}
-                            </p>
+                        {/* Row: Guests */}
+                        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                            <div>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Guests</span>
+                                <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
+                                    {booking.guests || 1} {parseInt(booking.guests) === 1 ? 'Guest' : 'Guests'}
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Guests</p>
-                            <p className="font-bold text-slate-700 text-sm">{booking.guests || 1} People</p>
-                        </div>
-                    </div>
-                </div>
 
-                {!isCancelled && (
-                    <div className="space-y-6">
-                        {/* Cost Breakdown - Compact Accordion */}
-                        <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
+                        {/* Row: Cost Breakdown (Accordion) */}
+                        {!isCancelled && (
                             <details className="group">
-                                <summary className="flex items-center justify-between p-5 cursor-pointer list-none hover:bg-slate-100/50 transition-colors">
+                                <summary className="flex items-start justify-between cursor-pointer list-none select-none">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total Maintenance Fee</span>
-                                        <span className="text-2xl font-black text-slate-900 leading-tight">${displayedTotal.toLocaleString()}</span>
+                                        <span className="text-xs font-bold text-slate-500">Total Maintenance Fee</span>
+                                        <div className="text-2xl font-black text-slate-800 tracking-tight leading-none mt-1">
+                                            ${displayedTotal.toLocaleString()}
+                                        </div>
                                     </div>
-                                    <div className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 group-open:bg-indigo-100 transition-colors">
+                                    <div className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 group-open:bg-indigo-100 transition-colors mt-1">
                                         <span className="group-open:hidden">See Breakdown</span>
                                         <span className="hidden group-open:block">Hide Breakdown</span>
                                     </div>
                                 </summary>
 
-                                <div className="px-5 pb-5 pt-0 space-y-2 animate-in slide-in-from-top-2 duration-200">
-                                    <div className="h-px bg-slate-200 my-2"></div>
+                                <div className="pt-4 space-y-2 animate-in slide-in-from-top-1 duration-200">
+                                    <div className="h-px bg-slate-100 mb-3"></div>
+
+                                    {/* Breakdown Items */}
                                     {priceDetails?.breakdown?.weeknights > 0 && (
-                                        <div className="flex justify-between text-sm text-slate-600">
-                                            <span>{priceDetails.breakdown.weeknights} Weeknights x $100</span>
+                                        <div className="flex justify-between text-xs md:text-sm text-slate-600">
+                                            <span>{priceDetails.breakdown.weeknights} Weeklight{priceDetails.breakdown.weeknights !== 1 ? 's' : ''} x $100</span>
                                             <span className="font-bold text-slate-900">${priceDetails.breakdown.weeknightTotal}</span>
                                         </div>
                                     )}
                                     {priceDetails?.breakdown?.weekends > 0 && (
-                                        <div className="flex justify-between text-sm text-slate-600">
-                                            <span>{priceDetails.breakdown.weekends} Weekends x $125</span>
+                                        <div className="flex justify-between text-xs md:text-sm text-slate-600">
+                                            <span>{priceDetails.breakdown.weekends} Weekend{priceDetails.breakdown.weekends !== 1 ? 's' : ''} x $125</span>
                                             <span className="font-bold text-slate-900">${priceDetails.breakdown.weekendTotal}</span>
                                         </div>
                                     )}
                                     {priceDetails?.breakdown?.discount > 0 && (
-                                        <div className="flex justify-between text-sm text-emerald-600 font-bold">
+                                        <div className="flex justify-between text-xs md:text-sm text-emerald-600 font-bold">
                                             <span>Weekly Discount</span>
                                             <span>-${priceDetails.breakdown.discount}</span>
                                         </div>
                                     )}
                                 </div>
                             </details>
-                        </div>
+                        )}
+                    </div>
+                </div>
 
+                {!isCancelled && (
+                    <div className="space-y-4">
                         {/* Status Label */}
                         {booking.isPaid ? (
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-emerald-50 text-emerald-900 border border-emerald-100 rounded-2xl shadow-sm shadow-emerald-500/5">
-                                    <span className="font-bold text-[10px] uppercase tracking-widest">Payment Status</span>
-                                    <span className="px-3 py-1 rounded-lg text-[10px] font-black bg-emerald-500 text-white uppercase tracking-widest shadow-sm">
-                                        PAID IN FULL
-                                    </span>
+                            <div className="flex items-center gap-3 p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl shadow-sm">
+                                <div className="bg-emerald-100 p-2 rounded-full shrink-0">
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                                 </div>
-                                <div className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
-                                    <div className="bg-emerald-100 p-2.5 rounded-xl shrink-0">
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-900">Verified</p>
-                                        <p className="text-xs text-slate-500">Thank you! Your booking is fully secured.</p>
-                                    </div>
+                                <div>
+                                    <p className="text-sm font-bold text-emerald-900">Payment Verified</p>
+                                    <p className="text-xs text-emerald-700/80">Your booking is fully secured.</p>
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl">
-                                    <span className="font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount Due</span>
-                                    <span className="text-2xl font-black text-slate-900 tracking-tight">${displayedTotal.toLocaleString()}</span>
+                            <div className="bg-white rounded-xl border border-indigo-100 p-4 shadow-sm flex flex-col gap-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
+                                        <Mail className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">Payment Required</span>
                                 </div>
-
-                                <div className="bg-indigo-50/50 rounded-2xl border border-indigo-100 p-5 space-y-4">
-                                    <div className="flex items-center gap-2 text-indigo-800">
-                                        <div className="p-1.5 bg-indigo-100 rounded-lg text-indigo-600">
-                                            <Mail className="w-4 h-4" />
-                                        </div>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Payment Instructions</span>
-                                    </div>
-                                    <p className="text-xs text-slate-600 leading-relaxed">
-                                        Please e-transfer <strong>${displayedTotal}</strong> within 48h to:
-                                    </p>
-                                    <div className="p-3 bg-white rounded-xl border border-indigo-100 shadow-sm flex items-center gap-3 group cursor-pointer hover:border-indigo-200 transition-colors">
-                                        <code className="text-xs font-mono font-black text-indigo-700 select-all flex-1">honeymoonhavenresort.lc@gmail.com</code>
-                                    </div>
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    Please e-transfer <strong>${displayedTotal}</strong> to:
+                                </p>
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-colors">
+                                    <code className="text-xs font-mono font-bold text-slate-700 select-all">honeymoonhavenresort.lc@gmail.com</code>
                                 </div>
                             </div>
                         )}
