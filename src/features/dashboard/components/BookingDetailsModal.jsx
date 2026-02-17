@@ -4,7 +4,21 @@ import { Mail, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateBookingCost } from '../../../lib/pricing';
 
-export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, isAdmin, isReadOnly }) {
+// Helper: Normalize names for comparison (e.g. "Brian & Monique" == "Monique and Brian")
+const areNamesEquivalent = (name1, name2) => {
+    if (!name1 || !name2) return false;
+
+    const normalize = (n) => n.toLowerCase()
+        .replace(/\s+&\s+/g, ' and ') // Replace & with and
+        .split(' and ') // Split by 'and'
+        .map(p => p.trim()) // Trim whitespace
+        .sort() // Sort alphabetically to ignore order
+        .join(' and '); // Rejoin
+
+    return normalize(name1) === normalize(name2);
+};
+
+export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit, onFinalize, onEmail, currentUser, currentUid, isAdmin, isReadOnly }) {
     if (!booking) return null;
 
     const start = booking.from?.toDate ? booking.from.toDate() : new Date(booking.from);
@@ -17,9 +31,12 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
     const displayedTotal = booking.totalPrice || (priceDetails ? priceDetails.total : 0);
 
     // Permissions
-    const isOwner = booking.shareholderName === currentUser;
-    const isFuture = start > new Date();
-    const isFinalized = booking.isFinalized;
+    // 1. UID Match (Strongest)
+    // 2. Exact Name Match
+    // 3. Fuzzy Name Match (Handles couples order/formatting)
+    const isOwner = (currentUid && booking.uid && currentUid === booking.uid) ||
+        booking.shareholderName === currentUser ||
+        areNamesEquivalent(currentUser, booking.shareholderName);
     const isCancelled = booking.type === 'cancelled';
 
     // Permission Logic

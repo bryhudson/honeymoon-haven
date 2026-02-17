@@ -791,6 +791,7 @@ export function Dashboard() {
                                 booking={viewingBooking}
                                 onClose={() => setViewingBooking(null)}
                                 currentUser={loggedInShareholder}
+                                currentUid={currentUser?.uid} // Pass UID for robust permissions
                                 isAdmin={isSuperAdmin}
                                 isReadOnly={!!masqueradeAs}
                                 onCancel={() => handleCancelConfirmedBooking(viewingBooking)}
