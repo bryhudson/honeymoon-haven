@@ -172,14 +172,14 @@ export function FeedbackModal({ isOpen, onClose, shareholderName }) {
                         <div className="mt-8 flex gap-3">
                             <button
                                 onClick={onClose}
-                                className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
+                                className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-xs"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={!message.trim() || isSending}
-                                className="flex-1 py-3.5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10"
+                                className="flex-1 py-3.5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 text-xs"
                             >
                                 {isSending ? "Sending..." : "Send Feedback"}
                                 {!isSending && <Send className="w-4 h-4 ml-1" />}

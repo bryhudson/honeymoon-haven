@@ -224,14 +224,14 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
+                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-xs"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={!!error}
-                        className={`flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg ${error
+                        className={`flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg text-xs ${error
                             ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/10'
                             }`}

@@ -55,7 +55,7 @@ export function ConfirmationModal({
                     {showCancel && (
                         <button
                             onClick={onClose}
-                            className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
+                            className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-xs"
                         >
                             Cancel
                         </button>
@@ -68,7 +68,7 @@ export function ConfirmationModal({
                             }
                         }}
                         disabled={!isInputValid}
-                        className={`flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 ${isDanger
+                        className={`flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs ${isDanger
                             ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/10 text-white'
                             : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10 text-white'
                             } ${!isInputValid ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}

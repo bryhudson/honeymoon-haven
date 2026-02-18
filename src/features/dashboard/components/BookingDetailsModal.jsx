@@ -87,7 +87,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
                     <button
                         onClick={onClose}
-                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95 text-xs"
                     >
                         Return to Dashboard
                     </button>
