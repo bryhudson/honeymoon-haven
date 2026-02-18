@@ -7,6 +7,7 @@ import { db } from '../../lib/firebase';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
 import { ChangePasswordModal } from '../../features/dashboard/components/ChangePasswordModal';
+import { TriviaModal } from '../../features/trivia/components/TriviaModal';
 import { formatNameForDisplay } from '../../lib/shareholders';
 
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
@@ -17,6 +18,7 @@ export function Header() {
     const location = useLocation(); // Hook to check current path
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [isTriviaOpen, setIsTriviaOpen] = useState(false);
     const [shareholders, setShareholders] = useState([]);
 
     const isLoginPage = location.pathname === '/login';
@@ -111,17 +113,14 @@ export function Header() {
                                         </div>
                                     )}
                                     <div className="flex items-center gap-1 bg-purple-50 p-1 rounded-lg ml-2">
-                                        <Link
-                                            to="/trivia"
-                                            className={`p-2 md:px-3 md:py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${location.pathname === '/trivia'
-                                                ? 'bg-white text-purple-700 shadow-sm'
-                                                : 'text-purple-600 hover:text-purple-900 hover:bg-purple-100'
-                                                }`}
+                                        <button
+                                            onClick={() => setIsTriviaOpen(true)}
+                                            className="p-2 md:px-3 md:py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 text-purple-600 hover:text-purple-900 hover:bg-purple-100"
                                             title="Play Trivia"
                                         >
                                             <Gamepad2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                             <span className="hidden md:inline">Trivia</span>
-                                        </Link>
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="hidden lg:flex items-center gap-2 ml-4">
@@ -167,6 +166,10 @@ export function Header() {
             <ChangePasswordModal
                 isOpen={isChangePasswordOpen}
                 onClose={() => setIsChangePasswordOpen(false)}
+            />
+            <TriviaModal
+                isOpen={isTriviaOpen}
+                onClose={() => setIsTriviaOpen(false)}
             />
         </>
     );

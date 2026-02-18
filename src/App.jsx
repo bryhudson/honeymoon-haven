@@ -8,7 +8,6 @@ const Login = lazy(() => import('./features/auth/pages/Login').then(module => ({
 const ForgotPassword = lazy(() => import('./features/auth/pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
 const AuthAction = lazy(() => import('./features/auth/pages/AuthAction').then(module => ({ default: module.AuthAction })));
 const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
-const TriviaPage = lazy(() => import('./features/trivia/pages/TriviaPage').then(module => ({ default: module.TriviaPage })));
 
 import { AuthProvider } from './features/auth/AuthContext';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
@@ -36,11 +35,6 @@ function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/trivia" element={
-              <ProtectedRoute>
-                <TriviaPage />
               </ProtectedRoute>
             } />
           </Routes>

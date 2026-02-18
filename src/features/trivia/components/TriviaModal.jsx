@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TriviaCard } from '../components/TriviaCard';
-import { Trophy, ArrowRight, RotateCcw, Home, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { BaseModal } from '../../../components/ui/BaseModal';
+import { TriviaCard } from './TriviaCard';
+import { Trophy, ArrowRight, RotateCcw, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const QUESTIONS = [
@@ -67,23 +67,31 @@ const QUESTIONS = [
     }
 ];
 
-export function TriviaPage() {
+export function TriviaModal({ isOpen, onClose }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [showResult, setShowResult] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [isAnswered, setIsAnswered] = useState(false);
 
+    // Reset game when closed
+    useEffect(() => {
+        if (!isOpen) {
+            // Optional: reset after a delay so it's fresh next open? 
+            // Or keep state? Let's reset for now to be safe.
+            const timer = setTimeout(restartGame, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
     const currentQ = QUESTIONS[currentQuestionIndex];
     const isLastQuestion = currentQuestionIndex === QUESTIONS.length - 1;
 
-    // Prefetch next image or resources if we had them
-
     useEffect(() => {
-        if (showResult && score > 7) {
+        if (showResult && score > 7 && isOpen) {
             const duration = 3 * 1000;
             const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 60 }; // High z-index for modal
             const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
             const interval = setInterval(function () {
@@ -95,7 +103,7 @@ export function TriviaPage() {
             }, 250);
             return () => clearInterval(interval);
         }
-    }, [showResult, score]);
+    }, [showResult, score, isOpen]);
 
     const handleAnswer = (answer) => {
         setSelectedAnswer(answer);
@@ -107,7 +115,8 @@ export function TriviaPage() {
                 particleCount: 50,
                 spread: 60,
                 origin: { y: 0.7 },
-                colors: ['#10B981', '#34D399'] // Green confetti
+                colors: ['#10B981', '#34D399'], // Green confetti
+                zIndex: 60
             });
         }
     };
@@ -130,19 +139,59 @@ export function TriviaPage() {
         setIsAnswered(false);
     };
 
-    if (showResult) {
-        return (
-            <div className="min-h-[80vh] flex items-center justify-center p-4 bg-slate-50">
-                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center max-w-lg w-full border border-slate-100 relative overflow-hidden">
-                    {/* Background decorations */}
-                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500"></div>
+    return (
+        <BaseModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={showResult ? "Trivia Results" : undefined}
+            maxSize="max-w-lg"
+            showClose={true}
+        >
+            {!showResult ? (
+                <div className="flex flex-col items-center">
+                    {/* Header / Progress */}
+                    <div className="w-full mb-6">
+                        <div className="flex justify-between w-full text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-purple-500" />
+                                <span>Question {currentQuestionIndex + 1} / {QUESTIONS.length}</span>
+                            </div>
+                            <span>Score: {score}</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
+                                style={{ width: `${((currentQuestionIndex) / QUESTIONS.length) * 100}%` }}
+                            ></div>
+                        </div>
+                    </div>
 
+                    <TriviaCard
+                        {...currentQ}
+                        selectedAnswer={selectedAnswer}
+                        isAnswered={isAnswered}
+                        onSelect={handleAnswer}
+                    />
+
+                    {/* Inline Next Button */}
+                    <div className={`w-full mt-6 transition-all duration-300 ease-out transform ${isAnswered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                        <button
+                            onClick={handleNext}
+                            disabled={!isAnswered}
+                            className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold text-lg shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        >
+                            {isLastQuestion ? "See Results" : "Next Question"} <ArrowRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="text-center py-4">
                     <div className="mb-6 inline-flex p-4 rounded-full bg-yellow-100 text-yellow-600 shadow-inner">
                         <Trophy className="w-16 h-16" />
                     </div>
 
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">Quiz Complete!</h1>
-                    <p className="text-slate-500 mb-8">You scored</p>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Quiz Complete!</h1>
+                    <p className="text-slate-500 mb-6">You scored</p>
 
                     <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-blue-600 mb-8">
                         {score} / {QUESTIONS.length}
@@ -161,69 +210,15 @@ export function TriviaPage() {
                         >
                             <RotateCcw className="w-5 h-5" /> Play Again
                         </button>
-                        <Link
-                            to="/"
+                        <button
+                            onClick={onClose}
                             className="w-full py-3 px-6 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
                         >
-                            <Home className="w-5 h-5" /> Back to Dashboard
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-slate-50 pb-20">
-            {/* Header / Progress */}
-            <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link to="/" className="text-slate-500 hover:text-slate-900 transition-colors">
-                        <Home className="w-6 h-6" />
-                    </Link>
-                    <div className="flex flex-col items-center w-full max-w-md mx-4">
-                        <div className="flex justify-between w-full text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                            <span>Question {currentQuestionIndex + 1} / {QUESTIONS.length}</span>
-                            <span>Score: {score}</span>
-                        </div>
-                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
-                                style={{ width: `${((currentQuestionIndex) / QUESTIONS.length) * 100}%` }}
-                            ></div>
-                        </div>
-                    </div>
-                    <div className="w-6"></div> {/* Spacer for center alignment */}
-                </div>
-            </div>
-
-            <main className="container mx-auto px-4 py-6 md:py-10 flex flex-col items-center">
-                <div className="w-full max-w-lg">
-                    <div className="text-center mb-6">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 font-bold text-sm mb-2 shadow-sm">
-                            <Sparkles className="w-4 h-4" /> Honeymoon Trivia
-                        </div>
-                    </div>
-
-                    <TriviaCard
-                        {...currentQ}
-                        selectedAnswer={selectedAnswer}
-                        isAnswered={isAnswered}
-                        onSelect={handleAnswer}
-                    />
-
-                    {/* Inline Next Button (No longer fixed at bottom) */}
-                    <div className={`mt-6 transition-all duration-500 ease-out transform ${isAnswered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                        <button
-                            onClick={handleNext}
-                            disabled={!isAnswered}
-                            className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold text-lg shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                        >
-                            {isLastQuestion ? "See Results" : "Next Question"} <ArrowRight className="w-5 h-5" />
+                            Close
                         </button>
                     </div>
                 </div>
-            </main>
-        </div>
+            )}
+        </BaseModal>
     );
 }
