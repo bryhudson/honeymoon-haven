@@ -71,7 +71,7 @@ export function Header() {
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
                     <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:opacity-80 transition-opacity">
                         <Caravan className="h-8 w-8" />
-                        <span className="hidden md:inline">Honeymoon Haven Resort - Trailer Booking App</span>
+                        <span className="hidden md:inline">HHR - Trailer Booking App</span>
                         <span className="md:hidden">HHR Booking</span>
                     </Link>
 
