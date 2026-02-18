@@ -16,7 +16,7 @@ import { useBookingRealtime } from '../../../hooks/useBookingRealtime';
 import { StatusCard } from '../components/StatusCard';
 import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
-import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName } from '../../../lib/shareholders';
+import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
     .then(module => ({ default: module.BookingDetailsModal }))
     .catch(error => {
@@ -884,7 +884,7 @@ export function Dashboard() {
                         isOpen={showWelcomeModal}
                         onClose={handleWelcomeClose}
                         onDismissPermanently={handleWelcomeDismissPermanently}
-                        userName={loggedInShareholder}
+                        userName={formatNameForDisplay(loggedInShareholder)}
                     />
 
                     <div className="mt-12 pt-8 border-t text-center space-y-2">
