@@ -55,8 +55,8 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
                             <div className="flex items-start gap-3">
                                 <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs font-bold text-slate-800">Sender: {currentUser}</p>
-                                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed mt-1">
+                                    <p className="text-sm font-bold text-slate-800">Sender: {currentUser}</p>
+                                    <p className="text-sm text-slate-500 font-medium leading-relaxed mt-1">
                                         Your guest will receive the <strong>HHR Trailer Checklist & Rules</strong> and a Google Map link to the lake. Financial details are excluded.
                                     </p>
                                 </div>
