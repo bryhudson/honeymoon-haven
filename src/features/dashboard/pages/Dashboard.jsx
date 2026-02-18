@@ -467,6 +467,9 @@ export function Dashboard() {
 
 
     const handleCancelConfirmedBooking = (booking) => {
+        // Close details modal first to avoid stacking issues
+        setViewingBooking(null);
+
         triggerConfirm(
             "Cancel Booking?",
             `Are you sure you want to CANCEL your booking for ${format(booking.from?.toDate ? booking.from.toDate() : new Date(booking.from), 'MMM d')}?`,
