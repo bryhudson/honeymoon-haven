@@ -57,7 +57,7 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
                                 <div>
                                     <p className="text-xs font-bold text-slate-800">Sender: {currentUser}</p>
                                     <p className="text-[10px] text-slate-500 font-medium leading-relaxed mt-1">
-                                        Your guest will receive the <strong>HHR Trailer Checklist & Rules</strong>. Financial details are excluded.
+                                        Your guest will receive the <strong>HHR Trailer Checklist & Rules</strong> and a Google Map link to the lake. Financial details are excluded.
                                     </p>
                                 </div>
                             </div>
