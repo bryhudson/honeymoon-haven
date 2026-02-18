@@ -380,14 +380,17 @@ export function Dashboard() {
                         }
 
                         const owner = shareholders.find(o => o.name === passData.name);
+                        const now = new Date();
+                        const endTime = new Date(now.getTime() + 60000); // Add 1 minute to satisfy "to > from" rule
+
                         await addDoc(collection(db, "bookings"), {
                             shareholderName: passData.name,
                             uid: currentUser.uid, // Required for security rules
                             cabinNumber: owner ? owner.cabin : "?",
                             type: 'pass', // This is important
-                            createdAt: new Date(),
-                            from: new Date(),
-                            to: new Date()
+                            createdAt: now,
+                            from: now,
+                            to: endTime
                         });
 
                         // Backend Trigger handles "Turn Passed" notification to:
