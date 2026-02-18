@@ -110,7 +110,6 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
                 status: 'sent',
                 messageId: info.messageId,
                 isTestMode: isTestMode,
-                isTestMode: isTestMode,
                 templateId: templateId || null, // Log template ID if provided
                 cabinNumber: to?.cabinNumber || null // Capture cabin number if available
             });

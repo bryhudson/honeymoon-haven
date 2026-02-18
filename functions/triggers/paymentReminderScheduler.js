@@ -187,11 +187,16 @@ async function sendFundingReminder(booking, type) {
     let recipient = booking.shareholderEmail;
 
     if (!recipient) {
-        const sSnapshot = await db.collection("shareholders").where("name", "==", booking.shareholderName).limit(1).get();
-        if (!sSnapshot.empty) {
-            recipient = sSnapshot.docs[0].data().email;
+        // Use normalizeName to handle "&" vs "and" mismatches (same pattern as turnReminderScheduler)
+        const { normalizeName } = require("../helpers/shareholders");
+        const allShareholdersSnap = await db.collection("shareholders").get();
+        const shareholderDoc = allShareholdersSnap.docs.find(d =>
+            normalizeName(d.data().name) === normalizeName(booking.shareholderName)
+        );
+        if (shareholderDoc) {
+            recipient = shareholderDoc.data().email;
         } else {
-            logger.error(`Could not find email for ${booking.shareholderName}`);
+            logger.error(`Could not find email for ${booking.shareholderName} (Normalized: ${normalizeName(booking.shareholderName)})`);
             return;
         }
     }

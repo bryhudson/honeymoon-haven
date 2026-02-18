@@ -400,7 +400,6 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                     sendGmail({
                         to: recipient,
                         subject: subject,
-                        subject: subject,
                         htmlContent: htmlContent,
                         templateId: 'openSeasonBlast'
                     })
