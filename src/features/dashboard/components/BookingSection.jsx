@@ -1,5 +1,5 @@
 import { emailService } from '../../../services/emailService';
-import { Calendar } from 'lucide-react';
+import { Calendar, Info } from 'lucide-react';
 import React, { useState, useEffect } from 'react'; // Assuming React and useEffect are needed for the change
 import { format, addWeeks, addDays, differenceInCalendarDays, eachDayOfInterval, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
@@ -528,6 +528,21 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     {/* STEP 2: GUESTS */}
                     {step === 2 && (
                         <div className="w-full bg-card rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="bg-blue-50/50 border-b border-blue-100 p-4 text-xs text-slate-600 space-y-2">
+                                <div className="flex gap-2">
+                                    <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                                    <div className="space-y-2">
+                                        <p>
+                                            <span className="font-bold text-blue-700 block mb-0.5">Overnight Policy:</span>
+                                            You are permitted a maximum of 8 people (including yourself and your family). You can use one tent on your Lot to accommodate this.
+                                        </p>
+                                        <p>
+                                            <span className="font-bold text-blue-700 block mb-0.5">Daytime Policy:</span>
+                                            You can have "day gatherings" of up to 10 people (including yourself and family) without needing special permission.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="p-6 md:p-8 flex flex-col items-center justify-center space-y-8 min-h-[300px]">
                                 <div className="text-center space-y-2">
                                     <h3 className="text-2xl font-black text-slate-800">Who's joining you?</h3>
