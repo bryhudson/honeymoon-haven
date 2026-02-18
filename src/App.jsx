@@ -6,6 +6,7 @@ import { LoadingSpinner } from './components/ui/LoadingSpinner';
 const Dashboard = lazy(() => import('./features/dashboard/pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const Login = lazy(() => import('./features/auth/pages/Login').then(module => ({ default: module.Login })));
 const ForgotPassword = lazy(() => import('./features/auth/pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
+const AuthAction = lazy(() => import('./features/auth/pages/AuthAction').then(module => ({ default: module.AuthAction })));
 const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 
 import { AuthProvider } from './features/auth/AuthContext';
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/action" element={<AuthAction />} />
             <Route path="/admin" element={
               <AdminRoute>
                 <AdminDashboard />

@@ -13,6 +13,8 @@
 |---|---|---|
 | `tests/pricing.test.ts` | 18 | ✅ Passing |
 | `tests/emailTemplates.test.js` | 26 | ✅ Passing |
+| `tests/shareholders.test.ts` | 51 | ✅ Passing |
+| `tests/utils.test.ts` | 24 | ✅ Passing |
 
 ---
 
@@ -49,7 +51,7 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 
 ## Unit Tests — Core Library Functions
 
-### 5. Name Normalization (`src/lib/shareholders.ts`)
+### 5. Name Normalization (`src/lib/shareholders.ts`) ✅
 `normalizeName()` and `formatNameForDisplay()` are used throughout the booking flow to match shareholders across data sources. Bugs here cause "user not found" auth failures.
 
 **Test scenarios:**
@@ -60,7 +62,7 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 - Case insensitivity (lowercase for internal comparison)
 - Already-canonical names (no double-transformation)
 
-### 6. Shareholder Order / Rotation (`src/lib/shareholders.ts`)
+### 6. Shareholder Order / Rotation (`src/lib/shareholders.ts`) ✅
 `getShareholderOrder(year)` determines pick order for each year via rotation.
 
 **Test scenarios:**
@@ -70,7 +72,7 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 - Full-cycle rotation (2025 + 12 = same as 2025)
 - Past year (2024) returns 2025 baseline
 
-### 7. 10 AM PST Turn Rule (`src/lib/shareholders.ts`)
+### 7. 10 AM PST Turn Rule (`src/lib/shareholders.ts`) ✅
 `getOfficialStart()` is the critical business rule: every turn officially starts at 10:00 AM Pacific. Errors here cascade through the entire draft schedule.
 
 **Test scenarios:**
@@ -80,7 +82,7 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 - PDT period (after March 8 DST change) → correct UTC offset
 - null input → returns null
 
-### 8. Draft Schedule Mapping (`src/lib/shareholders.ts`)
+### 8. Draft Schedule Mapping (`src/lib/shareholders.ts`) ✅
 `mapOrderToSchedule()` converts the shareholder list + bookings into a visual schedule grid.
 
 **Test scenarios:**
@@ -91,7 +93,7 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 - Cancelled booking → `status = 'CANCELLED'`
 - All required fields present on each item
 
-### 9. Tailwind Class Utility (`src/lib/utils.ts`)
+### 9. Tailwind Class Utility (`src/lib/utils.ts`) ✅
 `cn()` is used in every component for conditional Tailwind classes.
 
 **Test scenarios:**
@@ -107,14 +109,14 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 
 ## Test Files Summary
 
-| File | Functions Covered | Target Tests |
+| File | Functions Covered | Tests |
 |---|---|---|
 | `tests/pricing.test.ts` | `calculateBookingCost` | 18 ✅ |
 | `tests/emailTemplates.test.js` | All 16 email templates | 26 ✅ |
-| `tests/shareholders.test.ts` | `normalizeName`, `formatNameForDisplay`, `getShareholderOrder`, `getOfficialStart`, `getPickDurationMS`, `calculateDraftSchedule`, `mapOrderToSchedule` | ~40 NEW |
-| `tests/utils.test.ts` | `cn` | ~10 NEW |
+| `tests/shareholders.test.ts` | `normalizeName`, `formatNameForDisplay`, `getShareholderOrder`, `getOfficialStart`, `getPickDurationMS`, `calculateDraftSchedule`, `mapOrderToSchedule` | 51 ✅ |
+| `tests/utils.test.ts` | `cn` | 24 ✅ |
 
-**Target total: ~94 tests**
+**Total: 119 tests — all passing**
 
 ---
 

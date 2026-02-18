@@ -100,4 +100,17 @@ Email templates: 16 HTML templates in `functions/helpers/emailTemplates.js` usin
 
 ### Testing
 
-Tests live in `tests/` (Vitest). Current coverage: `pricing.test.ts`, `emailTemplates.test.js`, `shareholders.test.ts`, `utils.test.ts`. See `TEST_PLAN.md` for what's covered and what's intentionally deferred.
+Tests live in `tests/` (Vitest). Current coverage: `pricing.test.ts`, `emailTemplates.test.js`, `shareholders.test.ts`, `utils.test.ts`. See `TEST_PLAN.md` for what's covered and what's intentionally deferred (component/Firebase tests require additional setup).
+
+---
+
+## /run-tests
+
+Execute the testing strategy in `TEST_PLAN.md`.
+
+1. Read `TEST_PLAN.md` — identify any items not marked ✅
+2. For each pending item:
+   - Create or update the test file
+   - Run `npx vitest run tests/<filename>` and iterate until passing
+   - Mark the item ✅ in `TEST_PLAN.md`
+3. Run `npm test` at the end to confirm all tests pass
