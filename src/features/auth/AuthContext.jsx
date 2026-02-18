@@ -27,10 +27,7 @@ export function AuthProvider({ children }) {
     }
 
     function resetPassword(email) {
-        return sendPasswordResetEmail(auth, email, {
-            url: window.location.origin + '/auth/action',
-            handleCodeInApp: true,
-        });
+        return sendPasswordResetEmail(auth, email);
     }
 
     function updateUserPassword(password) {
