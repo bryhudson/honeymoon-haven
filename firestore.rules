@@ -32,7 +32,7 @@ service cloud.firestore {
         data.to > data.from &&
         
         // 4. Type must be valid
-        (data.type == 'booking' || data.type == 'pass' || data.type == 'auto-pass');
+        (data.type == 'booking' || data.type == 'pass' || data.type == 'auto-pass' || data.type == 'cancelled');
     }
 
     match /bookings/{bookingId} {

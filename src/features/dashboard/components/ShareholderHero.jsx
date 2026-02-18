@@ -152,7 +152,7 @@ export function ShareholderHero({
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold uppercase tracking-wider border border-indigo-500/30">
                             ⏳ Coming Soon
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 pb-1">
                             {title}
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
@@ -186,7 +186,7 @@ export function ShareholderHero({
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-bold uppercase tracking-wider border border-green-500/30">
                             🎉 Open Season
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 pb-1">
                             Booking is Open
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
@@ -454,7 +454,7 @@ export function ShareholderHero({
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'}`}>
+                        <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'} pb-1`}>
                             {status.isGracePeriod ? 'You Have Early Access!' : "It's Your Official Turn"}
                         </h2>
                         <p className="text-base text-white/60 leading-relaxed">
@@ -544,7 +544,7 @@ export function ShareholderHero({
                     {renderHeader()}
 
                     <div className="space-y-4">
-                        <h2 className={`text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-400 to-orange-500' : (isSkipped ? 'from-orange-400 to-red-500' : 'from-emerald-400 to-green-500')}`}>
+                        <h2 className={`text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-400 to-orange-500' : (isSkipped ? 'from-orange-400 to-red-500' : 'from-emerald-400 to-green-500')} pb-1`}>
                             {isPassed ? "Turn Passed" : (isSkipped ? "Turn Skipped" : "You're All Set!")}
                         </h2>
                         <div className="text-lg md:text-xl text-slate-300 leading-relaxed font-medium">
@@ -621,7 +621,7 @@ export function ShareholderHero({
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500 pb-1">
                             Booking Cancelled
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
@@ -677,7 +677,7 @@ export function ShareholderHero({
 
                             {isUpNext ? (
                                 <>
-                                    <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight">
+                                    <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight pb-1">
                                         You're Up Next for {queueInfo?.round === 1 ? 'Round 1' : 'Round 2'}!
                                     </div>
                                     <p className="text-sm text-white/60 font-medium">
@@ -687,7 +687,7 @@ export function ShareholderHero({
                             ) : (
                                 <>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 tracking-tight">
+                                        <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 tracking-tight pb-1">
                                             {getOrdinal(queueInfo?.diff || 1)}
                                         </span>
                                         <span className="text-xl font-bold text-white/60">
