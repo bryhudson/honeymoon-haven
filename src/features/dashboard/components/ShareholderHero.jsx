@@ -553,66 +553,69 @@ export function ShareholderHero({
                             ) : isSkipped ? (
                                 <p>Your turn expired without action. Don't worry - you'll get another chance in the next round!</p>
                             ) : (
-                                <div className="space-y-3">
-                                    <p>
+                                <div className="space-y-4">
+                                    <p className="text-lg md:text-xl text-slate-300 font-medium leading-relaxed">
                                         Booking confirmed for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
                                         <span className="text-slate-500 ml-2">({nights} nights)</span>
                                     </p>
-                                    <div className="flex items-center gap-3">
-                                        {isPaid ? (
-                                            <span className="flex items-center gap-2 text-emerald-400 text-sm font-bold uppercase tracking-widest">
-                                                <CheckCircle className="w-4 h-4" />
-                                                Maintenance Fee Paid
-                                            </span>
-                                        ) : (
-                                            <div className="w-full mt-2 p-1 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 backdrop-blur-md">
-                                                <div className="flex flex-col sm:flex-row items-center gap-4 p-4">
-                                                    <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-bounce">
-                                                        <Banknote className="w-6 h-6" strokeWidth={2} />
-                                                    </div>
-                                                    <div className="text-center sm:text-left space-y-0.5">
-                                                        <div className="font-black text-amber-400 uppercase tracking-widest text-xs">Action Required</div>
-                                                        <p className="text-white/90 font-medium text-sm leading-snug">
-                                                            Please e-transfer your fee to <span className="font-bold text-amber-300">HHR</span> to finalize.
-                                                        </p>
-                                                    </div>
+
+                                    {isPaid ? (
+                                        <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-md">
+                                            <div className="flex flex-col md:flex-row items-center gap-4 p-4">
+                                                <div className="shrink-0 p-3 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl shadow-lg shadow-emerald-500/30 text-white">
+                                                    <CheckCircle className="w-6 h-6" strokeWidth={2} />
+                                                </div>
+                                                <div className="flex-1 text-center md:text-left space-y-0.5">
+                                                    <div className="font-black text-emerald-400 uppercase tracking-widest text-xs">All Set</div>
+                                                    <p className="text-white/90 font-medium text-sm leading-snug">
+                                                        Your maintenance fee is verified. Enjoy the season!
+                                                    </p>
+                                                </div>
+                                                <div className="flex flex-wrap justify-center gap-2">
+                                                    <button
+                                                        onClick={() => onViewDetails(lastAction)}
+                                                        className="px-4 py-2 text-sm font-bold text-emerald-100 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors flex items-center gap-2"
+                                                    >
+                                                        <Info className="w-4 h-4" /> Views Details
+                                                    </button>
+                                                    {onEmail && (
+                                                        <button
+                                                            onClick={() => onEmail(lastAction)}
+                                                            className="px-4 py-2 text-sm font-bold text-blue-100 hover:text-white bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors flex items-center gap-2"
+                                                        >
+                                                            <Mail className="w-4 h-4" /> Email Guest
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    ) : (
+                                        <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 backdrop-blur-md">
+                                            <div className="flex flex-col md:flex-row items-center gap-4 p-4">
+                                                <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-bounce">
+                                                    <Banknote className="w-6 h-6" strokeWidth={2} />
+                                                </div>
+                                                <div className="flex-1 text-center md:text-left space-y-0.5">
+                                                    <div className="font-black text-amber-400 uppercase tracking-widest text-xs">Action Required</div>
+                                                    <p className="text-white/90 font-medium text-sm leading-snug">
+                                                        Please e-transfer your fee to <span className="font-bold text-amber-300">HHR</span> to finalize.
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => onViewDetails(lastAction)}
+                                                    className="px-4 py-2 text-sm font-bold text-amber-100 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg transition-colors flex items-center gap-2"
+                                                >
+                                                    <Info className="w-4 h-4" /> View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {!isPassed && !isSkipped && lastAction && (
-                        <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                            <button
-                                onClick={() => onViewDetails(lastAction)}
-                                disabled={isReadOnly}
-                                className={`px-6 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2
-                                    ${isReadOnly
-                                        ? 'bg-white/5 text-white/50 border border-white/5 cursor-not-allowed'
-                                        : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'}`}
-                            >
-                                <Info className="w-5 h-5" />
-                                View Details
-                            </button>
-                            {lastAction.isPaid && onEmail && (
-                                <button
-                                    onClick={() => onEmail(lastAction)}
-                                    disabled={isReadOnly}
-                                    className={`px-6 py-4 font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2
-                                        ${isReadOnly
-                                            ? 'bg-blue-600/50 text-white/50 cursor-not-allowed'
-                                            : 'bg-blue-600 text-white hover:bg-blue-500'}`}
-                                >
-                                    <Mail className="w-4 h-4" />
-                                    Email Guest
-                                </button>
-                            )}
-                        </div>
-                    )}
+
                 </div>
             </div>
         );
