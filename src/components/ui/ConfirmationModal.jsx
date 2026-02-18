@@ -38,13 +38,13 @@ export function ConfirmationModal({
                 {requireTyping && (
                     <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                            Type <span className="text-slate-900 select-all">{inputType === 'password' ? 'Admin Code' : `"${requireTyping}"`}</span> to confirm:
+                            Type <span className="text-slate-900 select-all">{inputType === 'password' ? 'Admin Password' : `"${requireTyping}"`}</span> to confirm:
                         </label>
                         <input
                             type={inputType}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder={inputType === 'password' ? 'Enter Admin Code' : requireTyping}
+                            placeholder={inputType === 'password' ? 'Enter Admin Password' : requireTyping}
                             className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono"
                             autoFocus
                         />
