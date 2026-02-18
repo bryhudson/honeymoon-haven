@@ -150,15 +150,15 @@ export function TriviaModal({ isOpen, onClose }) {
             {!showResult ? (
                 <div className="flex flex-col items-center">
                     {/* Header / Progress */}
-                    <div className="w-full mb-6">
-                        <div className="flex justify-between w-full text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-purple-500" />
+                    <div className="w-full mb-4">
+                        <div className="flex justify-between w-full text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                            <div className="flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
                                 <span>Question {currentQuestionIndex + 1} / {QUESTIONS.length}</span>
                             </div>
                             <span>Score: {score}</span>
                         </div>
-                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
                                 style={{ width: `${((currentQuestionIndex) / QUESTIONS.length) * 100}%` }}
@@ -171,18 +171,9 @@ export function TriviaModal({ isOpen, onClose }) {
                         selectedAnswer={selectedAnswer}
                         isAnswered={isAnswered}
                         onSelect={handleAnswer}
+                        isLastQuestion={isLastQuestion}
+                        onNext={handleNext}
                     />
-
-                    {/* Inline Next Button */}
-                    <div className={`w-full mt-6 transition-all duration-300 ease-out transform ${isAnswered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                        <button
-                            onClick={handleNext}
-                            disabled={!isAnswered}
-                            className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold text-lg shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                        >
-                            {isLastQuestion ? "See Results" : "Next Question"} <ArrowRight className="w-5 h-5" />
-                        </button>
-                    </div>
                 </div>
             ) : (
                 <div className="text-center py-4">
