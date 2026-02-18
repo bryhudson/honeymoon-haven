@@ -6,6 +6,7 @@ import { useBookingRealtime } from '../../hooks/useBookingRealtime';
 import { db } from '../../lib/firebase';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
+import { ChangePasswordModal } from '../../features/dashboard/components/ChangePasswordModal';
 import { formatNameForDisplay } from '../../lib/shareholders';
 
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
@@ -15,6 +16,7 @@ export function Header() {
     const navigate = useNavigate();
     const location = useLocation(); // Hook to check current path
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
     const [shareholders, setShareholders] = useState([]);
 
     const isLoginPage = location.pathname === '/login';
@@ -109,6 +111,18 @@ export function Header() {
                                         </div>
                                     )}
                                 </div>
+                                <div className="hidden lg:flex items-center gap-2 ml-4">
+                                    <button
+                                        onClick={() => setIsChangePasswordOpen(true)}
+                                        className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
+                                        title="Change Password"
+                                    >
+                                        <span className="bg-slate-100 p-1 rounded-md group-hover:bg-slate-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                                        </span>
+                                        Change Password
+                                    </button>
+                                </div>
                                 <button
                                     onClick={() => setIsFeedbackOpen(true)}
                                     className="flex items-center gap-2 hover:text-primary transition-colors ml-4 text-muted-foreground hover:text-blue-600"
@@ -138,6 +152,10 @@ export function Header() {
                 isOpen={isFeedbackOpen}
                 onClose={() => setIsFeedbackOpen(false)}
                 shareholderName={loggedInShareholder}
+            />
+            <ChangePasswordModal
+                isOpen={isChangePasswordOpen}
+                onClose={() => setIsChangePasswordOpen(false)}
             />
         </>
     );
