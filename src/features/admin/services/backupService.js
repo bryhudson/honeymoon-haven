@@ -123,6 +123,43 @@ export const restoreBackup = async (timestampId) => {
 };
 
 /**
+ * Deletes a backup and its subcollections.
+ * @param {string} timestampId 
+ */
+export const deleteBackup = async (timestampId) => {
+    try {
+        const backupPath = `_backups/${timestampId}/bookings`;
+        const backupSnap = await getDocs(collection(db, backupPath));
+
+        // 1. Delete all bookings in the backup
+        const chunks = [];
+        let batch = writeBatch(db);
+        let count = 0;
+
+        backupSnap.docs.forEach(d => {
+            batch.delete(d.ref);
+            count++;
+            if (count >= 490) {
+                chunks.push(batch);
+                batch = writeBatch(db);
+                count = 0;
+            }
+        });
+
+        if (count > 0) chunks.push(batch);
+        await Promise.all(chunks.map(b => b.commit()));
+
+        // 2. Delete the metadata document
+        await deleteDoc(doc(db, '_backups', timestampId));
+
+        return true;
+    } catch (e) {
+        console.error("Delete backup failed:", e);
+        throw new Error("Delete failed: " + e.message);
+    }
+};
+
+/**
  * Generates and triggers a browser download of all bookings as a CSV file.
  * @param {Array} bookings - Array of booking objects
  */

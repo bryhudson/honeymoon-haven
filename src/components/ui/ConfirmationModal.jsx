@@ -11,7 +11,8 @@ export function ConfirmationModal({
     confirmText = "Confirm",
     showCancel = true,
     requireTyping = null,
-    closeOnConfirm = true
+    closeOnConfirm = true,
+    inputType = "text"
 }) {
     const [inputValue, setInputValue] = React.useState("");
 
@@ -20,7 +21,7 @@ export function ConfirmationModal({
         if (isOpen) setInputValue("");
     }, [isOpen]);
 
-    const isInputValid = !requireTyping || inputValue.toLowerCase() === requireTyping.toLowerCase();
+    const isInputValid = !requireTyping || inputValue === requireTyping;
 
     return (
         <BaseModal
@@ -37,14 +38,14 @@ export function ConfirmationModal({
                 {requireTyping && (
                     <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                            Type <span className="text-slate-900 select-all">"{requireTyping}"</span> to confirm:
+                            Type <span className="text-slate-900 select-all">{inputType === 'password' ? 'Admin Code' : `"${requireTyping}"`}</span> to confirm:
                         </label>
                         <input
-                            type="text"
+                            type={inputType}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder={requireTyping}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                            placeholder={inputType === 'password' ? 'Enter Admin Code' : requireTyping}
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono"
                             autoFocus
                         />
                     </div>

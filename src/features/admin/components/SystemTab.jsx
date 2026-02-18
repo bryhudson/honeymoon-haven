@@ -4,7 +4,7 @@ import { collection, onSnapshot, getDocs, getDoc, Timestamp, writeBatch, updateD
 import { calculateDraftSchedule, getShareholderOrder } from '../../../lib/shareholders';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { useAuth } from '../../auth/AuthContext';
-import { getAvailableBackups, restoreBackup } from '../services/backupService';
+import { getAvailableBackups, restoreBackup, deleteBackup } from '../services/backupService';
 import { db } from '../../../lib/firebase';
 
 export function SystemTab({
@@ -125,6 +125,7 @@ export function SystemTab({
 function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
     const [backups, setBackups] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete', id, count }
 
     const loadBackups = async () => {
         setIsLoading(true);
@@ -133,13 +134,29 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
         setIsLoading(false);
     };
 
-    const handleRestore = async (id, count) => {
-        if (!confirm(`Restore backup from ${id}? This will OVERWRITE all current data.`)) return;
+    const handleRestore = async () => {
+        if (!confirmAction) return;
+        const { id, count } = confirmAction;
+
         try {
             await restoreBackup(id);
             triggerAlert("Success", `Restored ${count} bookings from ${id}.`);
+            loadBackups(); // Refresh list potentially
         } catch (e) {
             triggerAlert("Error", "Restore failed: " + e.message);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirmAction) return;
+        const { id } = confirmAction;
+
+        try {
+            await deleteBackup(id);
+            triggerAlert("Success", `Backup ${id} deleted.`);
+            loadBackups();
+        } catch (e) {
+            triggerAlert("Error", "Delete failed: " + e.message);
         }
     };
 
@@ -174,16 +191,48 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                                     {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : 'Manual'}
                                 </p>
                             </div>
-                            <button
-                                onClick={() => handleRestore(b.timestampId, b.count)}
-                                className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all"
-                            >
-                                Restore
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setConfirmAction({ type: 'delete', id: b.timestampId })}
+                                    className="px-3 py-1 bg-white border border-slate-200 text-slate-400 text-[10px] font-bold uppercase rounded hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => setConfirmAction({ type: 'restore', id: b.timestampId, count: b.count })}
+                                    className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all"
+                                >
+                                    Restore
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
+
+            {/* Secure Confirmation Modals */}
+            <ConfirmationModal
+                isOpen={confirmAction?.type === 'restore'}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={handleRestore}
+                title="🔒 Secure Restore"
+                message={`You are about to restore backup ${confirmAction?.id}.\n\nThis will DELETE all current live data and replace it with this snapshot.\n\nEnter the Admin Recovery Code to proceed.`}
+                isDanger={true}
+                confirmText="AUTHENTICATE & RESTORE"
+                requireTyping="hhr-recover-2026"
+                inputType="password"
+            />
+
+            <ConfirmationModal
+                isOpen={confirmAction?.type === 'delete'}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={handleDelete}
+                title="Delete Backup Snapshot"
+                message={`Are you sure you want to permanently delete backup ${confirmAction?.id}?\n\nThis action cannot be undone.`}
+                isDanger={true}
+                confirmText="DELETE BACKUP"
+                requireTyping="delete"
+            />
         </div>
     );
 }
