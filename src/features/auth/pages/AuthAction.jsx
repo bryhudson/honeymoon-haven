@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { auth } from '../../../lib/firebase';
 import { verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
 import { Loader2, CheckCircle, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { validatePasswordReset, validateAuthActionParams } from '../../../lib/authValidation';
 
 export function AuthAction() {
     const [searchParams] = useSearchParams();
@@ -24,8 +25,9 @@ export function AuthAction() {
 
     // Initial Verification
     useEffect(() => {
-        if (!actionCode) {
-            setError('Invalid or missing action code.');
+        const paramError = validateAuthActionParams(mode, actionCode);
+        if (paramError) {
+            setError(paramError);
             setIsVerifying(false);
             return;
         }
@@ -49,12 +51,9 @@ export function AuthAction() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (newPassword !== confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
-        if (newPassword.length < 6) {
-            setError('Password must be at least 6 characters.');
+        const validationError = validatePasswordReset(newPassword, confirmPassword);
+        if (validationError) {
+            setError(validationError);
             return;
         }
 

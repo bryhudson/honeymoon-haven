@@ -22,7 +22,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         } else {
             setError(null);
         }
-    }, [formData.from, formData.to, allBookings]);
+    }, [formData.from, formData.to, formData.guests, allBookings]);
 
     const checkAvailability = (startStr, endStr) => {
         if (!startStr || !endStr) return;
@@ -43,6 +43,11 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         const nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
         if (nights > 7) {
             setError(`Booking duration (${nights} nights) exceeds the maximum limit of 7 nights.`);
+            return;
+        }
+
+        if (parseInt(formData.guests) > 6) {
+            setError("Max 6 guests permitted (Total 8 occupants).");
             return;
         }
 
@@ -130,6 +135,22 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
             description="Adjust details for this specific reservation"
             maxSize="max-w-lg"
         >
+            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 text-xs text-slate-600 space-y-2 mb-6">
+                <div className="flex gap-2">
+                    <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                        <p>
+                            <span className="font-bold text-blue-700 block mb-0.5">Overnight Policy:</span>
+                            You are permitted a maximum of 8 people (including yourself and your family). You can use one tent on your Lot to accommodate this.
+                        </p>
+                        <p>
+                            <span className="font-bold text-blue-700 block mb-0.5">Daytime Policy:</span>
+                            You can have "day gatherings" of up to 10 people (including yourself and family) without needing special permission.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                     {/* Shareholder */}
@@ -175,11 +196,12 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                                 type="number"
                                 name="guests"
                                 min="1"
-                                max="10"
+                                max="6"
                                 value={formData.guests}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
                             />
+                            <p className="text-[10px] text-slate-400 font-medium px-1">Max 6 (Total 8 occupants)</p>
                         </div>
                     </div>
 

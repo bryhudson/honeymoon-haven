@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import { mapForgotPasswordError } from '../../../lib/authValidation';
 
 export function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -21,11 +22,7 @@ export function ForgotPassword() {
             setMessage('Check your email for instructions to reset your password.');
         } catch (err) {
             console.error(err);
-            if (err.code === 'auth/user-not-found') {
-                setError('No account found with this email.');
-            } else {
-                setError('Failed to reset password. Please try again.');
-            }
+            setError(mapForgotPasswordError(err.code));
         }
 
         setLoading(false);

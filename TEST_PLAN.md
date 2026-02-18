@@ -15,6 +15,7 @@
 | `tests/emailTemplates.test.js` | 26 | ✅ Passing |
 | `tests/shareholders.test.ts` | 51 | ✅ Passing |
 | `tests/utils.test.ts` | 24 | ✅ Passing |
+| `tests/auth.test.ts` | 24 | ✅ Passing |
 
 ---
 
@@ -36,8 +37,9 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 ### 2. User Authentication (Firebase-dependent — mocked)
 > `src/features/auth/AuthContext.jsx` + `src/features/auth/pages/Login.jsx`
 >
-> **Status**: Deferred — requires `@testing-library/react` + Firebase mock setup.
-> Not included in this sprint; tracked for future iteration.
+> **Status**: Partially covered — pure validation logic extracted into `src/lib/authValidation.ts`
+> and tested in `tests/auth.test.ts` (24 tests). Component-level tests (React + Firebase)
+> remain deferred; require `@testing-library/react` + Firebase mock setup.
 
 ### 3. Pricing / Maintenance Fees (`src/lib/pricing.ts`)
 > **Status**: ✅ Fully covered in `tests/pricing.test.ts` (18 tests).
@@ -115,8 +117,9 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 | `tests/emailTemplates.test.js` | All 16 email templates | 26 ✅ |
 | `tests/shareholders.test.ts` | `normalizeName`, `formatNameForDisplay`, `getShareholderOrder`, `getOfficialStart`, `getPickDurationMS`, `calculateDraftSchedule`, `mapOrderToSchedule` | 51 ✅ |
 | `tests/utils.test.ts` | `cn` | 24 ✅ |
+| `tests/auth.test.ts` | `validatePasswordReset`, `mapForgotPasswordError`, `validateAuthActionParams` | 24 ✅ |
 
-**Total: 119 tests — all passing**
+**Total: 143 tests — all passing**
 
 ---
 
