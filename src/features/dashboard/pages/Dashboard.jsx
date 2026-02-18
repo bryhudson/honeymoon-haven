@@ -33,7 +33,6 @@ import { BookingSection } from '../components/BookingSection';
 import { OnboardingTour } from '../components/OnboardingTour';
 import { EmailGuestModal } from '../components/EmailGuestModal';
 import { ShareholderCalendarView } from '../components/ShareholderCalendarView';
-import { DidYouKnow } from '../components/DidYouKnow';
 
 import { FeedbackModal } from '../../feedback/components/FeedbackModal';
 
@@ -611,11 +610,6 @@ export function Dashboard() {
                         onOpenFeedback={() => setIsFeedbackOpen(true)}
                         onCelebrated={handleCelebrated}
                     />
-
-                    {/* Fun Facts Widget */}
-                    <div className="mb-6">
-                        <DidYouKnow />
-                    </div>
 
                     {/* --- TAB NAVIGATION --- */}
                     <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">

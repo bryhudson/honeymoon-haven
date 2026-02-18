@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Caravan, LogOut, LayoutDashboard, User, MessageSquare } from 'lucide-react';
+import { Caravan, LogOut, LayoutDashboard, User, MessageSquare, Gamepad2 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import { useBookingRealtime } from '../../hooks/useBookingRealtime';
@@ -110,6 +110,19 @@ export function Header() {
                                             </Link>
                                         </div>
                                     )}
+                                    <div className="flex items-center gap-1 bg-purple-50 p-1 rounded-lg ml-2">
+                                        <Link
+                                            to="/trivia"
+                                            className={`p-2 md:px-3 md:py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${location.pathname === '/trivia'
+                                                ? 'bg-white text-purple-700 shadow-sm'
+                                                : 'text-purple-600 hover:text-purple-900 hover:bg-purple-100'
+                                                }`}
+                                            title="Play Trivia"
+                                        >
+                                            <Gamepad2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                            <span className="hidden md:inline">Trivia</span>
+                                        </Link>
+                                    </div>
                                 </div>
                                 <div className="hidden lg:flex items-center gap-2 ml-4">
                                     <button
