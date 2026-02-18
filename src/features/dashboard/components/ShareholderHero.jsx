@@ -1,6 +1,6 @@
 import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
-import { AlertTriangle, Clock, Calendar, PlayCircle, CheckCircle, XCircle, Info, Mail } from 'lucide-react';
+import { AlertTriangle, Clock, Calendar, PlayCircle, CheckCircle, XCircle, Info, Mail, Banknote } from 'lucide-react';
 import { normalizeName, formatNameForDisplay, DRAFT_CONFIG } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
@@ -565,9 +565,18 @@ export function ShareholderHero({
                                                 Maintenance Fee Paid
                                             </span>
                                         ) : (
-                                            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-orange-500/20 animate-pulse">
-                                                <AlertTriangle className="w-5 h-5 animate-bounce" strokeWidth={3} />
-                                                <span className="font-extrabold uppercase tracking-wide text-sm">Fee Outstanding 💸</span>
+                                            <div className="w-full mt-2 p-1 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 backdrop-blur-md">
+                                                <div className="flex flex-col sm:flex-row items-center gap-4 p-4">
+                                                    <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-bounce">
+                                                        <Banknote className="w-6 h-6" strokeWidth={2} />
+                                                    </div>
+                                                    <div className="text-center sm:text-left space-y-0.5">
+                                                        <div className="font-black text-amber-400 uppercase tracking-widest text-xs">Action Required</div>
+                                                        <p className="text-white/90 font-medium text-sm leading-snug">
+                                                            Please e-transfer your fee to <span className="font-bold text-amber-300">HHR</span> to finalize.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
