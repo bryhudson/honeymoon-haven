@@ -6,6 +6,7 @@ export function TriviaCard({
     options,
     selectedAnswer,
     correctAnswer,
+    fact,
     onSelect,
     isAnswered,
     isLastQuestion,
