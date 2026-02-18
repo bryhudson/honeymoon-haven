@@ -374,6 +374,7 @@ export function Dashboard() {
                         const owner = shareholders.find(o => o.name === passData.name);
                         await addDoc(collection(db, "bookings"), {
                             shareholderName: passData.name,
+                            uid: currentUser.uid, // Required for security rules
                             cabinNumber: owner ? owner.cabin : "?",
                             type: 'pass', // This is important
                             createdAt: new Date(),
@@ -432,6 +433,7 @@ export function Dashboard() {
                     const owner = shareholders.find(o => normalizeName(o.name) === normalizeName(status.activePicker));
                     await addDoc(collection(db, "bookings"), {
                         shareholderName: status.activePicker,
+                        uid: currentUser.uid,
                         cabinNumber: owner ? owner.cabin : "?",
                         from: start,
                         to: end,
