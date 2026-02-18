@@ -61,14 +61,14 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         {canPass ? (
                             <button
                                 onClick={onPass}
-                                className="flex-1 py-3.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-black uppercase tracking-widest transition-all active:scale-95"
+                                className="flex-1 py-3.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
                             >
                                 Pass Turn
                             </button>
                         ) : canCancel ? (
                             <button
                                 onClick={onCancel}
-                                className="flex-1 py-3.5 bg-white border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-xl text-sm font-black uppercase tracking-widest transition-all active:scale-95"
+                                className="flex-1 py-3.5 bg-white border border-rose-100 text-rose-600 hover:bg-rose-50 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
                             >
                                 Cancel Booking
                             </button>
@@ -77,7 +77,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                         {booking.isFinalized && booking.isPaid && onEmail && (
                             <button
                                 onClick={onEmail}
-                                className="flex-1 py-3.5 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                className="flex-1 py-3.5 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                             >
                                 <Mail className="w-4 h-4" />
                                 Email Guest
@@ -87,7 +87,7 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
                     <button
                         onClick={onClose}
-                        className="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                     >
                         Return to Dashboard
                     </button>

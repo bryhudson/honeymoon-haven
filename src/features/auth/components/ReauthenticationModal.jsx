@@ -90,14 +90,14 @@ export function ReauthenticationModal({ isOpen, onClose, onConfirm, title, messa
                         type="button"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-50 transition-colors disabled:opacity-50 text-xs"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={isLoading || !password}
-                        className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white shadow-sm transition-all bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 py-3.5 rounded-2xl font-black uppercase tracking-widest text-white shadow-lg transition-all bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
                     >
                         {isLoading ? (
                             <>

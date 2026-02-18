@@ -109,14 +109,14 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                             <div className="space-y-3 pt-2">
                                 <button
                                     onClick={onClose}
-                                    className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-lg rounded-xl shadow-lg ring-1 ring-white/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                    className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-black uppercase tracking-widest text-lg rounded-2xl shadow-lg ring-1 ring-white/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
                                     Let's Get Started
                                 </button>
                                 {onDismissPermanently && (
                                     <button
                                         onClick={onDismissPermanently}
-                                        className="w-full py-2.5 text-xs font-bold text-indigo-300/60 hover:text-white transition-all flex items-center justify-center gap-2"
+                                        className="w-full py-2.5 text-xs font-bold text-indigo-300/60 hover:text-white transition-all flex items-center justify-center gap-2 uppercase tracking-wide"
                                     >
                                         <EyeOff className="w-4 h-4" />
                                         Don't show this again

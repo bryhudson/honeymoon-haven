@@ -55,13 +55,13 @@ export function PromptModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
                     >
                         {cancelText}
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white shadow-sm transition-all bg-indigo-600 hover:bg-indigo-700"
+                        className="flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-600/10 transition-all bg-indigo-600 hover:bg-indigo-700 text-white"
                     >
                         {confirmText}
                     </button>

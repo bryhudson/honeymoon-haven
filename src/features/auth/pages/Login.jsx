@@ -23,29 +23,35 @@ export function Login() {
             await login(email, password);
 
             // Check if user is an admin via Firestore role
-            const shareholderDoc = await getDoc(doc(db, 'shareholders', email));
+            // Note: Normalized to lowercase to match standard ID format
+            const normalizedEmail = email.toLowerCase().trim();
+            const shareholderDoc = await getDoc(doc(db, 'shareholders', normalizedEmail));
+
             if (shareholderDoc.exists()) {
                 const role = shareholderDoc.data().role;
                 if (role === 'admin' || role === 'super_admin') {
                     navigate('/admin');
-                    setLoading(false);
-                    return;
+                } else {
+                    // Valid shareholder found, grant access
+                    navigate('/');
                 }
+                setLoading(false);
+                return;
             }
 
             // Fallback: check admin env list
-            if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+            if (ADMIN_EMAILS.includes(normalizedEmail)) {
                 navigate('/admin');
                 setLoading(false);
                 return;
             }
 
-            // Verify user is a shareholder (exact email match)
+            // Verify user is a shareholder (scan all docs - fallback for legacy IDs)
             try {
                 const snapshot = await getDocs(collection(db, 'shareholders'));
                 const allShareholders = snapshot.docs.map(d => d.data());
                 const isShareholder = allShareholders.some(s =>
-                    s.email && s.email.toLowerCase().trim() === email.toLowerCase().trim()
+                    s.email && s.email.toLowerCase().trim() === normalizedEmail
                 );
 
                 if (!isShareholder) {
@@ -58,6 +64,8 @@ export function Login() {
                 navigate('/');
             } catch (accessErr) {
                 console.error("Access Check Failed:", accessErr);
+                // If the bulk read fails (permissions) but Auth succeeded, we are in a tough spot.
+                // However, the primary check above (getDoc) should have caught valid users with standard lowercase IDs.
                 await logout();
                 setError("System Error: Could not verify shareholder status.");
                 setLoading(false);

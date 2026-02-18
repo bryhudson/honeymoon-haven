@@ -65,13 +65,13 @@ export function TestRecipientModal({
                 <div className="flex gap-3 pt-2">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-[11px]"
+                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-xs"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 text-[11px]"
+                        className="flex-1 py-3.5 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 text-xs"
                     >
                         <Zap className="w-4 h-4" />
                         Send Test

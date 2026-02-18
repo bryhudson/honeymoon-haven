@@ -106,14 +106,14 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
                                     type="button"
                                     onClick={onClose}
                                     disabled={sending}
-                                    className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-[11px] disabled:opacity-50"
+                                    className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={!guestEmail || sending}
-                                    className="flex-1 py-3.5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 text-[11px] disabled:opacity-50"
+                                    className="flex-1 py-3.5 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {sending ? (
                                         <>
