@@ -17,7 +17,16 @@ import { StatusCard } from '../components/StatusCard';
 import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
 import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName } from '../../../lib/shareholders';
-const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal').then(module => ({ default: module.BookingDetailsModal })));
+const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
+    .then(module => ({ default: module.BookingDetailsModal }))
+    .catch(error => {
+        // Auto-reload/recover on chunk load errors (deployments)
+        if (error.message.includes('Failed to fetch dynamically imported module') ||
+            error.message.includes('Importing a module script failed')) {
+            window.location.reload();
+        }
+        throw error;
+    }));
 import { TrailerGuide } from '../components/TrailerGuide';
 import { ShareholderHero } from '../components/ShareholderHero';
 import { BookingSection } from '../components/BookingSection';
