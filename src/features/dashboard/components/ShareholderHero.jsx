@@ -565,8 +565,8 @@ export function ShareholderHero({
                                                 Maintenance Fee Paid
                                             </span>
                                         ) : (
-                                            <span className="flex items-center gap-2 text-amber-500 text-sm font-bold uppercase tracking-widest">
-                                                <AlertTriangle className="w-4 h-4" />
+                                            <span className="relative flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm font-black uppercase tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.6)] animate-pulse transform hover:scale-105 transition-transform cursor-default border-2 border-white/20">
+                                                <AlertTriangle className="w-5 h-5" />
                                                 Fee Outstanding
                                             </span>
                                         )}
