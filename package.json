@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.87.46",
+  "version": "2.87.47",
   "type": "module",
   "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
@@ -25,7 +25,6 @@
     "react": "^19.2.0",
     "react-day-picker": "^9.13.0",
     "react-dom": "^19.2.0",
-    "react-joyride": "^2.9.3",
     "react-quill-new": "^3.7.0",
     "react-router-dom": "^7.10.1",
     "tailwind-merge": "^3.4.0"

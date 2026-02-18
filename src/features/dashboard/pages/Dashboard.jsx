@@ -30,7 +30,6 @@ const BookingDetailsModal = React.lazy(() => import('../components/BookingDetail
 import { TrailerGuide } from '../components/TrailerGuide';
 import { ShareholderHero } from '../components/ShareholderHero';
 import { BookingSection } from '../components/BookingSection';
-import { OnboardingTour } from '../components/OnboardingTour';
 import { EmailGuestModal } from '../components/EmailGuestModal';
 import { ShareholderCalendarView } from '../components/ShareholderCalendarView';
 
@@ -525,11 +524,7 @@ export function Dashboard() {
     return (
         <div className="flex flex-col gap-5 py-4 md:py-6 container mx-auto px-4 relative">
             {/* Tour Guide */}
-            {/* Tour Guide */}
-            <OnboardingTour
-                currentUser={currentShareholderDoc}
-                defer={showWelcomeModal || !!isWelcomePending}
-            />
+
 
             {/* LOADING STATE */}
             {loading && (
