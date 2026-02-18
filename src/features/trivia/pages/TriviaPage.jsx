@@ -197,28 +197,29 @@ export function TriviaPage() {
                 </div>
             </div>
 
-            <main className="container mx-auto px-4 py-8 md:py-12">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 font-bold text-sm mb-4">
-                        <Sparkles className="w-4 h-4" /> Honeymoon Trivia
+            <main className="container mx-auto px-4 py-6 md:py-10 flex flex-col items-center">
+                <div className="w-full max-w-lg">
+                    <div className="text-center mb-6">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 font-bold text-sm mb-2 shadow-sm">
+                            <Sparkles className="w-4 h-4" /> Honeymoon Trivia
+                        </div>
                     </div>
-                </div>
 
-                <TriviaCard
-                    {...currentQ}
-                    selectedAnswer={selectedAnswer}
-                    isAnswered={isAnswered}
-                    onSelect={handleAnswer}
-                />
+                    <TriviaCard
+                        {...currentQ}
+                        selectedAnswer={selectedAnswer}
+                        isAnswered={isAnswered}
+                        onSelect={handleAnswer}
+                    />
 
-                {/* Next Button Floating Bar */}
-                <div className={`fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 transition-transform duration-300 ${isAnswered ? 'translate-y-0' : 'translate-y-full'}`}>
-                    <div className="container mx-auto max-w-2xl">
+                    {/* Inline Next Button (No longer fixed at bottom) */}
+                    <div className={`mt-6 transition-all duration-500 ease-out transform ${isAnswered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
                         <button
                             onClick={handleNext}
-                            className="w-full py-4 rounded-xl bg-purple-600 text-white font-bold text-lg shadow-lg hover:bg-purple-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                            disabled={!isAnswered}
+                            className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold text-lg shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
-                            {isLastQuestion ? "See Results" : "Next Question"} <ArrowRight className="w-6 h-6" />
+                            {isLastQuestion ? "See Results" : "Next Question"} <ArrowRight className="w-5 h-5" />
                         </button>
                     </div>
                 </div>

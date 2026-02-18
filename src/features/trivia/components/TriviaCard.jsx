@@ -11,19 +11,19 @@ export function TriviaCard({
     fact
 }) {
     return (
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-xl max-w-2xl w-full mx-auto animate-in fade-in zoom-in duration-300">
-            <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-purple-100 text-purple-600 rounded-full shrink-0">
-                    <HelpCircle className="w-6 h-6" />
+        <div className="bg-white/90 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-xl w-full animate-in fade-in zoom-in duration-300">
+            <div className="flex items-start gap-4 mb-5">
+                <div className="p-2.5 bg-purple-100 text-purple-600 rounded-full shrink-0 mt-0.5">
+                    <HelpCircle className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+                <h2 className="text-lg md:text-xl font-bold text-slate-800 leading-snug">
                     {question}
                 </h2>
             </div>
 
-            <div className="grid gap-3 mb-6">
+            <div className="grid gap-2.5 mb-5">
                 {options.map((option, index) => {
-                    let btnClass = "w-full p-4 text-left rounded-xl border-2 transition-all duration-200 font-medium text-lg flex justify-between items-center group ";
+                    let btnClass = "w-full p-3.5 text-left rounded-xl border-2 transition-all duration-200 font-medium text-base flex justify-between items-center group ";
 
                     if (isAnswered) {
                         if (option === correctAnswer) {
