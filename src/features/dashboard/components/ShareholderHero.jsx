@@ -565,10 +565,10 @@ export function ShareholderHero({
                                                 Maintenance Fee Paid
                                             </span>
                                         ) : (
-                                            <span className="flex items-center gap-3 text-amber-500 text-base font-black uppercase tracking-widest">
-                                                <AlertTriangle className="w-6 h-6 animate-pulse" strokeWidth={3} />
-                                                Fee Outstanding
-                                            </span>
+                                            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-orange-500/20 animate-pulse">
+                                                <AlertTriangle className="w-5 h-5 animate-bounce" strokeWidth={3} />
+                                                <span className="font-extrabold uppercase tracking-wide text-sm">Fee Outstanding 💸</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
