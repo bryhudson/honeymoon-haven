@@ -554,6 +554,38 @@ export function ShareholderHero({
                                 <p>Your turn expired without action. Don't worry - you'll get another chance in the next round!</p>
                             ) : (
                                 <div className="space-y-4">
+                                    {/* Round Context Badge */}
+                                    {
+                                        (() => {
+                                            // Heuristic: Filter out cancellations to determine "Logical Slot"
+                                            const nonCancelledActions = myActions.filter(b => b.type !== 'cancelled' && b.status !== 'cancelled');
+                                            const logicalIndex = nonCancelledActions.findIndex(b => b.id === lastAction.id);
+
+                                            let label = null;
+                                            let badgeStyle = "";
+
+                                            // Prioritize explicit round data if available
+                                            if (lastAction.round) {
+                                                if (lastAction.round === 1) { label = "Round 1"; badgeStyle = "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"; }
+                                                else if (lastAction.round === 2) { label = "Round 2"; badgeStyle = "bg-purple-500/20 text-purple-300 border-purple-500/30"; }
+                                                else { label = "Open Season"; badgeStyle = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"; }
+                                            } else {
+                                                // Fallback to logical index
+                                                if (logicalIndex === 0) { label = "Round 1"; badgeStyle = "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"; }
+                                                else if (logicalIndex === 1) { label = "Round 2"; badgeStyle = "bg-purple-500/20 text-purple-300 border-purple-500/30"; }
+                                                else if (logicalIndex >= 2) { label = "Open Season"; badgeStyle = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"; }
+                                            }
+
+                                            if (!label) return null;
+
+                                            return (
+                                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-bold uppercase tracking-widest ${badgeStyle} w-fit`}>
+                                                    {label}
+                                                </div>
+                                            );
+                                        })()
+                                    }
+
                                     <p className="text-lg md:text-xl text-slate-300 font-medium leading-relaxed">
                                         Booking confirmed for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
                                         <span className="text-slate-500 ml-2">({nights} nights)</span>
@@ -576,7 +608,7 @@ export function ShareholderHero({
                                                         onClick={() => onViewDetails(lastAction)}
                                                         className="px-4 py-2 text-sm font-bold text-emerald-100 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors flex items-center gap-2"
                                                     >
-                                                        <Info className="w-4 h-4" /> Views Details
+                                                        <Info className="w-4 h-4" /> View Details
                                                     </button>
                                                     {onEmail && (
                                                         <button
@@ -617,7 +649,7 @@ export function ShareholderHero({
 
 
                 </div>
-            </div>
+            </div >
         );
     }
 
