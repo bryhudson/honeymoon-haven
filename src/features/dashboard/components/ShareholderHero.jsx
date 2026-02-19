@@ -144,6 +144,20 @@ export function ShareholderHero({
                 iconBg: "bg-slate-700/50",
                 icon: "text-slate-400",
                 subtext: "text-slate-300"
+            },
+            violet: {
+                wrapper: "border-violet-500/30 bg-slate-950",
+                glow: "from-violet-500/20 via-violet-900/10 to-transparent",
+                iconBg: "bg-violet-500/10",
+                icon: "text-violet-400",
+                subtext: "text-violet-200"
+            },
+            rose: {
+                wrapper: "border-rose-500/30 bg-slate-950",
+                glow: "from-rose-500/20 via-rose-900/10 to-transparent",
+                iconBg: "bg-rose-500/10",
+                icon: "text-rose-400",
+                subtext: "text-rose-200"
             }
         };
 
@@ -294,7 +308,7 @@ export function ShareholderHero({
         const isEarly = status.isGracePeriod;
 
         return <ModernTrailerWidget
-            accentColor={isEarly ? "emerald" : "amber"}
+            accentColor="emerald"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
             subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
@@ -360,7 +374,7 @@ export function ShareholderHero({
         const isPaid = lastAction.isPaid;
 
         return <ModernTrailerWidget
-            accentColor={isPaid ? "emerald" : "amber"}
+            accentColor={isPaid ? "violet" : "amber"}
             icon={Caravan}
             title="Booking Confirmed"
             subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
@@ -383,7 +397,7 @@ export function ShareholderHero({
             }
             actions={
                 <div className="flex gap-2 w-full md:w-auto">
-                    {!isPaid && onEmail && (
+                    {isPaid && onEmail && (
                         <button
                             onClick={() => onEmail(lastAction)}
                             className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
@@ -407,7 +421,7 @@ export function ShareholderHero({
     // ============================================
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
         return <ModernTrailerWidget
-            accentColor="red"
+            accentColor="rose"
             icon={XCircle}
             title="Cancelled"
             subtitle="Booking Removed"
