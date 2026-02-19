@@ -141,7 +141,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                     <div className="space-y-2">
                         <p>
                             <span className="font-bold text-blue-700 block mb-0.5">Overnight Policy:</span>
-                            You are permitted a maximum of 8 people (including yourself and your family). You can use one tent on your Lot to accommodate this.
+                            You are permitted a maximum of 8 people (including yourself and your family).
                         </p>
                         <p>
                             <span className="font-bold text-blue-700 block mb-0.5">Daytime Policy:</span>
@@ -262,6 +262,6 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                     </button>
                 </div>
             </form>
-        </BaseModal>
+        </BaseModal >
     );
 }
