@@ -100,11 +100,6 @@ export function ShareholderHero({
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
-    const phaseLabel = status.phase === 'ROUND_2' ? 'Round 2'
-        : status.phase === 'OPEN_SEASON' ? 'Open Season'
-            : 'Round 1';
-
-
     // --- Admin-Style Widget (V5.6) ---
     const ModernTrailerWidget = ({
         accentColor = "emerald",
@@ -194,7 +189,7 @@ export function ShareholderHero({
                                 <span>{title}</span>
                             </div>
                             {shareholderName && (
-                                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 text-slate-400 text-xs font-bold border border-slate-700">
+                                <div className={`hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border opacity-60 ${theme.badge}`}>
                                     <User className="w-3 h-3" />
                                     {formatNameForDisplay(shareholderName)}
                                 </div>
@@ -246,7 +241,7 @@ export function ShareholderHero({
                 accentColor={isPaid ? "emerald" : "amber"}
                 icon={Caravan}
                 title="Booking Confirmed"
-                subtitle={`${phaseLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
+                subtitle={`${roundLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
                 mainContent={
                     <div className="flex items-center gap-2 text-white/80">
                         <span>Configuration:</span>
@@ -378,7 +373,7 @@ export function ShareholderHero({
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
-            subtitle={`${phaseLabel} - ${isEarly ? "Bonus Time Active" : "Official Window Open"}`}
+            subtitle={`${roundLabel} - ${isEarly ? "Bonus Time Active" : "Official Window Open"}`}
             mainContent={
                 <p>
                     It's your turn to pick! Select your dates before the window closes.
@@ -472,7 +467,7 @@ export function ShareholderHero({
             accentColor="rose"
             icon={XCircle}
             title="Cancelled"
-            subtitle={`${phaseLabel} - Booking Removed`}
+            subtitle={`${roundLabel} - Booking Removed`}
             mainContent={<div className="text-white/60">Your previous booking was cancelled. Wait for next round.</div>}
             actions={
                 <button
