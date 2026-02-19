@@ -653,8 +653,8 @@ const emailTemplates = {
           <a href="https://maps.app.goo.gl/1qPPvqUXByHCPAUp6" style="${THEME.components.button}">Open in Maps</a>
           
           <div style="margin-top: 24px;">
-            <a href="https://maps.app.goo.gl/1qPPvqUXByHCPAUp6">
-              <img src="https://hhr-trailer-booking.web.app/hhr-location-map.png" alt="Map Location of Honeymoon Haven Resort" style="width: 100%; max-width: 600px; border-radius: 12px; border: 1px solid #e5e5ea; display: block;">
+            <a href="https://maps.app.goo.gl/MLWgdWVQdqBoQpGR7">
+              <img src="https://hhr-trailer-booking.web.app/hhr-location-map-v2.png" alt="Map Location of Honeymoon Haven Resort" style="width: 100%; max-width: 600px; border-radius: 12px; border: 1px solid #e5e5ea; display: block;">
             </a>
           </div>
        </div>
