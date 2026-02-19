@@ -101,6 +101,35 @@ const THEME = {
 
 // --- HELPERS ---
 
+const NAME_MAP = {
+  "Gerry & Georgina": "Georgina and Jerry",
+  "Gerry and Georgina": "Georgina and Jerry",
+  "Mike & Janelle": "Janelle and Mike",
+  "Mike and Janelle": "Janelle and Mike",
+  "Brian & Monique": "Monique and Brian",
+  "Brian and Monique": "Monique and Brian",
+  "Brian & Sam": "Sam and Brian",
+  "Brian and Sam": "Sam and Brian",
+  "Ernest & Sandy": "Sandy and Ernest",
+  "Ernest and Sandy": "Sandy and Ernest",
+  "Jeff & Lori": "Lori and Jeff",
+  "Jeff and Lori": "Lori and Jeff",
+  "David & Gayla": "Gayla and David",
+  "David and Gayla": "Gayla and David",
+  "Saurabh & Jessica": "Jessica and Saurabh",
+  "Saurabh and Jessica": "Jessica and Saurabh",
+  "Dom & Melanie": "Melanie and Dom",
+  "Dom and Melanie": "Melanie and Dom",
+  "Julia, Mandy & Bryan": "Julia, Mandy and Bryan"
+};
+
+const formatName = (name) => {
+  if (!name) return "";
+  let n = name.toString().trim();
+  if (NAME_MAP[n]) n = NAME_MAP[n];
+  return n.replace(/&/g, "and");
+};
+
 const wrapHtml = (title, bodyContent) => `
 <!DOCTYPE html>
 <html>
@@ -159,7 +188,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking App [${roundLabel}]: It's Your Turn! 🎯`;
     const body = `
       <h1 style="${THEME.typography.h1}">Welcome to the new HHR Trailer Booking App! 🚀</h1>
-      <p style="${THEME.typography.body}">You're up, ${data.name}! We're ditching the spreadsheets and manual emails for something much better.</p>
+      <p style="${THEME.typography.body}">You're up, ${formatName(data.name)}! We're ditching the spreadsheets and manual emails for something much better.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>✨ What's New?</strong><br>
@@ -185,24 +214,24 @@ const emailTemplates = {
 
     // Dynamic Subject Line based on Reminder Type (from Overview Spec)
     let subject = `HHR Trailer Booking App [${roundLabel}]: The clock is ticking ⏳`; // Default fallback
-    let headline = `Don't snooze on summer, ${data.name}.`; // Default headline
+    let headline = `Don't snooze on summer, ${formatName(data.name)}.`; // Default headline
 
     switch (data.type) {
       case 'evening': // Day 1 Evening
         subject = `HHR Trailer Booking App [${roundLabel}]: Your Honeymoon Haven Booking Awaits 🌙`;
-        headline = `The 2026 Season is calling, ${data.name}.`;
+        headline = `The 2026 Season is calling, ${formatName(data.name)}.`;
         break;
       case 'day2': // Day 2 Morning
         subject = `HHR Trailer Booking App [${roundLabel}]: Complete Your Booking ☀️`;
-        headline = `Good morning, ${data.name}! Time to pick your dates.`;
+        headline = `Good morning, ${formatName(data.name)}! Time to pick your dates.`;
         break;
       case 'day2evening': // Day 2 Evening
         subject = `HHR Trailer Booking App [${roundLabel}]: Friendly reminder... 🌅`;
-        headline = `Just checking in, ${data.name}.`;
+        headline = `Just checking in, ${formatName(data.name)}.`;
         break;
       case '4 hours': // Final Morning 6 AM
         subject = `HHR Trailer Booking App [${roundLabel}]: 4 Hours Remaining ⏳`;
-        headline = `Last chance to lock it in, ${data.name}!`;
+        headline = `Last chance to lock it in, ${formatName(data.name)}!`;
         break;
     }
 
@@ -225,7 +254,7 @@ const emailTemplates = {
     const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
     const subject = `HHR Trailer Booking App [${roundLabel}]: URGENT: 1 Hour Left 🚨`;
     const body = `
-      <p style="${THEME.typography.body} font-weight: 600;">Hi ${data.name},</p>
+      <p style="${THEME.typography.body} font-weight: 600;">Hi ${formatName(data.name)},</p>
       <h1 style="${THEME.typography.h1} color: ${THEME.colors.error};">1 Hour Remaining</h1>
       <p style="${THEME.typography.body}">This is it. You have one hour left before your turn auto-skips to the next shareholder.</p>
 
@@ -258,7 +287,7 @@ const emailTemplates = {
 
     const body = `
       <h1 style="${THEME.typography.h1} color: ${THEME.colors.error};">Action Required: Payment Hold</h1>
-      <p style="${THEME.typography.body}">Hi ${data.name}, your maintenance fee payment is pending. <strong>Your dates are currently on hold but may be released if payment isn't received.</strong></p>
+      <p style="${THEME.typography.body}">Hi ${formatName(data.name)}, your maintenance fee payment is pending. <strong>Your dates are currently on hold but may be released if payment isn't received.</strong></p>
 
       <div style="background-color: #FFF1F2; border: 1px solid #FECACA; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <p style="${THEME.typography.body} margin: 0; color: #7F1D1D;"><strong>⚠️ 48-Hour Window Ending</strong><br>
@@ -346,7 +375,7 @@ const emailTemplates = {
     const subject = isRound2 ? `HHR Trailer Booking App ${roundLabel}: See you in Round 2 👋` : `HHR Trailer Booking App ${roundLabel}: See you in Open Season 👋`;
 
     const body = `
-      <h1 style="${THEME.typography.h1}">Thanks for letting us know, ${data.name}.</h1>
+      <h1 style="${THEME.typography.h1}">Thanks for letting us know, ${formatName(data.name)}.</h1>
       <p style="${THEME.typography.body}">We've successfully passed the baton to the next shareholder.</p>
       
       <div style="background-color: #FFFFFF; border: 1px solid #d2d2d7; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -366,7 +395,7 @@ const emailTemplates = {
     const roundLabel = data.round ? `[Round ${data.round}]` : '';
     const subject = `HHR Trailer Booking App ${roundLabel}: Early Access Unlocked! 🎁`;
     const body = `
-      <h1 style="${THEME.typography.h1}">Good news, ${data.name}!</h1>
+      <h1 style="${THEME.typography.h1}">Good news, ${formatName(data.name)}!</h1>
       <p style="${THEME.typography.body}">The previous shareholder just passed their turn, which means you now have <strong>early access</strong> to start planning your dates.</p>
 
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -399,7 +428,7 @@ const emailTemplates = {
       : "The draft phase has finished, but you can still book any remaining dates during <strong>Open Season</strong> - first come, first served.";
 
     const body = `
-      <h1 style="${THEME.typography.h1}">We missed you, ${data.name}.</h1>
+      <h1 style="${THEME.typography.h1}">We missed you, ${formatName(data.name)}.</h1>
       <p style="${THEME.typography.body}">We didn't hear from you by the deadline, so we had to move the line along to keep fairness for everyone.</p>
 
       <div style="background-color: #FFFFFF; border: 1px solid #d2d2d7; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -418,7 +447,7 @@ const emailTemplates = {
     const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
     const subject = `HHR Trailer Booking App [${roundLabel}]: It's Your Turn! 🎯`;
     const body = `
-      <h1 style="${THEME.typography.h1}">You're up, ${data.name}!</h1>
+      <h1 style="${THEME.typography.h1}">You're up, ${formatName(data.name)}!</h1>
       <p style="${THEME.typography.body}">The previous shareholder's window has expired, and it's now officially your turn to book.</p>
 
       <div style="background-color: #FFF4E5; border: 1px solid #FFE0B2; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -444,7 +473,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking App ${roundLabel}: Cancellation Confirmed`;
     const body = `
       <h1 style="${THEME.typography.h1}">Booking Cancelled.</h1>
-      <p style="${THEME.typography.body}">Hi ${data.name}, we've released your dates back to the pool as requested.</p>
+      <p style="${THEME.typography.body}">Hi ${formatName(data.name)}, we've released your dates back to the pool as requested.</p>
 
       <div style="margin: 32px 0;">
          ${dataItem('CANCELLED DATES', `${data.check_in} - ${data.check_out}`)}
@@ -481,7 +510,7 @@ const emailTemplates = {
 
     const body = `
       <h1 style="${THEME.typography.h1}">Maintenance Fee Due</h1>
-      <p style="${THEME.typography.body}">Hi ${data.name}, please complete your e-transfer to finalize the booking.</p>
+      <p style="${THEME.typography.body}">Hi ${formatName(data.name)}, please complete your e-transfer to finalize the booking.</p>
 
       <div style="margin: 32px 0;">
         <div style="${THEME.components.dataRow}">
@@ -489,7 +518,7 @@ const emailTemplates = {
           <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.total_price}</span>
           ${breakdownHtml}
         </div>
-        ${dataItem('Message', `${data.name} - Cabin ${data.cabin_number}`, true)}
+        ${dataItem('Message', `${formatName(data.name)} - Cabin ${data.cabin_number}`, true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px; background-color: #F5F5F7; padding: 24px; border-radius: 12px; border: 1px solid #e5e5ea;">
@@ -523,7 +552,7 @@ const emailTemplates = {
 
     const body = `
       <h1 style="${THEME.typography.h1}">Dates officially locked in! 🏔️🎉</h1>
-      <p style="${THEME.typography.body}">Great news, ${data.name}! We've officially received your e-transfer and your spot at the lake is confirmed.</p>
+      <p style="${THEME.typography.body}">Great news, ${formatName(data.name)}! We've officially received your e-transfer and your spot at the lake is confirmed.</p>
       
       <p style="${THEME.typography.body}">Get ready for simpler times! We're so excited for you to share our lakeside paradise with your guests—we just know they're going to have an amazing time. 🌲✨</p>
 
@@ -559,7 +588,7 @@ const emailTemplates = {
     // Custom content logic for the guide (more text heavy)
     const customContent = `
       <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${data.guest_name}!</h1>
-        <p style="${THEME.typography.body}">${data.shareholder_name} wants to ensure you have the best stay possible.</p>
+        <p style="${THEME.typography.body}">${formatName(data.shareholder_name)} wants to ensure you have the best stay possible.</p>
 
       ${details.checkIn ? `
       <div style="margin: 32px 0;">
@@ -599,10 +628,22 @@ const emailTemplates = {
            <a href="https://honeymoonbaystore.ca/" style="${THEME.typography.link} font-size: 13px;">Visit Website &rarr;</a>
          </div>
 
-         <div style="margin-bottom: 0;">
+         <div style="margin-bottom: 16px;">
            <strong style="display: block; margin-bottom: 4px;">Honeymoon Bay Outdoor Market 🥬</strong>
            <p style="${THEME.typography.small} margin-bottom: 4px;">Local crafts, fresh produce, and community vibes (Sat 10am-2pm).</p>
            <a href="https://honeymoonbaymarket.com/" style="${THEME.typography.link} font-size: 13px;">Visit Website &rarr;</a>
+         </div>
+
+         <div style="margin-bottom: 16px;">
+           <strong style="display: block; margin-bottom: 4px;">Fanny's Farmhouse 🚜</strong>
+           <p style="${THEME.typography.small} margin-bottom: 4px;">Charming local farmhouse with unique gifts and decor.</p>
+           <a href="https://www.facebook.com/fannysfarmhouse" style="${THEME.typography.link} font-size: 13px;">Visit Website &rarr;</a>
+         </div>
+
+         <div style="margin-bottom: 0;">
+           <strong style="display: block; margin-bottom: 4px;">Jakes at The Lake 🍺</strong>
+           <p style="${THEME.typography.small} margin-bottom: 4px;">Great food, cold drinks, and an amazing patio view.</p>
+           <a href="https://csbrewery.ca/jakes-at-the-lake/" style="${THEME.typography.link} font-size: 13px;">Visit Website &rarr;</a>
          </div>
       </div>
 
@@ -622,7 +663,7 @@ const emailTemplates = {
     const subject = `HHR Trailer Booking App ${roundLabel}: Your 48-Hour Window Has Begun ⏰`;
     const body = `
       <h1 style="${THEME.typography.h1}">The clock is officially ticking...</h1>
-      <p style="${THEME.typography.body}">Hi ${data.name}, your early access bonus time has ended.</p>
+      <p style="${THEME.typography.body}">Hi ${formatName(data.name)}, your early access bonus time has ended.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>⏱️ 48-Hour Window Started</strong><br>
@@ -668,7 +709,7 @@ const emailTemplates = {
 
     const body = `
       <h3 style="${THEME.typography.h3}">${title}</h3>
-      <h1 style="${THEME.typography.h1} font-size: 20px;">From ${data.name}</h1>
+      <h1 style="${THEME.typography.h1} font-size: 20px;">From ${formatName(data.name)}</h1>
       
       <div style="background-color: #F5F5F7; border-radius: 12px; padding: 20px; margin: 32px 0;">
         <p style="${THEME.typography.body} margin: 0; white-space: pre-wrap;">${data.message}</p>
@@ -681,7 +722,7 @@ const emailTemplates = {
 
   // 15. Payment Overdue - Admin Alert
   paymentOverdueAdmin: (data) => {
-    const subject = `⚠️ Overdue Payment: ${data.name} - ${data.check_in}`;
+    const subject = `⚠️ Overdue Payment: ${formatName(data.name)} - ${data.check_in}`;
 
     // Price breakdown HTML
     let breakdownHtml = '';
@@ -707,7 +748,7 @@ const emailTemplates = {
       <p style="${THEME.typography.body}">The following booking has not been paid within the 48-hour window.</p>
 
       <div style="margin: 32px 0;">
-        ${dataItem('Shareholder', data.name)}
+        ${dataItem('Shareholder', formatName(data.name))}
         ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
         ${dataItem('Check-In', data.check_in)}
         ${dataItem('Check-Out', data.check_out)}
