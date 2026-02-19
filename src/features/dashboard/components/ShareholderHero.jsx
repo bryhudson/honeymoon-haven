@@ -100,6 +100,11 @@ export function ShareholderHero({
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
+    const phaseLabel = status.phase === 'ROUND_2' ? 'Round 2'
+        : status.phase === 'OPEN_SEASON' ? 'Open Season'
+            : 'Round 1';
+
+
     // --- Admin-Style Widget (V5.6) ---
     const ModernTrailerWidget = ({
         accentColor = "emerald",
@@ -241,7 +246,7 @@ export function ShareholderHero({
                 accentColor={isPaid ? "emerald" : "amber"}
                 icon={Caravan}
                 title="Booking Confirmed"
-                subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
+                subtitle={`${phaseLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
                 mainContent={
                     <div className="flex items-center gap-2 text-white/80">
                         <span>Configuration:</span>
@@ -373,7 +378,7 @@ export function ShareholderHero({
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
-            subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
+            subtitle={`${phaseLabel} - ${isEarly ? "Bonus Time Active" : "Official Window Open"}`}
             mainContent={
                 <p>
                     It's your turn to pick! Select your dates before the window closes.
@@ -467,7 +472,7 @@ export function ShareholderHero({
             accentColor="rose"
             icon={XCircle}
             title="Cancelled"
-            subtitle="Booking Removed"
+            subtitle={`${phaseLabel} - Booking Removed`}
             mainContent={<div className="text-white/60">Your previous booking was cancelled. Wait for next round.</div>}
             actions={
                 <button
@@ -518,7 +523,7 @@ export function ShareholderHero({
                                 Until
                             </div>
                             <div className="text-xl font-bold text-white tabular-nums tracking-tight">
-                                {format(new Date(status.windowEnds), 'h:mm a')}
+                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                             </div>
                         </div>
                     </div>
