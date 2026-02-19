@@ -32,7 +32,6 @@ export function ShareholderHero({
 
     // --- CONFETTI CELEBRATION ---
     React.useEffect(() => {
-        // Find the most recent finalized, paid, but uncelebrated booking
         const paidBooking = bookings?.find(b =>
             normalizeName(b.shareholderName) === normalizeName(shareholderName) &&
             b.isFinalized &&
@@ -43,26 +42,19 @@ export function ShareholderHero({
         );
 
         if (paidBooking && onCelebrated) {
-            // FIRE CONFETTI!
             const duration = 3 * 1000;
             const animationEnd = Date.now() + duration;
             const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
             const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
             const interval = setInterval(function () {
                 const timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
+                if (timeLeft <= 0) return clearInterval(interval);
                 const particleCount = 50 * (timeLeft / duration);
                 confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
                 confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
             }, 250);
 
-            // Mark as celebrated in Firestore
             onCelebrated(paidBooking.id);
         }
     }, [bookings, shareholderName, onCelebrated]);
@@ -107,9 +99,7 @@ export function ShareholderHero({
         }
 
         if (myNextIndex === -1) {
-            if (isAdminPersona) {
-                return { diff: 99, round: 1 };
-            }
+            if (isAdminPersona) return { diff: 99, round: 1 };
             return null;
         }
 
@@ -118,113 +108,193 @@ export function ShareholderHero({
     }, [currentOrder, status, shareholderName, isReadOnly, isAdminPersona]);
 
 
-    // 1. System Maintenance (Highest Priority)
+    // --- SHARED: Round badges ---
+    const renderBadges = () => {
+        const myActions = bookings.filter(b =>
+            normalizeName(b.shareholderName) === normalizedMe &&
+            (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
+        ).sort((a, b) => a.createdAt - b.createdAt);
+
+        const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
+
+        const getBadge = (roundNum) => {
+            const hasRoundData = myActions.some(b => b.round !== undefined);
+            const action = hasRoundData
+                ? myActions.find(b => b.round === roundNum)
+                : roundNum === 1 ? myActions[0] : (myActions.length > 1 ? myActions[1] : null);
+
+            const isQueueRound = queueInfo && queueInfo.round === roundNum;
+            const isTurnRound = (roundNum === 1 ? status.phase === 'ROUND_1' : status.phase === 'ROUND_2') && isYourTurn;
+
+            // Implicit skip detection
+            let isSkippedImplicitly = false;
+            if (!action) {
+                if (roundNum === 1 && ['ROUND_2', 'OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
+                    isSkippedImplicitly = true;
+                } else if (roundNum === 2 && ['OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
+                    isSkippedImplicitly = true;
+                } else if ((roundNum === 1 && status.phase === 'ROUND_1') || (roundNum === 2 && status.phase === 'ROUND_2')) {
+                    const order = roundNum === 2 ? [...currentOrder].reverse() : currentOrder;
+                    const myIdx = order.findIndex(n => normalizeName(n) === normalizedMe);
+                    const activeIdx = order.findIndex(n => normalizeName(n) === normalizeName(status.activePicker));
+                    if (myIdx !== -1 && activeIdx !== -1 && myIdx < activeIdx) isSkippedImplicitly = true;
+                }
+            }
+
+            let style = 'bg-slate-700/60 text-slate-400 border-slate-600/50';
+            let icon = <Clock className="w-3 h-3" />;
+            let text = "Waiting";
+
+            if (action) {
+                if (action.type === 'pass') {
+                    style = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+                    icon = <CheckCircle className="w-3 h-3" />;
+                    text = "Passed";
+                } else if (action.type === 'skipped') {
+                    style = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
+                    icon = <XCircle className="w-3 h-3" />;
+                    text = "Skipped";
+                } else if (action.type === 'cancelled' || action.status === 'cancelled') {
+                    style = 'bg-red-500/10 text-red-300 border-red-500/30';
+                    icon = <XCircle className="w-3 h-3" />;
+                    text = "Cancelled";
+                } else {
+                    const isPaid = action.paymentStatus === 'paid';
+                    style = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+                    icon = <CheckCircle className="w-3 h-3" />;
+                    text = isPaid ? "Paid" : "Confirmed";
+                }
+            } else if (isSkippedImplicitly) {
+                style = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
+                icon = <XCircle className="w-3 h-3" />;
+                text = "Skipped";
+            } else if (isTurnRound) {
+                style = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+                icon = <Clock className="w-3 h-3 animate-pulse" />;
+                text = "Your Turn";
+            } else if (isQueueRound) {
+                style = 'bg-blue-500/10 text-blue-300 border-blue-500/30';
+                icon = <Clock className="w-3 h-3" />;
+                text = queueInfo.diff === 1 ? "Up Next!" : `#${queueInfo.diff} in Line`;
+            }
+
+            return (
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${style}`}>
+                    <span className="opacity-60">R{roundNum}</span>
+                    {icon}
+                    <span>{text}</span>
+                </div>
+            );
+        };
+
+        return (
+            <div id="tour-status" className="flex flex-wrap items-center gap-2">
+                {getBadge(1)}
+                {getBadge(2)}
+            </div>
+        );
+    };
+
+    // --- CARD WRAPPER ---
+    const Card = ({ children, borderColor = 'border-white/10', className = '' }) => (
+        <div data-tour="status-hero" className={`bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 md:p-6 shadow-lg border ${borderColor} ${className}`}>
+            {children}
+        </div>
+    );
+
+    // --- WELCOME LINE ---
+    const WelcomeLine = () => (
+        <div className="space-y-2">
+            <p className="text-sm text-white/50 leading-snug">
+                Welcome to the 2026 Season, <span className="text-white/80 font-semibold">{formatNameForDisplay(shareholderName)}</span>
+            </p>
+            {renderBadges()}
+        </div>
+    );
+
+    // ============================================
+    // 1. SYSTEM MAINTENANCE
+    // ============================================
     if (isSystemFrozen && !isSuperAdmin) {
         return (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-lg">
-                <div className="flex items-start gap-4">
-                    <div className="p-3 bg-amber-100 rounded-xl text-amber-600 shrink-0">
-                        <AlertTriangle className="w-6 h-6" />
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 md:p-6 shadow-sm">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600 shrink-0">
+                        <AlertTriangle className="w-5 h-5" />
                     </div>
-                    <div className="space-y-2">
-                        <h2 className="text-xl md:text-3xl font-black text-amber-900 tracking-tight">System Maintenance</h2>
-                        <p className="text-amber-800/80 text-base leading-relaxed">
-                            We're performing important system updates. Booking actions are temporarily paused.
-                        </p>
+                    <div>
+                        <h2 className="text-base font-bold text-amber-900">System Maintenance</h2>
+                        <p className="text-sm text-amber-700/80 mt-0.5">Booking actions are temporarily paused.</p>
                     </div>
                 </div>
             </div>
         );
     }
 
-
-
-    // 1b. Pre-Draft / Waiting for Start (Null Active Picker)
+    // ============================================
+    // 2. PRE-DRAFT
+    // ============================================
     if (status.phase === 'PRE_DRAFT' || (!status.activePicker && status.phase !== 'OPEN_SEASON')) {
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground('indigo')}
-
-                <div className="relative z-10 space-y-4 md:space-y-6">
-                    {renderHeader()}
-
-                    <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold uppercase tracking-wider border border-indigo-500/30">
-                            ⏳ Coming Soon
+            <Card>
+                <div className="space-y-3">
+                    <WelcomeLine />
+                    <div className="flex items-center gap-3 pt-1">
+                        <div className="p-2 bg-indigo-500/15 rounded-lg text-indigo-400 shrink-0">
+                            <Calendar className="w-5 h-5" />
                         </div>
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 pb-1">
-                            {title}
-                        </h2>
-                        <p className="text-base text-slate-300 leading-relaxed">
-                            The 2026 booking season hasn't officially begun yet. Sit tight, we'll notify you when the schedule kicks off!
-                        </p>
+                        <div>
+                            <p className="text-base font-bold text-white">Draft starts soon</p>
+                            {status.windowStarts && (
+                                <p className="text-sm text-white/50 mt-0.5">
+                                    {format(new Date(status.windowStarts), 'MMMM d, yyyy')} at 10:00 AM
+                                </p>
+                            )}
+                        </div>
                     </div>
-
-                    {status.windowStarts && (
-                        <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm inline-block">
-                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Schedule Starts</p>
-                            <div className="text-xl font-bold text-white mt-1">
-                                {format(new Date(status.windowStarts), 'MMMM d, yyyy @ h:mm a')}
-                            </div>
-                        </div>
-                    )}
                 </div>
-            </div>
+            </Card>
         );
     }
 
-    // 2. Open Season
+    // ============================================
+    // 3. OPEN SEASON
+    // ============================================
     if (status.phase === 'OPEN_SEASON') {
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground('green')}
-
-                <div className="relative z-10 space-y-4 md:space-y-6">
-                    {renderHeader()}
-
-                    <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-bold uppercase tracking-wider border border-green-500/30">
-                            🎉 Open Season
+            <Card borderColor="border-emerald-500/20">
+                <div className="space-y-3">
+                    <WelcomeLine />
+                    <div className="flex items-center justify-between gap-3 pt-1">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-emerald-500/15 rounded-lg text-emerald-400 shrink-0">
+                                <Calendar className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-base font-bold text-emerald-400">Open Season</p>
+                                <p className="text-sm text-white/50 mt-0.5">First come, first served for all dates</p>
+                            </div>
                         </div>
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 pb-1">
-                            Booking is Open
-                        </h2>
-                        <p className="text-base text-slate-300 leading-relaxed">
-                            Reservations are now first-come, first-served for all available dates.
-                        </p>
-                    </div>
-
-                    <div>
                         <button
+                            onClick={onOpenBooking}
                             disabled={isReadOnly}
-                            className={`px-6 py-3 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all 
+                            className={`px-4 py-2 text-sm font-bold rounded-lg shrink-0 transition-all
                                 ${isReadOnly
-                                    ? 'bg-green-600/50 text-white/50 cursor-not-allowed'
-                                    : 'bg-green-600 hover:bg-green-500 text-white hover:scale-105 active:scale-95'}`}
+                                    ? 'bg-emerald-600/30 text-white/40 cursor-not-allowed'
+                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95'}`}
                         >
-                            <Calendar className="w-5 h-5" />
-                            Book Dates Now
+                            Book Now
                         </button>
                     </div>
                 </div>
-            </div>
+            </Card>
         );
     }
 
 
-    // Helper for Phase Badge
-    const getPhaseLabel = (phase) => {
-        if (phase === 'ROUND_1') return 'Round 1';
-        if (phase === 'ROUND_2') return 'Round 2';
-        if (phase === 'OPEN_SEASON') return 'Open Season';
-        return null;
-    };
-    const phaseLabel = getPhaseLabel(status.phase);
-
-    // 3. User State Logic
+    // --- User State Logic ---
     const isYourTurn = normalizeName(status.activePicker) === normalizedMe;
 
-    // Determine completed status
     let roundTarget = 1;
     if (status.phase === 'ROUND_2') roundTarget = 2;
     const myActions = bookings.filter(b =>
@@ -234,202 +304,24 @@ export function ShareholderHero({
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
 
-    // Get the absolute most recent action (including cancellations and skips) for generic state detection
     const latestAction = bookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
-
-    // Helper: Render Round Status Badges
-    const renderBadges = () => {
-        const cancelledActions = bookings.filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.type === 'cancelled' || b.status === 'cancelled')).sort((a, b) => a.createdAt - b.createdAt);
-
-        return (
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                {/* Round 1 Badge */}
-                {(() => {
-                    const hasRoundData = myActions.some(b => b.round !== undefined);
-                    const r1Action = hasRoundData ? myActions.find(b => b.round === 1) : myActions[0];
-                    const isR1Queue = queueInfo && queueInfo.round === 1;
-                    const isR1Turn = status.phase === 'ROUND_1' && isYourTurn;
-
-                    // Implicit Skip Detection (Round 1)
-                    let isR1SkippedImplicitly = false;
-                    if (!r1Action) {
-                        if (['ROUND_2', 'OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
-                            isR1SkippedImplicitly = true;
-                        } else if (status.phase === 'ROUND_1') {
-                            const myIndex = currentOrder.findIndex(n => normalizeName(n) === normalizedMe);
-                            const activeIndex = currentOrder.findIndex(n => normalizeName(n) === normalizeName(status.activePicker));
-                            if (myIndex !== -1 && activeIndex !== -1 && myIndex < activeIndex) {
-                                isR1SkippedImplicitly = true;
-                            }
-                        }
-                    }
-
-                    let badgeClass = 'bg-slate-800/50 text-slate-400 border-slate-600/50';
-                    let icon = <Clock className="w-4 h-4" />;
-                    let text = "Waiting";
-
-                    if (r1Action) {
-                        if (r1Action.type === 'pass') {
-                            badgeClass = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
-                            icon = <CheckCircle className="w-4 h-4" />;
-                            text = "Passed";
-                        } else if (r1Action.type === 'skipped') {
-                            badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
-                            icon = <XCircle className="w-4 h-4" />;
-                            text = "Skipped";
-                        } else if (r1Action.type === 'cancelled' || r1Action.status === 'cancelled') {
-                            badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
-                            icon = <XCircle className="w-4 h-4" />;
-                            text = "Cancelled";
-                        } else {
-                            const isPaid = r1Action.paymentStatus === 'paid';
-                            badgeClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
-                            icon = <CheckCircle className="w-4 h-4" />;
-                            text = isPaid ? "Paid" : "Confirmed";
-                        }
-                    } else if (isR1SkippedImplicitly) {
-                        badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
-                        icon = <XCircle className="w-4 h-4" />;
-                        text = "Skipped";
-                    } else if (isR1Turn) {
-                        badgeClass = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
-                        icon = <Clock className="w-4 h-4 animate-pulse" />;
-                        text = "Your Turn";
-                    } else if (isR1Queue) {
-                        badgeClass = 'bg-blue-500/10 text-blue-300 border-blue-500/30';
-                        icon = <Clock className="w-4 h-4" />;
-                        text = queueInfo.diff === 1 ? "Up Next!" : `#${queueInfo.diff} in Line`;
-                    }
-
-                    return (
-                        <div className={`inline-flex items-center gap-1.5 md:gap-2.5 px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-wider md:tracking-widest border backdrop-blur-sm ${badgeClass}`}>
-                            <span className="opacity-70">R1</span>
-                            {icon}
-                            <span>{text}</span>
-                        </div>
-                    );
-                })()}
-
-                {/* Round 2 Badge */}
-                {(() => {
-                    const hasRoundData = myActions.some(b => b.round !== undefined);
-                    const r2Action = hasRoundData ? myActions.find(b => b.round === 2) : (myActions.length > 1 ? myActions[1] : null);
-                    const isR2Queue = queueInfo && queueInfo.round === 2;
-                    const isR2Turn = status.phase === 'ROUND_2' && isYourTurn;
-
-                    // Implicit Skip Detection (Round 2)
-                    let isR2SkippedImplicitly = false;
-                    if (!r2Action) {
-                        if (['OPEN_SEASON', 'COMPLETED'].includes(status.phase)) {
-                            isR2SkippedImplicitly = true;
-                        } else if (status.phase === 'ROUND_2') {
-                            // Round 2 is reversed order
-                            const r2Order = [...currentOrder].reverse();
-                            const myIndex = r2Order.findIndex(n => normalizeName(n) === normalizedMe);
-                            const activeIndex = r2Order.findIndex(n => normalizeName(n) === normalizeName(status.activePicker));
-                            if (myIndex !== -1 && activeIndex !== -1 && myIndex < activeIndex) {
-                                isR2SkippedImplicitly = true;
-                            }
-                        }
-                    }
-
-                    let badgeClass = 'bg-slate-800/50 text-slate-400 border-slate-600/50';
-                    let icon = <Clock className="w-4 h-4" />;
-                    let text = "Waiting";
-
-                    if (r2Action) {
-                        if (r2Action.type === 'pass') {
-                            badgeClass = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
-                            icon = <CheckCircle className="w-4 h-4" />;
-                            text = "Passed";
-                        } else if (r2Action.type === 'skipped') {
-                            badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
-                            icon = <XCircle className="w-4 h-4" />;
-                            text = "Skipped";
-                        } else if (r2Action.type === 'cancelled' || r2Action.status === 'cancelled') {
-                            badgeClass = 'bg-red-500/10 text-red-300 border-red-500/30';
-                            icon = <XCircle className="w-4 h-4" />;
-                            text = "Cancelled";
-                        } else {
-                            const isPaid = r2Action.paymentStatus === 'paid';
-                            badgeClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
-                            icon = <CheckCircle className="w-4 h-4" />;
-                            text = isPaid ? "Paid" : "Confirmed";
-                        }
-                    } else if (isR2SkippedImplicitly) {
-                        badgeClass = 'bg-orange-500/10 text-orange-300 border-orange-500/30';
-                        icon = <XCircle className="w-4 h-4" />;
-                        text = "Skipped";
-                    } else if (isR2Turn) {
-                        badgeClass = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
-                        icon = <Clock className="w-4 h-4 animate-pulse" />;
-                        text = "Your Turn";
-                    } else if (isR2Queue) {
-                        badgeClass = 'bg-blue-500/10 text-blue-300 border-blue-500/30';
-                        icon = <Clock className="w-4 h-4" />;
-                        text = queueInfo.diff === 1 ? "Up Next!" : `#${queueInfo.diff} in Line`;
-                    }
-
-                    return (
-                        <div className={`inline-flex items-center gap-1.5 md:gap-2.5 px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-wider md:tracking-widest border backdrop-blur-sm ${badgeClass}`}>
-                            <span className="opacity-70">R2</span>
-                            {icon}
-                            <span>{text}</span>
-                        </div>
-                    );
-                })()}
-            </div>
-        );
+    // Phase badge helper
+    const getPhaseLabel = (phase) => {
+        if (phase === 'ROUND_1') return 'Round 1';
+        if (phase === 'ROUND_2') return 'Round 2';
+        if (phase === 'OPEN_SEASON') return 'Open Season';
+        return null;
     };
+    const phaseLabel = getPhaseLabel(status.phase);
 
 
-
-    // --- SHARED UI COMPONENTS ---
-
-
-
-
-    const renderHeader = () => (
-        <div className="flex flex-col gap-3">
-            <h1 className="text-base md:text-xl font-normal text-white/80">
-                Welcome to the 2026 Season, <span className="text-white font-bold">{formatNameForDisplay(shareholderName)}</span>
-            </h1>
-            <div id="tour-status" className="flex-shrink-0">
-                {renderBadges()}
-            </div>
-        </div>
-    );
-
-    const renderBackground = (theme = 'blue') => {
-        const colors = {
-            blue: ['bg-blue-500/10', 'bg-purple-500/10'],
-            red: ['bg-red-500/10', 'bg-rose-500/10'],
-            green: ['bg-emerald-500/10', 'bg-green-500/10'],
-            indigo: ['bg-indigo-500/10', 'bg-purple-500/10']
-        };
-        const [c1, c2] = colors[theme] || colors.blue;
-
-        return (
-            <>
-                <div className={`absolute top-0 right-0 w-96 h-96 ${c1} rounded-full blur-3xl pointer-events-none`}></div>
-                <div className={`absolute bottom-0 left-0 w-96 h-96 ${c2} rounded-full blur-3xl pointer-events-none`}></div>
-            </>
-        );
-    };
-
-
-
-
-
-
-
-    // --- CASE B: Your Turn (No Draft) ---
+    // ============================================
+    // 4. YOUR TURN
+    // ============================================
     if (isYourTurn) {
-        // Calculate time remaining
-        // Calculate time remaining (Always target deadline)
         const targetDate = status.windowEnds;
 
         const timeRemaining = targetDate ? (() => {
@@ -443,81 +335,84 @@ export function ShareholderHero({
             return parts.join(' ') || '< 1m';
         })() : null;
 
-        const theme = status.isGracePeriod ? 'green' : 'red';
-        const timerLabel = "Complete Selection By";
+        const borderColor = status.isGracePeriod ? 'border-emerald-500/30' : 'border-orange-500/30';
+        const accentColor = status.isGracePeriod ? 'text-emerald-400' : 'text-orange-400';
+        const accentBg = status.isGracePeriod ? 'bg-emerald-500/15' : 'bg-orange-500/15';
 
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground(theme)}
+            <Card borderColor={borderColor}>
+                <div className="space-y-3">
+                    <WelcomeLine />
 
-                <div className="relative z-10 space-y-4 md:space-y-6">
-                    {renderHeader()}
-
-                    <div className="space-y-3">
-                        <h2 className={`text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'} pb-1`}>
-                            {status.isGracePeriod ? 'You Have Early Access!' : "It's Your Official Turn"}
-                        </h2>
-                        <p className="text-sm md:text-base text-white/60 leading-relaxed">
-                            {status.isGracePeriod
-                                ? <span>You're ahead of schedule! The official window begins <strong>{status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10:00 AM</strong>.</span>
-                                : "The calendar is yours! Please select your dates or pass your turn to the next shareholder."}
-                        </p>
+                    {/* Status line */}
+                    <div className="flex items-start gap-3 pt-1">
+                        <div className={`p-2 ${accentBg} rounded-lg ${accentColor} shrink-0 mt-0.5`}>
+                            <PlayCircle className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className={`text-base font-bold ${accentColor}`}>
+                                {status.isGracePeriod ? 'Early Access' : "It's Your Turn"}
+                            </p>
+                            <p className="text-sm text-white/50 mt-0.5">
+                                {status.isGracePeriod
+                                    ? `Official window starts ${status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10 AM`
+                                    : 'Select your dates or pass your turn'}
+                            </p>
+                        </div>
                     </div>
 
-                    <div id="tour-deadline" className="bg-slate-800/40 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <Clock className="w-5 h-5 text-blue-400" />
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Selection By</p>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-lg md:text-xl font-bold text-white">
-                                            {targetDate && format(new Date(targetDate), 'MMM d, h:mm a')}
-                                        </span>
-                                        {timeRemaining && (
-                                            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs font-bold rounded-lg border">
-                                                Ends in {timeRemaining}
-                                            </span>
-                                        )}
-                                    </div>
+                    {/* Deadline + Actions */}
+                    <div id="tour-deadline" className="bg-slate-800/60 rounded-xl p-3 space-y-3">
+                        {targetDate && (
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-slate-400" />
+                                    <span className="text-xs text-slate-400 font-medium">Due</span>
+                                    <span className="text-sm font-bold text-white">
+                                        {format(new Date(targetDate), 'MMM d, h:mm a')}
+                                    </span>
                                 </div>
+                                {timeRemaining && (
+                                    <span className="px-2 py-0.5 bg-blue-500/15 text-blue-300 border border-blue-500/20 text-[11px] font-bold rounded-md">
+                                        {timeRemaining}
+                                    </span>
+                                )}
                             </div>
+                        )}
 
-                            <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
-                                <button
-                                    onClick={onPass}
-                                    disabled={isReadOnly}
-                                    className={`px-4 py-2.5 font-semibold rounded-lg transition-all text-sm
-                                        ${isReadOnly
-                                            ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
-                                            : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600 hover:text-white'
-                                        }`}
-                                >
-                                    Pass Turn
-                                </button>
-                                <button
-                                    onClick={onOpenBooking}
-                                    disabled={isReadOnly}
-                                    className={`px-5 py-2.5 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all text-sm
-                                        ${isReadOnly
-                                            ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                                            : 'bg-white text-slate-900 hover:bg-blue-50 hover:scale-105 active:scale-95'
-                                        }`}
-                                >
-                                    <PlayCircle className={`w-5 h-5 ${isReadOnly ? 'text-slate-500' : 'text-blue-600'}`} />
-                                    Start Booking
-                                </button>
-                            </div>
+                        <div id="tour-actions" className="flex gap-2">
+                            <button
+                                onClick={onPass}
+                                disabled={isReadOnly}
+                                className={`flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all
+                                    ${isReadOnly
+                                        ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                                        : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600 hover:text-white'}`}
+                            >
+                                Pass Turn
+                            </button>
+                            <button
+                                onClick={onOpenBooking}
+                                disabled={isReadOnly}
+                                className={`flex-1 px-4 py-2.5 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all
+                                    ${isReadOnly
+                                        ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                                        : 'bg-white text-slate-900 hover:bg-blue-50 active:scale-95'}`}
+                            >
+                                <PlayCircle className={`w-4 h-4 ${isReadOnly ? 'text-slate-500' : 'text-blue-600'}`} />
+                                Book Now
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </Card>
         );
     }
 
 
-
-    // --- CASE C: Done for Round ---
+    // ============================================
+    // 5. DONE FOR ROUND
+    // ============================================
     if (isDoneForRound && lastAction?.type !== 'cancelled') {
         const isPassed = lastAction?.type === 'pass';
         const isSkipped = lastAction?.type === 'skipped';
@@ -525,7 +420,7 @@ export function ShareholderHero({
         let nights = 0;
         let paymentStatus = null;
 
-        if (!isPassed && lastAction) {
+        if (!isPassed && !isSkipped && lastAction) {
             const start = lastAction.from?.toDate ? lastAction.from.toDate() : new Date(lastAction.from);
             const end = lastAction.to?.toDate ? lastAction.to.toDate() : new Date(lastAction.to);
             displayDate = { start, end };
@@ -534,163 +429,149 @@ export function ShareholderHero({
         }
 
         const isPaid = paymentStatus === 'paid';
-        const theme = isPassed ? 'indigo' : (isSkipped ? 'red' : 'green');
+
+        // Determine round label for the booking
+        const getRoundLabel = () => {
+            const nonCancelledActions = myActions.filter(b => b.type !== 'cancelled' && b.status !== 'cancelled');
+            const logicalIndex = nonCancelledActions.findIndex(b => b.id === lastAction.id);
+            if (lastAction.round) {
+                if (lastAction.round === 1) return 'Round 1';
+                if (lastAction.round === 2) return 'Round 2';
+                return 'Open Season';
+            }
+            if (logicalIndex === 0) return 'Round 1';
+            if (logicalIndex === 1) return 'Round 2';
+            if (logicalIndex >= 2) return 'Open Season';
+            return null;
+        };
+
+        if (isPassed || isSkipped) {
+            // Passed or Skipped - very compact
+            const icon = isPassed ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />;
+            const color = isPassed ? 'text-amber-400' : 'text-orange-400';
+            const bg = isPassed ? 'bg-amber-500/15' : 'bg-orange-500/15';
+            const label = isPassed ? 'Turn Passed' : 'Turn Skipped';
+            const sub = isPassed
+                ? "We'll notify you when the next round begins."
+                : "Don't worry - you'll get another chance next round.";
+
+            return (
+                <Card>
+                    <div className="space-y-3">
+                        <WelcomeLine />
+                        <div className="flex items-center gap-3 pt-1">
+                            <div className={`p-2 ${bg} rounded-lg ${color} shrink-0`}>
+                                {icon}
+                            </div>
+                            <div>
+                                <p className={`text-base font-bold ${color}`}>{label}</p>
+                                <p className="text-sm text-white/50 mt-0.5">{sub}</p>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+            );
+        }
+
+        // Confirmed booking (paid or unpaid)
+        const borderColor = isPaid ? 'border-emerald-500/20' : 'border-amber-500/20';
 
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white">
-                {renderBackground(theme)}
+            <Card borderColor={borderColor}>
+                <div className="space-y-3">
+                    <WelcomeLine />
 
-                <div className="relative z-10 space-y-5 md:space-y-8">
-                    {renderHeader()}
-
-                    <div className="space-y-4">
-                        <h2 className={`text-3xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-400 to-orange-500' : (isSkipped ? 'from-orange-400 to-red-500' : 'from-emerald-400 to-green-500')} pb-1`}>
-                            {isPassed ? "Turn Passed" : (isSkipped ? "Turn Skipped" : "You're All Set!")}
-                        </h2>
-                        <div className="text-base md:text-lg text-slate-300 leading-relaxed font-medium">
-                            {isPassed ? (
-                                <p>You've passed your turn for this round. We'll notify you when the next round begins!</p>
-                            ) : isSkipped ? (
-                                <p>Your turn expired without action. Don't worry - you'll get another chance in the next round!</p>
-                            ) : (
-                                <div className="space-y-4">
-                                    {/* Round Context Badge */}
-                                    {
-                                        (() => {
-                                            // Heuristic: Filter out cancellations to determine "Logical Slot"
-                                            const nonCancelledActions = myActions.filter(b => b.type !== 'cancelled' && b.status !== 'cancelled');
-                                            const logicalIndex = nonCancelledActions.findIndex(b => b.id === lastAction.id);
-
-                                            let label = null;
-                                            let badgeStyle = "";
-
-                                            // Prioritize explicit round data if available
-                                            if (lastAction.round) {
-                                                if (lastAction.round === 1) { label = "Round 1"; badgeStyle = "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"; }
-                                                else if (lastAction.round === 2) { label = "Round 2"; badgeStyle = "bg-purple-500/20 text-purple-300 border-purple-500/30"; }
-                                                else { label = "Open Season"; badgeStyle = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"; }
-                                            } else {
-                                                // Fallback to logical index
-                                                if (logicalIndex === 0) { label = "Round 1"; badgeStyle = "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"; }
-                                                else if (logicalIndex === 1) { label = "Round 2"; badgeStyle = "bg-purple-500/20 text-purple-300 border-purple-500/30"; }
-                                                else if (logicalIndex >= 2) { label = "Open Season"; badgeStyle = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"; }
-                                            }
-
-                                            if (!label) return null;
-
-                                            return (
-                                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-bold uppercase tracking-widest ${badgeStyle} w-fit`}>
-                                                    {label}
-                                                </div>
-                                            );
-                                        })()
-                                    }
-
-                                    <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed">
-                                        Booking confirmed for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
-                                        <span className="text-slate-500 ml-2">({nights} nights)</span>
-                                    </p>
-
-                                    {isPaid ? (
-                                        <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-md">
-                                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 p-4 md:p-5">
-                                                <div className="shrink-0 p-3 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl shadow-lg shadow-emerald-500/30 text-white">
-                                                    <CheckCircle className="w-6 h-6" strokeWidth={2} />
-                                                </div>
-                                                <div className="flex-1 text-center md:text-left space-y-1">
-                                                    <div className="font-black text-emerald-400 uppercase tracking-widest text-xs md:text-sm">All Set</div>
-                                                    <p className="text-white/90 font-medium text-sm md:text-base leading-snug">
-                                                        Your maintenance fee is verified. Enjoy the season!
-                                                    </p>
-                                                </div>
-                                                <div className="flex flex-wrap justify-center gap-2">
-                                                    <button
-                                                        onClick={() => onViewDetails(lastAction)}
-                                                        className="px-4 py-2 text-sm font-bold text-emerald-100 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors flex items-center gap-2"
-                                                    >
-                                                        <Info className="w-4 h-4" /> View Details
-                                                    </button>
-                                                    {onEmail && (
-                                                        <button
-                                                            onClick={() => onEmail(lastAction)}
-                                                            className="px-4 py-2 text-sm font-bold text-blue-100 hover:text-white bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors flex items-center gap-2"
-                                                        >
-                                                            <Mail className="w-4 h-4" /> Email Guest
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 backdrop-blur-md">
-                                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 p-4 md:p-5">
-                                                <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-pulse-scale">
-                                                    <Banknote className="w-6 h-6" strokeWidth={2} />
-                                                </div>
-                                                <div className="flex-1 text-center md:text-left space-y-1">
-                                                    <div className="font-black text-amber-400 uppercase tracking-widest text-xs md:text-sm">Action Required</div>
-                                                    <p className="text-white/90 font-medium text-sm md:text-base leading-snug">
-                                                        Please e-transfer your fee to <span className="font-bold text-amber-300">HHR</span> to finalize.
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    onClick={() => onViewDetails(lastAction)}
-                                                    className="px-4 py-2 text-sm font-bold text-amber-100 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg transition-colors flex items-center gap-2"
-                                                >
-                                                    <Info className="w-4 h-4" /> View Details
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                    {/* Booking confirmation line */}
+                    <div className="flex items-start gap-3 pt-1">
+                        <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${isPaid ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'}`}>
+                            {isPaid ? <CheckCircle className="w-5 h-5" /> : <Banknote className="w-5 h-5 animate-pulse" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <p className={`text-base font-bold ${isPaid ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                    {isPaid ? 'Confirmed' : 'Fee Outstanding'}
+                                </p>
+                                {getRoundLabel() && (
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
+                                        {getRoundLabel()}
+                                    </span>
+                                )}
+                            </div>
+                            {displayDate && (
+                                <p className="text-sm text-white/70 mt-0.5">
+                                    <span className="font-semibold text-white">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d')}</span>
+                                    <span className="text-white/40 ml-1.5">({nights} nights)</span>
+                                </p>
                             )}
+                            <p className="text-xs text-white/40 mt-1">
+                                {isPaid ? 'Maintenance fee verified - enjoy the season!' : 'Please e-transfer your fee to HHR to finalize.'}
+                            </p>
                         </div>
                     </div>
 
-
+                    {/* Action row */}
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                        {onEmail && !isPaid && (
+                            <button
+                                onClick={() => onEmail(lastAction)}
+                                className="px-3 py-1.5 text-xs font-semibold text-blue-300 hover:text-white bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors flex items-center gap-1.5"
+                            >
+                                <Mail className="w-3.5 h-3.5" /> Email
+                            </button>
+                        )}
+                        <button
+                            onClick={() => onViewDetails(lastAction)}
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5
+                                ${isPaid
+                                    ? 'text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20'
+                                    : 'text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20'}`}
+                        >
+                            <Info className="w-3.5 h-3.5" /> Details
+                        </button>
+                    </div>
                 </div>
-            </div >
+            </Card>
         );
     }
 
 
-
-    // --- CASE D: Booking Cancelled ---
+    // ============================================
+    // 6. BOOKING CANCELLED
+    // ============================================
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
-                {renderBackground('red')}
-
-                <div className="relative z-10 space-y-4 md:space-y-6">
-                    {renderHeader()}
-
-                    <div className="space-y-3">
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500 pb-1">
-                            Booking Cancelled
-                        </h2>
-                        <p className="text-base text-slate-300 leading-relaxed">
-                            Your previous booking was cancelled. You've returned to the queue and will be able to book again in the next available round.
-                        </p>
+            <Card borderColor="border-red-500/20">
+                <div className="space-y-3">
+                    <WelcomeLine />
+                    <div className="flex items-center gap-3 pt-1">
+                        <div className="p-2 bg-red-500/15 rounded-lg text-red-400 shrink-0">
+                            <XCircle className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-base font-bold text-red-400">Booking Cancelled</p>
+                            <p className="text-sm text-white/50 mt-0.5">You'll be able to book again in the next available round.</p>
+                        </div>
                     </div>
-
                     <div className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(latestAction)}
                             disabled={isReadOnly}
-                            className={`px-5 py-3 border border-white/10 font-semibold rounded-lg transition-all
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors
                                 ${isReadOnly
-                                    ? 'bg-slate-700/40 text-white/40 cursor-not-allowed'
-                                    : 'bg-slate-700/70 text-white hover:bg-slate-600'}`}
+                                    ? 'bg-slate-700/40 text-white/40 border-white/5 cursor-not-allowed'
+                                    : 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600 border-white/10'}`}
                         >
-                            View Cancelled Details
+                            View Details
                         </button>
                     </div>
                 </div>
-            </div>
+            </Card>
         );
     }
 
-    // --- CASE E: Waiting (Queue) ---
+    // ============================================
+    // 7. WAITING / QUEUE
+    // ============================================
     const upcomingBooking = bookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
         .sort((a, b) => b.createdAt - a.createdAt)[0];
@@ -698,106 +579,86 @@ export function ShareholderHero({
     const isUpNext = queueInfo?.diff === 1;
 
     return (
-        <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
-            {renderBackground('indigo')}
+        <Card>
+            <div className="space-y-3">
+                <WelcomeLine />
 
-            <div className="relative z-10 space-y-4 md:space-y-6">
-                {renderHeader()}
+                {/* Feedback links */}
+                <p className="text-xs text-white/40">
+                    Have questions? <button onClick={onOpenFeedback} className="font-semibold text-white/60 hover:text-indigo-300 underline decoration-indigo-500/50 underline-offset-2 transition-colors">Share feedback</button>
+                </p>
 
-                <div className="space-y-2">
-                    <p className="text-sm text-white/50">
-                        Thanks for using the new HHR Trailer Booking App!
-                    </p>
-                    <p className="text-sm text-white/50">
-                        Have questions or feedback? Click <button onClick={onOpenFeedback} className="font-semibold text-white hover:text-indigo-300 underline decoration-indigo-500/50 underline-offset-2 transition-colors">here</button> to let us know.
-                    </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                    {/* Left Card: Your Position */}
-                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm flex flex-col justify-center h-full transition-all hover:bg-slate-800/60 group">
-                        <div className="space-y-2">
-                            <p className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Your Position</p>
-
-                            {isUpNext ? (
-                                <>
-                                    <div className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight pb-1">
-                                        You're Up Next for {queueInfo?.round === 1 ? 'Round 1' : 'Round 2'}!
-                                    </div>
-                                    <p className="text-sm text-white/60 font-medium">
-                                        Get ready! <span className="font-bold text-white">{status.activePicker}</span> is currently picking.
-                                    </p>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 tracking-tight pb-1">
-                                            {getOrdinal(queueInfo?.diff || 1)}
-                                        </span>
-                                        <span className="text-base md:text-xl font-bold text-white/60">
-                                            in Line ({queueInfo?.round === 1 ? 'Round 1' : 'Round 2'})
-                                        </span>
-                                    </div>
-                                    <p className="text-xs md:text-sm text-white/60 font-medium mb-1">Sit tight! We'll email you when it's your turn.</p>
-                                </>
-                            )}
-                        </div>
+                {/* Queue position */}
+                <div className="flex items-start gap-3 pt-1">
+                    <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${isUpNext ? 'bg-emerald-500/15 text-emerald-400' : 'bg-indigo-500/15 text-indigo-400'}`}>
+                        <Clock className="w-5 h-5" />
                     </div>
-
-                    {/* Right Card: Currently Picking */}
-                    {!isYourTurn && status.activePicker && (
-                        <div className="bg-slate-800/60 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm flex flex-col justify-center h-full relative overflow-hidden transition-all hover:border-indigo-500/30 group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-
-                            <div className="space-y-3 relative z-10">
-                                <div>
-                                    <p className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Currently Picking</p>
-                                    <h3 className="text-xl md:text-2xl font-bold text-white mt-0.5 tracking-tight">{status.activePicker}</h3>
+                    <div className="flex-1 min-w-0">
+                        {isUpNext ? (
+                            <>
+                                <p className="text-base font-bold text-emerald-400">
+                                    You're Up Next ({queueInfo?.round === 1 ? 'Round 1' : 'Round 2'})
+                                </p>
+                                <p className="text-sm text-white/50 mt-0.5">
+                                    <span className="font-semibold text-white/70">{status.activePicker}</span> is currently picking.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                                        {getOrdinal(queueInfo?.diff || 1)}
+                                    </span>
+                                    <span className="text-sm font-semibold text-white/50">
+                                        in line ({queueInfo?.round === 1 ? 'Round 1' : 'Round 2'})
+                                    </span>
                                 </div>
-
-                                {status.windowEnds && (
-                                    <div className="space-y-1.5 pt-1">
-                                        <div>
-                                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Complete Selection By</div>
-                                            <div className="text-sm md:text-base font-bold text-white">
-                                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
-                                            </div>
-                                        </div>
-
-                                        <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 border-blue-500/30 px-3 py-1.5 rounded-lg border text-xs font-bold">
-                                            {(() => {
-                                                const end = new Date(status.windowEnds);
-                                                if (end <= now) return 'Ending...';
-                                                const diff = intervalToDuration({ start: now, end });
-                                                const parts = [];
-                                                if (diff.days > 0) parts.push(`${diff.days}d`);
-                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                return `Ends in ${parts.join(' ') || '< 1m'}`;
-                                            })()}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                                <p className="text-xs text-white/40 mt-0.5">We'll email you when it's your turn.</p>
+                            </>
+                        )}
+                    </div>
                 </div>
 
+                {/* Currently picking info - inline, not a separate card */}
+                {!isYourTurn && status.activePicker && !isUpNext && (
+                    <div className="bg-slate-800/60 rounded-lg px-3 py-2.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-xs text-slate-400 font-medium shrink-0">Now picking:</span>
+                            <span className="text-sm font-semibold text-white truncate">{status.activePicker}</span>
+                        </div>
+                        {status.windowEnds && (
+                            <span className="text-[11px] font-bold text-blue-300 bg-blue-500/15 border border-blue-500/20 px-2 py-0.5 rounded-md shrink-0 ml-2">
+                                {(() => {
+                                    const end = new Date(status.windowEnds);
+                                    if (end <= now) return 'Ending...';
+                                    const diff = intervalToDuration({ start: now, end });
+                                    const parts = [];
+                                    if (diff.days > 0) parts.push(`${diff.days}d`);
+                                    if (diff.hours > 0) parts.push(`${diff.hours}h`);
+                                    if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
+                                    return parts.join(' ') || '< 1m';
+                                })()}
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* View details for existing booking */}
                 {upcomingBooking && (
-                    <div id="tour-actions" className="flex justify-end">
+                    <div className="flex justify-end">
                         <button
                             onClick={() => onViewDetails(upcomingBooking)}
                             disabled={isReadOnly}
-                            className={`px-5 py-3 border border-white/10 font-semibold rounded-lg transition-all 
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors
                                 ${isReadOnly
-                                    ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
-                                    : 'bg-slate-700/70 text-white hover:bg-slate-600'}`}
+                                    ? 'bg-slate-700/40 text-white/40 border-white/5 cursor-not-allowed'
+                                    : 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600 border-white/10'}`}
                         >
                             View Details
                         </button>
                     </div>
                 )}
             </div>
-        </div>
+        </Card>
     );
 }
