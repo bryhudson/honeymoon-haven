@@ -4,7 +4,7 @@ import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
     Tent, Map, Caravan, Compass, ArrowRight, User
 } from 'lucide-react';
-import { normalizeName } from '../../../lib/shareholders';
+import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -138,6 +138,7 @@ export function ShareholderHero({
                             <Icon className={`w-6 h-6 ${iconClass}`} strokeWidth={1.5} />
                         </div>
                         <div>
+                            {shareholderName && <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-0.5">Welcome, {formatNameForDisplay(shareholderName)}</p>}
                             <h2 className={`font-bold uppercase tracking-wider text-sm ${iconClass}`}>{title}</h2>
                             {subtitle && <p className="text-white/40 text-xs mt-0.5">{subtitle}</p>}
                         </div>
@@ -160,6 +161,7 @@ export function ShareholderHero({
                             <Icon className={`w-6 h-6 ${iconClass}`} strokeWidth={1.5} />
                         </div>
                         <div>
+                            {shareholderName && <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-0.5">Welcome, {formatNameForDisplay(shareholderName)}</p>}
                             <h2 className={`font-bold uppercase tracking-wider text-sm ${iconClass}`}>{title}</h2>
                             {subtitle && <p className="text-white/40 text-xs mt-0.5">{subtitle}</p>}
                         </div>
@@ -264,15 +266,15 @@ export function ShareholderHero({
             title={isEarly ? "Early Access" : "Your Turn"}
             subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
             mainContent={
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
                     <div>
-                        <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">DEADLINE</p>
-                        <p className="text-xl font-mono text-white tracking-tight">
+                        <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">DEADLINE</p>
+                        <p className="text-xl font-mono text-white font-bold tracking-tight">
                             {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
                         </p>
                     </div>
                     {timeLeft && (
-                        <div className={`px-3 py-1 rounded bg-slate-900 border ${isEarly ? 'border-emerald-500/30 text-emerald-400' : 'border-amber-500/30 text-amber-400'} font-mono text-sm`}>
+                        <div className={`self-start md:self-center px-4 py-1.5 rounded-lg bg-slate-800 border ${isEarly ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'} font-mono text-sm font-bold shadow-sm`}>
                             {timeLeft} left
                         </div>
                     )}
