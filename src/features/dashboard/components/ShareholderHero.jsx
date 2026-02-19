@@ -349,13 +349,21 @@ export function ShareholderHero({
     // 6. BOOKING CANCELLED
     // ============================================
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
+        // Determine which round was cancelled based on action count
+        const cancelledRound = myActions.filter(a => a.type === 'cancelled' || a.isFinalized || a.type === 'pass' || a.type === 'skipped').length <= 1 ? 'Round 1' : 'Round 2';
+        // Build a forward-looking message
+        const hasUpcomingRound = status.phase === 'ROUND_1' || status.phase === 'ROUND_2';
+        const upcomingMessage = hasUpcomingRound
+            ? `Your ${cancelledRound} booking was cancelled. You still have upcoming rounds.`
+            : `Your ${cancelledRound} booking was cancelled.`;
+
         return <ModernTrailerWidget
             shareholderName={shareholderName}
             accentColor="rose"
             icon={XCircle}
             title="Cancelled"
-            subtitle={`${roundLabel} - Booking Removed`}
-            mainContent={<div className="text-white/60">Your previous booking was cancelled. Wait for next round.</div>}
+            subtitle={`${cancelledRound} - Booking Removed`}
+            mainContent={<div className="text-white/60">{upcomingMessage}</div>}
             actions={
                 <button
                     onClick={() => onViewDetails(latestAction)}
