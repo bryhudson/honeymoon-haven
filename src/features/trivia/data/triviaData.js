@@ -74,10 +74,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "Respecting quiet hours ensures everyone (and the local wildlife) gets a good night's sleep!"
     },
     {
-        question: "When you are in 'Bonus Time' (Early Access), what color does the dashboard timer turn?",
-        options: ["Green", "Red", "Blue", "Gold"],
-        correctAnswer: "Green",
-        fact: "Green means GO! You are unlocked early and can book without eating into your official 48-hour window."
+        question: "Cowichan Lake is a legendary fishing destination. What prized fish species is the lake most famous for?",
+        options: ["Rainbow & Brown Trout", "Chinook Salmon", "Largemouth Bass", "Walleye"],
+        correctAnswer: "Rainbow & Brown Trout",
+        fact: "Cowichan Lake is one of the best trout lakes on Vancouver Island. Brown trout here can grow to trophy size, and fly fishing from the dock at sunset is practically a shareholder tradition. Just don't ask who caught the biggest one - everyone has a different story."
     },
     {
         question: "Turn timers for the official booking rounds always start at what time of day?",
