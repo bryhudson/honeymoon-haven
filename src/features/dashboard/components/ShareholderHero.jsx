@@ -91,6 +91,16 @@ export function ShareholderHero({
         : status.phase === 'OPEN_SEASON' ? 'Open Season'
             : 'Round 1'; // ROUND_1, PRE_DRAFT, or fallback
 
+    const positionInfo = React.useMemo(() => {
+        if (!currentOrder || !shareholderName) return null;
+        const myIndex = currentOrder.findIndex(n => normalizeName(n) === normalizedMe);
+        if (myIndex === -1) return null;
+        const r1Position = myIndex + 1; // e.g. #3 of 12
+        const r2Position = currentOrder.length - myIndex; // snake reversal
+        const total = currentOrder.length;
+        return { r1Position, r2Position, total };
+    }, [currentOrder, shareholderName, normalizedMe]);
+
     // --- User state ---
     const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
     let roundTarget = 1;
@@ -98,7 +108,34 @@ export function ShareholderHero({
     const myActions = bookings.filter(b =>
         normalizeName(b.shareholderName) === normalizedMe &&
         (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
-    ).sort((a, b) => a.createdAt - b.createdAt);
+    ).sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return aTime.getTime() - bTime.getTime();
+    });
+
+    // --- Dynamic "Upcoming" context helper ---
+    const upcomingInfo = React.useMemo(() => {
+        if (!positionInfo || !status) return null;
+
+        const actionCount = myActions.length;
+        const { r1Position, r2Position, total } = positionInfo;
+
+        if (status.phase === 'OPEN_SEASON') return "Open Season is active (First-come, first-served)";
+
+        // If they haven't picked anything yet
+        if (actionCount === 0) {
+            return `R1: #${r1Position} of ${total} • R2: #${r2Position}`;
+        }
+
+        // If they've picked once (R1 done)
+        if (actionCount === 1) {
+            return `Next: Round 2 (Position #${r2Position} of ${total})`;
+        }
+
+        // If they've picked twice
+        return "Draft complete • Open Season begins Oct 12";
+    }, [positionInfo, status, myActions]);
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
@@ -125,7 +162,11 @@ export function ShareholderHero({
                 icon={Caravan}
                 title="Booking Confirmed"
                 subtitle={isPaid ? `${phaseLabel} - Ready for Check-in` : `Booking Confirmed - Payment Pending`}
-                mainContent={null}
+                mainContent={
+                    <div className="flex items-center justify-center lg:justify-start gap-2 text-white/60 text-xs italic">
+                        {upcomingInfo && <span>Next up: {upcomingInfo}</span>}
+                    </div>
+                }
                 rightContent={
                     <div className={`rounded-xl p-4 min-w-[260px] border ${isPaid ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-amber-500/20 border-amber-500/30'}`}>
                         <div className="flex items-start gap-3">
@@ -257,9 +298,13 @@ export function ShareholderHero({
             title={isEarly ? "Early Access" : "Your Turn"}
             subtitle={`${phaseLabel} - ${isEarly ? "Bonus Time Active" : "Official Window Open"}`}
             mainContent={
-                <p>
-                    It's your turn to pick! Select your dates before the window closes.
-                </p>
+                <div className="flex flex-col items-center lg:items-start gap-2">
+                    <div className="flex items-center justify-center lg:justify-start gap-2 text-white/80">
+                        <Calendar className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm font-medium">Session ends {format(targetDate, 'MMM d, h:mm a')}</span>
+                    </div>
+                    {upcomingInfo && <div className="text-white/40 text-xs italic border-t border-white/5 pt-1 mt-1">{upcomingInfo}</div>}
+                </div>
             }
             rightContent={
                 <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 min-w-[280px] text-center lg:text-left">
@@ -337,7 +382,12 @@ export function ShareholderHero({
                 icon={isSkipped ? ArrowRight : XCircle}
                 title={isSkipped ? "Turn Skipped" : "Passed Round"}
                 subtitle={`${phaseLabel} - Opted Out`}
-                mainContent={<div className="text-white/60">{nextPhaseInfo}</div>}
+                mainContent={
+                    <div className="flex flex-col items-center lg:items-start gap-1">
+                        <div className="text-white/60">{nextPhaseInfo}</div>
+                        {upcomingInfo && <div className="text-white/40 text-xs italic border-t border-white/5 pt-1 mt-1">{upcomingInfo}</div>}
+                    </div>
+                }
             />;
         }
 
@@ -365,7 +415,12 @@ export function ShareholderHero({
             icon={XCircle}
             title="Cancelled"
             subtitle={`${phaseLabel} - Booking Removed`}
-            mainContent={<div className="text-white/60">{upcomingMessage}</div>}
+            mainContent={
+                <div className="flex flex-col items-center lg:items-start gap-1">
+                    <div className="text-white/60">{upcomingMessage}</div>
+                    {upcomingInfo && <div className="text-white/40 text-xs italic">{upcomingInfo}</div>}
+                </div>
+            }
             actions={
                 <button
                     onClick={() => onViewDetails(latestAction)}
@@ -395,12 +450,15 @@ export function ShareholderHero({
         title={isUpNext ? "You are Next" : `In Line: #${getOrdinal(queueInfo?.diff || 0)}`}
         subtitle={`${phaseLabel} Queue`}
         mainContent={
-            <div className="flex items-center gap-2 text-white/80">
-                <span>Picking now:</span>
-                <span className="font-bold text-white flex items-center gap-1">
-                    <User className="w-4 h-4 text-indigo-400" />
-                    {status.activePicker || "Loading..."}
-                </span>
+            <div className="flex flex-col items-center lg:items-start gap-1">
+                <div className="flex items-center justify-center lg:justify-start gap-2 text-white/80">
+                    <span>Picking now:</span>
+                    <span className="font-bold text-white flex items-center gap-1">
+                        <User className="w-4 h-4 text-indigo-400" />
+                        {status.activePicker || "Loading..."}
+                    </span>
+                </div>
+                {upcomingInfo && <div className="text-white/40 text-xs italic border-t border-white/5 pt-1 mt-1">{upcomingInfo}</div>}
             </div>
         }
         rightContent={
