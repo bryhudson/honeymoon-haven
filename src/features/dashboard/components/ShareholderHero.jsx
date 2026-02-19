@@ -109,43 +109,59 @@ export function ShareholderHero({
         mainContent,
         actions
     }) => {
-        const colors = {
-            emerald: "border-emerald-500/50 bg-emerald-500/10",
-            amber: "border-amber-500/50 bg-amber-500/10",
-            indigo: "border-indigo-500/50 bg-indigo-500/10",
-            red: "border-red-500/50 bg-red-500/10",
-            slate: "border-slate-700 bg-slate-800/50"
+        const themes = {
+            emerald: {
+                wrapper: "border-emerald-500/30 bg-gradient-to-r from-emerald-900/40 to-slate-900",
+                iconBg: "bg-emerald-500/10",
+                icon: "text-emerald-400",
+                subtext: "text-emerald-200"
+            },
+            amber: {
+                wrapper: "border-amber-500/30 bg-gradient-to-r from-amber-900/40 to-slate-900",
+                iconBg: "bg-amber-500/10",
+                icon: "text-amber-400",
+                subtext: "text-amber-200"
+            },
+            indigo: {
+                wrapper: "border-indigo-500/30 bg-gradient-to-r from-indigo-900/40 to-slate-900",
+                iconBg: "bg-indigo-500/10",
+                icon: "text-indigo-400",
+                subtext: "text-indigo-200"
+            },
+            red: {
+                wrapper: "border-red-500/30 bg-gradient-to-r from-red-900/40 to-slate-900",
+                iconBg: "bg-red-500/10",
+                icon: "text-red-400",
+                subtext: "text-red-200"
+            },
+            slate: {
+                wrapper: "border-slate-700 bg-slate-800/50",
+                iconBg: "bg-slate-700/50",
+                icon: "text-slate-400",
+                subtext: "text-slate-300"
+            }
         };
 
-        const iconColors = {
-            emerald: "text-emerald-400",
-            amber: "text-amber-400",
-            indigo: "text-indigo-400",
-            red: "text-red-400",
-            slate: "text-slate-400"
-        };
-
-        const borderClass = colors[accentColor] || colors.slate;
-        const iconClass = iconColors[accentColor] || iconColors.slate;
+        const theme = themes[accentColor] || themes.slate;
 
         return (
-            <div data-tour="status-hero" className={`rounded-xl border border-l-4 overflow-hidden bg-slate-900 shadow-xl ${borderClass.split(' ')[0]}`}>
+            <div data-tour="status-hero" className={`rounded-xl border border-l-4 overflow-hidden shadow-xl ${theme.wrapper}`}>
                 {/* Mobile Layout: Stacked */}
                 <div className="md:hidden flex flex-col p-5 gap-4">
                     {/* Header Row */}
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${borderClass.split(' ')[1]}`}>
-                            <Icon className={`w-6 h-6 ${iconClass}`} strokeWidth={1.5} />
+                        <div className={`p-2 rounded-lg ${theme.iconBg}`}>
+                            <Icon className={`w-6 h-6 ${theme.icon}`} strokeWidth={1.5} />
                         </div>
                         <div>
-                            {shareholderName && <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-0.5">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold uppercase tracking-wider text-sm ${iconClass}`}>{title}</h2>
-                            {subtitle && <p className="text-white/40 text-xs mt-0.5">{subtitle}</p>}
+                            {shareholderName && <p className="text-white/80 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1">Welcome, {formatNameForDisplay(shareholderName)}</p>}
+                            <h2 className={`font-bold uppercase tracking-wide text-lg ${theme.icon}`}>{title}</h2>
+                            {subtitle && <p className={`mt-0.5 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
                         </div>
                     </div>
 
                     {/* Main Content */}
-                    <div className="bg-slate-950/50 rounded-lg p-4 border border-white/5">
+                    <div className="bg-slate-950/50 rounded-lg p-4 border border-white/5 backdrop-blur-sm">
                         {mainContent}
                     </div>
 
@@ -157,13 +173,13 @@ export function ShareholderHero({
                 <div className="hidden md:flex items-center justify-between p-4 px-6 gap-6 h-20">
                     {/* Left: Status */}
                     <div className="flex items-center gap-4 min-w-[240px]">
-                        <div className={`p-2 rounded-lg ${borderClass.split(' ')[1]}`}>
-                            <Icon className={`w-6 h-6 ${iconClass}`} strokeWidth={1.5} />
+                        <div className={`p-2 rounded-lg ${theme.iconBg}`}>
+                            <Icon className={`w-6 h-6 ${theme.icon}`} strokeWidth={1.5} />
                         </div>
                         <div>
-                            {shareholderName && <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-0.5">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold uppercase tracking-wider text-sm ${iconClass}`}>{title}</h2>
-                            {subtitle && <p className="text-white/40 text-xs mt-0.5">{subtitle}</p>}
+                            {shareholderName && <p className="text-white/80 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1">Welcome, {formatNameForDisplay(shareholderName)}</p>}
+                            <h2 className={`font-bold uppercase tracking-wide text-lg ${theme.icon}`}>{title}</h2>
+                            {subtitle && <p className={`mt-0.5 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
                         </div>
                     </div>
 
@@ -269,12 +285,12 @@ export function ShareholderHero({
                 <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
                     <div>
                         <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">DEADLINE</p>
-                        <p className="text-xl font-mono text-white font-bold tracking-tight">
+                        <p className="text-xl text-white font-bold tracking-tight tabular-nums">
                             {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
                         </p>
                     </div>
                     {timeLeft && (
-                        <div className={`self-start md:self-center px-4 py-1.5 rounded-lg bg-slate-800 border ${isEarly ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'} font-mono text-sm font-bold shadow-sm`}>
+                        <div className={`self-start md:self-center px-4 py-1.5 rounded-lg bg-slate-900/50 border ${isEarly ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'} font-bold text-sm shadow-sm tabular-nums backdrop-blur-sm`}>
                             {timeLeft} left
                         </div>
                     )}
@@ -408,7 +424,7 @@ export function ShareholderHero({
         mainContent={
             <div className="flex items-center justify-between md:justify-start md:gap-8">
                 <div>
-                    <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">NOW PICKING</p>
+                    <p className="text-xs text-indigo-200/60 uppercase tracking-widest font-bold mb-1">NOW PICKING</p>
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-indigo-400" />
                         <span className="text-lg font-bold text-white">
@@ -419,7 +435,7 @@ export function ShareholderHero({
                 {status.windowEnds && (
                     <div className="md:border-l md:border-white/10 md:pl-8 text-right md:text-left">
                         <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">UNTIL</p>
-                        <p className="text-lg font-mono text-white">
+                        <p className="text-lg text-white tabular-nums font-bold">
                             {format(new Date(status.windowEnds), 'h:mm a')}
                         </p>
                     </div>
