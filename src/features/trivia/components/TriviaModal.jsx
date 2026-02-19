@@ -81,16 +81,16 @@ export function TriviaModal({ isOpen, onClose }) {
 
     return (
         <BaseModal isOpen={isOpen} onClose={onClose} title="">
-            <div className="relative overflow-hidden w-full max-w-md mx-auto">
+            <div className="relative overflow-hidden w-full max-w-md mx-auto -mt-4">
                 {/* Close Button Removed (Provided by BaseModal) */}
 
                 {!gameComplete ? (
-                    <div className="space-y-4 pt-2">
+                    <div className="space-y-3">
                         {/* Easter Egg Header - Compact */}
                         <div className="text-center space-y-1">
                             <div className="inline-flex items-center gap-2 animate-bounce-subtle">
                                 <Caravan className="w-6 h-6 text-indigo-500 animate-wiggle" />
-                                <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
                                     HHR Trivia
                                 </h2>
                                 <Sparkles className="w-6 h-6 text-amber-400 animate-spin-slow" />
