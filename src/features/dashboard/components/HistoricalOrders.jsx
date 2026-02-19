@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, Trophy, Info } from 'lucide-react';
+import { History, Info } from 'lucide-react';
 
 export function HistoricalOrders() {
     const ORDER_2025 = [
@@ -73,21 +73,6 @@ export function HistoricalOrders() {
 
                 {/* Sidebar Context */}
                 <div className="space-y-6">
-                    {/* Live Context Card */}
-                    <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl shadow-lg p-6 text-white relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Trophy className="w-24 h-24 transform rotate-12" />
-                        </div>
-
-                        <div className="relative z-10">
-                            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-                                <Trophy className="w-6 h-6 text-yellow-300" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">2026 is Live!</h3>
-                            <p className="text-indigo-100/80 mb-4">The 2026 booking schedule is currently active. Check the "Season Schedule" tab for real-time updates.</p>
-                        </div>
-                    </div>
-
                     {/* Did You Know */}
                     <div className="bg-amber-50 rounded-xl border border-amber-100 p-5">
                         <h4 className="flex items-center gap-2 text-amber-800 font-bold text-sm mb-2">
