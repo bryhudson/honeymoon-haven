@@ -329,13 +329,20 @@ export function ShareholderHero({
         const isSkipped = lastAction?.type === 'skipped';
 
         if (isPassed || isSkipped) {
+            // Build a forward-looking message with their R2 position
+            const nextPhaseInfo = status.phase === 'OPEN_SEASON'
+                ? 'Open Season is active - book anytime!'
+                : queueInfo?.diff
+                    ? `You're #${getOrdinal(queueInfo.diff)} in line for Round 2.`
+                    : 'Round 2 is coming up next.';
+
             return <ModernTrailerWidget
                 shareholderName={shareholderName}
                 accentColor="slate"
                 icon={isSkipped ? ArrowRight : XCircle}
                 title={isSkipped ? "Turn Skipped" : "Passed Round"}
-                subtitle="Wait for next round"
-                mainContent={<div className="text-white/60">You opted out of this selection round.</div>}
+                subtitle={`${phaseLabel} - Opted Out`}
+                mainContent={<div className="text-white/60">{nextPhaseInfo}</div>}
             />;
         }
 
