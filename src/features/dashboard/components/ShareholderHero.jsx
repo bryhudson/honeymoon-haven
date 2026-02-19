@@ -435,16 +435,15 @@ export function ShareholderHero({
     ) : hero;
 }
 
-// Helper
-const getOrdinal = (n) => {
+function getOrdinal(n) {
     const s = ["th", "st", "nd", "rd"];
     const v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
-};
+}
 
 // --- Admin-Style Widget (V5.6) ---
-// Moved outside main component to avoid potential initialization/hoisting errors
-const ModernTrailerWidget = ({
+// Moved outside main component and declared as function to ensure hoisting and avoid initialization/hoisting errors in prod builds
+function ModernTrailerWidget({
     accentColor = "emerald",
     icon: Icon,
     title,
@@ -453,7 +452,7 @@ const ModernTrailerWidget = ({
     mainContent,
     actions,
     rightContent // New prop for the Action Card (Timer/Details)
-}) => {
+}) {
     // Map themes to gradient colors
     const themes = {
         emerald: {
