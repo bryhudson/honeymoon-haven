@@ -101,130 +101,7 @@ export function ShareholderHero({
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     // --- Admin-Style Widget (V5.6) ---
-    const ModernTrailerWidget = ({
-        accentColor = "emerald",
-        icon: Icon,
-        title,
-        subtitle,
-        mainContent,
-        actions,
-        rightContent // New prop for the Action Card (Timer/Details)
-    }) => {
-        // Map themes to gradient colors
-        const themes = {
-            emerald: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-emerald-500",
-                badge: "bg-emerald-900/50 text-emerald-200 border-emerald-500/30",
-                icon: "text-emerald-400"
-            },
-            amber: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-amber-500",
-                badge: "bg-amber-900/50 text-amber-200 border-amber-500/30",
-                icon: "text-amber-400"
-            },
-            indigo: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-indigo-500",
-                badge: "bg-indigo-900/50 text-indigo-200 border-indigo-500/30",
-                icon: "text-indigo-400"
-            },
-            red: { // Fallback for 'red'
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-red-500",
-                badge: "bg-red-900/50 text-red-200 border-red-500/30",
-                icon: "text-red-400"
-            },
-            rose: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-rose-500",
-                badge: "bg-rose-900/50 text-rose-200 border-rose-500/30",
-                icon: "text-rose-400"
-            },
-            slate: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-slate-500",
-                badge: "bg-slate-800 text-slate-300 border-slate-600",
-                icon: "text-slate-400"
-            },
-            violet: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-purple-500",
-                badge: "bg-purple-900/50 text-purple-200 border-purple-500/30",
-                icon: "text-purple-400"
-            },
-            blue: {
-                bg: "bg-slate-900",
-                border: "border-slate-700",
-                highlight: "bg-blue-500",
-                badge: "bg-blue-900/50 text-blue-200 border-blue-500/30",
-                icon: "text-blue-400"
-            }
-        };
 
-        const theme = themes[accentColor] || themes.slate;
-
-        return (
-            <div data-tour="status-hero" className={`relative rounded-2xl border overflow-hidden shadow-2xl ${theme.bg} ${theme.border} p-6 md:p-8 animate-in fade-in slide-in-from-top-4 text-white`}>
-
-                {/* V5.6 Admin-Style Gradients */}
-                <div className={`absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
-                <div className={`absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
-
-                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                    {/* LEFT: Info Block */}
-                    <div className="space-y-4 text-center lg:text-left max-w-2xl w-full">
-                        {/* Badge Row */}
-                        <div className="flex items-center justify-center lg:justify-start gap-2">
-                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${theme.badge}`}>
-                                <Icon className="w-3 h-3" />
-                                <span>{title}</span>
-                            </div>
-                            {shareholderName && (
-                                <div className={`hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border opacity-60 ${theme.badge}`}>
-                                    <User className="w-3 h-3" />
-                                    {formatNameForDisplay(shareholderName)}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Title & Subtitle */}
-                        <div>
-                            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">{subtitle}</h2>
-                            <div className="text-lg text-slate-300 leading-relaxed">
-                                {mainContent}
-                            </div>
-                        </div>
-
-                        {/* Mobile Actions (Below Text) */}
-                        <div className="lg:hidden w-full pt-4">
-                            {actions && <div className="grid grid-cols-1 gap-3">{actions}</div>}
-                        </div>
-                    </div>
-
-                    {/* RIGHT: Action Card (Desktop) or Timer */}
-                    {/* If rightContent exists, show it. Otherwise show desktop actions if available. */}
-                    {(rightContent || (actions && <div className="hidden lg:block">{actions}</div>)) && (
-                        <div className="flex flex-col w-full lg:w-auto gap-4">
-                            {rightContent}
-                            {/* Desktop Actions (if not passed as rightContent) */}
-                            {!rightContent && actions && <div className="hidden lg:flex flex-col gap-3">{actions}</div>}
-                            {/* If rightContent exists AND actions exist, render actions below rightContent on desktop */}
-                            {rightContent && actions && <div className="hidden lg:grid grid-cols-1 gap-3">{actions}</div>}
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    };
 
     // ============================================
     // HELPER: Booking Banner (For usage in Stacked Views & Done State)
@@ -238,14 +115,15 @@ export function ShareholderHero({
         return (
             <ModernTrailerWidget
                 key={bookingAction.id || 'booking'}
+                shareholderName={shareholderName}
                 accentColor={isPaid ? "emerald" : "amber"}
                 icon={Caravan}
                 title="Booking Confirmed"
                 subtitle={`${roundLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
                 mainContent={
                     <div className="flex items-center gap-2 text-white/80">
-                        <span>Configuration:</span>
-                        <span className="font-bold text-white">Modern Trailer</span>
+                        {/* Removed redundant configuration text */}
+                        <span className="font-medium text-white/60">Reference: {bookingAction.id?.slice(0, 8)}</span>
                     </div>
                 }
                 rightContent={
@@ -300,6 +178,7 @@ export function ShareholderHero({
     // ============================================
     if (isSystemFrozen && !isSuperAdmin) {
         return <ModernTrailerWidget
+            shareholderName={shareholderName}
             accentColor="amber"
             icon={AlertTriangle}
             title="Maintenance"
@@ -313,6 +192,7 @@ export function ShareholderHero({
     // ============================================
     if (status.phase === 'PRE_DRAFT' || (!status.activePicker && status.phase !== 'OPEN_SEASON')) {
         return <ModernTrailerWidget
+            shareholderName={shareholderName}
             accentColor="slate"
             icon={Calendar}
             title="Pre-Season"
@@ -328,6 +208,7 @@ export function ShareholderHero({
         const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled');
 
         const hero = <ModernTrailerWidget
+            shareholderName={shareholderName}
             accentColor="emerald"
             icon={Tent}
             title="Open Season"
@@ -370,6 +251,7 @@ export function ShareholderHero({
         const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
 
         const hero = <ModernTrailerWidget
+            shareholderName={shareholderName}
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
@@ -443,6 +325,7 @@ export function ShareholderHero({
 
         if (isPassed || isSkipped) {
             return <ModernTrailerWidget
+                shareholderName={shareholderName}
                 accentColor="slate"
                 icon={isSkipped ? ArrowRight : XCircle}
                 title={isSkipped ? "Turn Skipped" : "Passed Round"}
@@ -464,6 +347,7 @@ export function ShareholderHero({
     // ============================================
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
         return <ModernTrailerWidget
+            shareholderName={shareholderName}
             accentColor="rose"
             icon={XCircle}
             title="Cancelled"
@@ -493,6 +377,7 @@ export function ShareholderHero({
     const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
 
     const hero = <ModernTrailerWidget
+        shareholderName={shareholderName}
         accentColor="indigo"
         icon={isUpNext ? Compass : Map}
         title={isUpNext ? "You are Next" : `In Line: #${getOrdinal(queueInfo?.diff || 0)}`}
@@ -555,4 +440,132 @@ const getOrdinal = (n) => {
     const s = ["th", "st", "nd", "rd"];
     const v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+// --- Admin-Style Widget (V5.6) ---
+// Moved outside main component to avoid potential initialization/hoisting errors
+const ModernTrailerWidget = ({
+    accentColor = "emerald",
+    icon: Icon,
+    title,
+    subtitle,
+    shareholderName, // Passed implicitly now? No, need to pass it or remove if unused in badge
+    mainContent,
+    actions,
+    rightContent // New prop for the Action Card (Timer/Details)
+}) => {
+    // Map themes to gradient colors
+    const themes = {
+        emerald: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-emerald-500",
+            badge: "bg-emerald-900/50 text-emerald-200 border-emerald-500/30",
+            icon: "text-emerald-400"
+        },
+        amber: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-amber-500",
+            badge: "bg-amber-900/50 text-amber-200 border-amber-500/30",
+            icon: "text-amber-400"
+        },
+        indigo: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-indigo-500",
+            badge: "bg-indigo-900/50 text-indigo-200 border-indigo-500/30",
+            icon: "text-indigo-400"
+        },
+        red: { // Fallback for 'red'
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-red-500",
+            badge: "bg-red-900/50 text-red-200 border-red-500/30",
+            icon: "text-red-400"
+        },
+        rose: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-rose-500",
+            badge: "bg-rose-900/50 text-rose-200 border-rose-500/30",
+            icon: "text-rose-400"
+        },
+        slate: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-slate-500",
+            badge: "bg-slate-800 text-slate-300 border-slate-600",
+            icon: "text-slate-400"
+        },
+        violet: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-purple-500",
+            badge: "bg-purple-900/50 text-purple-200 border-purple-500/30",
+            icon: "text-purple-400"
+        },
+        blue: {
+            bg: "bg-slate-900",
+            border: "border-slate-700",
+            highlight: "bg-blue-500",
+            badge: "bg-blue-900/50 text-blue-200 border-blue-500/30",
+            icon: "text-blue-400"
+        }
+    };
+
+    const theme = themes[accentColor] || themes.slate;
+
+    return (
+        <div data-tour="status-hero" className={`relative rounded-2xl border overflow-hidden shadow-2xl ${theme.bg} ${theme.border} p-6 md:p-8 animate-in fade-in slide-in-from-top-4 text-white`}>
+
+            {/* V5.6 Admin-Style Gradients */}
+            <div className={`absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
+            <div className={`absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                {/* LEFT: Info Block */}
+                <div className="space-y-4 text-center lg:text-left max-w-2xl w-full">
+                    {/* Badge Row */}
+                    <div className="flex items-center justify-center lg:justify-start gap-2">
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${theme.badge}`}>
+                            <Icon className="w-3 h-3" />
+                            <span>{title}</span>
+                        </div>
+                        {shareholderName && (
+                            <div className={`hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border opacity-60 ${theme.badge}`}>
+                                <User className="w-3 h-3" />
+                                {formatNameForDisplay(shareholderName)}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Title & Subtitle */}
+                    <div>
+                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">{subtitle}</h2>
+                        <div className="text-lg text-slate-300 leading-relaxed">
+                            {mainContent}
+                        </div>
+                    </div>
+
+                    {/* Mobile Actions (Below Text) */}
+                    <div className="lg:hidden w-full pt-4">
+                        {actions && <div className="grid grid-cols-1 gap-3">{actions}</div>}
+                    </div>
+                </div>
+
+                {/* RIGHT: Action Card (Desktop) or Timer */}
+                {/* If rightContent exists, show it. Otherwise show desktop actions if available. */}
+                {(rightContent || (actions && <div className="hidden lg:block">{actions}</div>)) && (
+                    <div className="flex flex-col w-full lg:w-auto gap-4">
+                        {rightContent}
+                        {/* Desktop Actions (if not passed as rightContent) */}
+                        {!rightContent && actions && <div className="hidden lg:flex flex-col gap-3">{actions}</div>}
+                        {/* If rightContent exists AND actions exist, render actions below rightContent on desktop */}
+                        {rightContent && actions && <div className="hidden lg:grid grid-cols-1 gap-3">{actions}</div>}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 };
