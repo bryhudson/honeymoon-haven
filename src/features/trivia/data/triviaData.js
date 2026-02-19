@@ -4,7 +4,7 @@ export const TRIVIA_QUESTIONS = [
         question: "Before we had high-speed internet and hot tubs, we had legends. Which famous couple ran the General Store and Gas Dock right here on our property?",
         options: ["Monty & Mary", "Frank & Alice", "The Davidsons", "The Petersons"],
         correctAnswer: "Monty & Mary",
-        fact: "Long before this was a private resort, it was the social HQ of the South Shore. Monty and Mary ran the show. If you needed boat fuel, a litre of milk, or the latest scandal from town, you didn't drive to Lake Cowichan—you just walked to the driveway."
+        fact: "Long before this was a private resort, it was the social HQ of the South Shore. Monty and Mary ran the show. If you needed boat fuel, a litre of milk, or the latest scandal from town, you didn't drive to Lake Cowichan - you just walked to the driveway."
     },
     {
         question: "Before 2015 transformed this land into Honeymoon Haven Resort, what was the official name of the RV park that occupied our grounds?",
@@ -13,10 +13,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "For over 30 years, our land was the 'South Shore Resort.' It was a bustling summer village where families held onto their lease spots like gold dust. It wasn't just a campground; it was a tight-knit community where the only thing harder than getting a spot was leaving it."
     },
     {
-        question: "Forget ski boats—what specific type of industrial beast used to fuel up at the old gas dock on our waterfront?",
+        question: "Forget the pontoon boats, Sea-Doos, and wakesurf boats - what specific type of industrial beast used to fuel up at the old gas dock on our waterfront?",
         options: ["Boom Boats (Logging Tugs)", "Float Planes", "Coal Barges", "Fishing Trawlers"],
         correctAnswer: "Boom Boats (Logging Tugs)",
-        fact: "Our peaceful waterfront used to be a lot louder! The original gas dock was a pit stop for 'Boom Boats'—rugged little tugs that shoved massive raw logs around for the WFI mill. If you think the wake boats are loud today, imagine a diesel tug idling off your deck at 6 AM."
+        fact: "Our peaceful waterfront used to be a lot louder! The original gas dock was a pit stop for 'Boom Boats' - rugged little tugs that shoved massive raw logs around for the WFI mill. If you think the wake boats are loud today, imagine a diesel tug idling off your deck at 6 AM."
     },
     {
         question: "What specific inventory item made Monty’s Store (at the front of our lot) the most important building in the world to local kids?",
@@ -34,7 +34,7 @@ export const TRIVIA_QUESTIONS = [
         question: "Unlike a standard subdivision where everyone hides behind fences, Honeymoon Haven is legally divided into exactly how many 'shares'?",
         options: ["12 Shares", "24 Shares", "10 Shares", "50 Shares"],
         correctAnswer: "12 Shares",
-        fact: "We are a 'Shared Interest' corporation, which is a fancy way of saying we are a team. There are exactly 12 shares for 12 owners. It’s a unique model designed to keep the spirit of the old resort alive—small, exclusive, and connected."
+        fact: "We are a 'Shared Interest' corporation, which is a fancy way of saying we are a team. There are exactly 12 shares for 12 owners. It’s a unique model designed to keep the spirit of the old resort alive - small, exclusive, and connected."
     },
     {
         question: "When our neighbor, March Meadows Golf Club, opened in 1970, what highly sophisticated tool did Charlie March use to cut the ribbon?",
@@ -58,7 +58,7 @@ export const TRIVIA_QUESTIONS = [
         question: "Who are the 800-pound 'locals' that frequently wander through our resort and treat our lawns like an all-you-can-eat salad bar?",
         options: ["Roosevelt Elk", "Black Bears", "Cougars", "Moose"],
         correctAnswer: "Roosevelt Elk",
-        fact: "We might pay the taxes, but the Elk run the town. Honeymoon Bay’s famous Roosevelt Elk herd has been wandering through this property since before Henry March arrived. If they decide to nap on your lawn, you don't argue—you just take pictures (from a safe distance!)."
+        fact: "We might pay the taxes, but the Elk run the town. Honeymoon Bay’s famous Roosevelt Elk herd has been wandering through this property since before Henry March arrived. If they decide to nap on your lawn, you don't argue - you just take pictures (from a safe distance!)."
     },
     // --- APP RULES & GENERAL KNOWLEDGE (11-20) ---
     {
