@@ -1,7 +1,10 @@
 import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
-import { AlertTriangle, Clock, Calendar, PlayCircle, CheckCircle, XCircle, Info, Mail, Banknote, PartyPopper, Sparkles } from 'lucide-react';
-import { normalizeName, formatNameForDisplay, DRAFT_CONFIG } from '../../../lib/shareholders';
+import {
+    AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
+    Tent, Map, Caravan, Compass, ArrowRight, User
+} from 'lucide-react';
+import { normalizeName } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -16,7 +19,6 @@ export function ShareholderHero({
     isSuperAdmin,
     onViewDetails,
     onEmail,
-    onViewSchedule,
     currentOrder,
     isReadOnly = false,
     onOpenFeedback,
@@ -54,16 +56,10 @@ export function ShareholderHero({
 
     if (!shareholderName) return null;
 
-    const getOrdinal = (n) => {
-        const s = ["th", "st", "nd", "rd"];
-        const v = n % 100;
-        return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
-
     const normalizedMe = normalizeName(shareholderName);
     const isAdminPersona = !isReadOnly && (normalizedMe === 'hhr admin' || normalizedMe === 'bryan');
 
-    // --- Queue calc (unchanged) ---
+    // --- Queue calc ---
     const queueInfo = React.useMemo(() => {
         if (!currentOrder || !status || !shareholderName) return null;
         const fullTurnOrder = [...currentOrder, ...[...currentOrder].reverse()];
@@ -104,60 +100,144 @@ export function ShareholderHero({
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
+    // --- Modern Trailer Widget (MTW) Component ---
+    const ModernTrailerWidget = ({
+        accentColor = "emerald",
+        icon: Icon,
+        title,
+        subtitle,
+        mainContent,
+        actions
+    }) => {
+        const colors = {
+            emerald: "border-emerald-500/50 bg-emerald-500/10",
+            amber: "border-amber-500/50 bg-amber-500/10",
+            indigo: "border-indigo-500/50 bg-indigo-500/10",
+            red: "border-red-500/50 bg-red-500/10",
+            slate: "border-slate-700 bg-slate-800/50"
+        };
+
+        const iconColors = {
+            emerald: "text-emerald-400",
+            amber: "text-amber-400",
+            indigo: "text-indigo-400",
+            red: "text-red-400",
+            slate: "text-slate-400"
+        };
+
+        const borderClass = colors[accentColor] || colors.slate;
+        const iconClass = iconColors[accentColor] || iconColors.slate;
+
+        return (
+            <div data-tour="status-hero" className={`rounded-xl border border-l-4 overflow-hidden bg-slate-900 shadow-xl ${borderClass.split(' ')[0]}`}>
+                {/* Mobile Layout: Stacked */}
+                <div className="md:hidden flex flex-col p-5 gap-4">
+                    {/* Header Row */}
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${borderClass.split(' ')[1]}`}>
+                            <Icon className={`w-6 h-6 ${iconClass}`} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                            <h2 className={`font-bold uppercase tracking-wider text-sm ${iconClass}`}>{title}</h2>
+                            {subtitle && <p className="text-white/40 text-xs mt-0.5">{subtitle}</p>}
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="bg-slate-950/50 rounded-lg p-4 border border-white/5">
+                        {mainContent}
+                    </div>
+
+                    {/* Actions */}
+                    {actions && <div className="grid grid-cols-1 gap-2 pt-1">{actions}</div>}
+                </div>
+
+                {/* Desktop Layout: Horizontal Bar */}
+                <div className="hidden md:flex items-center justify-between p-4 px-6 gap-6 h-20">
+                    {/* Left: Status */}
+                    <div className="flex items-center gap-4 min-w-[240px]">
+                        <div className={`p-2 rounded-lg ${borderClass.split(' ')[1]}`}>
+                            <Icon className={`w-6 h-6 ${iconClass}`} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                            <h2 className={`font-bold uppercase tracking-wider text-sm ${iconClass}`}>{title}</h2>
+                            {subtitle && <p className="text-white/40 text-xs mt-0.5">{subtitle}</p>}
+                        </div>
+                    </div>
+
+                    {/* Center: Main Content (Desktop Compact) */}
+                    <div className="flex-1 border-l border-white/10 pl-6">
+                        {mainContent}
+                    </div>
+
+                    {/* Right: Actions */}
+                    {actions && <div className="flex items-center gap-2 max-w-[300px] justify-end">{actions}</div>}
+                </div>
+            </div>
+        );
+    };
 
     // ============================================
     // 1. SYSTEM MAINTENANCE
     // ============================================
     if (isSystemFrozen && !isSuperAdmin) {
-        return (
-            <div data-tour="status-hero" className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 text-center">
-                <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                <p className="text-base font-bold text-amber-300">Hang tight!</p>
-                <p className="text-sm text-amber-200/60 mt-1">We're doing some quick maintenance. Back shortly.</p>
-            </div>
-        );
+        return <ModernTrailerWidget
+            accentColor="amber"
+            icon={AlertTriangle}
+            title="Maintenance"
+            subtitle="System Upgrade"
+            mainContent={<div className="text-amber-200">The system is currently undergoing maintenance.</div>}
+        />;
     }
 
     // ============================================
     // 2. PRE-DRAFT
     // ============================================
     if (status.phase === 'PRE_DRAFT' || (!status.activePicker && status.phase !== 'OPEN_SEASON')) {
-        return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-2xl p-5 md:p-6 text-center">
-                <div className="text-3xl mb-2">📅</div>
-                <p className="text-lg font-bold text-white">The 2026 season is coming!</p>
-                {status.windowStarts ? (
-                    <p className="text-sm text-white/50 mt-1">
-                        The draft kicks off <span className="text-indigo-400 font-semibold">{format(new Date(status.windowStarts), 'MMMM d')}</span> at 10 AM
-                    </p>
-                ) : (
-                    <p className="text-sm text-white/50 mt-1">We'll let you know when it's time to pick your dates.</p>
-                )}
-            </div>
-        );
+        return <ModernTrailerWidget
+            accentColor="slate"
+            icon={Calendar}
+            title="Pre-Season"
+            subtitle="2026 Draft"
+            mainContent={
+                <div className="flex items-center gap-3">
+                    <span className="text-white font-medium text-lg">
+                        {status.windowStarts
+                            ? `Draft Starts ${format(new Date(status.windowStarts), 'MMMM d')} @ 10am`
+                            : 'Schedule Coming Soon'}
+                    </span>
+                </div>
+            }
+        />;
     }
 
     // ============================================
     // 3. OPEN SEASON
     // ============================================
     if (status.phase === 'OPEN_SEASON') {
-        return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 to-slate-800 border border-emerald-500/20 rounded-2xl p-5 md:p-6 text-center">
-                <div className="text-3xl mb-2">🎉</div>
-                <p className="text-lg font-bold text-white">It's open season!</p>
-                <p className="text-sm text-white/50 mt-1">All remaining dates are first come, first served.</p>
+        return <ModernTrailerWidget
+            accentColor="emerald"
+            icon={Tent}
+            title="Open Season"
+            subtitle="First Come, First Served"
+            mainContent={
+                <div className="text-white/80 font-medium">
+                    All remaining dates are available for booking.
+                </div>
+            }
+            actions={
                 <button
                     onClick={onOpenBooking}
                     disabled={isReadOnly}
-                    className={`mt-4 px-6 py-2.5 text-sm font-bold rounded-xl transition-all
+                    className={`w-full md:w-auto px-6 py-2.5 text-sm font-bold rounded-lg transition-all
                         ${isReadOnly
-                            ? 'bg-emerald-600/30 text-white/40 cursor-not-allowed'
-                            : 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/25 active:scale-95'}`}
+                            ? 'bg-emerald-900/30 text-emerald-500/50 cursor-not-allowed'
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 active:scale-95'}`}
                 >
-                    Book Your Dates
+                    Book Dates
                 </button>
-            </div>
-        );
+            }
+        />;
     }
 
     // ============================================
@@ -165,70 +245,61 @@ export function ShareholderHero({
     // ============================================
     if (isYourTurn) {
         const targetDate = status.windowEnds;
-        const timeRemaining = targetDate ? (() => {
+        const timeLeft = targetDate ? (() => {
             const end = new Date(targetDate);
             if (end <= now) return 'Ending...';
             const diff = intervalToDuration({ start: now, end });
-            const parts = [];
-            if (diff.days > 0) parts.push(`${diff.days}d`);
-            if (diff.hours > 0) parts.push(`${diff.hours}h`);
-            if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-            return parts.join(' ') || '< 1m';
+            const p = [];
+            if (diff.days > 0) p.push(`${diff.days}d`);
+            if (diff.hours > 0) p.push(`${diff.hours}h`);
+            p.push(`${diff.minutes}m`);
+            return p.join(' ');
         })() : null;
 
         const isEarly = status.isGracePeriod;
 
-        return (
-            <div data-tour="status-hero" className={`bg-gradient-to-br from-slate-900 to-slate-800 border rounded-2xl p-5 md:p-6 text-center ${isEarly ? 'border-emerald-500/30' : 'border-orange-500/30'}`}>
-                <div className="text-3xl mb-2">{isEarly ? '🌟' : '🎯'}</div>
-                <p className={`text-lg font-bold ${isEarly ? 'text-emerald-400' : 'text-orange-400'}`}>
-                    {isEarly ? "You've got early access!" : "It's your turn!"}
-                </p>
-                <p className="text-sm text-white/50 mt-1">
-                    {isEarly
-                        ? `Official window starts ${status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10 AM`
-                        : 'Pick your dates before the clock runs out'}
-                </p>
-
-                {/* Countdown */}
-                {targetDate && (
-                    <div id="tour-deadline" className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/10">
-                        <Clock className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm text-white/60">Due {format(new Date(targetDate), 'MMM d, h:mm a')}</span>
-                        {timeRemaining && (
-                            <span className="text-xs font-bold text-blue-300 bg-blue-500/15 px-2 py-0.5 rounded-md">
-                                {timeRemaining}
-                            </span>
-                        )}
+        return <ModernTrailerWidget
+            accentColor={isEarly ? "emerald" : "amber"}
+            icon={Clock}
+            title={isEarly ? "Early Access" : "Your Turn"}
+            subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
+            mainContent={
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">DEADLINE</p>
+                        <p className="text-xl font-mono text-white tracking-tight">
+                            {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
+                        </p>
                     </div>
-                )}
-
-                {/* Actions */}
-                <div id="tour-actions" className="mt-4 flex gap-3 justify-center">
+                    {timeLeft && (
+                        <div className={`px-3 py-1 rounded bg-slate-900 border ${isEarly ? 'border-emerald-500/30 text-emerald-400' : 'border-amber-500/30 text-amber-400'} font-mono text-sm`}>
+                            {timeLeft} left
+                        </div>
+                    )}
+                </div>
+            }
+            actions={
+                <>
                     <button
                         onClick={onPass}
                         disabled={isReadOnly}
-                        className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all
-                            ${isReadOnly
-                                ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                                : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'}`}
+                        className="w-full md:w-auto px-4 py-2.5 bg-transparent border border-white/10 hover:bg-white/5 text-white/60 hover:text-white rounded-lg text-sm font-medium transition-colors"
                     >
-                        Pass
+                        Pass Turn
                     </button>
                     <button
                         onClick={onOpenBooking}
                         disabled={isReadOnly}
-                        className={`px-6 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2 transition-all
+                        className={`w-full md:w-auto px-6 py-2.5 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2
                             ${isReadOnly
-                                ? 'bg-white/10 text-white/30 cursor-not-allowed'
-                                : 'bg-white text-slate-900 shadow-lg shadow-white/10 hover:shadow-white/20 active:scale-95'}`}
+                                ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                                : 'bg-white text-slate-900 hover:bg-slate-100'}`}
                     >
-                        <Calendar className={`w-4 h-4 ${isReadOnly ? '' : 'text-blue-600'}`} />
-                        Book Now
+                        Book Dates <ArrowRight className="w-4 h-4" />
                     </button>
-                </div>
-            </div>
-        );
+                </>
+            }
+        />;
     }
 
     // ============================================
@@ -238,99 +309,83 @@ export function ShareholderHero({
         const isPassed = lastAction?.type === 'pass';
         const isSkipped = lastAction?.type === 'skipped';
 
-        // --- Passed ---
-        if (isPassed) {
-            return (
-                <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-2xl p-5 md:p-6 text-center">
-                    <div className="text-3xl mb-2">✋</div>
-                    <p className="text-base font-bold text-amber-400">You passed this round</p>
-                    <p className="text-sm text-white/40 mt-1">No worries - we'll let you know when the next round starts.</p>
-                </div>
-            );
+        if (isPassed || isSkipped) {
+            return <ModernTrailerWidget
+                accentColor="slate"
+                icon={isSkipped ? ArrowRight : XCircle}
+                title={isSkipped ? "Turn Skipped" : "Passed Round"}
+                subtitle="Wait for next round"
+                mainContent={<div className="text-white/60">You opted out of this selection round.</div>}
+            />;
         }
 
-        // --- Skipped ---
-        if (isSkipped) {
-            return (
-                <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-2xl p-5 md:p-6 text-center">
-                    <div className="text-3xl mb-2">⏭️</div>
-                    <p className="text-base font-bold text-orange-400">Turn skipped</p>
-                    <p className="text-sm text-white/40 mt-1">Don't sweat it - you'll get another shot next round!</p>
-                </div>
-            );
-        }
-
-        // --- Confirmed Booking ---
         const start = lastAction.from?.toDate ? lastAction.from.toDate() : new Date(lastAction.from);
         const end = lastAction.to?.toDate ? lastAction.to.toDate() : new Date(lastAction.to);
         const nights = differenceInDays(end, start);
         const isPaid = lastAction.isPaid;
 
-        return (
-            <div data-tour="status-hero" className={`bg-gradient-to-br from-slate-900 to-slate-800 border rounded-2xl p-5 md:p-6 text-center ${isPaid ? 'border-emerald-500/20' : 'border-amber-500/20'}`}>
-                <div className="text-3xl mb-2">{isPaid ? '🏖️' : '💳'}</div>
-                <p className={`text-lg font-bold ${isPaid ? 'text-emerald-400' : 'text-amber-400'}`}>
-                    {isPaid ? "You're all booked!" : 'Almost there!'}
-                </p>
-
-                {/* Date display - the star of the show */}
-                <div className="mt-3 inline-block bg-white/5 rounded-xl px-5 py-3 border border-white/10">
-                    <p className="text-xl font-bold text-white">
-                        {format(start, 'MMM d')} - {format(end, 'MMM d')}
-                    </p>
-                    <p className="text-sm text-white/40 mt-0.5">{nights} nights · 2026 Season</p>
+        return <ModernTrailerWidget
+            accentColor={isPaid ? "emerald" : "amber"}
+            icon={Caravan}
+            title="Booking Confirmed"
+            subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
+            mainContent={
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                    <div>
+                        <p className="text-xl font-bold text-white tracking-tight">
+                            {format(start, 'MMM d')} - {format(end, 'MMM d')}
+                        </p>
+                        <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-medium">
+                            {nights} Nights • Trailer Reserved
+                        </p>
+                    </div>
+                    {!isPaid && (
+                        <div className="mt-2 md:mt-0 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded text-amber-300 text-xs font-semibold flex items-center gap-2 w-fit">
+                            <AlertTriangle className="w-3 h-3" /> Fee Outstanding
+                        </div>
+                    )}
                 </div>
-
-                {/* Payment status */}
-                <p className="text-sm mt-3 text-white/40">
-                    {isPaid
-                        ? <span>Maintenance fee paid <CheckCircle className="w-3.5 h-3.5 inline text-emerald-400 -mt-0.5" /></span>
-                        : <span className="text-amber-300">Fee outstanding - please e-transfer to HHR</span>
-                    }
-                </p>
-
-                {/* Actions */}
-                <div className="mt-4 flex gap-2 justify-center">
+            }
+            actions={
+                <div className="flex gap-2 w-full md:w-auto">
                     {!isPaid && onEmail && (
                         <button
                             onClick={() => onEmail(lastAction)}
-                            className="px-4 py-2 text-xs font-semibold text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl transition-colors flex items-center gap-1.5"
+                            className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
                         >
-                            <Mail className="w-3.5 h-3.5" /> Reminder
+                            Email Info
                         </button>
                     )}
                     <button
                         onClick={() => onViewDetails(lastAction)}
-                        className="px-4 py-2 text-xs font-semibold text-white/50 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors flex items-center gap-1.5"
+                        className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                     >
-                        <Info className="w-3.5 h-3.5" /> Details
+                        View Details
                     </button>
                 </div>
-            </div>
-        );
+            }
+        />;
     }
 
     // ============================================
     // 6. BOOKING CANCELLED
     // ============================================
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
-        return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 to-slate-800 border border-red-500/20 rounded-2xl p-5 md:p-6 text-center">
-                <div className="text-3xl mb-2">😔</div>
-                <p className="text-base font-bold text-red-400">Booking cancelled</p>
-                <p className="text-sm text-white/40 mt-1">You'll be able to book again next round.</p>
+        return <ModernTrailerWidget
+            accentColor="red"
+            icon={XCircle}
+            title="Cancelled"
+            subtitle="Booking Removed"
+            mainContent={<div className="text-white/60">Your previous booking was cancelled. Wait for next round.</div>}
+            actions={
                 <button
                     onClick={() => onViewDetails(latestAction)}
-                    disabled={isReadOnly}
-                    className={`mt-3 px-4 py-2 text-xs font-semibold rounded-xl border transition-colors
-                        ${isReadOnly
-                            ? 'bg-white/5 text-white/30 border-white/5 cursor-not-allowed'
-                            : 'text-white/50 hover:text-white bg-white/5 hover:bg-white/10 border-white/10'}`}
+                    className="w-full md:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                 >
-                    View Details
+                    Details
                 </button>
-            </div>
-        );
+            }
+        />;
     }
 
     // ============================================
@@ -343,65 +398,53 @@ export function ShareholderHero({
     const isUpNext = queueInfo?.diff === 1;
     const roundLabel = queueInfo?.round === 1 ? 'Round 1' : 'Round 2';
 
-    return (
-        <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-2xl p-5 md:p-6 text-center">
-            {isUpNext ? (
-                <>
-                    <div className="text-3xl mb-2">🔥</div>
-                    <p className="text-lg font-bold text-emerald-400">You're up next!</p>
-                    <p className="text-sm text-white/40 mt-1">{roundLabel} - almost your turn</p>
-                </>
-            ) : (
-                <>
-                    <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-1">
-                        {getOrdinal(queueInfo?.diff || 1)}
-                    </div>
-                    <p className="text-sm font-medium text-white/50">in line for {roundLabel}</p>
-                </>
-            )}
-
-            {/* Who's picking now */}
-            {status.activePicker && (
-                <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/10 text-sm">
-                    <span className="text-white/40">{isUpNext ? 'Almost done:' : 'Now picking:'}</span>
-                    <span className="font-semibold text-white/70">{status.activePicker}</span>
-                    {status.windowEnds && (
-                        <span className="text-[11px] font-bold text-blue-300 bg-blue-500/15 px-2 py-0.5 rounded-md">
-                            {(() => {
-                                const end = new Date(status.windowEnds);
-                                if (end <= now) return 'Ending...';
-                                const diff = intervalToDuration({ start: now, end });
-                                const parts = [];
-                                if (diff.days > 0) parts.push(`${diff.days}d`);
-                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                return parts.join(' ') || '< 1m';
-                            })()}
+    return <ModernTrailerWidget
+        accentColor="indigo"
+        icon={isUpNext ? Compass : Map}
+        title={isUpNext ? "You are Next" : `In Line: #${getOrdinal(queueInfo?.diff || 0)}`}
+        subtitle={`${roundLabel} Queue`}
+        mainContent={
+            <div className="flex items-center justify-between md:justify-start md:gap-8">
+                <div>
+                    <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">NOW PICKING</p>
+                    <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-indigo-400" />
+                        <span className="text-lg font-bold text-white">
+                            {status.activePicker || "Loading..."}
                         </span>
-                    )}
+                    </div>
                 </div>
-            )}
-
-            <p className="text-xs text-white/30 mt-3">We'll email you when it's your turn 📧</p>
-
-            {/* Bottom actions */}
-            <div className="mt-3 flex gap-2 justify-center">
-                <button onClick={onOpenFeedback} className="px-3 py-1.5 text-xs font-medium text-white/30 hover:text-indigo-300 transition-colors">
+                {status.windowEnds && (
+                    <div className="md:border-l md:border-white/10 md:pl-8 text-right md:text-left">
+                        <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">UNTIL</p>
+                        <p className="text-lg font-mono text-white">
+                            {format(new Date(status.windowEnds), 'h:mm a')}
+                        </p>
+                    </div>
+                )}
+            </div>
+        }
+        actions={
+            <div className="flex gap-2 w-full md:w-auto">
+                <button onClick={onOpenFeedback} className="flex-1 md:flex-none px-3 py-2 text-xs font-medium text-white/30 hover:text-indigo-300 transition-colors">
                     Feedback
                 </button>
                 {upcomingBooking && (
                     <button
                         onClick={() => onViewDetails(upcomingBooking)}
-                        disabled={isReadOnly}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors
-                            ${isReadOnly
-                                ? 'bg-white/5 text-white/30 border-white/5 cursor-not-allowed'
-                                : 'text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border-white/10'}`}
+                        className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                     >
                         View Booking
                     </button>
                 )}
             </div>
-        </div>
-    );
+        }
+    />;
 }
+
+// Helper
+const getOrdinal = (n) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
