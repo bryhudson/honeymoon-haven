@@ -107,6 +107,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             total_price: afterData.totalPrice,
             price_breakdown: afterData.priceBreakdown, // New field
             round: currentRound,
+            phase: statusData.phase || 'ROUND_1',
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 
@@ -145,6 +146,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
             cancelled_date: formatDate(new Date().toISOString()),
             round: currentRound,
+            phase: statusData.phase || 'ROUND_1',
             within_turn_window: false,
             next_shareholder: "Next Shareholder",
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
@@ -230,6 +232,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             check_in: formatDate(afterData.from || afterData.checkInDate),
             check_out: formatDate(afterData.to || afterData.checkOutDate),
             cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
+            round: currentRound,
+            phase: statusData.phase || 'ROUND_1',
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 
@@ -568,6 +572,7 @@ exports.onDraftStatusChange = onDocumentUpdated({ document: "status/draftStatus"
             const templateData = {
                 name: previousPicker,
                 round: round, // Pass round so template can show "Round 2" vs "Open Season"
+                phase: after.phase || 'ROUND_1',
                 next_shareholder: currentPicker || "Next Shareholder",
                 dashboard_url: "https://hhr-trailer-booking.web.app/dashboard"
             };

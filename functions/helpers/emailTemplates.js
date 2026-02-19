@@ -123,12 +123,23 @@ const NAME_MAP = {
   "Julia, Mandy & Bryan": "Julia, Mandy and Bryan"
 };
 
-const formatName = (name) => {
-  if (!name) return "";
-  let n = name.toString().trim();
-  if (NAME_MAP[n]) n = NAME_MAP[n];
-  return n.replace(/&/g, "and");
-};
+function formatName(name) {
+  if (!name) return 'friend';
+  // Rewrite to conversational form if match exists
+  if (NAME_MAP[name]) return NAME_MAP[name];
+  return name;
+}
+
+/**
+ * Universal Round Label Helper
+ * Uses `phase` (most reliable) with `round` as fallback.
+ * Returns: "Round 1", "Round 2", or "Open Season"
+ */
+function getRoundLabel(data) {
+  if (data.phase === 'OPEN_SEASON') return 'Open Season';
+  if (data.phase === 'ROUND_2' || data.round === 2) return 'Round 2';
+  return 'Round 1';
+}
 
 const wrapHtml = (title, bodyContent) => `
 <!DOCTYPE html>
@@ -184,33 +195,34 @@ const callout = (text, type = 'info') => {
 const emailTemplates = {
 
   turnStarted: (data) => {
-    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const roundLabel = getRoundLabel(data);
     const subject = `HHR Trailer Booking App [${roundLabel}]: It's Your Turn! 🎯`;
+    const phaseDetail = roundLabel === 'Round 1' ? 'Round 1 (Standard Schedule)' : roundLabel === 'Round 2' ? 'Round 2 (Snake Schedule)' : 'Open Season (First-Come, First-Served)';
     const body = `
-      <h1 style="${THEME.typography.h1}">Welcome to the new HHR Trailer Booking App! 🚀</h1>
-      <p style="${THEME.typography.body}">You're up, ${formatName(data.name)}! We're ditching the spreadsheets and manual emails for something much better.</p>
-      
-      <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
-        <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>✨ What's New?</strong><br>
-        We built the <strong>HHR Trailer Booking App</strong> to make booking effortless. View the live calendar, pick your dates instantly, and confirm your spot in seconds.</p>
-      </div>
+    <h1 style="${THEME.typography.h1}">Welcome to the new HHR Trailer Booking App! 🚀</h1>
+    <p style="${THEME.typography.body}">You're up, ${formatName(data.name)}! We're ditching the spreadsheets and manual emails for something much better.</p>
+    
+    <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
+      <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>✨ What's New?</strong><br>
+      We built the <strong>HHR Trailer Booking App</strong> to make booking effortless. View the live calendar, pick your dates instantly, and confirm your spot in seconds.</p>
+    </div>
 
-      <p style="${THEME.typography.body}">The draft is moving and the spotlight is on you. It's officially your turn to pick your dates for the 2026 season.</p>
-      
-      <div style="margin: 32px 0;">
-        ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
-        ${dataItem('Phase', data.round === 1 ? 'Round 1 (Standard Schedule)' : 'Round 2 (Snake Schedule)', true)}
-      </div>
+    <p style="${THEME.typography.body}">The draft is moving and the spotlight is on you. It's officially your turn to pick your dates for the 2026 season.</p>
+    
+    <div style="margin: 32px 0;">
+      ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
+      ${dataItem('Phase', phaseDetail, true)}
+    </div>
 
-      <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Book Your Dates</a>
-      </div>
-    `;
+    <div style="text-align: center; margin-top: 32px;">
+      <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Book Your Dates</a>
+    </div>
+  `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },
 
   reminder: (data) => {
-    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const roundLabel = getRoundLabel(data);
 
     // Dynamic Subject Line based on Reminder Type (from Overview Spec)
     let subject = `HHR Trailer Booking App [${roundLabel}]: The clock is ticking ⏳`; // Default fallback
@@ -251,7 +263,7 @@ const emailTemplates = {
   },
 
   finalWarning: (data) => {
-    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const roundLabel = getRoundLabel(data);
     const subject = `HHR Trailer Booking App [${roundLabel}]: URGENT: 1 Hour Left 🚨`;
     const body = `
       <p style="${THEME.typography.body} font-weight: 600;">Hi ${formatName(data.name)},</p>
@@ -268,7 +280,8 @@ const emailTemplates = {
 
   // New Template: Payment Urgent (T-6h) - Fixes the "Turn Skip" confusion
   paymentUrgent: (data) => {
-    const subject = `URGENT: Maintenance Fee Deadline 💸`;
+    const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
+    const subject = `URGENT: ${roundLabel}Maintenance Fee Deadline 💸`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -312,7 +325,7 @@ const emailTemplates = {
 
   // 4. Booking Confirmed
   bookingConfirmed: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const roundLabel = `[${getRoundLabel(data)}]`;
     const subject = `HHR Trailer Booking App ${roundLabel}: Your Trailer Dates Are Locked In! 🎉`;
 
     // Breakdown HTML
@@ -366,7 +379,7 @@ const emailTemplates = {
 
   // 5. Turn Passed - Current
   turnPassedCurrent: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const roundLabel = `[${getRoundLabel(data)}]`;
     const nextStepTitle = data.next_opportunity_title || 'Open Season';
     const nextStepText = data.next_opportunity_text || 'You can still book any remaining dates during <strong>Open Season</strong>.';
 
@@ -392,7 +405,7 @@ const emailTemplates = {
 
   // 6. Turn Passed - Next (Early Access / Bonus Time)
   turnPassedNext: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const roundLabel = `[${getRoundLabel(data)}]`;
     const subject = `HHR Trailer Booking App ${roundLabel}: Early Access Unlocked! 🎁`;
     const body = `
       <h1 style="${THEME.typography.h1}">Good news, ${formatName(data.name)}!</h1>
@@ -405,7 +418,7 @@ const emailTemplates = {
 
       <div style="margin: 32px 0;">
         ${dataItem('Official Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
-        ${dataItem('Round', data.round, true)}
+        ${dataItem('Round', getRoundLabel(data), true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
@@ -417,18 +430,21 @@ const emailTemplates = {
 
   // 7. Auto Pass - Current (Timeout)
   autoPassCurrent: (data) => {
-    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const roundLabel = getRoundLabel(data);
     const subject = `HHR Trailer Booking App [${roundLabel}]: Your Turn Has Ended ⌛`;
 
     // Dynamic "next opportunity" based on which round they timed out in
-    const isRound1 = data.round === 1;
+    const isRound1 = roundLabel === 'Round 1';
+    const isOpenSeason = roundLabel === 'Open Season';
     const nextOpportunityTitle = isRound1 ? 'Your Next Pick: Round 2 (Snake Schedule)' : 'Open Season Awaits';
     const nextOpportunityText = isRound1
       ? "You still have your <strong>Round 2</strong> pick coming up - the draft order reverses, so hang tight. We'll let you know when it's your turn again."
-      : "The draft phase has finished, but you can still book any remaining dates during <strong>Open Season</strong> - first come, first served.";
+      : isOpenSeason
+        ? "No worries - remaining dates are still available on a <strong>first-come, first-served</strong> basis. Jump in whenever you're ready!"
+        : "The draft phase has finished, but you can still book any remaining dates during <strong>Open Season</strong> - first come, first served.";
 
     const body = `
-      <h1 style="${THEME.typography.h1}">We missed you, ${formatName(data.name)}.</h1>
+    <h1 style="${THEME.typography.h1}">We missed you, ${formatName(data.name)}.</h1>
       <p style="${THEME.typography.body}">We didn't hear from you by the deadline, so we had to move the line along to keep fairness for everyone.</p>
 
       <div style="background-color: #FFFFFF; border: 1px solid #d2d2d7; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -444,7 +460,7 @@ const emailTemplates = {
   },
 
   autoPassNext: (data) => {
-    const roundLabel = data.round === 1 ? 'Round 1' : 'Round 2';
+    const roundLabel = getRoundLabel(data);
     const subject = `HHR Trailer Booking App [${roundLabel}]: It's Your Turn! 🎯`;
     const body = `
       <h1 style="${THEME.typography.h1}">You're up, ${formatName(data.name)}!</h1>
@@ -457,7 +473,7 @@ const emailTemplates = {
 
       <div style="margin: 32px 0;">
         ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
-        ${dataItem('Round', data.round, true)}
+        ${dataItem('Round', getRoundLabel(data), true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
@@ -469,7 +485,7 @@ const emailTemplates = {
 
   // 9. Booking Cancelled
   bookingCancelled: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const roundLabel = `[${getRoundLabel(data)}]`;
     const subject = `HHR Trailer Booking App ${roundLabel}: Cancellation Confirmed`;
     const body = `
       <h1 style="${THEME.typography.h1}">Booking Cancelled.</h1>
@@ -489,7 +505,8 @@ const emailTemplates = {
 
   // 10. Payment Reminder
   paymentReminder: (data) => {
-    const subject = `HHR Trailer Booking App: Let's make it official 💸`;
+    const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
+    const subject = `HHR Trailer Booking App: ${roundLabel}Let's make it official 💸`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -535,7 +552,8 @@ const emailTemplates = {
 
   // 11. Payment Received
   paymentReceived: (data) => {
-    const subject = `HHR Trailer Booking App: Maintenance Fee Received! ✅`;
+    const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
+    const subject = `HHR Trailer Booking App: ${roundLabel}Maintenance Fee Received! ✅`;
 
     // Breakdown HTML (Consistent with bookingConfirmed)
     let breakdownHtml = '';
@@ -665,7 +683,7 @@ const emailTemplates = {
 
   // 13. Official Start (Early Access Follow-up)
   officialTurnStart: (data) => {
-    const roundLabel = data.round ? `[Round ${data.round}]` : '';
+    const roundLabel = `[${getRoundLabel(data)}]`;
     const subject = `HHR Trailer Booking App ${roundLabel}: Your 48-Hour Window Has Begun ⏰`;
     const body = `
       <h1 style="${THEME.typography.h1}">The clock is officially ticking...</h1>
