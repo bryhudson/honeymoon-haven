@@ -31,10 +31,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "Henry March was the original 'developer' of the South Shore. He turned dense rainforest into the March Farm by hand. Every time you enjoy the open space around our resort or the golf course, you can thank Henry and his oxen for doing the heavy lifting 140 years ago."
     },
     {
-        question: "Unlike a standard subdivision where everyone hides behind fences, Honeymoon Haven is legally divided into exactly how many 'shares'?",
-        options: ["12 Shares", "24 Shares", "10 Shares", "50 Shares"],
-        correctAnswer: "12 Shares",
-        fact: "We are a 'Shared Interest' corporation, which is a fancy way of saying we are a team. There are exactly 12 shares for 12 owners. It’s a unique model designed to keep the spirit of the old resort alive - small, exclusive, and connected."
+        question: "Legend has it that a piece of heavy machinery from the old logging days ended up at the bottom of Cowichan Lake near our shore. What was it?",
+        options: ["A Locomotive", "A Bulldozer", "A Crane", "A Dump Truck"],
+        correctAnswer: "A Locomotive",
+        fact: "There's an old logging locomotive sitting at the bottom of Cowichan Lake! During the heyday of the lumber industry, the railway ran along the shore hauling timber. One day, a locomotive went off the rails and sank into the lake where it remains to this day - our very own underwater time capsule."
     },
     {
         question: "When our neighbor, March Meadows Golf Club, opened in 1970, what highly sophisticated tool did Charlie March use to cut the ribbon?",
