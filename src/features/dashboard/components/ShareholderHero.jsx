@@ -125,12 +125,7 @@ export function ShareholderHero({
                 icon={Caravan}
                 title="Booking Confirmed"
                 subtitle={`${phaseLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
-                mainContent={
-                    <div className="flex items-center gap-2 text-white/80">
-                        {/* Removed redundant configuration text */}
-                        <span className="font-medium text-white/60">Reference: {bookingAction.id?.slice(0, 8)}</span>
-                    </div>
-                }
+                mainContent={null}
                 rightContent={
                     <div className={`rounded-xl p-4 min-w-[260px] border ${isPaid ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-amber-500/20 border-amber-500/30'}`}>
                         <div className="flex items-start gap-3">
