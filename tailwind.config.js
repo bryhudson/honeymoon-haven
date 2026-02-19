@@ -49,11 +49,22 @@ export default {
             keyframes: {
                 "pulse-scale": {
                     "0%, 100%": { transform: "scale(1)" },
-                    "50%": { transform: "scale(1.15)" },
+                    "50%": { transform: "scale(1.05)" },
+                },
+                wiggle: {
+                    "0%, 100%": { transform: "rotate(-3deg)" },
+                    "50%": { transform: "rotate(3deg)" },
+                },
+                "bounce-subtle": {
+                    "0%, 100%": { transform: "translateY(-5%)" },
+                    "50%": { transform: "translateY(0)" },
                 },
             },
             animation: {
                 "pulse-scale": "pulse-scale 2s ease-in-out infinite",
+                wiggle: "wiggle 1s ease-in-out infinite",
+                "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+                "spin-slow": "spin 3s linear infinite",
             },
         },
     },

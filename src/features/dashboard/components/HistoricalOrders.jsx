@@ -2,38 +2,90 @@ import React from 'react';
 import { History, Info } from 'lucide-react';
 
 export function HistoricalOrders() {
-    const ORDER_2025 = [
-        { order: 1, cabin: "2", name: "Janelle and Mike" },
-        { order: 2, cabin: "8", name: "Julia, Mandy and Bryan" },
-        { order: 3, cabin: "3", name: "Monique and Brian" },
-        { order: 4, cabin: "4", name: "Sam and Brian" },
-        { order: 5, cabin: "7", name: "Lori and Jeff" },
-        { order: 6, cabin: "9", name: "Gayla and David" },
-        { order: 7, cabin: "6", name: "Barb" },
-        { order: 8, cabin: "12", name: "Steve and Kate" },
-        { order: 9, cabin: "5", name: "Sandy and Ernest" },
-        { order: 10, cabin: "1", name: "Georgina and Jerry" },
-        { order: 11, cabin: "10", name: "Jessica and Saurabh" },
-        { order: 12, cabin: "11", name: "Melanie and Dom" }
-    ];
+    const [selectedYear, setSelectedYear] = React.useState(2025);
+
+    const ARCHIVE_DATA = {
+        2025: [
+            { order: 1, cabin: "2", name: "Janelle and Mike" },
+            { order: 2, cabin: "8", name: "Julia, Mandy and Bryan" },
+            { order: 3, cabin: "3", name: "Monique and Brian" },
+            { order: 4, cabin: "4", name: "Sam and Brian" },
+            { order: 5, cabin: "7", name: "Lori and Jeff" },
+            { order: 6, cabin: "9", name: "Gayla and David" },
+            { order: 7, cabin: "6", name: "Barb" },
+            { order: 8, cabin: "12", name: "Steve and Kate" },
+            { order: 9, cabin: "5", name: "Sandy and Ernest" },
+            { order: 10, cabin: "1", name: "Georgina and Jerry" },
+            { order: 11, cabin: "10", name: "Jessica and Saurabh" },
+            { order: 12, cabin: "11", name: "Melanie and Dom" }
+        ],
+        2026: [
+            { order: 1, cabin: "11", name: "Melanie and Dom" },
+            { order: 2, cabin: "2", name: "Janelle and Mike" },
+            { order: 3, cabin: "8", name: "Julia, Mandy and Bryan" },
+            { order: 4, cabin: "3", name: "Monique and Brian" },
+            { order: 5, cabin: "4", name: "Sam and Brian" },
+            { order: 6, cabin: "7", name: "Lori and Jeff" },
+            { order: 7, cabin: "9", name: "Gayla and David" },
+            { order: 8, cabin: "6", name: "Barb" },
+            { order: 9, cabin: "12", name: "Steve and Kate" },
+            { order: 10, cabin: "5", name: "Sandy and Ernest" },
+            { order: 11, cabin: "1", name: "Georgina and Jerry" },
+            { order: 12, cabin: "10", name: "Jessica and Saurabh" }
+        ],
+        2027: [
+            { order: 1, cabin: "10", name: "Jessica and Saurabh" },
+            { order: 2, cabin: "11", name: "Melanie and Dom" },
+            { order: 3, cabin: "2", name: "Janelle and Mike" },
+            { order: 4, cabin: "8", name: "Julia, Mandy and Bryan" },
+            { order: 5, cabin: "3", name: "Monique and Brian" },
+            { order: 6, cabin: "4", name: "Sam and Brian" },
+            { order: 7, cabin: "7", name: "Lori and Jeff" },
+            { order: 8, cabin: "9", name: "Gayla and David" },
+            { order: 9, cabin: "6", name: "Barb" },
+            { order: 10, cabin: "12", name: "Steve and Kate" },
+            { order: 11, cabin: "5", name: "Sandy and Ernest" },
+            { order: 12, cabin: "1", name: "Georgina and Jerry" }
+        ]
+    };
+
+    const currentData = ARCHIVE_DATA[selectedYear];
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <History className="w-8 h-8 text-slate-800" />
-                    Historical Archives
-                </h2>
-                <p className="text-sm text-slate-500">A record of past booking orders and rotations.</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        <History className="w-8 h-8 text-slate-800" />
+                        Historical Archives
+                    </h2>
+                    <p className="text-sm text-slate-500">A record of past booking orders and rotations.</p>
+                </div>
+
+                {/* Year Selector */}
+                <div className="bg-slate-100 p-1 rounded-xl inline-flex">
+                    {[2025, 2026, 2027].map((year) => (
+                        <button
+                            key={year}
+                            onClick={() => setSelectedYear(year)}
+                            className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${selectedYear === year
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                                }`}
+                        >
+                            {year}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content: 2025 Season Table */}
+                {/* Main Content: Season Table */}
                 <div className="lg:col-span-2 bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                         <div>
-                            <h3 className="font-bold text-slate-900">2025 Season</h3>
+                            <h3 className="font-bold text-slate-900">{selectedYear} Season</h3>
                             <p className="text-xs text-slate-500">Historical Booking Order</p>
                         </div>
                         <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide">
@@ -51,7 +103,7 @@ export function HistoricalOrders() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {ORDER_2025.map((row) => (
+                                {currentData.map((row) => (
                                     <tr key={row.order} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4 font-mono text-slate-400 font-bold">
                                             #{row.order}
@@ -81,7 +133,7 @@ export function HistoricalOrders() {
                         </h4>
                         <p className="text-xs text-amber-900/70 leading-relaxed">
                             The booking order rotates annually using a specialized algorithm to ensure fairness over time.
-                            The order shifts by one position each year, meaning the 1st pick in 2025 becomes the last pick of the first round in 2026.
+                            The order shifts by one position each year, meaning the 1st pick in {selectedYear} becomes the last pick of the first round in {selectedYear + 1}.
                         </p>
                     </div>
                 </div>

@@ -112,14 +112,18 @@ export function Header() {
                                             </Link>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-1 bg-purple-50 p-1 rounded-lg ml-2">
+                                    <div className="flex items-center gap-1 ml-2">
                                         <button
                                             onClick={() => setIsTriviaOpen(true)}
-                                            className="p-2 md:px-3 md:py-1 rounded-md text-xs font-bold transition-all flex items-center gap-2 text-purple-600 hover:text-purple-900 hover:bg-purple-100"
-                                            title="Play Trivia"
+                                            className="group relative p-2 md:px-3 md:py-1 rounded-full text-xs font-bold transition-all flex items-center gap-2 overflow-hidden hover:shadow-md hover:scale-105 active:scale-95 bg-white border border-purple-100"
+                                            title="Play HHR Trivia"
                                         >
-                                            <Gamepad2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                            <span className="hidden md:inline">Trivia</span>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <span className="relative flex items-center gap-2">
+                                                <Caravan className="w-4 h-4 text-indigo-500 group-hover:animate-bounce-subtle" />
+                                                <span className="hidden md:inline bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Trivia</span>
+                                                <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:animate-spin-slow" />
+                                            </span>
                                         </button>
                                     </div>
                                 </div>

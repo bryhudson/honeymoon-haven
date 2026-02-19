@@ -1,71 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { TriviaCard } from './TriviaCard';
-import { Trophy, ArrowRight, RotateCcw, Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
-
-const QUESTIONS = [
-    {
-        question: "What is the name of the legendary serpent-like cryptid said to inhabit Cowichan Lake?",
-        options: ["Ogopogo", "Stsinquaw", "Sasquatch", "Caddy"],
-        correctAnswer: "Stsinquaw",
-        fact: "The Stsinquaw (or Ts'inquaw) is a massive serpent-like creature from First Nations legend, said to overturn canoes! 🐉"
-    },
-    {
-        question: "What does the Hul’qumi’num name 'Quw’utsun' (Cowichan) roughly translate to?",
-        options: ["The Big Lake", "Land of Elk", "The Warm Land", "Valley of Mist"],
-        correctAnswer: "The Warm Land",
-        fact: "It's not just a name; the valley actually has Canada’s highest average annual temperature! ☀️"
-    },
-    {
-        question: "Honeymoon Bay was originally a company town for which industry?",
-        options: ["Mining", "Fishing", "Forestry", "Tourism"],
-        correctAnswer: "Forestry",
-        fact: "It was owned by Western Forest Industries. When the mill closed, residents bought their homes and stayed! 🏚️"
-    },
-    {
-        question: "Which large animal species is commonly seen napping on the local golf course greens?",
-        options: ["Grizzly Bear", "Roosevelt Elk", "Moose", "Cougar"],
-        correctAnswer: "Roosevelt Elk",
-        fact: "They are the largest elk species in North America and act like they own the place. 🦌"
-    },
-    {
-        question: "Approximately how long is Cowichan Lake?",
-        options: ["10 km", "20 km", "30 km", "50 km"],
-        correctAnswer: "30 km",
-        fact: "It's over 30km (19 miles) long, making it the second-largest lake on Vancouver Island! 🌊"
-    },
-    {
-        question: "Before roads were built, how did early visitors travel from Lake Cowichan to Honeymoon Bay?",
-        options: ["Horseback", "Train then Boat", "Hiking", "Seaplane"],
-        correctAnswer: "Train then Boat",
-        fact: "If the lake was choppy, your 'romantic getaway' often started with seasickness! 🚂🤢"
-    },
-    {
-        question: "The Honeymoon Bay Ecological Reserve is famous for protecting which rare flower?",
-        options: ["Pink Fawn Lily", "Western Trillium", "Chocolate Lily", "Camas"],
-        correctAnswer: "Pink Fawn Lily",
-        fact: "Botanists travel from all over just to see it bloom for a fleeting window in April/May. 🌸"
-    },
-    {
-        question: "The local forests have served as filming locations for projects like which famous franchise?",
-        options: ["Lord of the Rings", "The Twilight Saga", "Harry Potter", "Star Wars"],
-        correctAnswer: "The Twilight Saga",
-        fact: "The eerie, dense forests provide that perfect 'ancient, untouched wilderness' vibe. 🎬"
-    },
-    {
-        question: "Cowichan Lake is famous for which type of trout?",
-        options: ["Rainbow Trout", "Cutthroat Trout", "Bull Trout", "Brook Trout"],
-        correctAnswer: "Cutthroat Trout",
-        fact: "The local pub, The Cutthroat Tavern, is even named after them! 🐟"
-    },
-    {
-        question: "What is the 'mandatory' summer ritual on the Cowichan River?",
-        options: ["Whitewater Rafting", "Kayaking", "The Tube Run", "Fishing Derby"],
-        correctAnswer: "The Tube Run",
-        fact: "Floating down the river on an inflatable tube with a cooler is a local rite of passage. 🍩"
-    }
-];
+import { Caravan, Sparkles, Trophy, ArrowRight, HelpCircle, X, PartyPopper } from 'lucide-react';
+import { TRIVIA_QUESTIONS } from '../data/triviaData';
+import JSConfetti from 'js-confetti';
 
 export function TriviaModal({ isOpen, onClose }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -73,143 +10,182 @@ export function TriviaModal({ isOpen, onClose }) {
     const [showResult, setShowResult] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [isAnswered, setIsAnswered] = useState(false);
+    const [gameComplete, setGameComplete] = useState(false);
 
-    // Reset game when closed
+    const currentQuestion = TRIVIA_QUESTIONS[currentQuestionIndex];
+
     useEffect(() => {
-        if (!isOpen) {
-            // Optional: reset after a delay so it's fresh next open? 
-            // Or keep state? Let's reset for now to be safe.
-            const timer = setTimeout(restartGame, 300);
-            return () => clearTimeout(timer);
+        if (isOpen) {
+            // Reset game when opened
+            setCurrentQuestionIndex(0);
+            setScore(0);
+            setShowResult(false);
+            setSelectedAnswer(null);
+            setIsAnswered(false);
+            setGameComplete(false);
         }
     }, [isOpen]);
 
-    const currentQ = QUESTIONS[currentQuestionIndex];
-    const isLastQuestion = currentQuestionIndex === QUESTIONS.length - 1;
-
     useEffect(() => {
-        if (showResult && score > 7 && isOpen) {
-            const duration = 3 * 1000;
-            const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 60 }; // High z-index for modal
-            const randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-            const interval = setInterval(function () {
-                const timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                const particleCount = 50 * (timeLeft / duration);
-                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-            }, 250);
-            return () => clearInterval(interval);
-        }
-    }, [showResult, score, isOpen]);
-
-    const handleAnswer = (answer) => {
-        setSelectedAnswer(answer);
-        setIsAnswered(true);
-        if (answer === currentQ.correctAnswer) {
-            setScore(s => s + 1);
-            // Celebration for correct answer?
-            confetti({
-                particleCount: 50,
-                spread: 60,
-                origin: { y: 0.7 },
-                colors: ['#10B981', '#34D399'], // Green confetti
-                zIndex: 60
+        if (gameComplete) {
+            const jsConfetti = new JSConfetti();
+            jsConfetti.addConfetti({
+                emojis: ['🚐', '✨', '🌲', '🏕️', '🏆'],
             });
+        }
+    }, [gameComplete]);
+
+    const handleAnswer = (option) => {
+        if (isAnswered) return;
+
+        setSelectedAnswer(option);
+        setIsAnswered(true);
+
+        const isCorrect = option === currentQuestion.correctAnswer;
+        if (isCorrect) {
+            setScore(prev => prev + 1);
         }
     };
 
     const handleNext = () => {
-        if (isLastQuestion) {
-            setShowResult(true);
-        } else {
+        if (currentQuestionIndex < TRIVIA_QUESTIONS.length - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
             setSelectedAnswer(null);
             setIsAnswered(false);
+        } else {
+            setGameComplete(true);
         }
     };
 
-    const restartGame = () => {
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setShowResult(false);
-        setSelectedAnswer(null);
-        setIsAnswered(false);
+    const getScoreMessage = () => {
+        const percentage = (score / TRIVIA_QUESTIONS.length) * 100;
+        if (percentage === 100) return "Perfect Score! You're a true HHR Legend! 🌟";
+        if (percentage >= 80) return "Amazing! You know your HHR history! 🚐";
+        if (percentage >= 50) return "Good job! You're getting there! 🌲";
+        return "Nice try! Time to brush up on your rules! 📖";
     };
 
     return (
-        <BaseModal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={showResult ? "Trivia Results" : undefined}
-            maxSize="max-w-lg"
-            showClose={true}
-        >
-            {!showResult ? (
-                <div className="flex flex-col items-center">
-                    {/* Header / Progress */}
-                    <div className="w-full mb-4">
-                        <div className="flex justify-between w-full text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                            <div className="flex items-center gap-1.5">
-                                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                                <span>Question {currentQuestionIndex + 1} / {QUESTIONS.length}</span>
+        <BaseModal isOpen={isOpen} onClose={onClose} title="">
+            <div className="relative overflow-hidden">
+                {/* Close Button - Custom positioned to not conflict with header */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-600 transition-colors z-50"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+
+                {!gameComplete ? (
+                    <div className="space-y-6 pt-4">
+                        {/* Easter Egg Header */}
+                        <div className="text-center space-y-2">
+                            <div className="inline-flex items-center gap-3 animate-bounce-subtle">
+                                <Caravan className="w-8 h-8 text-indigo-500 animate-wiggle" />
+                                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                                    HHR Trivia
+                                </h2>
+                                <Sparkles className="w-8 h-8 text-amber-400 animate-spin-slow" />
                             </div>
-                            <span>Score: {score}</span>
+                            <p className="text-slate-500 font-medium text-sm">
+                                Question {currentQuestionIndex + 1} of {TRIVIA_QUESTIONS.length}
+                            </p>
                         </div>
-                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+
+                        {/* Progress Bar */}
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
-                                style={{ width: `${((currentQuestionIndex) / QUESTIONS.length) * 100}%` }}
-                            ></div>
+                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out"
+                                style={{ width: `${((currentQuestionIndex) / TRIVIA_QUESTIONS.length) * 100}%` }}
+                            />
                         </div>
+
+                        {/* Question Card */}
+                        <div className="bg-white p-1">
+                            <h3 className="text-xl font-bold text-slate-900 mb-6 text-center leading-relaxed">
+                                {currentQuestion.question}
+                            </h3>
+
+                            <div className="grid gap-3">
+                                {currentQuestion.options.map((option, idx) => {
+                                    let buttonStyle = "bg-white border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50";
+
+                                    if (isAnswered) {
+                                        if (option === currentQuestion.correctAnswer) {
+                                            buttonStyle = "bg-emerald-50 border-2 border-emerald-500 text-emerald-700";
+                                        } else if (option === selectedAnswer) {
+                                            buttonStyle = "bg-rose-50 border-2 border-rose-500 text-rose-700";
+                                        } else {
+                                            buttonStyle = "bg-slate-50 border-2 border-slate-100 text-slate-400 opacity-50";
+                                        }
+                                    }
+
+                                    return (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleAnswer(option)}
+                                            disabled={isAnswered}
+                                            className={`w-full p-4 rounded-xl text-left font-medium transition-all duration-200 ${buttonStyle}`}
+                                        >
+                                            {option}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Fact Reveal & Next Button */}
+                        {isAnswered && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-4">
+                                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
+                                    <HelpCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                    <div>
+                                        <div className="font-bold text-amber-800 text-sm mb-1">Did You Know?</div>
+                                        <p className="text-sm text-amber-700 leading-relaxed">
+                                            {currentQuestion.fact}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleNext}
+                                    className="w-full bg-slate-900 text-white rounded-xl py-4 font-bold text-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                                >
+                                    Next Question <ArrowRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
                     </div>
+                ) : (
+                    <div className="text-center py-8 space-y-6 animate-in zoom-in-95 duration-500">
+                        <div className="relative inline-block">
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 blur-2xl opacity-20 animate-pulse rounded-full" />
+                            <Trophy className="w-24 h-24 text-amber-400 relative z-10 drop-shadow-xl mx-auto" strokeWidth={1.5} />
+                        </div>
 
-                    <TriviaCard
-                        {...currentQ}
-                        selectedAnswer={selectedAnswer}
-                        isAnswered={isAnswered}
-                        onSelect={handleAnswer}
-                        isLastQuestion={isLastQuestion}
-                        onNext={handleNext}
-                    />
-                </div>
-            ) : (
-                <div className="text-center py-4">
-                    <div className="mb-6 inline-flex p-4 rounded-full bg-yellow-100 text-yellow-600 shadow-inner">
-                        <Trophy className="w-16 h-16" />
-                    </div>
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black text-slate-900">Quiz Complete!</h2>
+                            <p className="text-slate-500">You scored</p>
+                            <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                                {score}/{TRIVIA_QUESTIONS.length}
+                            </div>
+                        </div>
 
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Quiz Complete!</h1>
-                    <p className="text-slate-500 mb-6">You scored</p>
+                        <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 max-w-sm mx-auto">
+                            <p className="text-lg font-medium text-slate-800">
+                                {getScoreMessage()}
+                            </p>
+                        </div>
 
-                    <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-blue-600 mb-8">
-                        {score} / {QUESTIONS.length}
-                    </div>
-
-                    <p className="text-lg text-slate-700 mb-8 font-medium">
-                        {score === 10 ? "🏆 Perfect Score! You're a true local!" :
-                            score >= 7 ? "✨ Great job! You know your stuff!" :
-                                "🌲 Nice try! Time to explore more!"}
-                    </p>
-
-                    <div className="space-y-3">
-                        <button
-                            onClick={restartGame}
-                            className="w-full py-3 px-6 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
-                        >
-                            <RotateCcw className="w-5 h-5" /> Play Again
-                        </button>
                         <button
                             onClick={onClose}
-                            className="w-full py-3 px-6 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                            className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg hover:shadow-xl"
                         >
-                            Close
+                            Close Trivia
                         </button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </BaseModal>
     );
 }
