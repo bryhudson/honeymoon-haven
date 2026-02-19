@@ -51,7 +51,7 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                             <div>
                                 <h2 className="text-3xl font-black tracking-tight leading-tight">
                                     Hey {userName}! <br />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-purple-200">Welcome Home.</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-purple-200">Welcome to the HHR Trailer Booking App.</span>
                                 </h2>
                                 <p className="text-base text-indigo-100/80 font-medium leading-relaxed mt-4">
                                     We've completely reimagined the booking experience. No spreadsheets, just relaxation.
