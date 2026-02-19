@@ -110,10 +110,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "HHR was born in 2015 when a group of shareholders came together to transform the old South Shore Resort into the private retreat we know and love today."
     },
     {
-        question: "What is the name of the large freshwater lake that HHR sits on?",
-        options: ["Cowichan Lake", "Shawnigan Lake", "Sproat Lake", "Great Central Lake"],
-        correctAnswer: "Cowichan Lake",
-        fact: "Cowichan Lake is one of the largest freshwater lakes on Vancouver Island, known for its warm water and stunning views."
+        question: "How did 'Honeymoon Bay' get its romantic name?",
+        options: ["Newlyweds camped there in the early 1900s", "A heart-shaped bay formation", "A hotel marketing campaign", "A First Nations love legend"],
+        correctAnswer: "Newlyweds camped there in the early 1900s",
+        fact: "The story goes that in the early 1900s, a young newlywed couple set up camp on the bay's shoreline for their honeymoon. The name stuck, and the rest is history. Not a bad spot to start a marriage if you ask us."
     },
     {
         question: "Who built this awesome HHR Booking App?",
