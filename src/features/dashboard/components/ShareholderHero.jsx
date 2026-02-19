@@ -553,7 +553,7 @@ function ModernTrailerWidget({
 
                     {/* Title & Subtitle */}
                     <div>
-                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{subtitle}</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{subtitle}</h2>
                         <div className="text-lg text-slate-300 leading-relaxed">
                             {mainContent}
                         </div>
