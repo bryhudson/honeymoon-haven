@@ -6,14 +6,7 @@ import { HistoricalOrders } from './HistoricalOrders';
 
 export function SeasonSchedule({ currentOrder, allBookings, status, startDateOverride, onAction, bypassTenAM = false }) {
     const [view, setView] = useState('current'); // 'current' | 'history'
-    const [isInfoExpanded, setIsInfoExpanded] = useState(false); // Collapsed by default on mobile feel
-
-    // Expand info by default on large screens
-    useEffect(() => {
-        if (window.innerWidth >= 1024) {
-            setIsInfoExpanded(true);
-        }
-    }, []);
+    const [isInfoExpanded, setIsInfoExpanded] = useState(false); // Collapsed by default on all screens
 
     return (
         <div id="tour-schedule" className="">
