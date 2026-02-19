@@ -86,10 +86,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "The clock starts ticking at 10:00 AM sharp! Set your alarms."
     },
     {
-        question: "Which of these is strictly NOT permitted on the sandy beach area?",
-        options: ["Dogs", "Chairs", "Towels", "Sandcastles"],
-        correctAnswer: "Dogs",
-        fact: "To keep our beach clean and safe for all kids and families, dogs are not allowed on the sandy beach area (but they love the trails!)."
+        question: "When you're sitting on the dock at HHR and look directly across the lake, what mountain are you staring at?",
+        options: ["Bald Mountain", "Mount Prevost", "Mount Tzouhalem", "Mount Arrowsmith"],
+        correctAnswer: "Bald Mountain",
+        fact: "Bald Mountain sits right across the lake from our waterfront. It's the view you see every morning with your coffee and every evening at sunset. Once you know the name, you'll never forget it."
     },
     {
         question: "What is the primary method for verifying your HHR maintenance fee payments?",
@@ -105,9 +105,9 @@ export const TRIVIA_QUESTIONS = [
     },
     {
         question: "Honeymoon Haven Resort was originally founded in which year?",
-        options: ["1946", "1925", "1962", "1980"],
-        correctAnswer: "1946",
-        fact: "HHR was established just after WWII, becoming a beloved summer getaway for generations of families."
+        options: ["2015", "2010", "2018", "2012"],
+        correctAnswer: "2015",
+        fact: "HHR was born in 2015 when a group of shareholders came together to transform the old South Shore Resort into the private retreat we know and love today."
     },
     {
         question: "What is the name of the large freshwater lake that HHR sits on?",
