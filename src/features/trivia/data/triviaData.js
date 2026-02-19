@@ -80,10 +80,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "Cowichan Lake is one of the best trout lakes on Vancouver Island. Brown trout here can grow to trophy size, and fly fishing from the dock at sunset is practically a shareholder tradition. Just don't ask who caught the biggest one - everyone has a different story."
     },
     {
-        question: "The Honeymoon Bay Market (just a short walk from HHR) is a local legend. What are they most famous for?",
-        options: ["Their Ice Cream", "Their Pizza", "Their Fried Chicken", "Their Sushi"],
-        correctAnswer: "Their Ice Cream",
-        fact: "The Honeymoon Bay Market is a South Shore institution. Their ice cream counter is the ultimate post-beach pitstop, and the walk there from HHR is half the fun. If you haven't grabbed a cone on a hot summer day, you haven't truly experienced the resort life."
+        question: "The town of Youbou, just across the lake from HHR, was once home to a massive industrial operation. What was it?",
+        options: ["A Sawmill", "A Copper Mine", "A Cannery", "A Hydroelectric Dam"],
+        correctAnswer: "A Sawmill",
+        fact: "Youbou was a thriving mill town built around one of the largest sawmills on Vancouver Island. At its peak, the mill employed hundreds of workers and was the heartbeat of the entire lake community. When it closed in 2001, the town went quiet - but the old mill site across the water is still part of the view from our dock."
     },
     {
         question: "When you're sitting on the dock at HHR and look directly across the lake, what mountain are you staring at?",
