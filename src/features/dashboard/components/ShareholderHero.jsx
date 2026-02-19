@@ -345,7 +345,10 @@ export function ShareholderHero({
                     <button
                         onClick={onPass}
                         disabled={isReadOnly}
-                        className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-slate-600 rounded-lg text-sm font-bold transition-all"
+                        className={`flex-1 px-6 py-3 rounded-lg text-sm font-bold transition-all
+                            ${isReadOnly
+                                ? 'bg-white/5 text-white/20 border-white/5 cursor-not-allowed'
+                                : 'bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-slate-600'}`}
                     >
                         Pass Turn
                     </button>
