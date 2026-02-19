@@ -592,7 +592,7 @@ export function ShareholderHero({
                                     ) : (
                                         <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 backdrop-blur-md">
                                             <div className="flex flex-col md:flex-row items-center gap-4 p-4">
-                                                <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-bounce">
+                                                <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-pulse-scale">
                                                     <Banknote className="w-6 h-6" strokeWidth={2} />
                                                 </div>
                                                 <div className="flex-1 text-center md:text-left space-y-0.5">
