@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { Caravan, Sparkles, Trophy, ArrowRight, HelpCircle, X } from 'lucide-react';
 import { TRIVIA_QUESTIONS } from '../data/triviaData';
@@ -13,6 +13,16 @@ export function TriviaModal({ isOpen, onClose }) {
     const [gameComplete, setGameComplete] = useState(false);
 
     const currentQuestion = TRIVIA_QUESTIONS[currentQuestionIndex];
+
+    // Shuffle options so correct answer isn't always first
+    const shuffledOptions = useMemo(() => {
+        const opts = [...currentQuestion.options];
+        for (let i = opts.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [opts[i], opts[j]] = [opts[j], opts[i]];
+        }
+        return opts;
+    }, [currentQuestionIndex]);
 
     useEffect(() => {
         if (isOpen) {
@@ -212,7 +222,7 @@ export function TriviaModal({ isOpen, onClose }) {
                             </h3>
 
                             <div className="grid gap-2.5">
-                                {currentQuestion.options.map((option, idx) => {
+                                {shuffledOptions.map((option, idx) => {
                                     // Logic to hide irrelevant options to save space
                                     if (isAnswered) {
                                         const isSelected = option === selectedAnswer;
