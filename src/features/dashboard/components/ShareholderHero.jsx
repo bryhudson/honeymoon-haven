@@ -121,13 +121,13 @@ export function ShareholderHero({
     // 1. System Maintenance (Highest Priority)
     if (isSystemFrozen && !isSuperAdmin) {
         return (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-lg">
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-lg">
                 <div className="flex items-start gap-4">
                     <div className="p-3 bg-amber-100 rounded-xl text-amber-600 shrink-0">
                         <AlertTriangle className="w-6 h-6" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-2xl md:text-3xl font-black text-amber-900 tracking-tight">System Maintenance</h2>
+                        <h2 className="text-xl md:text-3xl font-black text-amber-900 tracking-tight">System Maintenance</h2>
                         <p className="text-amber-800/80 text-base leading-relaxed">
                             We're performing important system updates. Booking actions are temporarily paused.
                         </p>
@@ -142,17 +142,17 @@ export function ShareholderHero({
     // 1b. Pre-Draft / Waiting for Start (Null Active Picker)
     if (status.phase === 'PRE_DRAFT' || (!status.activePicker && status.phase !== 'OPEN_SEASON')) {
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('indigo')}
 
-                <div className="relative z-10 space-y-6">
+                <div className="relative z-10 space-y-4 md:space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold uppercase tracking-wider border border-indigo-500/30">
                             ⏳ Coming Soon
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 pb-1">
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 pb-1">
                             {title}
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
@@ -176,17 +176,17 @@ export function ShareholderHero({
     // 2. Open Season
     if (status.phase === 'OPEN_SEASON') {
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('green')}
 
-                <div className="relative z-10 space-y-6">
+                <div className="relative z-10 space-y-4 md:space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-bold uppercase tracking-wider border border-green-500/30">
                             🎉 Open Season
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 pb-1">
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 pb-1">
                             Booking is Open
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
@@ -305,7 +305,7 @@ export function ShareholderHero({
                     }
 
                     return (
-                        <div className={`inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest border backdrop-blur-sm ${badgeClass}`}>
+                        <div className={`inline-flex items-center gap-1.5 md:gap-2.5 px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-wider md:tracking-widest border backdrop-blur-sm ${badgeClass}`}>
                             <span className="opacity-70">R1</span>
                             {icon}
                             <span>{text}</span>
@@ -374,7 +374,7 @@ export function ShareholderHero({
                     }
 
                     return (
-                        <div className={`inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest border backdrop-blur-sm ${badgeClass}`}>
+                        <div className={`inline-flex items-center gap-1.5 md:gap-2.5 px-3 py-1.5 md:px-4 md:py-2.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-wider md:tracking-widest border backdrop-blur-sm ${badgeClass}`}>
                             <span className="opacity-70">R2</span>
                             {icon}
                             <span>{text}</span>
@@ -393,8 +393,8 @@ export function ShareholderHero({
 
 
     const renderHeader = () => (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-xl md:text-2xl font-normal text-white/80">
+        <div className="flex flex-col gap-3">
+            <h1 className="text-base md:text-xl font-normal text-white/80">
                 Welcome to the 2026 Season, <span className="text-white font-bold">{formatNameForDisplay(shareholderName)}</span>
             </h1>
             <div id="tour-status" className="flex-shrink-0">
@@ -447,31 +447,31 @@ export function ShareholderHero({
         const timerLabel = "Complete Selection By";
 
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground(theme)}
 
-                <div className="relative z-10 space-y-6">
+                <div className="relative z-10 space-y-4 md:space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className={`text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'} pb-1`}>
+                        <h2 className={`text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r tracking-tight ${status.isGracePeriod ? 'from-emerald-400 to-green-500' : 'from-orange-400 to-red-500'} pb-1`}>
                             {status.isGracePeriod ? 'You Have Early Access!' : "It's Your Official Turn"}
                         </h2>
-                        <p className="text-base text-white/60 leading-relaxed">
+                        <p className="text-sm md:text-base text-white/60 leading-relaxed">
                             {status.isGracePeriod
                                 ? <span>You're ahead of schedule! The official window begins <strong>{status.windowStarts ? format(new Date(status.windowStarts), 'MMM d') : ''} at 10:00 AM</strong>.</span>
                                 : "The calendar is yours! Please select your dates or pass your turn to the next shareholder."}
                         </p>
                     </div>
 
-                    <div id="tour-deadline" className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm">
+                    <div id="tour-deadline" className="bg-slate-800/40 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <Clock className="w-5 h-5 text-blue-400" />
                                 <div>
                                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Selection By</p>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-xl font-bold text-white">
+                                        <span className="text-lg md:text-xl font-bold text-white">
                                             {targetDate && format(new Date(targetDate), 'MMM d, h:mm a')}
                                         </span>
                                         {timeRemaining && (
@@ -487,7 +487,7 @@ export function ShareholderHero({
                                 <button
                                     onClick={onPass}
                                     disabled={isReadOnly}
-                                    className={`px-5 py-3 font-semibold rounded-lg transition-all 
+                                    className={`px-4 py-2.5 font-semibold rounded-lg transition-all text-sm
                                         ${isReadOnly
                                             ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
                                             : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600 hover:text-white'
@@ -498,7 +498,7 @@ export function ShareholderHero({
                                 <button
                                     onClick={onOpenBooking}
                                     disabled={isReadOnly}
-                                    className={`px-6 py-3 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all
+                                    className={`px-5 py-2.5 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all text-sm
                                         ${isReadOnly
                                             ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                                             : 'bg-white text-slate-900 hover:bg-blue-50 hover:scale-105 active:scale-95'
@@ -537,17 +537,17 @@ export function ShareholderHero({
         const theme = isPassed ? 'indigo' : (isSkipped ? 'red' : 'green');
 
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 md:p-10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden text-white">
                 {renderBackground(theme)}
 
-                <div className="relative z-10 space-y-8">
+                <div className="relative z-10 space-y-5 md:space-y-8">
                     {renderHeader()}
 
                     <div className="space-y-4">
-                        <h2 className={`text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-400 to-orange-500' : (isSkipped ? 'from-orange-400 to-red-500' : 'from-emerald-400 to-green-500')} pb-1`}>
+                        <h2 className={`text-3xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r ${isPassed ? 'from-amber-400 to-orange-500' : (isSkipped ? 'from-orange-400 to-red-500' : 'from-emerald-400 to-green-500')} pb-1`}>
                             {isPassed ? "Turn Passed" : (isSkipped ? "Turn Skipped" : "You're All Set!")}
                         </h2>
-                        <div className="text-lg md:text-xl text-slate-300 leading-relaxed font-medium">
+                        <div className="text-base md:text-lg text-slate-300 leading-relaxed font-medium">
                             {isPassed ? (
                                 <p>You've passed your turn for this round. We'll notify you when the next round begins!</p>
                             ) : isSkipped ? (
@@ -586,20 +586,20 @@ export function ShareholderHero({
                                         })()
                                     }
 
-                                    <p className="text-lg md:text-xl text-slate-300 font-medium leading-relaxed">
+                                    <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed">
                                         Booking confirmed for <span className="text-white font-bold">{format(displayDate.start, 'MMM d')} - {format(displayDate.end, 'MMM d, yyyy')}</span>
                                         <span className="text-slate-500 ml-2">({nights} nights)</span>
                                     </p>
 
                                     {isPaid ? (
                                         <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-md">
-                                            <div className="flex flex-col md:flex-row items-center gap-4 p-5">
-                                                <div className="shrink-0 p-4 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl shadow-lg shadow-emerald-500/30 text-white">
-                                                    <CheckCircle className="w-8 h-8" strokeWidth={2} />
+                                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 p-4 md:p-5">
+                                                <div className="shrink-0 p-3 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl shadow-lg shadow-emerald-500/30 text-white">
+                                                    <CheckCircle className="w-6 h-6" strokeWidth={2} />
                                                 </div>
                                                 <div className="flex-1 text-center md:text-left space-y-1">
-                                                    <div className="font-black text-emerald-400 uppercase tracking-widest text-sm md:text-base">All Set</div>
-                                                    <p className="text-white/90 font-medium text-lg md:text-xl leading-snug">
+                                                    <div className="font-black text-emerald-400 uppercase tracking-widest text-xs md:text-sm">All Set</div>
+                                                    <p className="text-white/90 font-medium text-sm md:text-base leading-snug">
                                                         Your maintenance fee is verified. Enjoy the season!
                                                     </p>
                                                 </div>
@@ -623,13 +623,13 @@ export function ShareholderHero({
                                         </div>
                                     ) : (
                                         <div className="w-full p-1 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 backdrop-blur-md">
-                                            <div className="flex flex-col md:flex-row items-center gap-4 p-5">
-                                                <div className="shrink-0 p-4 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl shadow-lg shadow-orange-500/30 text-white animate-pulse-scale">
-                                                    <Banknote className="w-8 h-8" strokeWidth={2} />
+                                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 p-4 md:p-5">
+                                                <div className="shrink-0 p-3 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl shadow-lg shadow-orange-500/30 text-white animate-pulse-scale">
+                                                    <Banknote className="w-6 h-6" strokeWidth={2} />
                                                 </div>
                                                 <div className="flex-1 text-center md:text-left space-y-1">
-                                                    <div className="font-black text-amber-400 uppercase tracking-widest text-sm md:text-base">Action Required</div>
-                                                    <p className="text-white/90 font-medium text-lg md:text-xl leading-snug">
+                                                    <div className="font-black text-amber-400 uppercase tracking-widest text-xs md:text-sm">Action Required</div>
+                                                    <p className="text-white/90 font-medium text-sm md:text-base leading-snug">
                                                         Please e-transfer your fee to <span className="font-bold text-amber-300">HHR</span> to finalize.
                                                     </p>
                                                 </div>
@@ -658,14 +658,14 @@ export function ShareholderHero({
     // --- CASE D: Booking Cancelled ---
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
         return (
-            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
+            <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden">
                 {renderBackground('red')}
 
-                <div className="relative z-10 space-y-6">
+                <div className="relative z-10 space-y-4 md:space-y-6">
                     {renderHeader()}
 
                     <div className="space-y-3">
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500 pb-1">
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500 pb-1">
                             Booking Cancelled
                         </h2>
                         <p className="text-base text-slate-300 leading-relaxed">
@@ -698,10 +698,10 @@ export function ShareholderHero({
     const isUpNext = queueInfo?.diff === 1;
 
     return (
-        <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
+        <div data-tour="status-hero" className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-4 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
             {renderBackground('indigo')}
 
-            <div className="relative z-10 space-y-6">
+            <div className="relative z-10 space-y-4 md:space-y-6">
                 {renderHeader()}
 
                 <div className="space-y-2">
@@ -715,13 +715,13 @@ export function ShareholderHero({
 
                 <div className="grid md:grid-cols-2 gap-4">
                     {/* Left Card: Your Position */}
-                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-5 backdrop-blur-sm flex flex-col justify-center h-full transition-all hover:bg-slate-800/60 group">
+                    <div className="bg-slate-800/40 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm flex flex-col justify-center h-full transition-all hover:bg-slate-800/60 group">
                         <div className="space-y-2">
-                            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Your Position</p>
+                            <p className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Your Position</p>
 
                             {isUpNext ? (
                                 <>
-                                    <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight pb-1">
+                                    <div className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 tracking-tight pb-1">
                                         You're Up Next for {queueInfo?.round === 1 ? 'Round 1' : 'Round 2'}!
                                     </div>
                                     <p className="text-sm text-white/60 font-medium">
@@ -731,14 +731,14 @@ export function ShareholderHero({
                             ) : (
                                 <>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 tracking-tight pb-1">
+                                        <span className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 tracking-tight pb-1">
                                             {getOrdinal(queueInfo?.diff || 1)}
                                         </span>
-                                        <span className="text-xl font-bold text-white/60">
+                                        <span className="text-base md:text-xl font-bold text-white/60">
                                             in Line ({queueInfo?.round === 1 ? 'Round 1' : 'Round 2'})
                                         </span>
                                     </div>
-                                    <p className="text-sm text-white/60 font-medium mb-1">Sit tight! We'll email you when it's your turn.</p>
+                                    <p className="text-xs md:text-sm text-white/60 font-medium mb-1">Sit tight! We'll email you when it's your turn.</p>
                                 </>
                             )}
                         </div>
@@ -746,57 +746,24 @@ export function ShareholderHero({
 
                     {/* Right Card: Currently Picking */}
                     {!isYourTurn && status.activePicker && (
-                        <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5 backdrop-blur-sm flex flex-col justify-center h-full relative overflow-hidden transition-all hover:border-indigo-500/30 group">
+                        <div className="bg-slate-800/60 border border-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm flex flex-col justify-center h-full relative overflow-hidden transition-all hover:border-indigo-500/30 group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-                            <div className="space-y-3 relative z-10 hidden md:block border-l border-white/10 md:border-none pl-6 md:pl-0">
+                            <div className="space-y-3 relative z-10">
                                 <div>
-                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Currently Picking</p>
-                                    <h3 className="text-2xl font-bold text-white mt-0.5 tracking-tight">{status.activePicker}</h3>
+                                    <p className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-white/90 transition-colors">Currently Picking</p>
+                                    <h3 className="text-xl md:text-2xl font-bold text-white mt-0.5 tracking-tight">{status.activePicker}</h3>
                                 </div>
 
                                 {status.windowEnds && (
                                     <div className="space-y-1.5 pt-1">
                                         <div>
                                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Complete Selection By</div>
-                                            <div className="text-base font-bold text-white">
+                                            <div className="text-sm md:text-base font-bold text-white">
                                                 {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
                                             </div>
                                         </div>
 
-                                        <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 border-blue-500/30 px-3 py-1.5 rounded-lg border text-xs font-bold">
-                                            {(() => {
-                                                const end = new Date(status.windowEnds);
-                                                if (end <= now) return 'Ending...';
-                                                const diff = intervalToDuration({ start: now, end });
-                                                const parts = [];
-                                                if (diff.days > 0) parts.push(`${diff.days}d`);
-                                                if (diff.hours > 0) parts.push(`${diff.hours}h`);
-                                                if (diff.minutes > 0) parts.push(`${diff.minutes}m`);
-                                                return `Ends in ${parts.join(' ') || '< 1m'}`;
-                                            })()}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Mobile Layout Fix: Ensure content isn't hidden on small screens because of 'hidden md:block' above. 
-                                Wait, looking at original code it was: div className="space-y-3 md:border-l md:border-white/10 md:pl-6"
-                                I should make sure it renders on mobile too.
-                            */}
-                            <div className="space-y-4 relative z-10 md:hidden block">
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Currently Picking</p>
-                                    <h3 className="text-2xl font-bold text-white mt-1">{status.activePicker}</h3>
-                                </div>
-                                {status.windowEnds && (
-                                    <div className="space-y-2">
-                                        <div>
-                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complete Selection By</div>
-                                            <div className="text-base font-bold text-white mt-1">
-                                                {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
-                                            </div>
-                                        </div>
                                         <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 border-blue-500/30 px-3 py-1.5 rounded-lg border text-xs font-bold">
                                             {(() => {
                                                 const end = new Date(status.windowEnds);
