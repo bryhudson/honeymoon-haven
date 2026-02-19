@@ -86,6 +86,9 @@ export function ShareholderHero({
         return { diff: myNextIndex - activeIndex, round: myNextIndex < currentOrder.length ? 1 : 2 };
     }, [currentOrder, status, shareholderName, isReadOnly, isAdminPersona]);
 
+    // Compute roundLabel early so all branches can use it
+    const roundLabel = queueInfo?.round === 1 ? 'Round 1' : 'Round 2';
+
     // --- User state ---
     const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
     let roundTarget = 1;
@@ -372,7 +375,6 @@ export function ShareholderHero({
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     const isUpNext = queueInfo?.diff === 1;
-    const roundLabel = queueInfo?.round === 1 ? 'Round 1' : 'Round 2';
 
     const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
 
