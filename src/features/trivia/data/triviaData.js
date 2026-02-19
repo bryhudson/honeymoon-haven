@@ -80,10 +80,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "Cowichan Lake is one of the best trout lakes on Vancouver Island. Brown trout here can grow to trophy size, and fly fishing from the dock at sunset is practically a shareholder tradition. Just don't ask who caught the biggest one - everyone has a different story."
     },
     {
-        question: "Turn timers for the official booking rounds always start at what time of day?",
-        options: ["10:00 AM", "8:00 AM", "12:00 PM", "Midnight"],
-        correctAnswer: "10:00 AM",
-        fact: "The clock starts ticking at 10:00 AM sharp! Set your alarms."
+        question: "The Honeymoon Bay Market (just a short walk from HHR) is a local legend. What are they most famous for?",
+        options: ["Their Ice Cream", "Their Pizza", "Their Fried Chicken", "Their Sushi"],
+        correctAnswer: "Their Ice Cream",
+        fact: "The Honeymoon Bay Market is a South Shore institution. Their ice cream counter is the ultimate post-beach pitstop, and the walk there from HHR is half the fun. If you haven't grabbed a cone on a hot summer day, you haven't truly experienced the resort life."
     },
     {
         question: "When you're sitting on the dock at HHR and look directly across the lake, what mountain are you staring at?",
