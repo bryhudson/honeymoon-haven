@@ -158,6 +158,13 @@ export function ShareholderHero({
                 iconBg: "bg-rose-500/10",
                 icon: "text-rose-400",
                 subtext: "text-rose-200"
+            },
+            blue: {
+                wrapper: "border-blue-500/30 bg-slate-950",
+                glow: "from-blue-500/20 via-blue-900/10 to-transparent",
+                iconBg: "bg-blue-500/10",
+                icon: "text-blue-400",
+                subtext: "text-blue-200"
             }
         };
 
@@ -308,7 +315,7 @@ export function ShareholderHero({
         const isEarly = status.isGracePeriod;
 
         return <ModernTrailerWidget
-            accentColor="emerald"
+            accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
             subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
@@ -321,7 +328,7 @@ export function ShareholderHero({
                         </p>
                     </div>
                     {timeLeft && (
-                        <div className={`self-start md:self-center px-4 py-2 rounded-lg bg-slate-900/50 border ${isEarly ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'} font-bold text-base shadow-sm tabular-nums backdrop-blur-sm`}>
+                        <div className={`self-start md:self-center px-4 py-2 rounded-lg bg-slate-900/50 border ${isEarly ? 'border-blue-500/40 text-blue-300' : 'border-blue-500/40 text-blue-300'} font-bold text-base shadow-sm tabular-nums backdrop-blur-sm`}>
                             {timeLeft} left
                         </div>
                     )}
@@ -374,7 +381,7 @@ export function ShareholderHero({
         const isPaid = lastAction.isPaid;
 
         return <ModernTrailerWidget
-            accentColor={isPaid ? "violet" : "amber"}
+            accentColor={isPaid ? "emerald" : "amber"}
             icon={Caravan}
             title="Booking Confirmed"
             subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
