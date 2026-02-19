@@ -111,31 +111,36 @@ export function ShareholderHero({
     }) => {
         const themes = {
             emerald: {
-                wrapper: "border-emerald-500/30 bg-gradient-to-r from-emerald-900/40 to-slate-900",
+                wrapper: "border-emerald-500/30 bg-slate-950",
+                glow: "from-emerald-500/20 via-emerald-900/10 to-transparent",
                 iconBg: "bg-emerald-500/10",
                 icon: "text-emerald-400",
                 subtext: "text-emerald-200"
             },
             amber: {
-                wrapper: "border-amber-500/30 bg-gradient-to-r from-amber-900/40 to-slate-900",
+                wrapper: "border-amber-500/30 bg-slate-950",
+                glow: "from-amber-500/20 via-amber-900/10 to-transparent",
                 iconBg: "bg-amber-500/10",
                 icon: "text-amber-400",
                 subtext: "text-amber-200"
             },
             indigo: {
-                wrapper: "border-indigo-500/30 bg-gradient-to-r from-indigo-900/40 to-slate-900",
+                wrapper: "border-indigo-500/30 bg-slate-950",
+                glow: "from-indigo-500/20 via-indigo-900/10 to-transparent",
                 iconBg: "bg-indigo-500/10",
                 icon: "text-indigo-400",
                 subtext: "text-indigo-200"
             },
             red: {
-                wrapper: "border-red-500/30 bg-gradient-to-r from-red-900/40 to-slate-900",
+                wrapper: "border-red-500/30 bg-slate-950",
+                glow: "from-red-500/20 via-red-900/10 to-transparent",
                 iconBg: "bg-red-500/10",
                 icon: "text-red-400",
                 subtext: "text-red-200"
             },
             slate: {
-                wrapper: "border-slate-700 bg-slate-800/50",
+                wrapper: "border-slate-700 bg-slate-900",
+                glow: "from-slate-500/20 via-slate-800/10 to-transparent",
                 iconBg: "bg-slate-700/50",
                 icon: "text-slate-400",
                 subtext: "text-slate-300"
@@ -145,12 +150,24 @@ export function ShareholderHero({
         const theme = themes[accentColor] || themes.slate;
 
         return (
-            <div data-tour="status-hero" className={`rounded-xl border border-l-4 overflow-hidden shadow-xl ${theme.wrapper}`}>
+            <div data-tour="status-hero" className={`relative rounded-xl border border-l-4 overflow-hidden shadow-2xl ${theme.wrapper}`}>
+
+                {/* V5 Tech Background Layers */}
+                <div className="absolute inset-0 z-0">
+                    {/* 1. Dot Grid Pattern */}
+                    <div className="absolute inset-0 opacity-[0.08]"
+                        style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '16px 16px' }}>
+                    </div>
+
+                    {/* 2. Distinct Radial Glow (Spotlight) */}
+                    <div className={`absolute -left-10 -top-20 w-96 h-96 rounded-full blur-3xl opacity-40 bg-gradient-to-br ${theme.glow}`}></div>
+                </div>
+
                 {/* Mobile Layout: Stacked */}
-                <div className="md:hidden flex flex-col p-5 gap-4">
+                <div className="md:hidden relative z-10 flex flex-col p-5 gap-4">
                     {/* Header Row */}
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${theme.iconBg}`}>
+                        <div className={`p-2 rounded-lg ${theme.iconBg} ring-1 ring-white/5`}>
                             <Icon className={`w-6 h-6 ${theme.icon}`} strokeWidth={1.5} />
                         </div>
                         <div>
@@ -161,7 +178,7 @@ export function ShareholderHero({
                     </div>
 
                     {/* Main Content */}
-                    <div className="bg-slate-950/50 rounded-lg p-4 border border-white/5 backdrop-blur-sm">
+                    <div className="bg-slate-950/80 rounded-lg p-4 border border-white/5 backdrop-blur-md shadow-inner">
                         {mainContent}
                     </div>
 
@@ -170,10 +187,10 @@ export function ShareholderHero({
                 </div>
 
                 {/* Desktop Layout: Horizontal Bar */}
-                <div className="hidden md:flex items-center justify-between p-4 px-6 gap-6 h-20">
+                <div className="hidden md:flex relative z-10 items-center justify-between p-4 px-6 gap-6 h-20">
                     {/* Left: Status */}
                     <div className="flex items-center gap-4 min-w-[240px]">
-                        <div className={`p-2 rounded-lg ${theme.iconBg}`}>
+                        <div className={`p-2 rounded-lg ${theme.iconBg} ring-1 ring-white/5 shadow-lg`}>
                             <Icon className={`w-6 h-6 ${theme.icon}`} strokeWidth={1.5} />
                         </div>
                         <div>
