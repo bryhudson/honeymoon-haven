@@ -98,10 +98,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "E-transfers are quick, secure, and help us instantly track payments in the dashboard. No stamps required!"
     },
     {
-        question: "Which nearby town is famous for its summer tube floating river run?",
-        options: ["Lake Cowichan", "Duncan", "Youbou", "Mesachie Lake"],
-        correctAnswer: "Lake Cowichan",
-        fact: "Floating down the Cowichan River is a rite of passage. Don't forget your sunscreen and a paddle!"
+        question: "Floating the Cowichan River in summer is a must-do. What's the name of the company that runs the famous tubing experience?",
+        options: ["Tube Shack", "River Riders Co.", "Cowichan Float Tours", "Lake Drifters"],
+        correctAnswer: "Tube Shack",
+        fact: "The Tube Shack is a Lake Cowichan institution. They'll set you up with a tube, shuttle you upstream, and let the river carry you back. It's the ultimate lazy summer afternoon - just don't forget the sunscreen and a waterproof bag for your snacks."
     },
     {
         question: "Honeymoon Haven Resort was originally founded in which year?",
