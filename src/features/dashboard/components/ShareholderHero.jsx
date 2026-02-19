@@ -544,13 +544,13 @@ function ModernTrailerWidget({
                 <div className="space-y-4 text-center lg:text-left max-w-2xl w-full">
                     {/* Badge Row */}
                     <div className="flex items-center justify-center lg:justify-start gap-2">
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${theme.badge}`}>
-                            <Icon className="w-3 h-3" />
+                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border ${theme.badge}`}>
+                            <Icon className="w-3.5 h-3.5" />
                             <span>{title}</span>
                         </div>
                         {shareholderName && (
-                            <div className={`hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border opacity-60 ${theme.badge}`}>
-                                <User className="w-3 h-3" />
+                            <div className={`hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border opacity-60 ${theme.badge}`}>
+                                <User className="w-3.5 h-3.5" />
                                 {formatNameForDisplay(shareholderName)}
                             </div>
                         )}
@@ -558,7 +558,7 @@ function ModernTrailerWidget({
 
                     {/* Title & Subtitle */}
                     <div>
-                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">{subtitle}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{subtitle}</h2>
                         <div className="text-lg text-slate-300 leading-relaxed">
                             {mainContent}
                         </div>
