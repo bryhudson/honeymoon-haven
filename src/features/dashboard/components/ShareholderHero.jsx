@@ -153,60 +153,60 @@ export function ShareholderHero({
             <div data-tour="status-hero" className={`relative rounded-xl border border-l-4 overflow-hidden shadow-2xl ${theme.wrapper}`}>
 
                 {/* V5 Tech Background Layers */}
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0 pointer-events-none">
                     {/* 1. Dot Grid Pattern */}
                     <div className="absolute inset-0 opacity-[0.08]"
                         style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '16px 16px' }}>
                     </div>
 
-                    {/* 2. Distinct Radial Glow (Spotlight) */}
-                    <div className={`absolute -left-10 -top-20 w-96 h-96 rounded-full blur-3xl opacity-40 bg-gradient-to-br ${theme.glow}`}></div>
+                    {/* 2. Distinct Radial Glow (Spotlight with Pulse) */}
+                    <div className={`absolute -left-10 -top-20 w-96 h-96 rounded-full blur-3xl opacity-40 bg-gradient-to-br ${theme.glow} animate-[pulse_4s_ease-in-out_infinite]`}></div>
                 </div>
 
-                {/* Mobile Layout: Stacked */}
-                <div className="md:hidden relative z-10 flex flex-col p-5 gap-4">
+                {/* Mobile Layout: Stacked with increased padding */}
+                <div className="md:hidden relative z-10 flex flex-col p-6 gap-5">
                     {/* Header Row */}
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${theme.iconBg} ring-1 ring-white/5`}>
-                            <Icon className={`w-6 h-6 ${theme.icon}`} strokeWidth={1.5} />
+                    <div className="flex items-center gap-4">
+                        <div className={`p-2.5 rounded-lg ${theme.iconBg} ring-1 ring-white/5`}>
+                            <Icon className={`w-7 h-7 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
                         </div>
                         <div>
-                            {shareholderName && <p className="text-white/80 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold uppercase tracking-wide text-lg ${theme.icon}`}>{title}</h2>
-                            {subtitle && <p className={`mt-0.5 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
+                            {shareholderName && <p className="text-white/90 font-bold mb-1 text-sm tracking-wide">Welcome, {formatNameForDisplay(shareholderName)}</p>}
+                            <h2 className={`font-bold text-xl ${theme.icon} tracking-tight leading-tight`}>{title}</h2>
+                            {subtitle && <p className={`mt-1 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
                         </div>
                     </div>
 
                     {/* Main Content */}
-                    <div className="bg-slate-950/80 rounded-lg p-4 border border-white/5 backdrop-blur-md shadow-inner">
+                    <div className="bg-slate-950/80 rounded-lg p-5 border border-white/5 backdrop-blur-md shadow-inner">
                         {mainContent}
                     </div>
 
                     {/* Actions */}
-                    {actions && <div className="grid grid-cols-1 gap-2 pt-1">{actions}</div>}
+                    {actions && <div className="grid grid-cols-1 gap-3 pt-2">{actions}</div>}
                 </div>
 
-                {/* Desktop Layout: Horizontal Bar */}
-                <div className="hidden md:flex relative z-10 items-center justify-between p-4 px-6 gap-6 h-20">
+                {/* Desktop Layout: Horizontal Bar with generous padding */}
+                <div className="hidden md:flex relative z-10 items-center justify-between py-6 px-8 gap-8 h-24">
                     {/* Left: Status */}
-                    <div className="flex items-center gap-4 min-w-[240px]">
-                        <div className={`p-2 rounded-lg ${theme.iconBg} ring-1 ring-white/5 shadow-lg`}>
-                            <Icon className={`w-6 h-6 ${theme.icon}`} strokeWidth={1.5} />
+                    <div className="flex items-center gap-5 min-w-[280px]">
+                        <div className={`p-3 rounded-lg ${theme.iconBg} ring-1 ring-white/5 shadow-lg`}>
+                            <Icon className={`w-8 h-8 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
                         </div>
                         <div>
-                            {shareholderName && <p className="text-white/80 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold uppercase tracking-wide text-lg ${theme.icon}`}>{title}</h2>
-                            {subtitle && <p className={`mt-0.5 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
+                            {shareholderName && <p className="text-white/90 font-bold mb-1 text-sm tracking-wide">Welcome, {formatNameForDisplay(shareholderName)}</p>}
+                            <h2 className={`font-bold text-2xl ${theme.icon} tracking-tight`}>{title}</h2>
+                            {subtitle && <p className={`mt-1 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
                         </div>
                     </div>
 
                     {/* Center: Main Content (Desktop Compact) */}
-                    <div className="flex-1 border-l border-white/10 pl-6">
+                    <div className="flex-1 border-l border-white/10 pl-8">
                         {mainContent}
                     </div>
 
                     {/* Right: Actions */}
-                    {actions && <div className="flex items-center gap-2 max-w-[300px] justify-end">{actions}</div>}
+                    {actions && <div className="flex items-center gap-3 max-w-[320px] justify-end">{actions}</div>}
                 </div>
             </div>
         );
