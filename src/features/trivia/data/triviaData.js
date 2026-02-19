@@ -68,10 +68,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "First Nations legends speak of the Stsinquaw, a serpent-like creature living in the depths of the lake. Keep an eye out when you're paddleboarding!"
     },
     {
-        question: "What time does 'Quiet Time' officially start at HHR?",
-        options: ["11:00 PM", "10:00 PM", "12:00 AM", "When the fire dies"],
-        correctAnswer: "11:00 PM",
-        fact: "Respecting quiet hours ensures everyone (and the local wildlife) gets a good night's sleep!"
+        question: "Every summer, thousands of music fans descend on Lake Cowichan for a legendary outdoor festival. What's it called?",
+        options: ["Laketown Shakedown", "Island Jam Fest", "Cowichan Woodstock", "South Shore Sessions"],
+        correctAnswer: "Laketown Shakedown",
+        fact: "The Laketown Shakedown is one of the biggest outdoor music festivals on Vancouver Island, drawing huge crowds to the Lake Cowichan area every summer. It's practically a rite of passage for anyone in the region - and HHR shareholders have the best commute to the after-party."
     },
     {
         question: "Cowichan Lake is a legendary fishing destination. What prized fish species is the lake most famous for?",
