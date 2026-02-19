@@ -100,134 +100,127 @@ export function ShareholderHero({
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => b.createdAt - a.createdAt)[0];
 
-    // --- Modern Trailer Widget (MTW) Component ---
+    // --- Admin-Style Widget (V5.6) ---
     const ModernTrailerWidget = ({
         accentColor = "emerald",
         icon: Icon,
         title,
         subtitle,
         mainContent,
-        actions
+        actions,
+        rightContent // New prop for the Action Card (Timer/Details)
     }) => {
+        // Map themes to gradient colors
         const themes = {
             emerald: {
-                wrapper: "border-emerald-500/30 bg-slate-950",
-                glow: "from-emerald-500/20 via-emerald-900/10 to-transparent",
-                iconBg: "bg-emerald-500/10",
-                icon: "text-emerald-400",
-                subtext: "text-emerald-200"
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-emerald-500",
+                badge: "bg-emerald-900/50 text-emerald-200 border-emerald-500/30",
+                icon: "text-emerald-400"
             },
             amber: {
-                wrapper: "border-amber-500/30 bg-slate-950",
-                glow: "from-amber-500/20 via-amber-900/10 to-transparent",
-                iconBg: "bg-amber-500/10",
-                icon: "text-amber-400",
-                subtext: "text-amber-200"
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-amber-500",
+                badge: "bg-amber-900/50 text-amber-200 border-amber-500/30",
+                icon: "text-amber-400"
             },
             indigo: {
-                wrapper: "border-indigo-500/30 bg-slate-950",
-                glow: "from-indigo-500/20 via-indigo-900/10 to-transparent",
-                iconBg: "bg-indigo-500/10",
-                icon: "text-indigo-400",
-                subtext: "text-indigo-200"
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-indigo-500",
+                badge: "bg-indigo-900/50 text-indigo-200 border-indigo-500/30",
+                icon: "text-indigo-400"
             },
-            red: {
-                wrapper: "border-red-500/30 bg-slate-950",
-                glow: "from-red-500/20 via-red-900/10 to-transparent",
-                iconBg: "bg-red-500/10",
-                icon: "text-red-400",
-                subtext: "text-red-200"
-            },
-            slate: {
-                wrapper: "border-slate-700 bg-slate-900",
-                glow: "from-slate-500/20 via-slate-800/10 to-transparent",
-                iconBg: "bg-slate-700/50",
-                icon: "text-slate-400",
-                subtext: "text-slate-300"
-            },
-            violet: {
-                wrapper: "border-violet-500/30 bg-slate-950",
-                glow: "from-violet-500/20 via-violet-900/10 to-transparent",
-                iconBg: "bg-violet-500/10",
-                icon: "text-violet-400",
-                subtext: "text-violet-200"
+            red: { // Fallback for 'red'
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-red-500",
+                badge: "bg-red-900/50 text-red-200 border-red-500/30",
+                icon: "text-red-400"
             },
             rose: {
-                wrapper: "border-rose-500/30 bg-slate-950",
-                glow: "from-rose-500/20 via-rose-900/10 to-transparent",
-                iconBg: "bg-rose-500/10",
-                icon: "text-rose-400",
-                subtext: "text-rose-200"
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-rose-500",
+                badge: "bg-rose-900/50 text-rose-200 border-rose-500/30",
+                icon: "text-rose-400"
+            },
+            slate: {
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-slate-500",
+                badge: "bg-slate-800 text-slate-300 border-slate-600",
+                icon: "text-slate-400"
+            },
+            violet: {
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-purple-500",
+                badge: "bg-purple-900/50 text-purple-200 border-purple-500/30",
+                icon: "text-purple-400"
             },
             blue: {
-                wrapper: "border-blue-500/30 bg-slate-950",
-                glow: "from-blue-500/20 via-blue-900/10 to-transparent",
-                iconBg: "bg-blue-500/10",
-                icon: "text-blue-400",
-                subtext: "text-blue-200"
+                bg: "bg-slate-900",
+                border: "border-slate-700",
+                highlight: "bg-blue-500",
+                badge: "bg-blue-900/50 text-blue-200 border-blue-500/30",
+                icon: "text-blue-400"
             }
         };
 
         const theme = themes[accentColor] || themes.slate;
 
         return (
-            <div data-tour="status-hero" className={`relative rounded-xl border border-l-4 overflow-hidden shadow-2xl ${theme.wrapper}`}>
+            <div data-tour="status-hero" className={`relative rounded-2xl border overflow-hidden shadow-2xl ${theme.bg} ${theme.border} p-6 md:p-8 animate-in fade-in slide-in-from-top-4 text-white`}>
 
-                {/* V5 Tech Background Layers */}
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                    {/* 1. Dot Grid Pattern */}
-                    <div className="absolute inset-0 opacity-[0.08]"
-                        style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '16px 16px' }}>
-                    </div>
+                {/* V5.6 Admin-Style Gradients */}
+                <div className={`absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
+                <div className={`absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
 
-                    {/* 2. Distinct Radial Glow (Spotlight with Pulse) */}
-                    <div className={`absolute -left-10 -top-20 w-96 h-96 rounded-full blur-3xl opacity-40 bg-gradient-to-br ${theme.glow} animate-[pulse_4s_ease-in-out_infinite]`}></div>
-                </div>
-
-                {/* Mobile Layout: Stacked with Massive Padding */}
-                <div className="md:hidden relative z-10 flex flex-col p-8 gap-6">
-                    {/* Header Row */}
-                    <div className="flex items-start gap-5">
-                        <div className={`p-3 rounded-xl ${theme.iconBg} ring-1 ring-white/10 mt-1`}>
-                            <Icon className={`w-8 h-8 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
+                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                    {/* LEFT: Info Block */}
+                    <div className="space-y-4 text-center lg:text-left max-w-2xl w-full">
+                        {/* Badge Row */}
+                        <div className="flex items-center justify-center lg:justify-start gap-2">
+                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${theme.badge}`}>
+                                <Icon className="w-3 h-3" />
+                                <span>{title}</span>
+                            </div>
+                            {shareholderName && (
+                                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 text-slate-400 text-xs font-bold border border-slate-700">
+                                    <User className="w-3 h-3" />
+                                    {formatNameForDisplay(shareholderName)}
+                                </div>
+                            )}
                         </div>
+
+                        {/* Title & Subtitle */}
                         <div>
-                            {shareholderName && <p className="text-white/90 font-semibold mb-2 text-lg tracking-tight">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold text-3xl ${theme.icon} tracking-tight leading-none`}>{title}</h2>
-                            {subtitle && <p className={`mt-2 text-base font-medium ${theme.subtext}`}>{subtitle}</p>}
+                            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">{subtitle}</h2>
+                            <div className="text-lg text-slate-300 leading-relaxed">
+                                {mainContent}
+                            </div>
+                        </div>
+
+                        {/* Mobile Actions (Below Text) */}
+                        <div className="lg:hidden w-full pt-4">
+                            {actions && <div className="grid grid-cols-1 gap-3">{actions}</div>}
                         </div>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="bg-slate-950/60 rounded-xl p-6 border border-white/10 backdrop-blur-md shadow-inner">
-                        {mainContent}
-                    </div>
-
-                    {/* Actions */}
-                    {actions && <div className="grid grid-cols-1 gap-4 pt-2">{actions}</div>}
-                </div>
-
-                {/* Desktop Layout: Horizontal Bar with Open Space */}
-                <div className="hidden md:flex relative z-10 items-center justify-between py-10 px-12 gap-10 min-h-[140px]">
-                    {/* Left: Status */}
-                    <div className="flex items-center gap-6 min-w-[320px]">
-                        <div className={`p-4 rounded-2xl ${theme.iconBg} ring-1 ring-white/10 shadow-2xl`}>
-                            <Icon className={`w-10 h-10 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
+                    {/* RIGHT: Action Card (Desktop) or Timer */}
+                    {/* If rightContent exists, show it. Otherwise show desktop actions if available. */}
+                    {(rightContent || (actions && <div className="hidden lg:block">{actions}</div>)) && (
+                        <div className="flex flex-col w-full lg:w-auto gap-4">
+                            {rightContent}
+                            {/* Desktop Actions (if not passed as rightContent) */}
+                            {!rightContent && actions && <div className="hidden lg:flex flex-col gap-3">{actions}</div>}
+                            {/* If rightContent exists AND actions exist, render actions below rightContent on desktop */}
+                            {rightContent && actions && <div className="hidden lg:grid grid-cols-1 gap-3">{actions}</div>}
                         </div>
-                        <div>
-                            {shareholderName && <p className="text-white/90 font-semibold mb-1 text-lg tracking-tight">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold text-3xl ${theme.icon} tracking-tight`}>{title}</h2>
-                            {subtitle && <p className={`mt-1 text-base font-medium ${theme.subtext}`}>{subtitle}</p>}
-                        </div>
-                    </div>
-
-                    {/* Center: Main Content (Desktop Compact) */}
-                    <div className="flex-1 border-l-2 border-white/10 pl-10">
-                        {mainContent}
-                    </div>
-
-                    {/* Right: Actions */}
-                    {actions && <div className="flex items-center gap-4 max-w-[360px] justify-end">{actions}</div>}
+                    )}
                 </div>
             </div>
         );
@@ -250,35 +243,49 @@ export function ShareholderHero({
                 title="Booking Confirmed"
                 subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
                 mainContent={
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xl font-bold text-white tracking-tight">
-                                {format(start, 'MMM d')} - {format(end, 'MMM d')}
-                            </p>
-                            <p className="text-sm text-white/50 mt-1 font-medium">
-                                {nights} Nights • Trailer Reserved
-                            </p>
-                        </div>
-                        {!isPaid && (
-                            <div className="mt-2 md:mt-0 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded text-amber-300 text-xs font-semibold flex items-center gap-2 w-fit">
-                                <AlertTriangle className="w-3 h-3" /> Fee Outstanding
+                    <div className="flex items-center gap-2 text-white/80">
+                        <span>Configuration:</span>
+                        <span className="font-bold text-white">Modern Trailer</span>
+                    </div>
+                }
+                rightContent={
+                    <div className={`rounded-xl p-4 min-w-[260px] border ${isPaid ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-amber-500/20 border-amber-500/30'}`}>
+                        <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg shrink-0 ${isPaid ? 'bg-emerald-500/30' : 'bg-amber-500/30'}`}>
+                                <Calendar className={`w-5 h-5 ${isPaid ? 'text-emerald-200' : 'text-amber-200'}`} />
                             </div>
-                        )}
+                            <div>
+                                <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${isPaid ? 'text-emerald-200' : 'text-amber-200'}`}>
+                                    Reservation
+                                </div>
+                                <div className="text-lg font-bold text-white tracking-tight">
+                                    {format(start, 'MMM d')} - {format(end, 'MMM d')}
+                                </div>
+                                <div className="text-sm text-white/60 mt-0.5">
+                                    {nights} Nights
+                                </div>
+                                {!isPaid && (
+                                    <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-amber-500/20 border border-amber-400/30 rounded text-amber-200 text-xs font-bold">
+                                        <AlertTriangle className="w-3 h-3" /> Fee Outstanding
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 }
                 actions={
-                    <div className="flex gap-2 w-full md:w-auto">
+                    <div className="flex gap-2 w-full">
                         {isPaid && onEmail && (
                             <button
                                 onClick={() => onEmail(bookingAction)}
-                                className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
+                                className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
                             >
                                 Email Info
                             </button>
                         )}
                         <button
                             onClick={() => onViewDetails(bookingAction)}
-                            className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                            className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                         >
                             View Details
                         </button>
@@ -297,7 +304,7 @@ export function ShareholderHero({
             icon={AlertTriangle}
             title="Maintenance"
             subtitle="System Upgrade"
-            mainContent={<div className="text-amber-200">The system is currently undergoing maintenance.</div>}
+            mainContent="The system is currently undergoing maintenance."
         />;
     }
 
@@ -310,15 +317,7 @@ export function ShareholderHero({
             icon={Calendar}
             title="Pre-Season"
             subtitle="2026 Draft"
-            mainContent={
-                <div className="flex items-center gap-3">
-                    <span className="text-white font-medium text-lg">
-                        {status.windowStarts
-                            ? `Draft Starts ${format(new Date(status.windowStarts), 'MMMM d')} @ 10am`
-                            : 'Schedule Coming Soon'}
-                    </span>
-                </div>
-            }
+            mainContent={status.windowStarts ? `Draft Starts ${format(new Date(status.windowStarts), 'MMMM d')} @ 10am` : 'Schedule Coming Soon'}
         />;
     }
 
@@ -333,11 +332,7 @@ export function ShareholderHero({
             icon={Tent}
             title="Open Season"
             subtitle="First Come, First Served"
-            mainContent={
-                <div className="text-white/80 font-medium">
-                    All remaining dates are available for booking.
-                </div>
-            }
+            mainContent="All remaining dates are available for booking."
             actions={
                 <button
                     onClick={onOpenBooking}
@@ -380,40 +375,54 @@ export function ShareholderHero({
             title={isEarly ? "Early Access" : "Your Turn"}
             subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
             mainContent={
-                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
-                    <div>
-                        <p className="text-sm text-slate-400 font-medium mb-1">Confirm your booking by</p>
-                        <p className="text-2xl text-white font-bold tracking-tight tabular-nums">
-                            {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
-                        </p>
-                    </div>
-                    {timeLeft && (
-                        <div className={`self-start md:self-center px-4 py-2 rounded-lg bg-slate-900/50 border ${isEarly ? 'border-blue-500/40 text-blue-300' : 'border-blue-500/40 text-blue-300'} font-bold text-base shadow-sm tabular-nums backdrop-blur-sm`}>
-                            {timeLeft} left
+                <p>
+                    It's your turn to pick! Select your dates before the window closes.
+                </p>
+            }
+            rightContent={
+                <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 min-w-[280px] text-center lg:text-left">
+                    <div className="flex flex-col md:flex-row items-center justify-center lg:justify-start gap-4">
+                        <div className="p-2 bg-blue-500/30 rounded-lg shrink-0">
+                            <Clock className="w-5 h-5 text-blue-200" />
                         </div>
-                    )}
+                        <div>
+                            <div className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">
+                                Complete By
+                            </div>
+                            <div className="text-xl font-bold text-white tabular-nums tracking-tight">
+                                {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
+                            </div>
+                            {timeLeft && (
+                                <div className="flex items-center justify-center lg:justify-start mt-2">
+                                    <span className={`inline-flex items-center px-3 py-1 ${isEarly ? 'bg-blue-500/20 text-blue-200 border-blue-400/30' : 'bg-blue-500/20 text-blue-200 border-blue-400/30'} text-xs font-bold rounded-lg border`}>
+                                        Ends in {timeLeft}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             }
             actions={
-                <>
-                    <button
-                        onClick={onPass}
-                        disabled={isReadOnly}
-                        className="w-full md:w-auto px-5 py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white/70 hover:text-white rounded-lg text-sm font-bold transition-all"
-                    >
-                        Pass Turn
-                    </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <button
                         onClick={onOpenBooking}
                         disabled={isReadOnly}
-                        className={`w-full md:w-auto px-6 py-2.5 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2
+                        className={`flex-1 px-6 py-3 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20
                             ${isReadOnly
                                 ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                                : 'bg-white text-slate-900 hover:bg-slate-100'}`}
+                                : 'bg-white text-slate-900 hover:bg-blue-50'}`}
                     >
                         Book Dates <ArrowRight className="w-4 h-4" />
                     </button>
-                </>
+                    <button
+                        onClick={onPass}
+                        disabled={isReadOnly}
+                        className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-slate-600 rounded-lg text-sm font-bold transition-all"
+                    >
+                        Pass Turn
+                    </button>
+                </div>
             }
         />;
 
@@ -489,35 +498,42 @@ export function ShareholderHero({
         title={isUpNext ? "You are Next" : `In Line: #${getOrdinal(queueInfo?.diff || 0)}`}
         subtitle={`${roundLabel} Queue`}
         mainContent={
-            <div className="flex items-center justify-between md:justify-start md:gap-8">
-                <div>
-                    <p className="text-sm text-indigo-300 font-medium mb-1">Now Picking</p>
-                    <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-indigo-400" />
-                        <span className="text-lg font-bold text-white">
-                            {status.activePicker || "Loading..."}
-                        </span>
-                    </div>
-                </div>
-                {status.windowEnds && (
-                    <div className="md:border-l-2 md:border-white/10 md:pl-8 text-right md:text-left">
-                        <p className="text-sm text-white/50 font-medium mb-1">Until</p>
-                        <p className="text-xl text-white tabular-nums font-bold">
-                            {format(new Date(status.windowEnds), 'h:mm a')}
-                        </p>
-                    </div>
-                )}
+            <div className="flex items-center gap-2 text-white/80">
+                <span>Picking now:</span>
+                <span className="font-bold text-white flex items-center gap-1">
+                    <User className="w-4 h-4 text-indigo-400" />
+                    {status.activePicker || "Loading..."}
+                </span>
             </div>
         }
+        rightContent={
+            status.windowEnds && (
+                <div className="bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 min-w-[200px] text-center lg:text-left">
+                    <div className="flex flex-col md:flex-row items-center justify-center lg:justify-start gap-4">
+                        <div className="p-2 bg-indigo-500/30 rounded-lg shrink-0">
+                            <Clock className="w-5 h-5 text-indigo-200" />
+                        </div>
+                        <div>
+                            <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
+                                Until
+                            </div>
+                            <div className="text-xl font-bold text-white tabular-nums tracking-tight">
+                                {format(new Date(status.windowEnds), 'h:mm a')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
         actions={
-            <div className="flex gap-2 w-full md:w-auto">
-                <button onClick={onOpenFeedback} className="flex-1 md:flex-none px-3 py-2 text-xs font-medium text-white/30 hover:text-indigo-300 transition-colors">
+            <div className="flex gap-2 w-full">
+                <button onClick={onOpenFeedback} className="flex-1 px-3 py-2 text-xs font-medium text-white/30 hover:text-indigo-300 transition-colors">
                     Feedback
                 </button>
                 {upcomingBooking && (
                     <button
                         onClick={() => onViewDetails(upcomingBooking)}
-                        className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                        className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                     >
                         View Booking
                     </button>
