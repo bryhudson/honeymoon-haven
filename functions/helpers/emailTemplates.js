@@ -155,7 +155,7 @@ const wrapHtml = (title, bodyContent) => `
           <strong>Have questions or feedback?</strong>
         </p>
         <p style="${THEME.typography.small}">
-          You can <a href="mailto:bryan.m.hudson@gmail.com?subject=HHR%20App%20Question" style="${THEME.typography.link}">reply directly to this email</a> or submit feedback in the <a href="https://hhr-trailer-booking.web.app/" style="${THEME.typography.link}">Booking Portal</a>.
+          You can <a href="mailto:bryan.m.hudson@gmail.com?subject=HHR%20App%20Question" style="${THEME.typography.link}">reply directly to this email</a> or submit feedback in the <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.typography.link}">Booking Portal</a>.
         </p>
       </div>
 
@@ -203,7 +203,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Your Dates</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Book Your Dates</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -244,7 +244,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Complete Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Complete Booking</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -260,7 +260,7 @@ const emailTemplates = {
 
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Secure Your Spot</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Secure Your Spot</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -304,7 +304,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">View Booking</a>
+         <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">View Booking</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -358,7 +358,7 @@ const emailTemplates = {
       <p style="${THEME.typography.body}">Once you're ready, you can send your guests all the details they'll need - check-in info, directions, the whole works. We've got you covered!</p>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/dashboard" style="${THEME.components.button}">View Reservation</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">View Reservation</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -384,7 +384,7 @@ const emailTemplates = {
       </div>
       
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Sign In</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Sign In</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -409,7 +409,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Start Planning</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Start Planning</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -437,7 +437,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Check Status</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Check Status</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -461,7 +461,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-         <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Now</a>
+         <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Book Now</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -481,7 +481,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Sign In</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Sign In</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -527,7 +527,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">View Booking</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">View Booking</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -574,7 +574,7 @@ const emailTemplates = {
       <p style="${THEME.typography.body}">We hope you have an incredible stay. If you need anything at all as you get ready for your trip, just let us know!</p>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="${data.dashboard_url}/dashboard" style="${THEME.components.button}">View Your Reservation</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">View Your Reservation</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -682,7 +682,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Now</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Book Now</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -701,7 +701,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/" style="${THEME.components.button}">Book Remaining Dates</a>
+        <a href="https://hhr-trailer-booking.web.app/#/" style="${THEME.components.button}">Book Remaining Dates</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
@@ -775,7 +775,7 @@ const emailTemplates = {
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
-        <a href="https://hhr-trailer-booking.web.app/admin" style="${THEME.components.button}">View in Admin Dashboard</a>
+        <a href="https://hhr-trailer-booking.web.app/#/admin" style="${THEME.components.button}">View in Admin Dashboard</a>
       </div>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
