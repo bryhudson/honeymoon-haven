@@ -234,6 +234,61 @@ export function ShareholderHero({
     };
 
     // ============================================
+    // HELPER: Booking Banner (For usage in Stacked Views & Done State)
+    // ============================================
+    const renderBookingBanner = (bookingAction) => {
+        const start = bookingAction.from?.toDate ? bookingAction.from.toDate() : new Date(bookingAction.from);
+        const end = bookingAction.to?.toDate ? bookingAction.to.toDate() : new Date(bookingAction.to);
+        const nights = differenceInDays(end, start);
+        const isPaid = bookingAction.isPaid;
+
+        return (
+            <ModernTrailerWidget
+                key={bookingAction.id || 'booking'}
+                accentColor={isPaid ? "emerald" : "amber"}
+                icon={Caravan}
+                title="Booking Confirmed"
+                subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
+                mainContent={
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                        <div>
+                            <p className="text-xl font-bold text-white tracking-tight">
+                                {format(start, 'MMM d')} - {format(end, 'MMM d')}
+                            </p>
+                            <p className="text-sm text-white/50 mt-1 font-medium">
+                                {nights} Nights • Trailer Reserved
+                            </p>
+                        </div>
+                        {!isPaid && (
+                            <div className="mt-2 md:mt-0 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded text-amber-300 text-xs font-semibold flex items-center gap-2 w-fit">
+                                <AlertTriangle className="w-3 h-3" /> Fee Outstanding
+                            </div>
+                        )}
+                    </div>
+                }
+                actions={
+                    <div className="flex gap-2 w-full md:w-auto">
+                        {isPaid && onEmail && (
+                            <button
+                                onClick={() => onEmail(bookingAction)}
+                                className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
+                            >
+                                Email Info
+                            </button>
+                        )}
+                        <button
+                            onClick={() => onViewDetails(bookingAction)}
+                            className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                        >
+                            View Details
+                        </button>
+                    </div>
+                }
+            />
+        );
+    };
+
+    // ============================================
     // 1. SYSTEM MAINTENANCE
     // ============================================
     if (isSystemFrozen && !isSuperAdmin) {
@@ -271,7 +326,9 @@ export function ShareholderHero({
     // 3. OPEN SEASON
     // ============================================
     if (status.phase === 'OPEN_SEASON') {
-        return <ModernTrailerWidget
+        const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled');
+
+        const hero = <ModernTrailerWidget
             accentColor="emerald"
             icon={Tent}
             title="Open Season"
@@ -314,7 +371,10 @@ export function ShareholderHero({
 
         const isEarly = status.isGracePeriod;
 
-        return <ModernTrailerWidget
+        // Find any existing confirmed bookings (from Round 1 etc)
+        const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
+
+        const hero = <ModernTrailerWidget
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
@@ -356,6 +416,13 @@ export function ShareholderHero({
                 </>
             }
         />;
+
+        return confirmedBookings.length > 0 ? (
+            <div className="flex flex-col gap-4">
+                {hero}
+                {confirmedBookings.map(b => renderBookingBanner(b))}
+            </div>
+        ) : hero;
     }
 
     // ============================================
@@ -380,47 +447,7 @@ export function ShareholderHero({
         const nights = differenceInDays(end, start);
         const isPaid = lastAction.isPaid;
 
-        return <ModernTrailerWidget
-            accentColor={isPaid ? "emerald" : "amber"}
-            icon={Caravan}
-            title="Booking Confirmed"
-            subtitle={isPaid ? "Ready for Check-in" : "Payment Pending"}
-            mainContent={
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                    <div>
-                        <p className="text-xl font-bold text-white tracking-tight">
-                            {format(start, 'MMM d')} - {format(end, 'MMM d')}
-                        </p>
-                        <p className="text-sm text-white/50 mt-1 font-medium">
-                            {nights} Nights • Trailer Reserved
-                        </p>
-                    </div>
-                    {!isPaid && (
-                        <div className="mt-2 md:mt-0 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded text-amber-300 text-xs font-semibold flex items-center gap-2 w-fit">
-                            <AlertTriangle className="w-3 h-3" /> Fee Outstanding
-                        </div>
-                    )}
-                </div>
-            }
-            actions={
-                <div className="flex gap-2 w-full md:w-auto">
-                    {isPaid && onEmail && (
-                        <button
-                            onClick={() => onEmail(lastAction)}
-                            className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
-                        >
-                            Email Info
-                        </button>
-                    )}
-                    <button
-                        onClick={() => onViewDetails(lastAction)}
-                        className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
-                    >
-                        View Details
-                    </button>
-                </div>
-            }
-        />;
+        return renderBookingBanner(lastAction);
     }
 
     // ============================================
@@ -454,7 +481,9 @@ export function ShareholderHero({
     const isUpNext = queueInfo?.diff === 1;
     const roundLabel = queueInfo?.round === 1 ? 'Round 1' : 'Round 2';
 
-    return <ModernTrailerWidget
+    const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
+
+    const hero = <ModernTrailerWidget
         accentColor="indigo"
         icon={isUpNext ? Compass : Map}
         title={isUpNext ? "You are Next" : `In Line: #${getOrdinal(queueInfo?.diff || 0)}`}
@@ -496,6 +525,13 @@ export function ShareholderHero({
             </div>
         }
     />;
+
+    return confirmedBookings.length > 0 ? (
+        <div className="flex flex-col gap-4">
+            {hero}
+            {confirmedBookings.map(b => renderBookingBanner(b))}
+        </div>
+    ) : hero;
 }
 
 // Helper
