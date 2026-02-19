@@ -86,8 +86,10 @@ export function ShareholderHero({
         return { diff: myNextIndex - activeIndex, round: myNextIndex < currentOrder.length ? 1 : 2 };
     }, [currentOrder, status, shareholderName, isReadOnly, isAdminPersona]);
 
-    // Compute roundLabel early so all branches can use it
-    const roundLabel = queueInfo?.round === 1 ? 'Round 1' : 'Round 2';
+    // Compute phaseLabel from the SYSTEM phase (source of truth), not from queueInfo
+    const phaseLabel = status.phase === 'ROUND_2' ? 'Round 2'
+        : status.phase === 'OPEN_SEASON' ? 'Open Season'
+            : 'Round 1'; // ROUND_1, PRE_DRAFT, or fallback
 
     // --- User state ---
     const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
@@ -122,7 +124,7 @@ export function ShareholderHero({
                 accentColor={isPaid ? "emerald" : "amber"}
                 icon={Caravan}
                 title="Booking Confirmed"
-                subtitle={`${roundLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
+                subtitle={`${phaseLabel} - ${isPaid ? "Ready for Check-in" : "Payment Pending"}`}
                 mainContent={
                     <div className="flex items-center gap-2 text-white/80">
                         {/* Removed redundant configuration text */}
@@ -258,7 +260,7 @@ export function ShareholderHero({
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
-            subtitle={`${roundLabel} - ${isEarly ? "Bonus Time Active" : "Official Window Open"}`}
+            subtitle={`${phaseLabel} - ${isEarly ? "Bonus Time Active" : "Official Window Open"}`}
             mainContent={
                 <p>
                     It's your turn to pick! Select your dates before the window closes.
@@ -349,20 +351,18 @@ export function ShareholderHero({
     // 6. BOOKING CANCELLED
     // ============================================
     if (latestAction?.type === 'cancelled' && !isYourTurn) {
-        // Determine which round was cancelled based on action count
-        const cancelledRound = myActions.filter(a => a.type === 'cancelled' || a.isFinalized || a.type === 'pass' || a.type === 'skipped').length <= 1 ? 'Round 1' : 'Round 2';
-        // Build a forward-looking message
+        // Use system phase for context; the cancelled booking happened in the current phase
         const hasUpcomingRound = status.phase === 'ROUND_1' || status.phase === 'ROUND_2';
         const upcomingMessage = hasUpcomingRound
-            ? `Your ${cancelledRound} booking was cancelled. You still have upcoming rounds.`
-            : `Your ${cancelledRound} booking was cancelled.`;
+            ? `Your booking was cancelled. You still have upcoming rounds.`
+            : `Your booking was cancelled.`;
 
         return <ModernTrailerWidget
             shareholderName={shareholderName}
             accentColor="rose"
             icon={XCircle}
             title="Cancelled"
-            subtitle={`${cancelledRound} - Booking Removed`}
+            subtitle={`${phaseLabel} - Booking Removed`}
             mainContent={<div className="text-white/60">{upcomingMessage}</div>}
             actions={
                 <button
@@ -391,7 +391,7 @@ export function ShareholderHero({
         accentColor="indigo"
         icon={isUpNext ? Compass : Map}
         title={isUpNext ? "You are Next" : `In Line: #${getOrdinal(queueInfo?.diff || 0)}`}
-        subtitle={`${roundLabel} Queue`}
+        subtitle={`${phaseLabel} Queue`}
         mainContent={
             <div className="flex items-center gap-2 text-white/80">
                 <span>Picking now:</span>
