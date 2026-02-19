@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Caravan, LogOut, LayoutDashboard, User, MessageSquare, Gamepad2 } from 'lucide-react';
+import { Caravan, LogOut, LayoutDashboard, User, MessageSquare, Sparkles } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import { useBookingRealtime } from '../../hooks/useBookingRealtime';
