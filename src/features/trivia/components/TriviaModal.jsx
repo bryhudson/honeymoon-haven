@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { Caravan, Sparkles, Trophy, ArrowRight, HelpCircle, X, PartyPopper } from 'lucide-react';
+import { Caravan, Sparkles, Trophy, ArrowRight, HelpCircle, X } from 'lucide-react';
 import { TRIVIA_QUESTIONS } from '../data/triviaData';
-import JSConfetti from 'js-confetti';
+import confetti from 'canvas-confetti';
 
 export function TriviaModal({ isOpen, onClose }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -28,10 +28,18 @@ export function TriviaModal({ isOpen, onClose }) {
 
     useEffect(() => {
         if (gameComplete) {
-            const jsConfetti = new JSConfetti();
-            jsConfetti.addConfetti({
-                emojis: ['🚐', '✨', '🌲', '🏕️', '🏆'],
-            });
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+            const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(function () {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                const particleCount = 50 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
         }
     }, [gameComplete]);
 
@@ -44,10 +52,11 @@ export function TriviaModal({ isOpen, onClose }) {
         const isCorrect = option === currentQuestion.correctAnswer;
         if (isCorrect) {
             setScore(prev => prev + 1);
-            const jsConfetti = new JSConfetti();
-            jsConfetti.addConfetti({
-                emojis: ['🚐', '✨', '🌲', '✅'],
-                confettiNumber: 40,
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                zIndex: 9999
             });
         }
     };
@@ -73,13 +82,7 @@ export function TriviaModal({ isOpen, onClose }) {
     return (
         <BaseModal isOpen={isOpen} onClose={onClose} title="">
             <div className="relative overflow-hidden w-full max-w-md mx-auto">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-600 transition-colors z-50"
-                >
-                    <X className="w-5 h-5" />
-                </button>
+                {/* Close Button Removed (Provided by BaseModal) */}
 
                 {!gameComplete ? (
                     <div className="space-y-4 pt-2">
