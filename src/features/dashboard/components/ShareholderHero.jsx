@@ -163,50 +163,50 @@ export function ShareholderHero({
                     <div className={`absolute -left-10 -top-20 w-96 h-96 rounded-full blur-3xl opacity-40 bg-gradient-to-br ${theme.glow} animate-[pulse_4s_ease-in-out_infinite]`}></div>
                 </div>
 
-                {/* Mobile Layout: Stacked with increased padding */}
-                <div className="md:hidden relative z-10 flex flex-col p-6 gap-5">
+                {/* Mobile Layout: Stacked with Massive Padding */}
+                <div className="md:hidden relative z-10 flex flex-col p-8 gap-6">
                     {/* Header Row */}
-                    <div className="flex items-center gap-4">
-                        <div className={`p-2.5 rounded-lg ${theme.iconBg} ring-1 ring-white/5`}>
-                            <Icon className={`w-7 h-7 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
+                    <div className="flex items-start gap-5">
+                        <div className={`p-3 rounded-xl ${theme.iconBg} ring-1 ring-white/10 mt-1`}>
+                            <Icon className={`w-8 h-8 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
                         </div>
                         <div>
-                            {shareholderName && <p className="text-white/90 font-bold mb-1 text-sm tracking-wide">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold text-xl ${theme.icon} tracking-tight leading-tight`}>{title}</h2>
-                            {subtitle && <p className={`mt-1 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
+                            {shareholderName && <p className="text-white/90 font-semibold mb-2 text-lg tracking-tight">Welcome, {formatNameForDisplay(shareholderName)}</p>}
+                            <h2 className={`font-bold text-3xl ${theme.icon} tracking-tight leading-none`}>{title}</h2>
+                            {subtitle && <p className={`mt-2 text-base font-medium ${theme.subtext}`}>{subtitle}</p>}
                         </div>
                     </div>
 
                     {/* Main Content */}
-                    <div className="bg-slate-950/80 rounded-lg p-5 border border-white/5 backdrop-blur-md shadow-inner">
+                    <div className="bg-slate-950/60 rounded-xl p-6 border border-white/10 backdrop-blur-md shadow-inner">
                         {mainContent}
                     </div>
 
                     {/* Actions */}
-                    {actions && <div className="grid grid-cols-1 gap-3 pt-2">{actions}</div>}
+                    {actions && <div className="grid grid-cols-1 gap-4 pt-2">{actions}</div>}
                 </div>
 
-                {/* Desktop Layout: Horizontal Bar with generous padding */}
-                <div className="hidden md:flex relative z-10 items-center justify-between py-6 px-8 gap-8 h-24">
+                {/* Desktop Layout: Horizontal Bar with Open Space */}
+                <div className="hidden md:flex relative z-10 items-center justify-between py-10 px-12 gap-10 min-h-[140px]">
                     {/* Left: Status */}
-                    <div className="flex items-center gap-5 min-w-[280px]">
-                        <div className={`p-3 rounded-lg ${theme.iconBg} ring-1 ring-white/5 shadow-lg`}>
-                            <Icon className={`w-8 h-8 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
+                    <div className="flex items-center gap-6 min-w-[320px]">
+                        <div className={`p-4 rounded-2xl ${theme.iconBg} ring-1 ring-white/10 shadow-2xl`}>
+                            <Icon className={`w-10 h-10 ${theme.icon} animate-pulse`} strokeWidth={1.5} />
                         </div>
                         <div>
-                            {shareholderName && <p className="text-white/90 font-bold mb-1 text-sm tracking-wide">Welcome, {formatNameForDisplay(shareholderName)}</p>}
-                            <h2 className={`font-bold text-2xl ${theme.icon} tracking-tight`}>{title}</h2>
-                            {subtitle && <p className={`mt-1 text-sm font-medium ${theme.subtext}`}>{subtitle}</p>}
+                            {shareholderName && <p className="text-white/90 font-semibold mb-1 text-lg tracking-tight">Welcome, {formatNameForDisplay(shareholderName)}</p>}
+                            <h2 className={`font-bold text-3xl ${theme.icon} tracking-tight`}>{title}</h2>
+                            {subtitle && <p className={`mt-1 text-base font-medium ${theme.subtext}`}>{subtitle}</p>}
                         </div>
                     </div>
 
                     {/* Center: Main Content (Desktop Compact) */}
-                    <div className="flex-1 border-l border-white/10 pl-8">
+                    <div className="flex-1 border-l-2 border-white/10 pl-10">
                         {mainContent}
                     </div>
 
                     {/* Right: Actions */}
-                    {actions && <div className="flex items-center gap-3 max-w-[320px] justify-end">{actions}</div>}
+                    {actions && <div className="flex items-center gap-4 max-w-[360px] justify-end">{actions}</div>}
                 </div>
             </div>
         );
@@ -299,15 +299,15 @@ export function ShareholderHero({
             title={isEarly ? "Early Access" : "Your Turn"}
             subtitle={isEarly ? "Bonus Time Active" : "Official Window Open"}
             mainContent={
-                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
                     <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">DEADLINE</p>
-                        <p className="text-xl text-white font-bold tracking-tight tabular-nums">
+                        <p className="text-sm text-slate-400 font-medium mb-1">Confirm your booking by</p>
+                        <p className="text-2xl text-white font-bold tracking-tight tabular-nums">
                             {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
                         </p>
                     </div>
                     {timeLeft && (
-                        <div className={`self-start md:self-center px-4 py-1.5 rounded-lg bg-slate-900/50 border ${isEarly ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'} font-bold text-sm shadow-sm tabular-nums backdrop-blur-sm`}>
+                        <div className={`self-start md:self-center px-4 py-2 rounded-lg bg-slate-900/50 border ${isEarly ? 'border-emerald-500/40 text-emerald-300' : 'border-amber-500/40 text-amber-300'} font-bold text-base shadow-sm tabular-nums backdrop-blur-sm`}>
                             {timeLeft} left
                         </div>
                     )}
@@ -318,7 +318,7 @@ export function ShareholderHero({
                     <button
                         onClick={onPass}
                         disabled={isReadOnly}
-                        className="w-full md:w-auto px-4 py-2.5 bg-transparent border border-white/10 hover:bg-white/5 text-white/60 hover:text-white rounded-lg text-sm font-medium transition-colors"
+                        className="w-full md:w-auto px-5 py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white/70 hover:text-white rounded-lg text-sm font-bold transition-all"
                     >
                         Pass Turn
                     </button>
@@ -370,7 +370,7 @@ export function ShareholderHero({
                         <p className="text-xl font-bold text-white tracking-tight">
                             {format(start, 'MMM d')} - {format(end, 'MMM d')}
                         </p>
-                        <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-medium">
+                        <p className="text-sm text-white/50 mt-1 font-medium">
                             {nights} Nights • Trailer Reserved
                         </p>
                     </div>
@@ -441,7 +441,7 @@ export function ShareholderHero({
         mainContent={
             <div className="flex items-center justify-between md:justify-start md:gap-8">
                 <div>
-                    <p className="text-xs text-indigo-200/60 uppercase tracking-widest font-bold mb-1">NOW PICKING</p>
+                    <p className="text-sm text-indigo-300 font-medium mb-1">Now Picking</p>
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-indigo-400" />
                         <span className="text-lg font-bold text-white">
@@ -450,9 +450,9 @@ export function ShareholderHero({
                     </div>
                 </div>
                 {status.windowEnds && (
-                    <div className="md:border-l md:border-white/10 md:pl-8 text-right md:text-left">
-                        <p className="text-xs text-white/40 uppercase tracking-widest font-semibold mb-1">UNTIL</p>
-                        <p className="text-lg text-white tabular-nums font-bold">
+                    <div className="md:border-l-2 md:border-white/10 md:pl-8 text-right md:text-left">
+                        <p className="text-sm text-white/50 font-medium mb-1">Until</p>
+                        <p className="text-xl text-white tabular-nums font-bold">
                             {format(new Date(status.windowEnds), 'h:mm a')}
                         </p>
                     </div>
