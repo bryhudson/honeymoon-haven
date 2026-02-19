@@ -590,6 +590,22 @@ const emailTemplates = {
         </div>
       </div>
 
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f5f5f7;">
+         <h3 style="${THEME.typography.h3}">Local Favorites</h3>
+         
+         <div style="margin-bottom: 16px;">
+           <strong style="display: block; margin-bottom: 4px;">Honeymoon Bay General Store 🛒</strong>
+           <p style="${THEME.typography.small} margin-bottom: 4px;">Groceries, liquor, and the best breakfast sandwiches around.</p>
+           <a href="https://honeymoonbaystore.ca/" style="${THEME.typography.link} font-size: 13px;">Visit Website &rarr;</a>
+         </div>
+
+         <div style="margin-bottom: 0;">
+           <strong style="display: block; margin-bottom: 4px;">Honeymoon Bay Outdoor Market 🥬</strong>
+           <p style="${THEME.typography.small} margin-bottom: 4px;">Local crafts, fresh produce, and community vibes (Sat 10am-2pm).</p>
+           <a href="https://honeymoonbaymarket.com/" style="${THEME.typography.link} font-size: 13px;">Visit Website &rarr;</a>
+         </div>
+      </div>
+
        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f5f5f7;">
           <strong style="display: block; margin-bottom: 4px;">Address</strong>
           <p style="${THEME.typography.body}">10257 South Shore Road, Honeymoon Bay, BC</p>
