@@ -1,4 +1,5 @@
 export const TRIVIA_QUESTIONS = [
+    // --- LOCAL HISTORY (1-10) ---
     {
         question: "Before we had high-speed internet and hot tubs, we had legends. Which famous couple ran the General Store and Gas Dock right here on our property?",
         options: ["Monty & Mary", "Frank & Alice", "The Davidsons", "The Petersons"],
@@ -58,5 +59,66 @@ export const TRIVIA_QUESTIONS = [
         options: ["Roosevelt Elk", "Black Bears", "Cougars", "Moose"],
         correctAnswer: "Roosevelt Elk",
         fact: "We might pay the taxes, but the Elk run the town. Honeymoon Bay’s famous Roosevelt Elk herd has been wandering through this property since before Henry March arrived. If they decide to nap on your lawn, you don't argue—you just take pictures (from a safe distance!)."
+    },
+    // --- APP RULES & GENERAL KNOWLEDGE (11-20) ---
+    {
+        question: "What is the name of the legendary serpent-like cryptid said to inhabit Cowichan Lake?",
+        options: ["Stsinquaw", "Ogopogo", "Sasquatch", "Caddy"],
+        correctAnswer: "Stsinquaw",
+        fact: "First Nations legends speak of the Stsinquaw, a serpent-like creature living in the depths of the lake. Keep an eye out when you're paddleboarding!"
+    },
+    {
+        question: "What time does 'Quiet Time' officially start at HHR?",
+        options: ["11:00 PM", "10:00 PM", "12:00 AM", "When the fire dies"],
+        correctAnswer: "11:00 PM",
+        fact: "Respecting quiet hours ensures everyone (and the local wildlife) gets a good night's sleep!"
+    },
+    {
+        question: "When you are in 'Bonus Time' (Early Access), what color does the dashboard timer turn?",
+        options: ["Green", "Red", "Blue", "Gold"],
+        correctAnswer: "Green",
+        fact: "Green means GO! You are unlocked early and can book without eating into your official 48-hour window."
+    },
+    {
+        question: "Turn timers for the official booking rounds always start at what time of day?",
+        options: ["10:00 AM", "8:00 AM", "12:00 PM", "Midnight"],
+        correctAnswer: "10:00 AM",
+        fact: "The clock starts ticking at 10:00 AM sharp! Set your alarms."
+    },
+    {
+        question: "Which of these is strictly NOT permitted on the sandy beach area?",
+        options: ["Dogs", "Chairs", "Towels", "Sandcastles"],
+        correctAnswer: "Dogs",
+        fact: "To keep our beach clean and safe for all kids and families, dogs are not allowed on the sandy beach area (but they love the trails!)."
+    },
+    {
+        question: "What is the primary method for verifying your HHR maintenance fee payments?",
+        options: ["E-Transfer", "Cheque", "Cash", "Bitcoin"],
+        correctAnswer: "E-Transfer",
+        fact: "E-transfers are quick, secure, and help us instantly track payments in the dashboard. No stamps required!"
+    },
+    {
+        question: "Which nearby town is famous for its summer tube floating river run?",
+        options: ["Lake Cowichan", "Duncan", "Youbou", "Mesachie Lake"],
+        correctAnswer: "Lake Cowichan",
+        fact: "Floating down the Cowichan River is a rite of passage. Don't forget your sunscreen and a paddle!"
+    },
+    {
+        question: "Honeymoon Haven Resort was originally founded in which year?",
+        options: ["1946", "1925", "1962", "1980"],
+        correctAnswer: "1946",
+        fact: "HHR was established just after WWII, becoming a beloved summer getaway for generations of families."
+    },
+    {
+        question: "What is the name of the large freshwater lake that HHR sits on?",
+        options: ["Cowichan Lake", "Shawnigan Lake", "Sproat Lake", "Great Central Lake"],
+        correctAnswer: "Cowichan Lake",
+        fact: "Cowichan Lake is one of the largest freshwater lakes on Vancouver Island, known for its warm water and stunning views."
+    },
+    {
+        question: "Who built this awesome HHR Booking App?",
+        options: ["Bryan Hudson", "Elon Musk", "Tim Cook", "An AI Robot"],
+        correctAnswer: "Bryan Hudson",
+        fact: "Our very own Super Admin, Bryan, built this platform to make our lives easier (and more fun!)."
     }
 ];
