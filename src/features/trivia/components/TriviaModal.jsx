@@ -44,6 +44,11 @@ export function TriviaModal({ isOpen, onClose }) {
         const isCorrect = option === currentQuestion.correctAnswer;
         if (isCorrect) {
             setScore(prev => prev + 1);
+            const jsConfetti = new JSConfetti();
+            jsConfetti.addConfetti({
+                emojis: ['🚐', '✨', '🌲', '✅'],
+                confettiNumber: 40,
+            });
         }
     };
 
@@ -67,33 +72,33 @@ export function TriviaModal({ isOpen, onClose }) {
 
     return (
         <BaseModal isOpen={isOpen} onClose={onClose} title="">
-            <div className="relative overflow-hidden">
-                {/* Close Button - Custom positioned to not conflict with header */}
+            <div className="relative overflow-hidden w-full max-w-md mx-auto">
+                {/* Close Button */}
                 <button
                     onClick={onClose}
                     className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-600 transition-colors z-50"
                 >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                 </button>
 
                 {!gameComplete ? (
-                    <div className="space-y-6 pt-4">
-                        {/* Easter Egg Header */}
-                        <div className="text-center space-y-2">
-                            <div className="inline-flex items-center gap-3 animate-bounce-subtle">
-                                <Caravan className="w-8 h-8 text-indigo-500 animate-wiggle" />
-                                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                    <div className="space-y-4 pt-2">
+                        {/* Easter Egg Header - Compact */}
+                        <div className="text-center space-y-1">
+                            <div className="inline-flex items-center gap-2 animate-bounce-subtle">
+                                <Caravan className="w-6 h-6 text-indigo-500 animate-wiggle" />
+                                <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
                                     HHR Trivia
                                 </h2>
-                                <Sparkles className="w-8 h-8 text-amber-400 animate-spin-slow" />
+                                <Sparkles className="w-6 h-6 text-amber-400 animate-spin-slow" />
                             </div>
-                            <p className="text-slate-500 font-medium text-sm">
+                            <p className="text-slate-500 font-medium text-xs">
                                 Question {currentQuestionIndex + 1} of {TRIVIA_QUESTIONS.length}
                             </p>
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out"
                                 style={{ width: `${((currentQuestionIndex) / TRIVIA_QUESTIONS.length) * 100}%` }}
@@ -101,13 +106,20 @@ export function TriviaModal({ isOpen, onClose }) {
                         </div>
 
                         {/* Question Card */}
-                        <div className="bg-white p-1">
-                            <h3 className="text-xl font-bold text-slate-900 mb-6 text-center leading-relaxed">
+                        <div className="bg-white">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 text-center leading-snug">
                                 {currentQuestion.question}
                             </h3>
 
-                            <div className="grid gap-3">
+                            <div className="grid gap-2.5">
                                 {currentQuestion.options.map((option, idx) => {
+                                    // Logic to hide irrelevant options to save space
+                                    if (isAnswered) {
+                                        const isSelected = option === selectedAnswer;
+                                        const isCorrect = option === currentQuestion.correctAnswer;
+                                        if (!isSelected && !isCorrect) return null;
+                                    }
+
                                     let buttonStyle = "bg-white border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50";
 
                                     if (isAnswered) {
@@ -115,8 +127,6 @@ export function TriviaModal({ isOpen, onClose }) {
                                             buttonStyle = "bg-emerald-50 border-2 border-emerald-500 text-emerald-700";
                                         } else if (option === selectedAnswer) {
                                             buttonStyle = "bg-rose-50 border-2 border-rose-500 text-rose-700";
-                                        } else {
-                                            buttonStyle = "bg-slate-50 border-2 border-slate-100 text-slate-400 opacity-50";
                                         }
                                     }
 
@@ -125,7 +135,7 @@ export function TriviaModal({ isOpen, onClose }) {
                                             key={idx}
                                             onClick={() => handleAnswer(option)}
                                             disabled={isAnswered}
-                                            className={`w-full p-4 rounded-xl text-left font-medium transition-all duration-200 ${buttonStyle}`}
+                                            className={`w-full p-3 rounded-lg text-left font-medium text-sm transition-all duration-200 ${buttonStyle}`}
                                         >
                                             {option}
                                         </button>
@@ -136,12 +146,12 @@ export function TriviaModal({ isOpen, onClose }) {
 
                         {/* Fact Reveal & Next Button */}
                         {isAnswered && (
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-4">
-                                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
-                                    <HelpCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-3">
+                                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 flex gap-3">
+                                    <HelpCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                                     <div>
-                                        <div className="font-bold text-amber-800 text-sm mb-1">Did You Know?</div>
-                                        <p className="text-sm text-amber-700 leading-relaxed">
+                                        <div className="font-bold text-amber-800 text-xs mb-1">Did You Know?</div>
+                                        <p className="text-xs text-amber-700 leading-relaxed">
                                             {currentQuestion.fact}
                                         </p>
                                     </div>
@@ -149,9 +159,9 @@ export function TriviaModal({ isOpen, onClose }) {
 
                                 <button
                                     onClick={handleNext}
-                                    className="w-full bg-slate-900 text-white rounded-xl py-4 font-bold text-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                                    className="w-full bg-slate-900 text-white rounded-lg py-3 font-bold text-base hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
                                 >
-                                    Next Question <ArrowRight className="w-5 h-5" />
+                                    Next Question <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
