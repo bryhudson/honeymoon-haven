@@ -2,7 +2,7 @@ import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
-    Tent, Map, Caravan, Compass, ArrowRight, User
+    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
@@ -25,6 +25,7 @@ export function ShareholderHero({
     onCelebrated
 }) {
     const [now, setNow] = React.useState(new Date());
+    const [isHistoryExpanded, setIsHistoryExpanded] = React.useState(false);
 
     React.useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 60000);
@@ -394,10 +395,18 @@ export function ShareholderHero({
             <div className="flex flex-col gap-4">
                 {hero}
                 <div className="pt-2 border-t border-white/10">
-                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3 px-1">Booking History</h3>
-                    <div className="flex flex-col gap-3">
-                        {myActions.map((action, idx) => renderPastAction(action, idx))}
-                    </div>
+                    <button
+                        onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                        className="flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white/80 uppercase tracking-wider mb-3 px-1 transition-colors outline-none"
+                    >
+                        Booking History
+                        {isHistoryExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                    {isHistoryExpanded && (
+                        <div className="flex flex-col gap-3">
+                            {myActions.map((action, idx) => renderPastAction(action, idx))}
+                        </div>
+                    )}
                 </div>
             </div>
         ) : hero;
@@ -543,10 +552,18 @@ export function ShareholderHero({
         <div className="flex flex-col gap-4">
             {hero}
             <div className="pt-2 border-t border-white/10">
-                <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3 px-1">Booking History</h3>
-                <div className="flex flex-col gap-3">
-                    {myActions.map((action, idx) => renderPastAction(action, idx))}
-                </div>
+                <button
+                    onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                    className="flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white/80 uppercase tracking-wider mb-3 px-1 transition-colors outline-none"
+                >
+                    Booking History
+                    {isHistoryExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {isHistoryExpanded && (
+                    <div className="flex flex-col gap-3">
+                        {myActions.map((action, idx) => renderPastAction(action, idx))}
+                    </div>
+                )}
             </div>
         </div>
     ) : hero;
