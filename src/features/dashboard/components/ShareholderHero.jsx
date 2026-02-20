@@ -199,7 +199,7 @@ export function ShareholderHero({
                                 onClick={() => onEmail(bookingAction)}
                                 className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
                             >
-                                Email Info
+                                Email Guest
                             </button>
                         )}
                         <button
