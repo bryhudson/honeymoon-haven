@@ -106,7 +106,7 @@ export function ShareholderHero({
     const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
     let roundTarget = 1;
     if (status.phase === 'ROUND_2') roundTarget = 2;
-    const myActions = bookings.filter(b =>
+    let myActions = bookings.filter(b =>
         normalizeName(b.shareholderName) === normalizedMe &&
         (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
     ).sort((a, b) => {
@@ -114,6 +114,20 @@ export function ShareholderHero({
         const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
         return aTime.getTime() - bTime.getTime();
     });
+
+    // Detect auto-skipped rounds and inject them into myActions
+    if (status.phase === 'ROUND_2' || status.phase === 'OPEN_SEASON') {
+        if (myActions.length === 0) {
+            myActions.unshift({ id: 'skip-r1', type: 'skipped', createdAt: status.draftStart });
+        }
+    }
+    if (status.phase === 'OPEN_SEASON') {
+        if (myActions.length === 1) {
+            myActions.push({ id: 'skip-r2', type: 'skipped', createdAt: new Date() });
+        } else if (myActions.length === 0) {
+            myActions.push({ id: 'skip-r2', type: 'skipped', createdAt: new Date() });
+        }
+    }
 
     // --- Dynamic "Upcoming" context helper ---
     const upcomingInfo = React.useMemo(() => {
@@ -394,13 +408,13 @@ export function ShareholderHero({
         return myActions.length > 0 ? (
             <div className="flex flex-col gap-4">
                 {hero}
-                <div className="pt-2 border-t border-white/10">
+                <div className="pt-1">
                     <button
                         onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                        className="flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white/80 uppercase tracking-wider mb-3 px-1 transition-colors outline-none"
+                        className="w-full bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-between hover:bg-slate-300 transition-colors shadow-sm"
                     >
-                        Booking History
-                        {isHistoryExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        <span className="text-xs uppercase tracking-wider">Booking History</span>
+                        {isHistoryExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
                     {isHistoryExpanded && (
                         <div className="flex flex-col gap-3">
@@ -551,13 +565,13 @@ export function ShareholderHero({
     return myActions.length > 0 ? (
         <div className="flex flex-col gap-4">
             {hero}
-            <div className="pt-2 border-t border-white/10">
+            <div className="pt-1">
                 <button
                     onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                    className="flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white/80 uppercase tracking-wider mb-3 px-1 transition-colors outline-none"
+                    className="w-full bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-between hover:bg-slate-300 transition-colors shadow-sm"
                 >
-                    Booking History
-                    {isHistoryExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    <span className="text-xs uppercase tracking-wider">Booking History</span>
+                    {isHistoryExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
                 {isHistoryExpanded && (
                     <div className="flex flex-col gap-3">
