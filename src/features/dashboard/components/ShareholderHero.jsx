@@ -2,7 +2,7 @@ import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
-    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp
+    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight
 } from 'lucide-react';
 import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
@@ -236,29 +236,58 @@ export function ShareholderHero({
         const isPassed = action.type === 'pass';
         const isSkipped = action.type === 'skipped';
         const roundLabel = `Round ${index + 1}`;
+        const isCancelled = action.type === 'cancelled' || action.status === 'cancelled';
+
+        let ActionIcon = Tent;
+        let iconBg = "bg-emerald-500/20";
+        let iconColor = "text-emerald-400";
+        let title = "Booking Confirmed";
+        let subtitle = "";
 
         if (isPassed || isSkipped) {
-            return (
-                <div key={action.id || `past-${index}`} className="opacity-75">
-                    <ModernTrailerWidget
-                        shareholderName={shareholderName}
-                        accentColor="slate"
-                        icon={isSkipped ? ArrowRight : XCircle}
-                        title={isSkipped ? "Turn Skipped" : "Passed Turn"}
-                        subtitle={`${roundLabel} - Opted Out`}
-                        mainContent={
-                            <div className="text-white/60 text-sm">
-                                {format(action.createdAt?.toDate ? action.createdAt.toDate() : new Date(action.createdAt), 'MMM d, yyyy')}
-                            </div>
-                        }
-                    />
-                </div>
-            );
+            ActionIcon = isSkipped ? ArrowRight : XCircle;
+            iconBg = "bg-slate-500/20";
+            iconColor = "text-slate-400";
+            title = isSkipped ? "Turn Skipped" : "Passed Turn";
+            subtitle = `${roundLabel} - Opted Out`;
+        } else if (isCancelled) {
+            ActionIcon = XCircle;
+            iconBg = "bg-rose-500/20";
+            iconColor = "text-rose-400";
+            title = "Booking Cancelled";
+            subtitle = roundLabel;
+        } else {
+            // Standard Booking
+            ActionIcon = Map;
+            const start = action.from?.toDate ? action.from.toDate() : new Date(action.from);
+            const end = action.to?.toDate ? action.to.toDate() : new Date(action.to);
+            const nights = differenceInDays(end, start);
+            title = `Cabin ${action.cabinNumber} • ${nights} Nights`;
+            subtitle = roundLabel;
         }
 
+        const dateToDisplay = action.createdAt?.toDate ? action.createdAt.toDate() : new Date(action.createdAt || action.from || new Date());
+
         return (
-            <div key={action.id || `past-${index}`} className="opacity-90">
-                {renderBookingBanner(action)}
+            <div
+                key={action.id || `past-${index}`}
+                onClick={() => onViewDetails(action)}
+                className="flex items-center justify-between p-3 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-white/5 transition-colors group cursor-pointer"
+            >
+                <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
+                        <ActionIcon className={`w-5 h-5 ${iconColor}`} />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold text-white group-hover:text-white/90 transition-colors">{title}</span>
+                        <span className="text-xs text-white/50">{subtitle} • {format(dateToDisplay, 'MMM d, yyyy')}</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-1 text-xs font-bold text-slate-400 group-hover:text-white transition-colors pl-2">
+                    <span className="hidden sm:inline">View Details</span>
+                    <ChevronRight className="w-4 h-4" />
+                </div>
             </div>
         );
     };
