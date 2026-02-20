@@ -34,7 +34,7 @@ export const TRIVIA_QUESTIONS = [
         question: "Legend has it that a piece of heavy machinery from the old logging days ended up at the bottom of Cowichan Lake near our shore. What was it?",
         options: ["A Locomotive", "A Bulldozer", "A Crane", "A Dump Truck"],
         correctAnswer: "A Locomotive",
-        fact: "There's an old logging locomotive sitting at the bottom of Cowichan Lake! During the heyday of the lumber industry, the railway ran along the shore hauling timber. One day, a locomotive went off the rails and sank into the lake where it remains to this day - our very own underwater time capsule."
+        fact: "There's an old logging locomotive sitting at the bottom of Cowichan Lake! During the heyday of the lumber industry, it was being transported across the lake on a barge. A sudden storm with strong winds tipped the barge, and the locomotive sank to the bottom where it remains to this day - our very own underwater time capsule."
     },
     {
         question: "When our neighbor, March Meadows Golf Club, opened in 1970, what highly sophisticated tool did Charlie March use to cut the ribbon?",
