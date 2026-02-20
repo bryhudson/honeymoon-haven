@@ -276,11 +276,16 @@ export function ShareholderHero({
                 className="flex items-center justify-between px-5 py-4 mb-2 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer last:mb-0"
             >
                 <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-slate-900">{title || (isPassed || isSkipped ? "Opted Out" : "")}</span>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide ${badgeClass}`}>
                             {badgeLabel}
                         </span>
+                        {!isPassed && !isSkipped && badgeLabel !== 'Cancelled' && (
+                            action.isPaid
+                                ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide bg-emerald-50 text-emerald-700 border-emerald-200">Paid</span>
+                                : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide bg-amber-50 text-amber-700 border-amber-200">Unpaid</span>
+                        )}
                     </div>
                     <span className="text-xs text-slate-500">
                         {roundLabel} {dateStr ? `• ${dateStr}` : ''}
