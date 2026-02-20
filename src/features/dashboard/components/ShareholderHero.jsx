@@ -433,6 +433,8 @@ export function ShareholderHero({
         const isPassed = lastAction?.type === 'pass';
         const isSkipped = lastAction?.type === 'skipped';
 
+        let hero;
+
         if (isPassed || isSkipped) {
             // Build a forward-looking message with their R2 position
             const nextPhaseInfo = status.phase === 'OPEN_SEASON'
@@ -441,7 +443,7 @@ export function ShareholderHero({
                     ? `You're #${getOrdinal(queueInfo.diff)} in line for Round 2.`
                     : 'Round 2 is coming up next.';
 
-            return <ModernTrailerWidget
+            hero = <ModernTrailerWidget
                 shareholderName={shareholderName}
                 accentColor="slate"
                 icon={isSkipped ? ArrowRight : XCircle}
@@ -454,14 +456,31 @@ export function ShareholderHero({
                     </div>
                 }
             />;
+        } else {
+            hero = renderBookingBanner(lastAction);
         }
 
-        const start = lastAction.from?.toDate ? lastAction.from.toDate() : new Date(lastAction.from);
-        const end = lastAction.to?.toDate ? lastAction.to.toDate() : new Date(lastAction.to);
-        const nights = differenceInDays(end, start);
-        const isPaid = lastAction.isPaid;
+        const previousActions = myActions.slice(0, -1);
 
-        return renderBookingBanner(lastAction);
+        return previousActions.length > 0 ? (
+            <div className="flex flex-col gap-4">
+                {hero}
+                <div className="pt-1">
+                    <button
+                        onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                        className="w-full bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-between hover:bg-slate-300 transition-colors shadow-sm"
+                    >
+                        <span className="text-xs uppercase tracking-wider">Booking History</span>
+                        {isHistoryExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </button>
+                    {isHistoryExpanded && (
+                        <div className="flex flex-col gap-3">
+                            {previousActions.map((action, idx) => renderPastAction(action, idx))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        ) : hero;
     }
 
     // ============================================
