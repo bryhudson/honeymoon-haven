@@ -49,10 +49,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "Before she was a Canadian Golf Hall of Famer, Dawn Coe-Jones was just the kid next door. Her summer job was driving an old Ford tractor at March Meadows. It’s proof that you can go from Honeymoon Bay to the world stage (but you'll probably miss the lake)."
     },
     {
-        question: "Why do we pity the people in Youbou during a July heatwave while we sit comfortably on our decks?",
-        options: ["We’re on the 'Shady Side'", "We have better AC", "They have more mosquitos", "The wind hits them harder"],
-        correctAnswer: "We’re on the 'Shady Side'",
-        fact: "It’s not just luck; it’s geography. The mountains behind us block the blazing afternoon sun, giving us the famous 'Shady Side' advantage. While the North Shore is baking at 6 PM, we’re chilling in nature’s air conditioning."
+        question: "When the sun goes down and the drinks come out, what is the official sport of the South Shore?",
+        options: ["Bocce Ball", "Horseshoes", "Cornhole", "Lawn Darts"],
+        correctAnswer: "Cornhole",
+        fact: "Our shareholders don't just 'play' cornhole - it’s a competitive lifestyle. After a long day on the water, you'll find the boards out and the bean bags flying. It’s the ultimate way to settle property disputes or just enjoy a cold drink."
     },
     {
         question: "Who are the 800-pound 'locals' that frequently wander through our resort and treat our lawns like an all-you-can-eat salad bar?",
@@ -110,10 +110,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "HHR was born in 2015 when a group of shareholders came together to transform the old South Shore Resort into the private retreat we know and love today."
     },
     {
-        question: "How did 'Honeymoon Bay' get its romantic name?",
-        options: ["Newlyweds camped there in the early 1900s", "A heart-shaped bay formation", "A hotel marketing campaign", "A First Nations love legend"],
-        correctAnswer: "Newlyweds camped there in the early 1900s",
-        fact: "The story goes that in the early 1900s, a young newlywed couple set up camp on the bay's shoreline for their honeymoon. The name stuck, and the rest is history. Not a bad spot to start a marriage if you ask us."
+        question: "Which original Honeymoon Haven shareholder and developer is still kicking it live on the water, dropping cornhole bags, and keeping the South Shore spirit alive?",
+        options: ["Mike Staite", "Bryan Hudson", "Henry March", "Monty"],
+        correctAnswer: "Mike Staite",
+        fact: "Mike Staite was part of the original crew that developed Honeymoon Haven into the paradise it is today. You can still find him living his best life by the water, dominating the cornhole boards, and making sure the good times keep rolling."
     },
     {
         question: "Who built this awesome HHR Booking App?",
