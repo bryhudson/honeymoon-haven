@@ -110,10 +110,10 @@ export const TRIVIA_QUESTIONS = [
         fact: "HHR was born in 2015 when a group of shareholders came together to transform the old South Shore Resort into the private retreat we know and love today."
     },
     {
-        question: "Which original Honeymoon Haven shareholder and developer is still kicking it live on the water, dropping cornhole bags, and keeping the South Shore spirit alive?",
-        options: ["Mike Staite", "Bryan Hudson", "Henry March", "Monty"],
-        correctAnswer: "Mike Staite",
-        fact: "Mike Staite was part of the original crew that developed Honeymoon Haven into the paradise it is today. You can still find him living his best life by the water, dominating the cornhole boards, and making sure the good times keep rolling."
+        question: "How did 'Honeymoon Bay' get its romantic name?",
+        options: ["Newlyweds camped there in the early 1900s", "A heart-shaped bay formation", "A hotel marketing campaign", "A First Nations love legend"],
+        correctAnswer: "Newlyweds camped there in the early 1900s",
+        fact: "The story goes that in the early 1900s, a young newlywed couple set up camp on the bay's shoreline for their honeymoon. The name stuck, and the rest is history. Not a bad spot to start a marriage if you ask us."
     },
     {
         question: "Who built this awesome HHR Booking App?",
