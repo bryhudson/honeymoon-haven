@@ -272,21 +272,21 @@ export function ShareholderHero({
             <div
                 key={action.id || `past-${index}`}
                 onClick={() => onViewDetails(action)}
-                className="flex items-center justify-between p-3 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-white/5 transition-colors group cursor-pointer"
+                className="flex items-center justify-between py-3 px-2 hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors group cursor-pointer"
             >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
                         <ActionIcon className={`w-5 h-5 ${iconColor}`} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-bold text-white group-hover:text-white/90 transition-colors">{title}</span>
-                        <span className="text-xs text-white/50">{subtitle} • {format(dateToDisplay, 'MMM d, yyyy')}</span>
+                        <span className="text-sm font-semibold text-white group-hover:text-white/90 transition-colors">{title}</span>
+                        <span className="text-xs text-slate-400 mt-0.5">{subtitle} &bull; {format(dateToDisplay, 'MMM d, yyyy')}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-bold text-slate-400 group-hover:text-white transition-colors pl-2">
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 group-hover:text-slate-300 transition-colors pl-2 pr-1">
                     <span className="hidden sm:inline">View Details</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </div>
             </div>
         );
