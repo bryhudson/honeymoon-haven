@@ -148,8 +148,11 @@ export function ShareholderHero({
             return `Next: Round 2 (Position #${r2Position} of ${total})`;
         }
 
-        // If they've picked twice
-        return "Draft complete • Open Season begins Oct 12";
+        // If they've picked twice (both rounds done)
+        if (status.phase === 'ROUND_2') {
+            return "Draft complete - Open Season begins after Round 2";
+        }
+        return "Draft complete - Open Season is next";
     }, [positionInfo, status, myActions]);
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
@@ -472,12 +475,18 @@ export function ShareholderHero({
         let hero;
 
         if (isPassed || isSkipped) {
-            // Build a forward-looking message with their R2 position
-            const nextPhaseInfo = status.phase === 'OPEN_SEASON'
-                ? 'Open Season is active - book anytime!'
-                : queueInfo?.diff
-                    ? `You're #${getOrdinal(queueInfo.diff)} in line for Round 2.`
-                    : 'Round 2 is coming up next.';
+            // Build a forward-looking message based on current phase
+            let nextPhaseInfo;
+            if (status.phase === 'OPEN_SEASON') {
+                nextPhaseInfo = 'Open Season is active - book anytime!';
+            } else if (status.phase === 'ROUND_2') {
+                // They passed in R2 - next is Open Season
+                nextPhaseInfo = 'Open Season begins after Round 2 completes.';
+            } else if (queueInfo?.diff) {
+                nextPhaseInfo = `You're #${getOrdinal(queueInfo.diff)} in line for Round 2.`;
+            } else {
+                nextPhaseInfo = 'Round 2 is coming up next.';
+            }
 
             hero = <ModernTrailerWidget
                 shareholderName={shareholderName}
