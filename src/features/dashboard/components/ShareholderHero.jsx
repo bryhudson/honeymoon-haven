@@ -2,7 +2,7 @@ import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
-    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight
+    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee
 } from 'lucide-react';
 import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
@@ -239,20 +239,20 @@ export function ShareholderHero({
         const isCancelled = action.type === 'cancelled' || action.status === 'cancelled';
 
         let ActionIcon = Tent;
-        let iconBg = "bg-emerald-500/20";
+        let iconBg = "bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 shadow-inner";
         let iconColor = "text-emerald-400";
         let title = "Booking Confirmed";
         let subtitle = "";
 
         if (isPassed || isSkipped) {
-            ActionIcon = isSkipped ? ArrowRight : XCircle;
-            iconBg = "bg-slate-500/20";
+            ActionIcon = Coffee;
+            iconBg = "bg-gradient-to-br from-slate-400/20 to-slate-600/20 shadow-inner";
             iconColor = "text-slate-400";
             title = isSkipped ? "Turn Skipped" : "Passed Turn";
             subtitle = `${roundLabel} - Opted Out`;
         } else if (isCancelled) {
             ActionIcon = XCircle;
-            iconBg = "bg-rose-500/20";
+            iconBg = "bg-gradient-to-br from-rose-400/20 to-rose-600/20 shadow-inner";
             iconColor = "text-rose-400";
             title = "Booking Cancelled";
             subtitle = roundLabel;
@@ -272,19 +272,19 @@ export function ShareholderHero({
             <div
                 key={action.id || `past-${index}`}
                 onClick={() => onViewDetails(action)}
-                className="flex items-center justify-between py-3 px-2 hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors group cursor-pointer"
+                className="group flex items-center justify-between p-3.5 mb-2 bg-slate-800/40 hover:bg-slate-800/80 rounded-2xl border border-white/5 hover:border-white/10 transition-all duration-300 backdrop-blur-sm cursor-pointer last:mb-0"
             >
                 <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
-                        <ActionIcon className={`w-5 h-5 ${iconColor}`} />
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg} transition-transform duration-300 group-hover:scale-105`}>
+                        <ActionIcon className={`w-6 h-6 ${iconColor}`} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white group-hover:text-white/90 transition-colors">{title}</span>
-                        <span className="text-xs text-slate-400 mt-0.5">{subtitle} &bull; {format(dateToDisplay, 'MMM d, yyyy')}</span>
+                        <span className="text-sm font-bold tracking-tight text-white group-hover:text-white/90 transition-colors">{title}</span>
+                        <span className="text-xs text-slate-400 mt-0.5 tracking-wide">{subtitle} &bull; {format(dateToDisplay, 'MMM d, yyyy')}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 group-hover:text-slate-300 transition-colors pl-2 pr-1">
+                <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 group-hover:text-slate-300 transition-all duration-300 pl-2 pr-1 group-hover:translate-x-1">
                     <span className="hidden sm:inline">View Details</span>
                     <ChevronRight className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </div>
