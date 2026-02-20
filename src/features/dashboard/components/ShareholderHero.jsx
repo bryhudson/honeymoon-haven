@@ -514,8 +514,14 @@ export function ShareholderHero({
 
     // ============================================
     // 6. BOOKING CANCELLED
+    // Only show if they don't have an upcoming round still to play.
+    // e.g. A Round 1 cancellation in ROUND_2 phase = they still get their R2 turn.
     // ============================================
-    if (latestAction?.type === 'cancelled' && !isYourTurn) {
+    const cancelledActionsCount = myActions.filter(a => a.type === 'cancelled' || a.status === 'cancelled').length;
+    const nonCancelledActionsCount = myActions.filter(a => a.type !== 'cancelled' && a.status !== 'cancelled').length;
+    const hasUpcomingFutureTurn = nonCancelledActionsCount < roundTarget;
+
+    if (latestAction?.type === 'cancelled' && !isYourTurn && !hasUpcomingFutureTurn) {
         // Use system phase for context; the cancelled booking happened in the current phase
         const hasUpcomingRound = status.phase === 'ROUND_1' || status.phase === 'ROUND_2';
         const upcomingMessage = hasUpcomingRound
