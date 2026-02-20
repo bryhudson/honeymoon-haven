@@ -116,9 +116,9 @@ export const TRIVIA_QUESTIONS = [
         fact: "The story goes that in the early 1900s, a young newlywed couple set up camp on the bay's shoreline for their honeymoon. The name stuck, and the rest is history. Not a bad spot to start a marriage if you ask us."
     },
     {
-        question: "Who built this awesome HHR Booking App?",
-        options: ["Bryan Hudson", "Elon Musk", "Tim Cook", "An AI Robot"],
-        correctAnswer: "Bryan Hudson",
-        fact: "Our very own Super Admin, Bryan, built this platform to make our lives easier (and more fun!)."
+        question: "Before it was known as Lake Cowichan, the local First Nations people called the area \"Kaatza.\" What does Kaatza roughly translate to?",
+        options: ["The Big Water", "The Great Bear", "The Sunken Forrest", "The Big Lake"],
+        correctAnswer: "The Big Lake",
+        fact: "The Kaatza Station Museum in town still proudly uses the name! It’s housed in the old 1912 E&N Railway station and is packed with history about the very logging camps that used to operate across our waters."
     }
 ];
