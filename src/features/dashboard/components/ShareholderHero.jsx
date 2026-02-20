@@ -437,16 +437,16 @@ export function ShareholderHero({
         return myActions.length > 0 ? (
             <div className="flex flex-col gap-4">
                 {hero}
-                <div className="pt-1">
+                <div>
                     <button
                         onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                        className="w-full bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-between hover:bg-slate-300 transition-colors shadow-sm"
+                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-1"
                     >
-                        <span className="text-xs uppercase tracking-wider">Booking History</span>
-                        {isHistoryExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                        <span>Booking History</span>
+                        {isHistoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
                     {isHistoryExpanded && (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col mt-1">
                             {myActions.map((action, idx) => renderPastAction(action, idx))}
                         </div>
                     )}
@@ -494,16 +494,16 @@ export function ShareholderHero({
         return previousActions.length > 0 ? (
             <div className="flex flex-col gap-4">
                 {hero}
-                <div className="pt-1">
+                <div>
                     <button
                         onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                        className="w-full bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-between hover:bg-slate-300 transition-colors shadow-sm"
+                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-1"
                     >
-                        <span className="text-xs uppercase tracking-wider">Booking History</span>
-                        {isHistoryExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                        <span>Booking History</span>
+                        {isHistoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
                     {isHistoryExpanded && (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col mt-1">
                             {previousActions.map((action, idx) => renderPastAction(action, idx))}
                         </div>
                     )}
@@ -619,16 +619,16 @@ export function ShareholderHero({
     return myActions.length > 0 ? (
         <div className="flex flex-col gap-4">
             {hero}
-            <div className="pt-1">
+            <div>
                 <button
                     onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                    className="w-full bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-between hover:bg-slate-300 transition-colors shadow-sm"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-1"
                 >
-                    <span className="text-xs uppercase tracking-wider">Booking History</span>
-                    {isHistoryExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    <span>Booking History</span>
+                    {isHistoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
                 {isHistoryExpanded && (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col mt-1">
                         {myActions.map((action, idx) => renderPastAction(action, idx))}
                     </div>
                 )}
