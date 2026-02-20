@@ -154,6 +154,9 @@ export function ShareholderHero({
         const nights = differenceInDays(end, start);
         const isPaid = bookingAction.isPaid;
 
+        const actionIndex = myActions.findIndex(a => a.id === bookingAction.id);
+        const bookingRoundLabel = actionIndex >= 0 ? `Round ${actionIndex + 1}` : phaseLabel;
+
         return (
             <ModernTrailerWidget
                 key={bookingAction.id || 'booking'}
@@ -161,10 +164,10 @@ export function ShareholderHero({
                 accentColor={isPaid ? "emerald" : "amber"}
                 icon={Caravan}
                 title="Booking Confirmed"
-                subtitle={isPaid ? `${phaseLabel} - Payment Confirmed. Thank you.` : `${phaseLabel} - Payment Pending`}
+                subtitle={isPaid ? `${bookingRoundLabel} - Payment Confirmed. Thank you.` : `${bookingRoundLabel} - Payment Pending`}
                 mainContent={
                     <div className="flex items-center justify-center lg:justify-start gap-2 text-white/60 text-xs italic">
-                        {upcomingInfo && <span>Next up: {upcomingInfo}</span>}
+                        {upcomingInfo && <span>{upcomingInfo}</span>}
                     </div>
                 }
                 rightContent={
@@ -282,7 +285,7 @@ export function ShareholderHero({
             const p = [];
             if (diff.days > 0) p.push(`${diff.days}d`);
             if (diff.hours > 0) p.push(`${diff.hours}h`);
-            p.push(`${diff.minutes}m`);
+            p.push(`${diff.minutes || 0}m`);
             return p.join(' ');
         })() : null;
 
