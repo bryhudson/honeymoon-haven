@@ -161,7 +161,7 @@ export function ShareholderHero({
                 accentColor={isPaid ? "emerald" : "amber"}
                 icon={Caravan}
                 title="Booking Confirmed"
-                subtitle={isPaid ? `${phaseLabel} - Ready for Check-in` : `Booking Confirmed - Payment Pending`}
+                subtitle={isPaid ? `${phaseLabel} - Payment Confirmed. Thank you.` : `${phaseLabel} - Payment Pending`}
                 mainContent={
                     <div className="flex items-center justify-center lg:justify-start gap-2 text-white/60 text-xs italic">
                         {upcomingInfo && <span>Next up: {upcomingInfo}</span>}
