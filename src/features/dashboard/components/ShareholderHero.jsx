@@ -217,6 +217,37 @@ export function ShareholderHero({
         );
     };
 
+    const renderPastAction = (action, index) => {
+        const isPassed = action.type === 'pass';
+        const isSkipped = action.type === 'skipped';
+        const roundLabel = `Round ${index + 1}`;
+
+        if (isPassed || isSkipped) {
+            return (
+                <div key={action.id || `past-${index}`} className="opacity-75">
+                    <ModernTrailerWidget
+                        shareholderName={shareholderName}
+                        accentColor="slate"
+                        icon={isSkipped ? ArrowRight : XCircle}
+                        title={isSkipped ? "Turn Skipped" : "Passed Turn"}
+                        subtitle={`${roundLabel} - Opted Out`}
+                        mainContent={
+                            <div className="text-white/60 text-sm">
+                                {format(action.createdAt?.toDate ? action.createdAt.toDate() : new Date(action.createdAt), 'MMM d, yyyy')}
+                            </div>
+                        }
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <div key={action.id || `past-${index}`} className="opacity-90">
+                {renderBookingBanner(action)}
+            </div>
+        );
+    };
+
     // ============================================
     // 1. SYSTEM MAINTENANCE
     // ============================================
@@ -359,10 +390,15 @@ export function ShareholderHero({
             }
         />;
 
-        return confirmedBookings.length > 0 ? (
+        return myActions.length > 0 ? (
             <div className="flex flex-col gap-4">
                 {hero}
-                {confirmedBookings.map(b => renderBookingBanner(b))}
+                <div className="pt-2 border-t border-white/10">
+                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3 px-1">Booking History</h3>
+                    <div className="flex flex-col gap-3">
+                        {myActions.map((action, idx) => renderPastAction(action, idx))}
+                    </div>
+                </div>
             </div>
         ) : hero;
     }
@@ -503,10 +539,15 @@ export function ShareholderHero({
         }
     />;
 
-    return confirmedBookings.length > 0 ? (
+    return myActions.length > 0 ? (
         <div className="flex flex-col gap-4">
             {hero}
-            {confirmedBookings.map(b => renderBookingBanner(b))}
+            <div className="pt-2 border-t border-white/10">
+                <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3 px-1">Booking History</h3>
+                <div className="flex flex-col gap-3">
+                    {myActions.map((action, idx) => renderPastAction(action, idx))}
+                </div>
+            </div>
         </div>
     ) : hero;
 }
