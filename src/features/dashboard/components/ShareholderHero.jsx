@@ -272,21 +272,21 @@ export function ShareholderHero({
             <div
                 key={action.id || `past-${index}`}
                 onClick={() => onViewDetails(action)}
-                className="group flex items-center justify-between p-3.5 mb-2 bg-slate-800/40 hover:bg-slate-800/80 rounded-2xl border border-white/5 hover:border-white/10 transition-all duration-300 backdrop-blur-sm cursor-pointer last:mb-0"
+                className="flex items-center justify-between p-3.5 mb-2 bg-slate-800/40 rounded-2xl border border-white/5 cursor-pointer last:mb-0"
             >
                 <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg} transition-transform duration-300 group-hover:scale-105`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
                         <ActionIcon className={`w-6 h-6 ${iconColor}`} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-bold tracking-tight text-white group-hover:text-white/90 transition-colors">{title}</span>
-                        <span className="text-xs text-slate-400 mt-0.5 tracking-wide">{subtitle} &bull; {format(dateToDisplay, 'MMM d, yyyy')}</span>
+                        <span className="text-sm font-bold tracking-tight text-white">{title}</span>
+                        <span className="text-xs text-slate-400 mt-0.5">{subtitle} &bull; {format(dateToDisplay, 'MMM d, yyyy')}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 group-hover:text-slate-300 transition-all duration-300 pl-2 pr-1 group-hover:translate-x-1">
+                <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 pl-2 pr-1">
                     <span className="hidden sm:inline">View Details</span>
-                    <ChevronRight className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className="w-4 h-4 opacity-50" />
                 </div>
             </div>
         );
