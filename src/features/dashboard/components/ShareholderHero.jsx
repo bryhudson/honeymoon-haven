@@ -429,7 +429,7 @@ export function ShareholderHero({
                     onClick={() => onViewDetails(latestAction)}
                     className="w-full md:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                 >
-                    Details
+                    View Details
                 </button>
             }
         />;
@@ -493,7 +493,7 @@ export function ShareholderHero({
                         onClick={() => onViewDetails(upcomingBooking)}
                         className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
                     >
-                        View Booking
+                        View Details
                     </button>
                 )}
             </div>
