@@ -2,7 +2,7 @@ import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
-    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee
+    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History
 } from 'lucide-react';
 import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
@@ -440,10 +440,11 @@ export function ShareholderHero({
                 <div>
                     <button
                         onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-1"
+                        className="flex items-center text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-3 px-1"
                     >
+                        <History className="w-4 h-4 mr-1.5" />
                         <span>Booking History</span>
-                        {isHistoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        {isHistoryExpanded ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
                     </button>
                     {isHistoryExpanded && (
                         <div className="flex flex-col mt-1">
@@ -497,10 +498,11 @@ export function ShareholderHero({
                 <div>
                     <button
                         onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-1"
+                        className="flex items-center text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-3 px-1"
                     >
+                        <History className="w-4 h-4 mr-1.5" />
                         <span>Booking History</span>
-                        {isHistoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        {isHistoryExpanded ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
                     </button>
                     {isHistoryExpanded && (
                         <div className="flex flex-col mt-1">
@@ -622,10 +624,11 @@ export function ShareholderHero({
             <div>
                 <button
                     onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors py-2 px-1"
+                    className="flex items-center text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-3 px-1"
                 >
+                    <History className="w-4 h-4 mr-1.5" />
                     <span>Booking History</span>
-                    {isHistoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    {isHistoryExpanded ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
                 </button>
                 {isHistoryExpanded && (
                     <div className="flex flex-col mt-1">
