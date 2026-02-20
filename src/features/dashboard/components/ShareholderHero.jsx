@@ -238,55 +238,55 @@ export function ShareholderHero({
         const roundLabel = `Round ${index + 1}`;
         const isCancelled = action.type === 'cancelled' || action.status === 'cancelled';
 
-        let ActionIcon = Tent;
-        let iconBg = "bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 shadow-inner";
-        let iconColor = "text-emerald-400";
-        let title = "Booking Confirmed";
-        let subtitle = "";
+        let badgeClass = "bg-green-50 text-green-700 border-green-200";
+        let badgeLabel = "Confirmed";
+        let title = "";
+        let dateStr = "";
+
+        const dateToDisplay = action.createdAt?.toDate ? action.createdAt.toDate() : new Date(action.createdAt || action.from || new Date());
 
         if (isPassed || isSkipped) {
-            ActionIcon = Coffee;
-            iconBg = "bg-gradient-to-br from-slate-400/20 to-slate-600/20 shadow-inner";
-            iconColor = "text-slate-400";
+            badgeClass = "bg-slate-100 text-slate-600 border-slate-200";
+            badgeLabel = "Passed";
             title = isSkipped ? "Turn Skipped" : "Passed Turn";
-            subtitle = `${roundLabel} - Opted Out`;
+            dateStr = format(dateToDisplay, 'MMM d, yyyy');
         } else if (isCancelled) {
-            ActionIcon = XCircle;
-            iconBg = "bg-gradient-to-br from-rose-400/20 to-rose-600/20 shadow-inner";
-            iconColor = "text-rose-400";
-            title = "Booking Cancelled";
-            subtitle = roundLabel;
-        } else {
-            // Standard Booking
-            ActionIcon = Map;
+            badgeClass = "bg-red-50 text-red-700 border-red-200";
+            badgeLabel = "Cancelled";
             const start = action.from?.toDate ? action.from.toDate() : new Date(action.from);
             const end = action.to?.toDate ? action.to.toDate() : new Date(action.to);
             const nights = differenceInDays(end, start);
-            title = `Cabin ${action.cabinNumber} • ${nights} Nights`;
-            subtitle = roundLabel;
+            title = `Cabin ${action.cabinNumber} - ${nights} Nights`;
+            dateStr = format(start, 'MMM d') + ' - ' + format(end, 'MMM d, yyyy');
+        } else {
+            const start = action.from?.toDate ? action.from.toDate() : new Date(action.from);
+            const end = action.to?.toDate ? action.to.toDate() : new Date(action.to);
+            const nights = differenceInDays(end, start);
+            title = `Cabin ${action.cabinNumber} - ${nights} Nights`;
+            dateStr = format(start, 'MMM d') + ' - ' + format(end, 'MMM d, yyyy');
         }
-
-        const dateToDisplay = action.createdAt?.toDate ? action.createdAt.toDate() : new Date(action.createdAt || action.from || new Date());
 
         return (
             <div
                 key={action.id || `past-${index}`}
                 onClick={() => onViewDetails(action)}
-                className="flex items-center justify-between p-3.5 mb-2 bg-slate-800/40 rounded-2xl border border-white/5 cursor-pointer last:mb-0"
+                className="flex items-center justify-between px-5 py-4 mb-2 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer last:mb-0"
             >
-                <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
-                        <ActionIcon className={`w-6 h-6 ${iconColor}`} />
+                <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-900">{title || (isPassed || isSkipped ? "Opted Out" : "")}</span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide ${badgeClass}`}>
+                            {badgeLabel}
+                        </span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-sm font-bold tracking-tight text-white">{title}</span>
-                        <span className="text-xs text-slate-400 mt-0.5">{subtitle} &bull; {format(dateToDisplay, 'MMM d, yyyy')}</span>
-                    </div>
+                    <span className="text-xs text-slate-500">
+                        {roundLabel} {dateStr ? `• ${dateStr}` : ''}
+                    </span>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 pl-2 pr-1">
+                <div className="flex items-center gap-1 text-xs font-semibold text-slate-400 pl-4 shrink-0">
                     <span className="hidden sm:inline">View Details</span>
-                    <ChevronRight className="w-4 h-4 opacity-50" />
+                    <ChevronRight className="w-4 h-4" />
                 </div>
             </div>
         );
