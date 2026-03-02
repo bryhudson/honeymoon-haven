@@ -203,7 +203,7 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Data Recovery Zone</h3>
-                    <p className="text-sm text-slate-500">Restore points created automatically before wipes.</p>
+                    <p className="text-sm text-slate-500">Restore points created automatically before wipes or via weekly schedule.</p>
                 </div>
                 <button onClick={loadBackups} className="text-indigo-600 text-xs font-bold hover:underline">
                     ↻ Refresh List
@@ -264,7 +264,7 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                                     <div>
                                         <p className="font-mono text-xs font-bold text-slate-700">{b.timestampId}</p>
                                         <p className="text-[10px] text-slate-500">
-                                            {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : 'Manual'}
+                                            {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : b.type === 'scheduled_weekly' ? 'Weekly Scheduled Backup' : 'Manual'}
                                         </p>
                                     </div>
                                 </div>

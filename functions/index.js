@@ -29,6 +29,7 @@ const { autosyncTurnStatus } = require("./triggers/autosyncTurnStatus");
 const { sendTestEmail, sendTestReminder } = require("./triggers/manualTestEmail");
 const { forceSendNotification } = require("./triggers/adminForceSend");
 const { debugShareholder, diagnoseScheduler } = require("./triggers/debugTools");
+const { weeklyDatabaseBackup } = require("./triggers/scheduledBackup");
 
 /**
  * Sends an email via Gmail SMTP.
@@ -126,6 +127,7 @@ exports.sendTestReminder = sendTestReminder;
 exports.forceSendNotification = forceSendNotification;
 exports.debugShareholder = debugShareholder;
 exports.diagnoseScheduler = diagnoseScheduler;
+exports.weeklyDatabaseBackup = weeklyDatabaseBackup;
 
 // User Management
 exports.createAccount = createAccount;
