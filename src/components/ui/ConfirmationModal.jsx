@@ -43,7 +43,7 @@ export function ConfirmationModal({
 
                 {(requireTyping || requireInput) && (
                     <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <label className="text-xs font-bold text-slate-500 tracking-wide">
                             {requireTyping ? (
                                 <>Type <span className="text-slate-900 select-all">{inputType === 'password' ? 'Admin Password' : `"${requireTyping}"`}</span> to confirm:</>
                             ) : (
@@ -65,7 +65,7 @@ export function ConfirmationModal({
                     {showCancel && (
                         <button
                             onClick={onClose}
-                            className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-xs"
+                            className="flex-1 py-3 px-4 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all text-sm"
                         >
                             Cancel
                         </button>
@@ -78,9 +78,9 @@ export function ConfirmationModal({
                             }
                         }}
                         disabled={!isInputValid}
-                        className={`flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs ${isDanger
-                            ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/10 text-white'
-                            : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10 text-white'
+                        className={`flex-1 py-3 px-4 font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-sm ${isDanger
+                            ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                             } ${!isInputValid ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
                     >
                         {confirmText}
