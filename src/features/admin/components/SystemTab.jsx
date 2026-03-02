@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight, Info } from 'lucide-react';
+import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight, Info, Trash2 } from 'lucide-react';
 import { collection, onSnapshot, getDocs, getDoc, Timestamp, writeBatch, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { calculateDraftSchedule, getShareholderOrder } from '../../../lib/shareholders';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
@@ -125,13 +125,15 @@ export function SystemTab({
 function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
     const { currentUser, reauthenticateUser } = useAuth();
     const [backups, setBackups] = useState([]);
+    const [selectedBackups, setSelectedBackups] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete', id, count }
+    const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete', id, count, isBulk }
 
     const loadBackups = async () => {
         setIsLoading(true);
         const data = await getAvailableBackups();
         setBackups(data);
+        setSelectedBackups([]); // Clear selection on reload
         setIsLoading(false);
     };
 
@@ -159,17 +161,40 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
         }
     };
 
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedBackups(backups.map(b => b.timestampId));
+        } else {
+            setSelectedBackups([]);
+        }
+    };
+
+    const handleSelectBackup = (id) => {
+        setSelectedBackups(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(p => p !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+    };
+
     const handleDelete = async () => {
         if (!confirmAction) return;
-        const { id } = confirmAction;
 
         try {
-            await deleteBackup(id);
-            triggerAlert("Success", `Backup ${id} deleted.`);
+            if (confirmAction.isBulk) {
+                await Promise.all(selectedBackups.map(id => deleteBackup(id)));
+                triggerAlert("Success", `${selectedBackups.length} backups deleted.`);
+            } else {
+                await deleteBackup(confirmAction.id);
+                triggerAlert("Success", `Backup ${confirmAction.id} deleted.`);
+            }
             loadBackups();
         } catch (e) {
             triggerAlert("Error", "Delete failed: " + e.message);
         }
+        setConfirmAction(null);
     };
 
     // Load available backups on mount
@@ -187,6 +212,27 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                 </button>
             </div>
 
+            {/* Bulk Action Bar */}
+            {selectedBackups.length > 0 && (
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600 font-bold text-sm">
+                            {selectedBackups.length} Selected
+                        </div>
+                        <p className="text-sm text-indigo-900">
+                            Backups selected for deletion.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setConfirmAction({ type: 'delete', isBulk: true })}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition-all shadow-sm flex items-center gap-2 w-full sm:w-auto justify-center"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Selection
+                    </button>
+                </div>
+            )}
+
             {isLoading ? (
                 <p className="text-xs text-slate-400 italic">Loading available backups...</p>
             ) : backups.length === 0 ? (
@@ -194,31 +240,53 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                     <p className="text-xs text-slate-400">No backup snapshots found.</p>
                 </div>
             ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                    {backups.map((b) => (
-                        <div key={b.timestampId} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg hover:border-slate-300 transition-colors">
-                            <div>
-                                <p className="font-mono text-xs font-bold text-slate-700">{b.timestampId}</p>
-                                <p className="text-[10px] text-slate-500">
-                                    {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : 'Manual'}
-                                </p>
+                <div className="space-y-4">
+                    {/* Select All Checkbox */}
+                    <div className="flex items-center gap-2 px-3 py-1">
+                        <input
+                            type="checkbox"
+                            checked={selectedBackups.length === backups.length && backups.length > 0}
+                            onChange={handleSelectAll}
+                            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-4 h-4"
+                            id="selectAllBackups"
+                        />
+                        <label htmlFor="selectAllBackups" className="text-xs font-bold text-slate-500 cursor-pointer">Select All Snapshots</label>
+                    </div>
+
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                        {backups.map((b) => (
+                            <div key={b.timestampId} className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg transition-colors gap-3 ${selectedBackups.includes(b.timestampId) ? 'bg-indigo-50/50 border-indigo-200' : 'bg-slate-50 border-slate-100 hover:border-slate-300'}`}>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedBackups.includes(b.timestampId)}
+                                        onChange={() => handleSelectBackup(b.timestampId)}
+                                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-4 h-4"
+                                    />
+                                    <div>
+                                        <p className="font-mono text-xs font-bold text-slate-700">{b.timestampId}</p>
+                                        <p className="text-[10px] text-slate-500">
+                                            {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : 'Manual'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 self-end sm:self-auto">
+                                    <button
+                                        onClick={() => setConfirmAction({ type: 'delete', id: b.timestampId, isBulk: false })}
+                                        className="px-3 py-1.5 bg-white border border-slate-200 text-slate-400 text-[10px] font-bold uppercase rounded hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                                    >
+                                        Delete
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirmAction({ type: 'restore', id: b.timestampId, count: b.count, isBulk: false })}
+                                        className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all"
+                                    >
+                                        Restore
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setConfirmAction({ type: 'delete', id: b.timestampId })}
-                                    className="px-3 py-1 bg-white border border-slate-200 text-slate-400 text-[10px] font-bold uppercase rounded hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
-                                >
-                                    Delete
-                                </button>
-                                <button
-                                    onClick={() => setConfirmAction({ type: 'restore', id: b.timestampId, count: b.count })}
-                                    className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all"
-                                >
-                                    Restore
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -239,10 +307,12 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                 isOpen={confirmAction?.type === 'delete'}
                 onClose={() => setConfirmAction(null)}
                 onConfirm={handleDelete}
-                title="Delete Backup Snapshot"
-                message={`Are you sure you want to permanently delete backup ${confirmAction?.id}?\n\nThis action cannot be undone.`}
+                title={confirmAction?.isBulk ? "Delete Multiple Backups?" : "Delete Backup Snapshot"}
+                message={confirmAction?.isBulk
+                    ? `Are you sure you want to permanently delete ${selectedBackups.length} backup snapshots?\n\nThis action cannot be undone.`
+                    : `Are you sure you want to permanently delete backup ${confirmAction?.id}?\n\nThis action cannot be undone.`}
                 isDanger={true}
-                confirmText="DELETE BACKUP"
+                confirmText={confirmAction?.isBulk ? "DELETE ALL" : "DELETE BACKUP"}
                 requireTyping="delete"
             />
         </div>
