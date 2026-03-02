@@ -338,7 +338,6 @@ export function ShareholderHero({
         const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
 
         const hero = <ModernTrailerWidget
-            shareholderName={shareholderName}
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
@@ -351,7 +350,7 @@ export function ShareholderHero({
                         </div>
                         <div>
                             <div className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">
-                                Complete By
+                                Complete {phaseLabel} By
                             </div>
                             <div className="text-xl font-bold text-white tabular-nums tracking-tight">
                                 {targetDate ? format(new Date(targetDate), 'MMM d, h:mm a') : 'No Deadline'}
@@ -716,18 +715,15 @@ function ModernTrailerWidget({
                             <Icon className="w-4 h-4" />
                             <span>{title}</span>
                         </div>
-                        {shareholderName && (
-                            <div className={`hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border ${theme.badge} shadow-sm`}>
-                                <User className="w-4 h-4" />
-                                {formatNameForDisplay(shareholderName)}
-                            </div>
-                        )}
                     </div>
 
                     {/* Title & Subtitle */}
                     <div>
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{subtitle}</h2>
-                        <div className="text-lg text-slate-300 leading-relaxed">
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+                            {shareholderName && <span className="text-white block md:inline md:mr-3">{formatNameForDisplay(shareholderName)}</span>}
+                            <span className={shareholderName ? "text-slate-300" : "text-white"}>{subtitle}</span>
+                        </h2>
+                        <div className="text-lg text-slate-400 leading-relaxed">
                             {mainContent}
                         </div>
                     </div>
