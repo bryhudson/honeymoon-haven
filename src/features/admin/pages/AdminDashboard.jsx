@@ -214,11 +214,6 @@ export function AdminDashboard() {
         catch (e) { triggerAlert("Error", "Failed."); }
     };
 
-    const handleResetOnboarding = async (user) => {
-        try { await updateDoc(doc(db, "shareholders", user.id), { hasSeenOnboarding: deleteField() }); triggerAlert("Success", "Tour reset."); }
-        catch (e) { triggerAlert("Error", "Failed."); }
-    };
-
     // Handlers: System Actions
     const handleToggleFreeze = async () => {
         requireAuth("Maintenance Mode", "Toggle system maintenance?", async () => {
@@ -500,8 +495,8 @@ export function AdminDashboard() {
                         key={t}
                         onClick={() => setActiveTab(t)}
                         className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-center ${activeTab === t
-                                ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50'
-                                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50'
+                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                             }`}
                     >
                         {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -525,7 +520,6 @@ export function AdminDashboard() {
                     handlePasswordChange={handlePasswordChange}
                     handleDeleteUser={handleDeleteUser}
                     handleResetWelcomeBanner={handleResetWelcomeBanner}
-                    handleResetOnboarding={handleResetOnboarding}
                     setIsCreateUserModalOpen={setIsCreateUserModalOpen}
                     IS_SITE_OWNER={IS_SITE_OWNER}
                 />

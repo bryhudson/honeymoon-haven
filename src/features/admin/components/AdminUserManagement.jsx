@@ -11,7 +11,6 @@ export function AdminUserManagement({
     handlePasswordChange,
     handleDeleteUser,
     handleResetWelcomeBanner,
-    handleResetOnboarding,
     setIsCreateUserModalOpen,
     IS_SITE_OWNER
 }) {
@@ -60,7 +59,6 @@ export function AdminUserManagement({
                                 onPassword={handlePasswordChange}
                                 onDelete={handleDeleteUser}
                                 onResetBanner={handleResetWelcomeBanner}
-                                onResetOnboarding={handleResetOnboarding}
                             />
                         </div>
                     </div>
@@ -133,7 +131,6 @@ export function AdminUserManagement({
                                                         onPassword={handlePasswordChange}
                                                         onDelete={handleDeleteUser}
                                                         onResetBanner={handleResetWelcomeBanner}
-                                                        onResetOnboarding={handleResetOnboarding}
                                                     />
                                                 </div>
                                             )}
