@@ -1,6 +1,6 @@
 import React from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { Sparkles, Zap, Palmtree, Anchor, ArrowRight, EyeOff } from 'lucide-react';
+import { Caravan, Zap, Palmtree, Anchor, ArrowRight, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }) {
@@ -46,7 +46,7 @@ export function WelcomeModal({ isOpen, onClose, onDismissPermanently, userName }
                     {step === 1 && (
                         <div className="text-center space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="mx-auto w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-orange-500/20 transform -rotate-3 mb-4">
-                                <Sparkles className="w-10 h-10 text-white" />
+                                <Caravan className="w-10 h-10 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-3xl font-black tracking-tight leading-tight">
