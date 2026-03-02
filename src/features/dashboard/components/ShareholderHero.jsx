@@ -338,6 +338,7 @@ export function ShareholderHero({
         const confirmedBookings = myActions.filter(b => b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'skipped');
 
         const hero = <ModernTrailerWidget
+            shareholderName={shareholderName}
             accentColor="blue"
             icon={Clock}
             title={isEarly ? "Early Access" : "Your Turn"}
