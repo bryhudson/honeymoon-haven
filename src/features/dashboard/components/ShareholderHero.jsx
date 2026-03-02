@@ -547,25 +547,20 @@ export function ShareholderHero({
         subtitle={`${phaseLabel} Queue`}
         mainContent={
             <div className="flex flex-col items-center lg:items-start gap-1">
-                <div className="flex items-center justify-center lg:justify-start gap-2 text-white/80">
-                    <span>Picking now:</span>
-                    <span className="font-bold text-white flex items-center gap-1">
-                        <User className="w-4 h-4 text-indigo-400" />
-                        {status.activePicker || "Loading..."}
-                    </span>
-                </div>
+                {/* Simplified since picker is now with the timer */}
             </div>
         }
         rightContent={
             status.windowEnds && (
-                <div className="bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 min-w-[200px] text-center lg:text-left">
-                    <div className="flex flex-col md:flex-row items-center justify-center lg:justify-start gap-4">
-                        <div className="p-2 bg-indigo-500/30 rounded-lg shrink-0">
-                            <Clock className="w-5 h-5 text-indigo-200" />
+                <div className="bg-indigo-500/20 border border-indigo-400/30 rounded-xl p-4 min-w-[240px] text-center lg:text-left">
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-center lg:justify-start gap-1.5 text-indigo-200/80 text-xs font-medium uppercase tracking-wider">
+                            <User className="w-3.5 h-3.5" />
+                            <span>{status.activePicker} picking until</span>
                         </div>
-                        <div>
-                            <div className="text-xs font-bold text-indigo-200 uppercase tracking-wider mb-1">
-                                Until
+                        <div className="flex items-center justify-center lg:justify-start gap-3">
+                            <div className="p-2 bg-indigo-500/30 rounded-lg shrink-0">
+                                <Clock className="w-5 h-5 text-indigo-200" />
                             </div>
                             <div className="text-xl font-bold text-white tabular-nums tracking-tight">
                                 {format(new Date(status.windowEnds), 'MMM d, h:mm a')}
