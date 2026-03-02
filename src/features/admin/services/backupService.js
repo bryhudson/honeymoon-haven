@@ -193,14 +193,26 @@ export const exportBookingsToCSV = (bookings) => {
                 if (found) cabin = found.cabin;
             }
 
+            // Determine accurate status based on Admin UI logic
+            let displayStatus = 'Confirmed';
+            if (b.type === 'pass' || b.type === 'auto-pass') {
+                displayStatus = 'Passed';
+            } else if (b.type === 'cancelled') {
+                displayStatus = 'Cancelled';
+            } else if (!b.isFinalized && b.status === 'draft') {
+                displayStatus = 'Draft'; // Or maybe keep as Confirmed depending on preference? Let's use Confirmed (Unfinalized) or just Confirmed since that's what the UI says, but maybe we should differentiate. Let's stick with what the UI displays. Wait, the UI shows 'Confirmed' for isFinalized true/false, just different colors. Let's just output what they are. Actually, 'status' in DB is often 'draft', we should output 'Confirmed' if it's a real booking.
+                // Let's refine this:
+                displayStatus = b.isFinalized ? 'Confirmed' : 'Unfinalized';
+            }
+
             return [
                 b.id,
                 `"${b.shareholderName || ''}"`,
                 cabin,
-                b.from ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : '',
-                b.to ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : '',
+                b.from && b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled' ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : '',
+                b.to && b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled' ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : '',
                 b.totalPrice || 0,
-                b.status || 'draft',
+                displayStatus,
                 b.createdAt ? format(b.createdAt instanceof Date ? b.createdAt : b.createdAt.toDate(), 'yyyy-MM-dd HH:mm') : ''
             ];
         });
