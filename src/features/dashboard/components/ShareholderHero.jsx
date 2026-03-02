@@ -696,56 +696,56 @@ function ModernTrailerWidget({
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-emerald-500",
-            badge: "bg-emerald-900/50 text-emerald-200 border-emerald-500/30",
+            badge: "bg-emerald-500/20 text-emerald-200 border-emerald-500/40",
             icon: "text-emerald-400"
         },
         amber: {
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-amber-500",
-            badge: "bg-amber-900/50 text-amber-200 border-amber-500/30",
+            badge: "bg-amber-500/20 text-amber-200 border-amber-500/40",
             icon: "text-amber-400"
         },
         indigo: {
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-indigo-500",
-            badge: "bg-indigo-900/50 text-indigo-200 border-indigo-500/30",
+            badge: "bg-indigo-500/20 text-indigo-200 border-indigo-500/40",
             icon: "text-indigo-400"
         },
         red: { // Fallback for 'red'
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-red-500",
-            badge: "bg-red-900/50 text-red-200 border-red-500/30",
+            badge: "bg-red-500/20 text-red-200 border-red-500/40",
             icon: "text-red-400"
         },
         rose: {
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-rose-500",
-            badge: "bg-rose-900/50 text-rose-200 border-rose-500/30",
+            badge: "bg-rose-500/20 text-rose-200 border-rose-500/40",
             icon: "text-rose-400"
         },
         slate: {
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-slate-500",
-            badge: "bg-slate-800 text-slate-300 border-slate-600",
+            badge: "bg-slate-500/20 text-slate-200 border-slate-500/40",
             icon: "text-slate-400"
         },
         violet: {
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-purple-500",
-            badge: "bg-purple-900/50 text-purple-200 border-purple-500/30",
+            badge: "bg-purple-500/20 text-purple-200 border-purple-500/40",
             icon: "text-purple-400"
         },
         blue: {
             bg: "bg-slate-900",
             border: "border-slate-700",
             highlight: "bg-blue-500",
-            badge: "bg-blue-900/50 text-blue-200 border-blue-500/30",
+            badge: "bg-blue-500/20 text-blue-200 border-blue-500/40",
             icon: "text-blue-400"
         }
     };
@@ -764,13 +764,13 @@ function ModernTrailerWidget({
                 <div className="space-y-4 text-center lg:text-left max-w-2xl w-full">
                     {/* Badge Row */}
                     <div className="flex items-center justify-center lg:justify-start gap-2">
-                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border ${theme.badge}`}>
-                            <Icon className="w-3.5 h-3.5" />
+                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border ${theme.badge} shadow-sm`}>
+                            <Icon className="w-4 h-4" />
                             <span>{title}</span>
                         </div>
                         {shareholderName && (
-                            <div className={`hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border opacity-60 ${theme.badge}`}>
-                                <User className="w-3.5 h-3.5" />
+                            <div className={`hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border ${theme.badge} shadow-sm`}>
+                                <User className="w-4 h-4" />
                                 {formatNameForDisplay(shareholderName)}
                             </div>
                         )}
