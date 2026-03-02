@@ -2,7 +2,7 @@ import React from 'react';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
-    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History
+    Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History, Home
 } from 'lucide-react';
 import { normalizeName, formatNameForDisplay, CABIN_OWNERS } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
@@ -145,7 +145,7 @@ export function ShareholderHero({
                 key={bookingAction.id || 'booking'}
                 shareholderName={shareholderName}
                 accentColor={isPaid ? "emerald" : "amber"}
-                icon={Caravan}
+                icon={Home}
                 title="Booking Confirmed"
                 subtitle={isPaid ? `${bookingRoundLabel} - Payment Confirmed. Thank you.` : `${bookingRoundLabel} - Payment Pending`}
                 rightContent={
@@ -722,7 +722,7 @@ function ModernTrailerWidget({
                         </div>
                         {cabin && (
                             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border ${theme.badge} shadow-sm opacity-90 backdrop-blur-sm`} title="Your Cabin Number">
-                                <Caravan className="w-4 h-4" />
+                                <Home className="w-4 h-4" />
                                 <span>Cabin {cabin}</span>
                             </div>
                         )}
