@@ -93,6 +93,32 @@ export function ShareholderHero({
             : 'Round 1'; // ROUND_1, PRE_DRAFT, or fallback
 
     // --- User state ---
+    const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
+    let roundTarget = 1;
+    if (status.phase === 'ROUND_2') roundTarget = 2;
+    let myActions = bookings.filter(b =>
+        normalizeName(b.shareholderName) === normalizedMe &&
+        (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
+    ).sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return aTime.getTime() - bTime.getTime();
+    });
+
+    // Detect auto-skipped rounds and inject them into myActions
+    if (status.phase === 'ROUND_2' || status.phase === 'OPEN_SEASON') {
+        if (myActions.length === 0) {
+            myActions.unshift({ id: 'skip-r1', type: 'skipped', createdAt: status.draftStart });
+        }
+    }
+    if (status.phase === 'OPEN_SEASON') {
+        if (myActions.length === 1) {
+            myActions.push({ id: 'skip-r2', type: 'skipped', createdAt: new Date() });
+        } else if (myActions.length === 0) {
+            myActions.push({ id: 'skip-r2', type: 'skipped', createdAt: new Date() });
+        }
+    }
+
     const isDoneForRound = myActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
