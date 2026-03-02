@@ -84,7 +84,7 @@ export const restoreBackup = async (timestampId) => {
         const backupPath = `_backups/${timestampId}/bookings`;
         const backupSnap = await getDocs(collection(db, backupPath));
 
-        if (backupSnap.empty) throw new Error("Backup is empty or not found.");
+        if (backupSnap.empty) throw new Error("This backup snapshot contains no data. It may be corrupted or was partially deleted previously.");
 
         // 1. Wipe current bookings in chunks of 490 (Firestore batch limit is 500)
         const currentSnap = await getDocs(collection(db, 'bookings'));
@@ -131,7 +131,7 @@ export const restoreBackup = async (timestampId) => {
 
         return backupSnap.size;
     } catch (e) {
-        throw new Error("Restore failed: " + e.message);
+        throw e;
     }
 };
 

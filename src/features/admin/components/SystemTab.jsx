@@ -154,7 +154,7 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
             if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
                 triggerAlert("Error", "Invalid password. Restore aborted.");
             } else {
-                triggerAlert("Error", "Restore failed: " + e.message);
+                triggerAlert("Error", e.message);
             }
         }
     };
