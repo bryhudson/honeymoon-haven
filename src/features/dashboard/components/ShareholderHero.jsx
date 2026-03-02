@@ -721,7 +721,7 @@ function ModernTrailerWidget({
                     {/* Title & Subtitle */}
                     <div>
                         <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-                            {shareholderName && <span className="text-white block md:inline md:mr-3">{formatNameForDisplay(shareholderName)}</span>}
+                            {shareholderName && <span className="text-white block mb-1 md:mb-2">{formatNameForDisplay(shareholderName)}</span>}
                             <span className={shareholderName ? "text-slate-300" : "text-white"}>{subtitle}</span>
                         </h2>
                         <div className="text-lg text-slate-400 leading-relaxed">
