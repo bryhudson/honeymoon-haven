@@ -4,7 +4,7 @@ import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
     Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History
 } from 'lucide-react';
-import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { normalizeName, formatNameForDisplay, CABIN_OWNERS } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -638,6 +638,10 @@ function ModernTrailerWidget({
     actions,
     rightContent // New prop for the Action Card (Timer/Details)
 }) {
+    const cabin = shareholderName
+        ? CABIN_OWNERS?.find(c => normalizeName(c.name) === normalizeName(shareholderName))?.cabin
+        : null;
+
     // Map themes to gradient colors
     const themes = {
         emerald: {
@@ -711,11 +715,17 @@ function ModernTrailerWidget({
                 {/* LEFT: Info Block */}
                 <div className="space-y-4 text-center lg:text-left max-w-2xl w-full">
                     {/* Badge Row */}
-                    <div className="flex items-center justify-center lg:justify-start gap-2">
+                    <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
                         <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border ${theme.badge} shadow-sm`}>
                             <Icon className="w-4 h-4" />
                             <span>{title}</span>
                         </div>
+                        {cabin && (
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border ${theme.badge} shadow-sm opacity-90 backdrop-blur-sm`} title="Your Cabin Number">
+                                <Caravan className="w-4 h-4" />
+                                <span>Cabin {cabin}</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Title & Subtitle */}
