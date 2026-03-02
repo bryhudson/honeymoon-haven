@@ -3,6 +3,7 @@ import { collection, query, orderBy, limit, getDocs, where, deleteDoc, doc, writ
 import { db } from '../../../lib/firebase';
 import { Clock, CheckCircle, XCircle, Search, Mail, Filter, Trash2 } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
+import { CABIN_OWNERS, normalizeName } from '../../../lib/shareholders';
 
 export function EmailHistoryTab() {
     const [logs, setLogs] = useState([]);
@@ -119,6 +120,11 @@ export function EmailHistoryTab() {
                 if (parsed.cabinNumber) cabinNumber = parsed.cabinNumber;
             }
         } catch (e) { }
+
+        if (cabinNumber === "-" && recipientName) {
+            const found = CABIN_OWNERS?.find(c => normalizeName(c.name) === normalizeName(recipientName));
+            if (found) cabinNumber = found.cabin;
+        }
 
         return {
             ...log,
