@@ -1,4 +1,4 @@
-import { collection, doc, writeBatch, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, doc, writeBatch, serverTimestamp, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { format } from 'date-fns';
 
@@ -86,11 +86,24 @@ export const restoreBackup = async (timestampId) => {
 
         if (backupSnap.empty) throw new Error("Backup is empty or not found.");
 
-        // 1. Wipe current bookings
+        // 1. Wipe current bookings in chunks of 490 (Firestore batch limit is 500)
         const currentSnap = await getDocs(collection(db, 'bookings'));
-        const batch1 = writeBatch(db);
-        currentSnap.docs.forEach(d => batch1.delete(d.ref));
-        await batch1.commit();
+        const deleteChunks = [];
+        let curDeleteBatch = writeBatch(db);
+        let curDeleteCount = 0;
+
+        currentSnap.docs.forEach(d => {
+            curDeleteBatch.delete(d.ref);
+            curDeleteCount++;
+            if (curDeleteCount >= 490) {
+                deleteChunks.push(curDeleteBatch);
+                curDeleteBatch = writeBatch(db);
+                curDeleteCount = 0;
+            }
+        });
+
+        if (curDeleteCount > 0) deleteChunks.push(curDeleteBatch);
+        await Promise.all(deleteChunks.map(b => b.commit()));
 
         // 2. Restore from backup
         const chunks = [];

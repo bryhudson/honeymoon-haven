@@ -123,6 +123,7 @@ export function SystemTab({
 }
 
 function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
+    const { currentUser, reauthenticateUser } = useAuth();
     const [backups, setBackups] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete', id, count }
@@ -134,16 +135,27 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
         setIsLoading(false);
     };
 
-    const handleRestore = async () => {
+    const handleRestore = async (password) => {
         if (!confirmAction) return;
         const { id, count } = confirmAction;
 
         try {
+            if (password) {
+                await reauthenticateUser(password);
+            } else {
+                triggerAlert("Error", "Password is required");
+                return;
+            }
             await restoreBackup(id);
             triggerAlert("Success", `Restored ${count} bookings from ${id}.`);
             loadBackups(); // Refresh list potentially
         } catch (e) {
-            triggerAlert("Error", "Restore failed: " + e.message);
+            console.error("Restore Error:", e);
+            if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+                triggerAlert("Error", "Invalid password. Restore aborted.");
+            } else {
+                triggerAlert("Error", "Restore failed: " + e.message);
+            }
         }
     };
 
@@ -216,10 +228,10 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                 onClose={() => setConfirmAction(null)}
                 onConfirm={handleRestore}
                 title="🔒 Secure Restore"
-                message={`You are about to restore backup ${confirmAction?.id}.\n\nThis will DELETE all current live data and replace it with this snapshot.\n\nEnter the Admin Recovery Code to proceed.`}
+                message={`You are about to restore backup ${confirmAction?.id}.\n\nThis will DELETE all current live data and replace it with this snapshot.\n\nEnter your Google Account password (${currentUser?.email || 'Admin'}) to proceed.`}
                 isDanger={true}
                 confirmText="AUTHENTICATE & RESTORE"
-                requireTyping="hhr-recover-2026"
+                requireInput={true}
                 inputType="password"
             />
 

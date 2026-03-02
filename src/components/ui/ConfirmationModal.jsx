@@ -11,6 +11,7 @@ export function ConfirmationModal({
     confirmText = "Confirm",
     showCancel = true,
     requireTyping = null,
+    requireInput = false,
     closeOnConfirm = true,
     inputType = "text"
 }) {
@@ -21,7 +22,12 @@ export function ConfirmationModal({
         if (isOpen) setInputValue("");
     }, [isOpen]);
 
-    const isInputValid = !requireTyping || inputValue === requireTyping;
+    let isInputValid = true;
+    if (requireTyping) {
+        isInputValid = inputValue === requireTyping;
+    } else if (requireInput) {
+        isInputValid = inputValue.trim().length > 0;
+    }
 
     return (
         <BaseModal
@@ -35,10 +41,14 @@ export function ConfirmationModal({
                     {message}
                 </p>
 
-                {requireTyping && (
+                {(requireTyping || requireInput) && (
                     <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                            Type <span className="text-slate-900 select-all">{inputType === 'password' ? 'Admin Password' : `"${requireTyping}"`}</span> to confirm:
+                            {requireTyping ? (
+                                <>Type <span className="text-slate-900 select-all">{inputType === 'password' ? 'Admin Password' : `"${requireTyping}"`}</span> to confirm:</>
+                            ) : (
+                                <>Enter {inputType === 'password' ? 'Admin Password' : 'Value'} to confirm:</>
+                            )}
                         </label>
                         <input
                             type={inputType}
@@ -63,7 +73,7 @@ export function ConfirmationModal({
                     <button
                         onClick={() => {
                             if (isInputValid) {
-                                onConfirm();
+                                onConfirm(inputValue);
                                 if (closeOnConfirm) onClose();
                             }
                         }}
