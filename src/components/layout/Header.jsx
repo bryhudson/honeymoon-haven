@@ -77,11 +77,11 @@ export function Header() {
                         <span className="md:hidden">HHR Booking</span>
                     </Link>
 
-                    <div className="flex items-center gap-4 text-sm font-medium">
+                    <div className="flex items-center gap-2 md:gap-4 text-sm font-medium">
                         {/* Hide "Welcome" and "Sign Out" if on Login page or not logged in */}
                         {currentUser && !isLoginPage ? (
                             <>
-                                <div className="flex flex-col items-end md:flex-row md:items-center md:gap-4">
+                                <div className="flex items-center gap-2 md:gap-4">
                                     <span className="text-muted-foreground hidden sm:inline">
                                         {loggedInShareholder ? `Hi, ${loggedInShareholder}` : currentUser.email}
                                     </span>
@@ -112,7 +112,7 @@ export function Header() {
                                             </Link>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-1 ml-2">
+                                    <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => setIsTriviaOpen(true)}
                                             className="group relative p-2 md:px-3 md:py-1 rounded-full text-xs font-bold transition-all flex items-center gap-2 overflow-hidden hover:shadow-md hover:scale-105 active:scale-95 bg-white border border-purple-100"
