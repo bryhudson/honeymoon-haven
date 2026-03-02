@@ -5,6 +5,11 @@ import { ActionsDropdown } from './ActionsDropdown';
 import { AdminCalendarView } from './AdminCalendarView';
 import { CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { calculateBookingCost } from '../../../lib/pricing';
+import { exportBookingsToCSV } from '../services/backupService';
+import { sendCalendarEmailSnapshot } from '../services/emailSnapshotService';
+import { PromptModal } from '../../../components/ui/PromptModal';
+import { useAuth } from '../../auth/AuthContext';
+import { Download, Mail } from 'lucide-react';
 
 export function AdminBookingManagement({
     schedule,
@@ -18,6 +23,23 @@ export function AdminBookingManagement({
     handleSendPaymentReminder,
     triggerAlert
 }) {
+    const { currentUser } = useAuth();
+    const [isPromptOpen, setIsPromptOpen] = useState(false);
+
+    const handleDownloadCSV = () => {
+        try {
+            exportBookingsToCSV(allBookings);
+        } catch (err) {
+            console.error("CSV Export Error:", err);
+            triggerAlert("Error", "Failed to export CSV");
+        }
+    };
+
+    const handleSendEmail = async (recipient) => {
+        setIsPromptOpen(false);
+        await sendCalendarEmailSnapshot(allBookings, recipient, triggerAlert);
+    };
+
     // Helper for payment status style
     const getPaymentClass = (isPaid) => isPaid
         ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
@@ -244,25 +266,53 @@ export function AdminBookingManagement({
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                     {bookingViewMode === 'list' ? 'Booking Management' : 'Calendar View'}
                 </h2>
-                <div className="flex bg-slate-100 p-1 rounded-lg">
-                    <button
-                        onClick={() => setBookingViewMode('list')}
-                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${bookingViewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <List className="w-3.5 h-3.5" />
-                            List
-                        </div>
-                    </button>
-                    <button
-                        onClick={() => setBookingViewMode('calendar')}
-                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${bookingViewMode === 'calendar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-3.5 h-3.5" />
-                            Calendar
-                        </div>
-                    </button>
+
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                        <button
+                            onClick={handleDownloadCSV}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/50`}
+                            title="Download CSV"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Download className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Export</span>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setIsPromptOpen(true)}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/50`}
+                            title="Email Snapshot"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Mail className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Email</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div className="h-6 w-px bg-slate-200 hidden sm:block mx-1"></div>
+
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setBookingViewMode('list')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${bookingViewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <List className="w-3.5 h-3.5" />
+                                List
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setBookingViewMode('calendar')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${bookingViewMode === 'calendar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                Calendar
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -308,6 +358,16 @@ export function AdminBookingManagement({
                     </div>
                 </div>
             )}
+
+            <PromptModal
+                isOpen={isPromptOpen}
+                onClose={() => setIsPromptOpen(false)}
+                onConfirm={handleSendEmail}
+                title="Email Calendar View"
+                message="Enter recipient email:"
+                defaultValue={currentUser?.email || ""}
+                confirmText="Send Calendar"
+            />
         </div>
     );
 }

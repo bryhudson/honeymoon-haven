@@ -1,6 +1,7 @@
 import { collection, doc, writeBatch, serverTimestamp, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { format } from 'date-fns';
+import { CABIN_OWNERS, normalizeName } from '../../../lib/shareholders';
 
 /**
  * Creates a backup of all current bookings to a separate Firestore collection.
@@ -185,16 +186,24 @@ export const exportBookingsToCSV = (bookings) => {
             "Total Price", "Status", "Created At"
         ];
 
-        const rows = bookings.map(b => [
-            b.id,
-            `"${b.shareholderName || ''}"`,
-            b.cabinNumber || '?',
-            b.from ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : '',
-            b.to ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : '',
-            b.totalPrice || 0,
-            b.status || 'draft',
-            b.createdAt ? format(b.createdAt instanceof Date ? b.createdAt : b.createdAt.toDate(), 'yyyy-MM-dd HH:mm') : ''
-        ]);
+        const rows = bookings.map(b => {
+            let cabin = b.cabinNumber || '?';
+            if (cabin === '?' && b.shareholderName) {
+                const found = CABIN_OWNERS?.find(c => normalizeName(c.name) === normalizeName(b.shareholderName));
+                if (found) cabin = found.cabin;
+            }
+
+            return [
+                b.id,
+                `"${b.shareholderName || ''}"`,
+                cabin,
+                b.from ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : '',
+                b.to ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : '',
+                b.totalPrice || 0,
+                b.status || 'draft',
+                b.createdAt ? format(b.createdAt instanceof Date ? b.createdAt : b.createdAt.toDate(), 'yyyy-MM-dd HH:mm') : ''
+            ];
+        });
 
         const csvContent = [
             headers.join(','),

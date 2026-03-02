@@ -1,11 +1,6 @@
-import React, { useState } from 'react';
-import { format, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay, addMonths, startOfDay, isWithinInterval } from 'date-fns';
-import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
-import { useAuth } from '../../auth/AuthContext';
-import { functions } from '../../../lib/firebase';
-import { httpsCallable } from 'firebase/functions';
-import { PromptModal } from '../../../components/ui/PromptModal';
-import { emailService } from '../../../services/emailService';
+import React from 'react';
+import { format, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval, startOfDay } from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function AdminCalendarView({ bookings, onNotify }) {
     // 2026 Season: March - October
@@ -23,91 +18,6 @@ export function AdminCalendarView({ bookings, onNotify }) {
         new Date(2026, 8, 1), // Sept
         new Date(2026, 9, 1), // Oct
     ];
-
-    const { currentUser } = useAuth();
-
-    const [isPromptOpen, setIsPromptOpen] = useState(false);
-    const [promptCallback, setPromptCallback] = useState(null);
-
-    // --- Email Logic ---
-    const handleEmailCalendar = () => {
-        setIsPromptOpen(true);
-        setPromptCallback(() => handleSendEmail);
-    };
-
-    const handleSendEmail = async (recipient) => {
-        if (!recipient) return;
-
-        try {
-            // Generate HTML for all months
-            let monthsHtml = "";
-
-            months.forEach(month => {
-                const start = startOfMonth(month);
-                const end = endOfMonth(month);
-                const days = eachDayOfInterval({ start, end });
-                const startDay = start.getDay();
-                const blanks = Array(startDay).fill(null);
-
-                // Header
-                let gridHtml = `
-                    <div style="margin-bottom: 30px; page-break-inside: avoid;">
-                        <h3 style="background-color: #f1f5f9; padding: 10px; margin: 0; border: 1px solid #e2e8f0; text-align: center;">${format(month, 'MMMM yyyy')}</h3>
-                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border: 1px solid #e2e8f0; padding: 5px;">
-                            ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div style="text-align: center; font-size: 10px; font-weight: bold; color: #94a3b8; padding: 2px;">${d}</div>`).join('')}
-                `;
-
-                // Blanks
-                blanks.forEach(() => {
-                    gridHtml += `<div style="aspect-ratio: 1; padding: 5px;"></div>`;
-                });
-
-                // Days
-                days.forEach(day => {
-                    const b = getBookingForDate(day);
-                    let bg = "#ffffff";
-                    let color = "#334155";
-                    let info = "";
-
-                    if (b) {
-                        bg = b.isPaid ? "#22c55e" : "#f43f5e"; // green-500 (Paid) : rose-500 (Unpaid)
-                        color = "#ffffff";
-                        info = `<div style="font-size: 8px; line-height: 1;">${b.cabinNumber}</div>`;
-                    }
-
-                    gridHtml += `
-                        <div style="background-color: ${bg}; color: ${color}; padding: 4px; text-align: center; border-radius: 4px; min-height: 30px; font-size: 12px;">
-                            ${format(day, 'd')}
-                            ${info}
-                        </div>
-                    `;
-                });
-
-                gridHtml += `</div></div>`;
-                monthsHtml += gridHtml;
-            });
-
-            const fullHtml = `
-                <h2>2026 Season Calendar</h2>
-                <p>Generated on ${format(new Date(), 'PPP')}</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    ${monthsHtml}
-                </div>
-            `;
-
-            await emailService.sendEmail({
-                to: { name: "Admin", email: recipient },
-                subject: `Calendar Snapshot - ${format(new Date(), 'MMM d')}`,
-                htmlContent: fullHtml
-            });
-
-            onNotify("Success", `Calendar sent to ${recipient}`);
-            setIsPromptOpen(false);
-        } catch (err) {
-            console.error("Email fail", err);
-            onNotify("Error", "Failed to send calendar.");
-        }
-    };
 
     // Helper to find booking for a specific date
     const getBookingForDate = (date) => {
@@ -192,13 +102,6 @@ export function AdminCalendarView({ bookings, onNotify }) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row justify-end items-end sm:items-center gap-4 mb-4">
-                <button
-                    onClick={handleEmailCalendar}
-                    className="text-slate-500 hover:text-slate-900 font-medium text-sm flex items-center gap-2 transition-colors"
-                >
-                    <Mail className="w-4 h-4" />
-                    Email Snapshot
-                </button>
                 <div className="flex gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-green-500"></div>
@@ -214,16 +117,6 @@ export function AdminCalendarView({ bookings, onNotify }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {months.map(m => renderMonth(m))}
             </div>
-
-            <PromptModal
-                isOpen={isPromptOpen}
-                onClose={() => setIsPromptOpen(false)}
-                onConfirm={handleSendEmail}
-                title="Email Calendar View"
-                message="Enter recipient email:"
-                defaultValue={currentUser?.email || ""}
-                confirmText="Send Calendar"
-            />
         </div>
     );
 }
