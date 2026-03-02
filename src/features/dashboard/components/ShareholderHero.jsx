@@ -576,8 +576,11 @@ export function ShareholderHero({
             )
         }
         actions={
-            <div className="flex gap-2 w-full">
-                <button onClick={onOpenFeedback} className="flex-1 px-3 py-2 text-xs font-medium text-white/30 hover:text-indigo-300 transition-colors">
+            <div className="flex gap-2 w-full mt-4">
+                <button
+                    onClick={onOpenFeedback}
+                    className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                >
                     Feedback
                 </button>
                 {upcomingBooking && (
