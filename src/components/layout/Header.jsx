@@ -71,8 +71,8 @@ export function Header() {
         <>
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                    <Link to="/" className="group flex items-center gap-2 font-bold text-xl md:text-2xl tracking-tight text-slate-900 hover:opacity-80 transition-opacity">
-                        <Caravan className="h-8 w-8 md:h-9 md:w-9 animate-drive group-hover:text-indigo-600 transition-colors duration-300" />
+                    <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl tracking-tight text-slate-900 hover:opacity-80 transition-opacity">
+                        <Caravan className="h-8 w-8 md:h-9 md:w-9 text-indigo-600 transition-colors duration-300" />
                         <span className="hidden md:inline">HHR - Trailer Booking</span>
                         <span className="md:hidden">HHR Booking</span>
                     </Link>
