@@ -571,7 +571,7 @@ export function ShareholderHero({
             )
         }
         actions={
-            <div className="flex gap-2 w-full mt-4">
+            <div className="flex flex-col md:flex-row gap-2 w-full">
                 <button
                     onClick={onOpenFeedback}
                     className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
@@ -737,21 +737,13 @@ function ModernTrailerWidget({
                         </div>
                     </div>
 
-                    {/* Mobile Actions (Below Text) */}
-                    <div className="lg:hidden w-full pt-4">
-                        {actions && <div className="grid grid-cols-1 gap-3">{actions}</div>}
-                    </div>
                 </div>
 
-                {/* RIGHT: Action Card (Desktop) or Timer */}
-                {/* If rightContent exists, show it. Otherwise show desktop actions if available. */}
-                {(rightContent || (actions && <div className="hidden lg:block">{actions}</div>)) && (
+                {/* RIGHT: Action Card or Timer */}
+                {(rightContent || actions) && (
                     <div className="flex flex-col w-full lg:w-auto gap-4">
-                        {rightContent}
-                        {/* Desktop Actions (if not passed as rightContent) */}
-                        {!rightContent && actions && <div className="hidden lg:flex flex-col gap-3">{actions}</div>}
-                        {/* If rightContent exists AND actions exist, render actions below rightContent on desktop */}
-                        {rightContent && actions && <div className="hidden lg:grid grid-cols-1 gap-3">{actions}</div>}
+                        {rightContent && <div className="w-full">{rightContent}</div>}
+                        {actions && <div className="w-full">{actions}</div>}
                     </div>
                 )}
             </div>
