@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Caravan, LogOut, LayoutDashboard, User, MessageSquare, Sparkles } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import { useBookingRealtime } from '../../hooks/useBookingRealtime';
 import { db } from '../../lib/firebase';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
-import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
-import { ChangePasswordModal } from '../../features/dashboard/components/ChangePasswordModal';
-import { TriviaModal } from '../../features/trivia/components/TriviaModal';
 import { formatNameForDisplay } from '../../lib/shareholders';
+
+const FeedbackModal = lazy(() => import('../../features/feedback/components/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
+const ChangePasswordModal = lazy(() => import('../../features/dashboard/components/ChangePasswordModal').then(m => ({ default: m.ChangePasswordModal })));
+const TriviaModal = lazy(() => import('../../features/trivia/components/TriviaModal').then(m => ({ default: m.TriviaModal })));
 
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
 
@@ -162,19 +163,21 @@ export function Header() {
                     </div>
                 </div>
             </header>
-            <FeedbackModal
-                isOpen={isFeedbackOpen}
-                onClose={() => setIsFeedbackOpen(false)}
-                shareholderName={loggedInShareholder}
-            />
-            <ChangePasswordModal
-                isOpen={isChangePasswordOpen}
-                onClose={() => setIsChangePasswordOpen(false)}
-            />
-            <TriviaModal
-                isOpen={isTriviaOpen}
-                onClose={() => setIsTriviaOpen(false)}
-            />
+            <Suspense fallback={null}>
+                <FeedbackModal
+                    isOpen={isFeedbackOpen}
+                    onClose={() => setIsFeedbackOpen(false)}
+                    shareholderName={loggedInShareholder}
+                />
+                <ChangePasswordModal
+                    isOpen={isChangePasswordOpen}
+                    onClose={() => setIsChangePasswordOpen(false)}
+                />
+                <TriviaModal
+                    isOpen={isTriviaOpen}
+                    onClose={() => setIsTriviaOpen(false)}
+                />
+            </Suspense>
         </>
     );
 }

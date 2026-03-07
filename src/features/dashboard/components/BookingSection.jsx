@@ -6,7 +6,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG } from '../../../lib/shareholders';
 import { db } from '../../../lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { calculateBookingCost } from '../../../lib/pricing';
