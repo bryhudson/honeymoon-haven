@@ -10,12 +10,14 @@ const AuthAction = lazy(() => import('./features/auth/pages/AuthAction').then(mo
 const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 
 import { AuthProvider } from './features/auth/AuthContext';
+import { BookingRealtimeProvider } from './hooks/BookingRealtimeContext';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { AdminRoute } from './features/auth/AdminRoute';
 
 function App() {
   return (
     <AuthProvider>
+      <BookingRealtimeProvider>
       <Layout>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
@@ -40,6 +42,7 @@ function App() {
           </Routes>
         </Suspense>
       </Layout>
+      </BookingRealtimeProvider>
     </AuthProvider>
   );
 }

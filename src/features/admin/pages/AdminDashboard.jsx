@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import { useBookingRealtimeContext } from '../../../hooks/BookingRealtimeContext';
 import { CABIN_OWNERS, getShareholderOrder, mapOrderToSchedule, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { emailService } from '../../../services/emailService';
 import { db, functions } from '../../../lib/firebase';
@@ -30,13 +31,28 @@ export function AdminDashboard() {
     const { currentUser } = useAuth();
     const IS_SITE_OWNER = ADMIN_EMAILS[0] === currentUser?.email?.toLowerCase();
 
+    // Shared realtime data from context
+    const {
+        allBookings: contextBookings,
+        loading: contextLoading,
+        startDateOverride,
+        isSystemFrozen,
+        bypassTenAM,
+        isTestMode,
+        fastTestingMode,
+    } = useBookingRealtimeContext();
+
+    // Admin needs bookings sorted by createdAt desc (context sorts by from asc)
+    const allBookings = useMemo(() =>
+        [...contextBookings].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        [contextBookings]
+    );
+
     // UI State
     const [activeTab, setActiveTab] = useState('bookings');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
 
     // Data State
-    const [allBookings, setAllBookings] = useState([]);
     const [shareholders, setShareholders] = useState([]);
 
     // Auth Modal State
@@ -60,13 +76,7 @@ export function AdminDashboard() {
         setPromptData({ isOpen: true, title, message, defaultValue, onConfirm, inputType, confirmText });
     };
 
-    // System Settings State
-    const [simStartDate, setSimStartDate] = useState("");
-    const [currentSimDate, setCurrentSimDate] = useState(null);
-    const [isSystemFrozen, setIsSystemFrozen] = useState(false);
-    const [isTestMode, setIsTestMode] = useState(true);
-    const [fastTestingMode, setFastTestingMode] = useState(false);
-    const [bypassTenAM, setBypassTenAM] = useState(false);
+    // Admin-only state (not in shared context)
     const [draftStatus, setDraftStatus] = useState(null);
 
     // Editing State (Bookings)
@@ -84,34 +94,10 @@ export function AdminDashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    // Listeners and Data Fetching
+    // Admin-only listeners (settings + bookings come from shared context)
     useEffect(() => {
-        const unsubSettings = onSnapshot(doc(db, "settings", "general"), (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                if (data.draftStartDate) {
-                    const d = data.draftStartDate.toDate();
-                    setCurrentSimDate(d);
-                    setSimStartDate(format(d, "yyyy-MM-dd'T'HH:mm"));
-                }
-                setIsSystemFrozen(data.isSystemFrozen || false);
-                setIsTestMode(data.isTestMode !== undefined ? data.isTestMode : true);
-                setFastTestingMode(data.fastTestingMode || false);
-                setBypassTenAM(data.bypassTenAM || false);
-            }
-        });
-
         const unsubStatus = onSnapshot(doc(db, "status", "draftStatus"), (snap) => {
             if (snap.exists()) setDraftStatus(snap.data());
-        });
-
-        const qBookings = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
-        const unsubBookings = onSnapshot(qBookings, (snapshot) => {
-            setAllBookings(snapshot.docs.map(doc => {
-                const data = doc.data();
-                return { id: doc.id, ...data, from: data.from?.toDate ? data.from.toDate() : new Date(data.from), to: data.to?.toDate ? data.to.toDate() : new Date(data.to), createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt) };
-            }));
-            setLoading(false);
         });
 
         const qUsers = query(collection(db, "shareholders"), orderBy("cabin"));
@@ -121,7 +107,7 @@ export function AdminDashboard() {
             setShareholders(list);
         });
 
-        return () => { unsubSettings(); unsubStatus(); unsubBookings(); unsubUsers(); };
+        return () => { unsubStatus(); unsubUsers(); };
     }, []);
 
     // Handlers: Authentication
@@ -345,7 +331,6 @@ export function AdminDashboard() {
                         isTestMode: false,
                         draftStartDate: Timestamp.fromDate(prodDate)
                     }, { merge: true });
-                    setSimStartDate(format(prodDate, "yyyy-MM-dd'T'HH:mm"));
                 } catch (e) {
                     throw new Error("SETTINGS UPDATE FAILED: " + e.message);
                 }
@@ -431,8 +416,6 @@ export function AdminDashboard() {
                         isTestMode: true,
                         draftStartDate: Timestamp.fromDate(todayTenAm)
                     }, { merge: true });
-
-                    setSimStartDate(format(todayTenAm, "yyyy-MM-dd'T'HH:mm"));
                 } catch (e) {
                     throw new Error("SETTINGS UPDATE FAILED: " + e.message);
                 }
@@ -463,12 +446,12 @@ export function AdminDashboard() {
 
     const { schedule, activeTurn } = React.useMemo(() => {
         const order = getShareholderOrder(2026);
-        const sched = mapOrderToSchedule(order, allBookings, currentSimDate, fastTestingMode, bypassTenAM);
+        const sched = mapOrderToSchedule(order, allBookings, startDateOverride, fastTestingMode, bypassTenAM);
         const active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD') || sched.find(s => s.name === draftStatus?.activePicker && s.round == draftStatus?.round);
         return { schedule: sched, activeTurn: active };
-    }, [allBookings, draftStatus, currentSimDate, fastTestingMode, bypassTenAM, tick]);
+    }, [allBookings, draftStatus, startDateOverride, fastTestingMode, bypassTenAM, tick]);
 
-    if (loading) return <div className="flex items-center justify-center min-h-screen animate-pulse">Loading...</div>;
+    if (contextLoading) return <div className="flex items-center justify-center min-h-screen animate-pulse">Loading...</div>;
 
     const myProfile = shareholders.find(s => s.email === currentUser?.email);
 
@@ -525,7 +508,7 @@ export function AdminDashboard() {
                 />
             )}
 
-            {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={draftStatus || { phase: 'PRE_DRAFT' }} startDateOverride={currentSimDate} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
+            {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={draftStatus || { phase: 'PRE_DRAFT' }} startDateOverride={startDateOverride} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
             {activeTab === 'notifications' && <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />}
             {activeTab === 'system' && (
                 <SystemTab

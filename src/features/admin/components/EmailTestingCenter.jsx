@@ -84,10 +84,10 @@ export function EmailTestingCenter({ initiateTestReminder, initiateTestTransacti
                         <div className="relative pl-4 space-y-6 border-l-2 border-slate-100 ml-2">
                             {[
                                 { id: 'paymentReminder', label: 'Payment Reminder (Day 1)', time: '9:00 AM (Next Day)', sub: '"Maintenance Fee Due"', color: 'text-green-600' },
-                                { id: 'paymentReminderDay2', label: 'Payment Reminder (Day 2)', time: '9:00 AM (Day 2)', sub: '"Maintenance Fee Due"', color: 'text-green-600' },
+                                { id: 'paymentReminder', label: 'Payment Reminder (Day 2)', time: '9:00 AM (Day 2)', sub: '"Maintenance Fee Due"', color: 'text-green-600' },
                                 { id: 'paymentReminder_urgent', label: 'Urgent Payment Warning', time: 'T-6 Hours', sub: '"URGENT: 48-hour window"', color: 'text-red-600', urgent: true }
                             ].map((r) => (
-                                <div key={r.id} className="relative">
+                                <div key={r.label} className="relative">
                                     <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-white ${r.urgent ? 'bg-red-500 animate-pulse' : 'bg-slate-200'}`}></div>
                                     <div className="flex items-center justify-between group">
                                         <div>
@@ -96,7 +96,7 @@ export function EmailTestingCenter({ initiateTestReminder, initiateTestTransacti
                                             <div className="text-xs text-slate-400">{r.sub}</div>
                                         </div>
                                         <button
-                                            onClick={() => initiateTestTransaction('paymentReminder', r.label)}
+                                            onClick={() => initiateTestTransaction(r.id, r.label)}
                                             className="opacity-100 md:opacity-0 md:group-hover:opacity-100 px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-medium hover:bg-green-50 text-slate-500 hover:text-green-600 transition-all flex items-center gap-1"
                                         >
                                             <Zap className="w-3 h-3" /> Test
