@@ -572,7 +572,7 @@ const emailTemplates = {
       <h1 style="${THEME.typography.h1}">Dates officially locked in! 🏔️🎉</h1>
       <p style="${THEME.typography.body}">Great news, ${formatName(data.name)}! We've officially received your e-transfer and your spot at the lake is confirmed.</p>
       
-      <p style="${THEME.typography.body}">Get ready for simpler times! We're so excited for you to share our lakeside paradise with your guests—we just know they're going to have an amazing time. 🌲✨</p>
+      <p style="${THEME.typography.body}">Get ready for simpler times! We're so excited for you to share our lakeside paradise with your guests - we just know they're going to have an amazing time. 🌲✨</p>
 
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🗓️ Your Confirmed Booking</strong></p>

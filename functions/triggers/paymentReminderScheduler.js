@@ -114,7 +114,7 @@ exports.paymentReminderScheduler = onSchedule(
                     await sendOverdueAdminAlert(booking, bookingId, hoursSinceCreation);
                     await doc.ref.update({ "remindersSent.overdueAdminAlert": admin.firestore.Timestamp.now() });
                     logger.info(`Sent Overdue Admin Alert for booking ${bookingId}`);
-                    // Don't continue — also check if we need to send user reminders
+                    // Don't continue - also check if we need to send user reminders
                 }
 
                 // --- FINAL WARNING: T-6 Hours (42h mark, before 48h deadline) ---

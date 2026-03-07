@@ -64,7 +64,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
                         cancelledAt: admin.firestore.Timestamp.now(),
                         cancelReason: `Auto-cancelled: overlaps with booking ${overlap.id}`
                     });
-                    return; // Stop processing — booking is cancelled
+                    return; // Stop processing - booking is cancelled
                 }
             }
         } catch (overlapErr) {
