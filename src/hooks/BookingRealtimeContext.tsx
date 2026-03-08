@@ -60,9 +60,8 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
             console.error("Error fetching settings:", error);
         });
 
-        const q = query(collection(db, "bookings"), orderBy("from"));
-        const unsubBookings = onSnapshot(q, (snapshot) => {
-            const records: Booking[] = snapshot.docs.map(doc => {
+        const unsubBookings = onSnapshot(collection(db, "bookings"), (snapshot) => {
+            const records = snapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -74,6 +73,14 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
                     cancelledAt: data.cancelledAt instanceof Timestamp ? data.cancelledAt.toDate() : (data.cancelledAt ? new Date(data.cancelledAt) : null)
                 } as Booking;
             });
+
+            // Sort in memory to avoid Firestore orderBy caching bugs with local updates
+            records.sort((a, b) => {
+                const aTime = a.from ? a.from.getTime() : 0;
+                const bTime = b.from ? b.from.getTime() : 0;
+                return aTime - bTime;
+            });
+
             setAllBookings(records);
             setLoading(false);
         }, (error) => {

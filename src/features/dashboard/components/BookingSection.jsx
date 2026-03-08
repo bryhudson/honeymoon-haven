@@ -326,6 +326,16 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             // Email is now optional or handled via login context, removing manual validation
 
             setIsSubmitting(true);
+            const passPayload = {
+                shareholderName: passData.name,
+                type: passData.action, // 'pass' or 'skipped'
+                status: 'cancelled', // So it doesn't show as an active booking
+                from: new Date(),
+                to: new Date(),
+                createdAt: new Date(),
+                isFinalized: true,
+                uid: currentUser?.uid
+            };
             const newBooking = {
                 ...selectedRange,
                 ...formData,
