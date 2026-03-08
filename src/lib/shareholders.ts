@@ -243,6 +243,7 @@ export function calculateDraftSchedule(
 
         const userActions = bookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
+            .filter(b => b.isFinalized || b.type === 'pass' || (b as any).type === 'skipped' || b.type === 'cancelled' || (b as any).status === 'cancelled') // IGNORE DRAFTS
             .sort((a, b) => {
                 const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
                 const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
