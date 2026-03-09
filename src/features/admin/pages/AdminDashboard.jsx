@@ -44,7 +44,11 @@ export function AdminDashboard() {
 
     // Admin needs bookings sorted by createdAt desc (context sorts by from asc)
     const allBookings = useMemo(() =>
-        [...contextBookings].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        [...contextBookings].sort((a, b) => {
+            const aTime = isNaN(a.createdAt.getTime()) ? 0 : a.createdAt.getTime();
+            const bTime = isNaN(b.createdAt.getTime()) ? 0 : b.createdAt.getTime();
+            return bTime - aTime;
+        }),
         [contextBookings]
     );
 
