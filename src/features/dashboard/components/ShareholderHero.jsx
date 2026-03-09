@@ -509,7 +509,7 @@ export function ShareholderHero({
                         <div className="flex w-full">
                             <button
                                 onClick={() => onViewDetails(lastEffective)}
-                                className="w-full md:w-auto px-6 py-2.5 bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-[0.98]"
+                                className="w-full md:w-auto px-6 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
                             >
                                 View Details
                             </button>
