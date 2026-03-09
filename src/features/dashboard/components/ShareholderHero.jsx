@@ -121,7 +121,9 @@ export function ShareholderHero({
         }
     }
 
-    const isDoneForRound = myActions.length >= roundTarget;
+    // Only count non-cancelled actions toward round completion
+    const effectiveActions = myActions.filter(a => a.type !== 'cancelled' && a.status !== 'cancelled');
+    const isDoneForRound = effectiveActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
@@ -320,6 +322,33 @@ export function ShareholderHero({
                 </button>
             }
         />;
+
+        return confirmedBookings.length > 0 ? (
+            <div className="flex flex-col gap-4">
+                {hero}
+                <div className="mt-4">
+                    <button
+                        onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                        className="w-full flex items-center justify-between pb-3 border-b border-slate-200 group focus:outline-none"
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-slate-100 rounded-md group-hover:bg-slate-200 transition-colors">
+                                <History className="w-4 h-4 text-slate-600" />
+                            </div>
+                            <span className="text-sm font-bold text-slate-700">Booking History</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
+                            <span>{isHistoryExpanded ? 'HIDE' : `SHOW (${myActions.length})`}</span>
+                        </div>
+                    </button>
+                    {isHistoryExpanded && (
+                        <div className="flex flex-col mt-3">
+                            {myActions.map((action, idx) => renderPastAction(action, idx))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        ) : hero;
     }
 
     // ============================================
@@ -430,9 +459,10 @@ export function ShareholderHero({
     // ============================================
     // 5. DONE FOR ROUND
     // ============================================
-    if (isDoneForRound && lastAction?.type !== 'cancelled') {
-        const isPassed = lastAction?.type === 'pass';
-        const isSkipped = lastAction?.type === 'skipped';
+    if (isDoneForRound) {
+        const lastEffective = effectiveActions[effectiveActions.length - 1];
+        const isPassed = lastEffective?.type === 'pass';
+        const isSkipped = lastEffective?.type === 'skipped';
 
         let hero;
 
@@ -463,7 +493,7 @@ export function ShareholderHero({
                 }
             />;
         } else {
-            hero = renderBookingBanner(lastAction);
+            hero = renderBookingBanner(lastEffective);
         }
 
         const previousActions = myActions.slice(0, -1);
@@ -539,7 +569,11 @@ export function ShareholderHero({
     // ============================================
     const upcomingBooking = bookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
-        .sort((a, b) => b.createdAt - a.createdAt)[0];
+        .sort((a, b) => {
+            const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+            const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+            return (isNaN(bRaw.getTime()) ? 0 : bRaw.getTime()) - (isNaN(aRaw.getTime()) ? 0 : aRaw.getTime());
+        })[0];
 
     const isUpNext = queueInfo?.diff === 1;
 
