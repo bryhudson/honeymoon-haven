@@ -366,7 +366,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                     // Single write already done above with isFinalized:true
                     // onFinalize handles UI cleanup only (modal close, confetti)
                     setIsFinalSuccess(true);
-                    await onFinalize(effectiveId, formData.shareholderName, true);
+                    // Signature: (bookingId, name, skipConfirm, onSuccess, skipWrite)
+                    await onFinalize(effectiveId, formData.shareholderName, true, null, true);
                 }
 
                 if (finalize) {
