@@ -452,6 +452,7 @@ export function Dashboard() {
                         shareholderName: status.activePicker,
                         uid: currentUser.uid,
                         cabinNumber: owner ? owner.cabin : "?",
+                        type: 'booking', // Required by Firestore security rules
                         from: start,
                         to: end,
                         guests: 1, // Default

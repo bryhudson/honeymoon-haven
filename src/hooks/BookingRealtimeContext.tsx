@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { db } from '../lib/firebase';
-import { collection, query, orderBy, onSnapshot, doc, Timestamp } from 'firebase/firestore';
+import { db, auth } from '../lib/firebase';
+import { collection, onSnapshot, doc, Timestamp } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import {
     getShareholderOrder,
     calculateDraftSchedule,
@@ -31,8 +32,29 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
     const [bypassTenAM, setBypassTenAM] = useState<boolean>(false);
     const [isTestMode, setIsTestMode] = useState<boolean>(true);
     const [fastTestingMode, setFastTestingMode] = useState<boolean>(false);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
+    // Track auth state - only subscribe to Firestore when authenticated
     useEffect(() => {
+        const unsubAuth = onAuthStateChanged(auth, (user) => {
+            setIsAuthenticated(!!user);
+            if (!user) {
+                // User logged out - clear data
+                setAllBookings([]);
+                setLoading(true);
+            }
+        });
+        return () => unsubAuth();
+    }, []);
+
+    // Only start Firestore listeners AFTER authentication is confirmed
+    useEffect(() => {
+        if (!isAuthenticated) {
+            return; // Don't subscribe until user is authenticated
+        }
+
+        console.log('[BookingRealtime] Auth confirmed - starting Firestore listeners');
+
         const unsubSettings = onSnapshot(doc(db, "settings", "general"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
@@ -83,16 +105,18 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
 
             setAllBookings(records);
             setLoading(false);
+            console.log(`[BookingRealtime] Received ${records.length} bookings`);
         }, (error) => {
             console.error("Error fetching bookings:", error);
             setLoading(false);
         });
 
         return () => {
+            console.log('[BookingRealtime] Cleaning up Firestore listeners');
             unsubSettings();
             unsubBookings();
         };
-    }, []);
+    }, [isAuthenticated]); // Re-subscribe when auth state changes
 
     const currentOrder = useMemo(() => getShareholderOrder(2026), []);
 
