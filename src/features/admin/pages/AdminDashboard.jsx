@@ -40,6 +40,7 @@ export function AdminDashboard() {
         bypassTenAM,
         isTestMode,
         fastTestingMode,
+        status
     } = useBookingRealtimeContext();
 
     // Admin needs bookings sorted by createdAt desc (context sorts by from asc)
@@ -80,8 +81,7 @@ export function AdminDashboard() {
         setPromptData({ isOpen: true, title, message, defaultValue, onConfirm, inputType, confirmText });
     };
 
-    // Admin-only state (not in shared context)
-    const [draftStatus, setDraftStatus] = useState(null);
+    // Removed local draftStatus. Now using strictly realtime status from context.
 
     // Editing State (Bookings)
     const [editingBooking, setEditingBooking] = useState(null);
@@ -100,10 +100,6 @@ export function AdminDashboard() {
 
     // Admin-only listeners (settings + bookings come from shared context)
     useEffect(() => {
-        const unsubStatus = onSnapshot(doc(db, "status", "draftStatus"), (snap) => {
-            if (snap.exists()) setDraftStatus(snap.data());
-        });
-
         const qUsers = query(collection(db, "shareholders"), orderBy("cabin"));
         const unsubUsers = onSnapshot(qUsers, (snap) => {
             const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -111,7 +107,7 @@ export function AdminDashboard() {
             setShareholders(list);
         });
 
-        return () => { unsubStatus(); unsubUsers(); };
+        return () => unsubUsers();
     }, []);
 
     // Handlers: Authentication
@@ -451,9 +447,9 @@ export function AdminDashboard() {
     const { schedule, activeTurn } = React.useMemo(() => {
         const order = getShareholderOrder(2026);
         const sched = mapOrderToSchedule(order, allBookings, startDateOverride, fastTestingMode, bypassTenAM);
-        const active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD') || sched.find(s => s.name === draftStatus?.activePicker && s.round == draftStatus?.round);
+        const active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD') || sched.find(s => s.name === status?.activePicker && s.round == status?.round);
         return { schedule: sched, activeTurn: active };
-    }, [allBookings, draftStatus, startDateOverride, fastTestingMode, bypassTenAM, tick]);
+    }, [allBookings, status, startDateOverride, fastTestingMode, bypassTenAM, tick]);
 
     if (contextLoading) return <div className="flex items-center justify-center min-h-screen animate-pulse">Loading...</div>;
 
@@ -464,7 +460,7 @@ export function AdminDashboard() {
             <CreateUserModal isOpen={isCreateUserModalOpen} onClose={() => setIsCreateUserModalOpen(false)} onSuccess={() => triggerAlert("Success", "User created.")} />
 
             {myProfile && activeTurn ? (
-                <ShareholderHero currentUser={currentUser} status={{ ...draftStatus, activePicker: activeTurn.name, phase: 'ROUND_1' }} shareholderName={myProfile.name} drafts={allBookings} isSuperAdmin={true} onOpenBooking={() => window.location.hash = '#book'} />
+                <ShareholderHero currentUser={currentUser} status={status} shareholderName={myProfile.name} drafts={allBookings} isSuperAdmin={true} onOpenBooking={() => window.location.hash = '#book'} />
             ) : activeTurn && (
                 <AdminTurnHero activeTurn={activeTurn} drafts={allBookings} isTestMode={isTestMode} isSystemFrozen={isSystemFrozen} />
             )}
