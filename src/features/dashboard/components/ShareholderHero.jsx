@@ -123,7 +123,14 @@ export function ShareholderHero({
 
     // Note: Cancelled bookings DO count toward round completion.
     const effectiveActions = myActions;
-    const isDoneForRound = effectiveActions.length >= roundTarget;
+
+    // Rely on the central DraftStatus schedule to know if we are done for the round
+    // This perfectly handles skipped rounds and pass actions without relying on array length
+    const myScheduleCurrentRound = status.schedule?.find(s =>
+        normalizeName(s.name) === normalizedMe && s.round === roundTarget
+    );
+    const isDoneForRound = myScheduleCurrentRound ? myScheduleCurrentRound.isCompleted : (effectiveActions.length >= roundTarget);
+
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))

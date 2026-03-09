@@ -413,7 +413,7 @@ export function Dashboard() {
                 },
                 true, // Danger
                 "Confirm Pass",
-                "agree" // Require typing
+                "pass" // Require typing
             );
             return;
         }
