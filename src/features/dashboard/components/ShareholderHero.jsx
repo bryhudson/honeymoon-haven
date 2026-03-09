@@ -121,9 +121,8 @@ export function ShareholderHero({
         }
     }
 
-    // Only count non-cancelled actions toward round completion
-    // Note: pass actions have status='cancelled' but type='pass' - we only exclude type='cancelled'
-    const effectiveActions = myActions.filter(a => a.type !== 'cancelled');
+    // Note: Cancelled bookings DO count toward round completion.
+    const effectiveActions = myActions;
     const isDoneForRound = effectiveActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
@@ -464,16 +463,17 @@ export function ShareholderHero({
         const lastEffective = effectiveActions[effectiveActions.length - 1];
         const isPassed = lastEffective?.type === 'pass';
         const isSkipped = lastEffective?.type === 'skipped';
+        const isCancelled = lastEffective?.type === 'cancelled' || lastEffective?.status === 'cancelled';
 
         let hero;
 
-        if (isPassed || isSkipped) {
+        if (isPassed || isSkipped || isCancelled) {
             // Build a forward-looking message based on current phase
             let nextPhaseInfo;
             if (status.phase === 'OPEN_SEASON') {
                 nextPhaseInfo = 'Open Season is active - book anytime!';
             } else if (status.phase === 'ROUND_2') {
-                // They passed in R2 - next is Open Season
+                // They passed/cancelled in R2 - next is Open Season
                 nextPhaseInfo = 'Open Season begins after Round 2 completes.';
             } else if (queueInfo?.diff) {
                 nextPhaseInfo = `You're #${getOrdinal(queueInfo.diff)} in line for Round 2.`;
@@ -481,16 +481,33 @@ export function ShareholderHero({
                 nextPhaseInfo = 'Round 2 is coming up next.';
             }
 
+            let icon = isSkipped ? ArrowRight : isCancelled ? XCircle : XCircle;
+            let title = isSkipped ? "Turn Skipped" : isCancelled ? "Cancelled" : "Passed Round";
+            let subtitle = isSkipped ? "Opted Out" : isCancelled ? "Booking Removed" : "Opted Out";
+            let color = isCancelled ? "rose" : "slate";
+
             hero = <ModernTrailerWidget
                 shareholderName={shareholderName}
-                accentColor="slate"
-                icon={isSkipped ? ArrowRight : XCircle}
-                title={isSkipped ? "Turn Skipped" : "Passed Round"}
-                subtitle={`${phaseLabel} - Opted Out`}
+                accentColor={color}
+                icon={icon}
+                title={title}
+                subtitle={`${phaseLabel} - ${subtitle}`}
                 mainContent={
                     <div className="flex flex-col items-center lg:items-start gap-1">
                         <div className="text-white/60">{nextPhaseInfo}</div>
                     </div>
+                }
+                actions={
+                    isCancelled ? (
+                        <div className="flex w-full">
+                            <button
+                                onClick={() => onViewDetails(lastEffective)}
+                                className="w-full md:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                            >
+                                View Details
+                            </button>
+                        </div>
+                    ) : undefined
                 }
             />;
         } else {
@@ -525,44 +542,6 @@ export function ShareholderHero({
                 </div>
             </div>
         ) : hero;
-    }
-
-    // ============================================
-    // 6. BOOKING CANCELLED
-    // Only show if they don't have an upcoming round still to play.
-    // e.g. A Round 1 cancellation in ROUND_2 phase = they still get their R2 turn.
-    // ============================================
-    const cancelledActionsCount = myActions.filter(a => a.type === 'cancelled' || a.status === 'cancelled').length;
-    const nonCancelledActionsCount = myActions.filter(a => a.type !== 'cancelled' && a.status !== 'cancelled').length;
-    const hasUpcomingFutureTurn = nonCancelledActionsCount < roundTarget;
-
-    if (latestAction?.type === 'cancelled' && !isYourTurn && !hasUpcomingFutureTurn) {
-        // Use system phase for context; the cancelled booking happened in the current phase
-        const hasUpcomingRound = status.phase === 'ROUND_1' || status.phase === 'ROUND_2';
-        const upcomingMessage = hasUpcomingRound
-            ? `Your booking was cancelled. You still have upcoming rounds.`
-            : `Your booking was cancelled.`;
-
-        return <ModernTrailerWidget
-            shareholderName={shareholderName}
-            accentColor="rose"
-            icon={XCircle}
-            title="Cancelled"
-            subtitle={`${phaseLabel} - Booking Removed`}
-            mainContent={
-                <div className="flex flex-col items-center lg:items-start gap-1">
-                    <div className="text-white/60">{upcomingMessage}</div>
-                </div>
-            }
-            actions={
-                <button
-                    onClick={() => onViewDetails(latestAction)}
-                    className="w-full md:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
-                >
-                    View Details
-                </button>
-            }
-        />;
     }
 
     // ============================================
