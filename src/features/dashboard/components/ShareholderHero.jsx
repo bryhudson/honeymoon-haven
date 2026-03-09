@@ -122,7 +122,8 @@ export function ShareholderHero({
     }
 
     // Only count non-cancelled actions toward round completion
-    const effectiveActions = myActions.filter(a => a.type !== 'cancelled' && a.status !== 'cancelled');
+    // Note: pass actions have status='cancelled' but type='pass' - we only exclude type='cancelled'
+    const effectiveActions = myActions.filter(a => a.type !== 'cancelled');
     const isDoneForRound = effectiveActions.length >= roundTarget;
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
