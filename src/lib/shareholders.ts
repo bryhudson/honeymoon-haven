@@ -243,7 +243,8 @@ export function calculateDraftSchedule(
 
         const userActions = bookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
-            .filter(b => b.isFinalized || b.type === 'pass' || (b as any).type === 'skipped' || b.type === 'cancelled' || (b as any).status === 'cancelled') // IGNORE DRAFTS
+            .filter(b => b.isFinalized || b.type === 'pass' || (b as any).type === 'skipped') // IGNORE DRAFTS AND CANCELLED
+            .filter(b => b.type !== 'cancelled' && (b as any).status !== 'cancelled') // Cancelled bookings don't consume a turn
             .sort((a, b) => {
                 const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
                 const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
