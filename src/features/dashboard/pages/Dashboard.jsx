@@ -404,6 +404,7 @@ export function Dashboard() {
 
 
                         triggerAlert("Turn Passed", "You have successfully passed your turn. The booking window is now open for the next shareholder.");
+                        console.log("[DEBUG] Pass action triggered successfully", { name: passData.name, time: now });
                         setPassData({ name: '' });
                     } catch (err) {
                         console.error(err);
@@ -412,7 +413,7 @@ export function Dashboard() {
                 },
                 true, // Danger
                 "Confirm Pass",
-                "pass" // Require typing
+                "agree" // Require typing
             );
             return;
         }
