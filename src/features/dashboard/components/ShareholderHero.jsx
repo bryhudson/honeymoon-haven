@@ -100,9 +100,11 @@ export function ShareholderHero({
         normalizeName(b.shareholderName) === normalizedMe &&
         (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
     ).sort((a, b) => {
-        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-        return aTime.getTime() - bTime.getTime();
+        const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+        const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+        const aTime = isNaN(aRaw.getTime()) ? 0 : aRaw.getTime();
+        const bTime = isNaN(bRaw.getTime()) ? 0 : bRaw.getTime();
+        return aTime - bTime;
     });
 
     // Detect auto-skipped rounds and inject them into myActions
@@ -123,7 +125,11 @@ export function ShareholderHero({
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
-        .sort((a, b) => b.createdAt - a.createdAt)[0];
+        .sort((a, b) => {
+            const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+            const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+            return (isNaN(bRaw.getTime()) ? 0 : bRaw.getTime()) - (isNaN(aRaw.getTime()) ? 0 : aRaw.getTime());
+        })[0];
 
     // --- Admin-Style Widget (V5.6) ---
 

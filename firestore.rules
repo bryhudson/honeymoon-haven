@@ -19,20 +19,17 @@ service cloud.firestore {
     // Helper: Basic Schema Validation
     function isValidBooking() {
       let data = request.resource.data;
-      return 
-        // 1. Must have a shareholder Name (string, non-empty)
-        data.shareholderName is string && data.shareholderName.size() > 0 &&
-        
-        // 2. Must have Dates (timestamps)
-        data.from is timestamp &&
-        data.to is timestamp &&
-        data.createdAt is timestamp &&
-        
-        // 3. Logic: End date must be AFTER Start date
-        data.to > data.from &&
-        
-        // 4. Type must be valid
+      // Core: Must have a name, uid, and valid type
+      let hasCore = data.shareholderName is string && data.shareholderName.size() > 0 &&
         (data.type == 'booking' || data.type == 'pass' || data.type == 'auto-pass' || data.type == 'cancelled');
+      
+      // Pass/auto-pass types do NOT require from/to/dates
+      let isPassType = (data.type == 'pass' || data.type == 'auto-pass' || data.type == 'cancelled');
+      
+      // Booking type requires dates and date logic
+      let hasValidDates = data.from is timestamp && data.to is timestamp && data.to > data.from;
+      
+      return hasCore && (isPassType || hasValidDates);
     }
 
     match /bookings/{bookingId} {

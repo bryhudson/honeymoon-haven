@@ -245,9 +245,11 @@ export function calculateDraftSchedule(
             .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
             .filter(b => b.isFinalized || b.type === 'pass' || (b as any).type === 'skipped' || b.type === 'cancelled' || (b as any).status === 'cancelled') // IGNORE DRAFTS
             .sort((a, b) => {
-                const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-                const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-                return aTime.getTime() - bTime.getTime();
+                const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+                const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+                const aTime = isNaN(aRaw.getTime()) ? 0 : aRaw.getTime();
+                const bTime = isNaN(bRaw.getTime()) ? 0 : bRaw.getTime();
+                return aTime - bTime;
             });
 
         const action = userActions[bookingIndex];
@@ -256,7 +258,7 @@ export function calculateDraftSchedule(
             let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
             if (!actionTime) actionTime = currentWindowStart;
 
-            let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
+            let pTime = actionTime instanceof Date ? actionTime : (actionTime?.toDate ? actionTime.toDate() : new Date(actionTime || 0));
 
             if (!isNaN(pTime.getTime())) {
                 currentWindowStart = startAnchor(pTime);

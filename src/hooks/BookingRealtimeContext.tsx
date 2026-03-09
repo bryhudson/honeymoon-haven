@@ -69,7 +69,7 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
                     shareholderName: data.shareholderName,
                     from: data.from instanceof Timestamp ? data.from.toDate() : (data.from ? new Date(data.from) : null),
                     to: data.to instanceof Timestamp ? data.to.toDate() : (data.to ? new Date(data.to) : null),
-                    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+                    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : (data.createdAt instanceof Date ? data.createdAt : (data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()))),
                     cancelledAt: data.cancelledAt instanceof Timestamp ? data.cancelledAt.toDate() : (data.cancelledAt ? new Date(data.cancelledAt) : null)
                 } as Booking;
             });
