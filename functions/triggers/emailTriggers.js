@@ -335,10 +335,23 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
             false,  // 6. Strict 10AM (Enforce 'Next Day 10 AM' rule even if settings say bypass)
         );
 
+        // IMMEDIATE REAL-TIME SYNC
+        // Overwrite the status document immediately so the frontend updates without waiting for the 1-minute cron job
+        await db.collection("status").doc("draftStatus").set({
+            activePicker: schedule.activePicker,
+            nextPicker: schedule.nextPicker,
+            phase: schedule.phase,
+            round: schedule.round,
+            isGracePeriod: schedule.isGracePeriod || false,
+            windowStarts: schedule.windowStarts ? admin.firestore.Timestamp.fromDate(schedule.windowStarts) : null,
+            windowEnds: schedule.windowEnds ? admin.firestore.Timestamp.fromDate(schedule.windowEnds) : null,
+            lastSynced: admin.firestore.Timestamp.now()
+        });
+
         const nextPickerName = schedule.activePicker;
 
         if (nextPickerName) {
-            logger.info(`Next Picker Identified: ${nextPickerName}`);
+            logger.info(`Next Picker Identified & Status Synced: ${nextPickerName}`);
 
             // 3. Get Next Shareholder Email
             const nextUserQuery = await db.collection("shareholders").get();
