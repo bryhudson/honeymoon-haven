@@ -73,8 +73,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     }
 
     // Detect Status Changes
-    const wasConfirmed = beforeData?.status === 'confirmed' || beforeData?.isFinalized === true;
-    const isConfirmed = afterData?.status === 'confirmed' || afterData?.isFinalized === true;
+    const wasConfirmed = (beforeData?.status === 'confirmed' || beforeData?.isFinalized === true) && beforeData?.type !== 'pass';
+    const isConfirmed = (afterData?.status === 'confirmed' || afterData?.isFinalized === true) && afterData?.type !== 'pass';
 
     const wasCancelled = beforeData?.status === 'cancelled' || beforeData?.type === 'cancelled';
     const isCancelled = afterData?.status === 'cancelled' || afterData?.type === 'cancelled';
