@@ -189,18 +189,18 @@ export function ShareholderHero({
                     </div>
                 }
                 actions={
-                    <div className="flex gap-3 w-full">
+                    <div className="flex flex-col gap-3 w-full">
                         {isPaid && onEmail && (
                             <button
                                 onClick={() => onEmail(bookingAction)}
-                                className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"
+                                className="w-full px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"
                             >
                                 Email Guest
                             </button>
                         )}
                         <button
                             onClick={() => onViewDetails(bookingAction)}
-                            className="flex-1 px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
+                            className="w-full px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
                         >
                             View Details
                         </button>
@@ -320,10 +320,10 @@ export function ShareholderHero({
                 <button
                     onClick={onOpenBooking}
                     disabled={isReadOnly}
-                    className={`w-full md:w-auto px-6 py-2.5 text-sm font-bold rounded-lg transition-all
+                    className={`w-full px-6 py-2.5 text-sm font-bold rounded-lg transition-all
                         ${isReadOnly
                             ? 'bg-emerald-900/30 text-emerald-500/50 cursor-not-allowed'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 active:scale-95'}`}
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 active:scale-[0.98]'}`}
                 >
                     Book Dates
                 </button>
@@ -410,24 +410,24 @@ export function ShareholderHero({
                 </div>
             }
             actions={
-                <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <div className="flex flex-col gap-3 w-full">
                     <button
                         onClick={onOpenBooking}
                         disabled={isReadOnly}
-                        className={`flex-1 px-6 py-3 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20
+                        className={`w-full px-6 py-3 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20
                             ${isReadOnly
                                 ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                                : 'bg-white text-slate-900 hover:bg-blue-50'}`}
+                                : 'bg-white text-slate-900 hover:bg-blue-50 active:scale-[0.98]'}`}
                     >
                         Book Dates <ArrowRight className="w-4 h-4" />
                     </button>
                     <button
                         onClick={onPass}
                         disabled={isReadOnly}
-                        className={`flex-1 px-6 py-3 rounded-lg text-sm font-bold transition-all
+                        className={`w-full px-6 py-3 rounded-lg text-sm font-bold transition-all
                             ${isReadOnly
                                 ? 'bg-white/5 text-white/20 border-white/5 cursor-not-allowed'
-                                : 'bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-slate-600'}`}
+                                : 'bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-slate-600 active:scale-[0.98]'}`}
                     >
                         Pass Turn
                     </button>
@@ -509,7 +509,7 @@ export function ShareholderHero({
                         <div className="flex w-full">
                             <button
                                 onClick={() => onViewDetails(lastEffective)}
-                                className="w-full md:w-auto px-6 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
+                                className="w-full px-6 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
                             >
                                 View Details
                             </button>
@@ -598,21 +598,21 @@ export function ShareholderHero({
             )
         }
         actions={
-            <div className="flex flex-col md:flex-row gap-3 w-full">
-                <button
-                    onClick={onOpenFeedback}
-                    className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/10 hover:border-white/20 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"
-                >
-                    Feedback
-                </button>
+            <div className="flex flex-col gap-3 w-full">
                 {upcomingBooking && (
                     <button
                         onClick={() => onViewDetails(upcomingBooking)}
-                        className="flex-1 px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
+                        className="w-full px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
                     >
                         View Details
                     </button>
                 )}
+                <button
+                    onClick={onOpenFeedback}
+                    className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/10 hover:border-white/20 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"
+                >
+                    Feedback
+                </button>
             </div>
         }
     />;
@@ -768,7 +768,7 @@ function ModernTrailerWidget({
 
                 {/* RIGHT: Action Card or Timer */}
                 {(rightContent || actions) && (
-                    <div className="flex flex-col w-full lg:w-auto gap-4">
+                    <div className="flex flex-col w-full lg:w-72 shrink-0 gap-4 mt-6 lg:mt-0">
                         {rightContent && <div className="w-full">{rightContent}</div>}
                         {actions && <div className="w-full">{actions}</div>}
                     </div>
