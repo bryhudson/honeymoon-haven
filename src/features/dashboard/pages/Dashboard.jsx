@@ -294,14 +294,17 @@ export function Dashboard() {
 
     // ...
 
-    const handleFinalize = async (bookingId, name, skipConfirm = false, onSuccess = null) => {
+    const handleFinalize = async (bookingId, name, skipConfirm = false, onSuccess = null, skipWrite = false) => {
         const executeFinalize = async () => {
             try {
-                await updateDoc(doc(db, "bookings", bookingId), {
-                    isFinalized: true,
-                    createdAt: new Date(), // Reset clock to now
-                    celebrated: false
-                });
+                // Skip the Firestore write if it was already done (e.g., from BookingSection)
+                if (!skipWrite) {
+                    await updateDoc(doc(db, "bookings", bookingId), {
+                        isFinalized: true,
+                        createdAt: new Date(), // Reset clock to now
+                        celebrated: false
+                    });
+                }
 
                 // 1. Notify CURRENT user (Confirmation) - HANDLED IN BookingSection.jsx NOW.
                 // Removing duplicate email call.
@@ -732,8 +735,8 @@ export function Dashboard() {
                                             }}
                                             onDiscard={handleDiscard}
                                             onShowAlert={triggerAlert}
-                                            onFinalize={async (id, name) => {
-                                                await handleFinalize(id, name, true);
+                                            onFinalize={async (id, name, skipWrite = false) => {
+                                                await handleFinalize(id, name, true, null, skipWrite);
                                             }}
                                             bookings={allBookings}
                                             startDateOverride={startDateOverride}

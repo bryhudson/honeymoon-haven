@@ -343,7 +343,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 guests: parseInt(formData.guests) || 1, // Ensure number
                 updatedAt: new Date(),
                 round: status?.phase === 'ROUND_1' ? 1 : 2,
-                phase: status?.phase || 'OPEN_SEASON'
+                phase: status?.phase || 'OPEN_SEASON',
+                ...(finalize ? { celebrated: false } : {}) // Include celebrated when finalizing
             };
 
             // Remove undefined values
@@ -362,10 +363,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 }
 
                 if (finalize && onFinalize) {
-                    // Logic from Dashboard.handleFinalize needs to be handled here or passed in
-                    // For now, let's just trigger the callback
+                    // Single write already done above with isFinalized:true
+                    // onFinalize handles UI cleanup only (modal close, confetti)
                     setIsFinalSuccess(true);
-                    await onFinalize(effectiveId, formData.shareholderName);
+                    await onFinalize(effectiveId, formData.shareholderName, true);
                 }
 
                 if (finalize) {
