@@ -391,7 +391,7 @@ export function Dashboard() {
                             uid: currentUser.uid, // Required for security rules
                             cabinNumber: owner ? owner.cabin : "?",
                             type: 'pass', // This is important
-                            status: 'cancelled', // Matches dormant passPayload logic
+                            status: 'finalized', // Using 'finalized' because it's a permanent completed action 
                             isFinalized: true, // Mark as finalized immediately
                             createdAt: now,
                             from: now,

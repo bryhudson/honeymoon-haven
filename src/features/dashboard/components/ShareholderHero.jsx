@@ -463,7 +463,7 @@ export function ShareholderHero({
         const lastEffective = effectiveActions[effectiveActions.length - 1];
         const isPassed = lastEffective?.type === 'pass';
         const isSkipped = lastEffective?.type === 'skipped';
-        const isCancelled = lastEffective?.type === 'cancelled' || lastEffective?.status === 'cancelled';
+        const isCancelled = lastEffective?.type === 'cancelled'; // Strictly check 'type', ignore 'status' which might be 'cancelled' for passes
 
         let hero;
 
@@ -481,7 +481,7 @@ export function ShareholderHero({
                 nextPhaseInfo = 'Round 2 is coming up next.';
             }
 
-            let icon = isSkipped ? ArrowRight : isCancelled ? XCircle : XCircle;
+            let icon = isSkipped ? ArrowRight : isCancelled ? XCircle : ArrowRight;
             let title = isSkipped ? "Turn Skipped" : isCancelled ? "Cancelled" : "Passed Round";
             let subtitle = isSkipped ? "Opted Out" : isCancelled ? "Booking Removed" : "Opted Out";
             let color = isCancelled ? "rose" : "slate";
