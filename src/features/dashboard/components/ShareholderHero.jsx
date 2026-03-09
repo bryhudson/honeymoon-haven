@@ -189,18 +189,18 @@ export function ShareholderHero({
                     </div>
                 }
                 actions={
-                    <div className="flex gap-2 w-full">
+                    <div className="flex gap-3 w-full">
                         {isPaid && onEmail && (
                             <button
                                 onClick={() => onEmail(bookingAction)}
-                                className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
+                                className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"
                             >
                                 Email Guest
                             </button>
                         )}
                         <button
                             onClick={() => onViewDetails(bookingAction)}
-                            className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/70 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                            className="flex-1 px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
                         >
                             View Details
                         </button>
@@ -509,7 +509,7 @@ export function ShareholderHero({
                         <div className="flex w-full">
                             <button
                                 onClick={() => onViewDetails(lastEffective)}
-                                className="w-full md:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                                className="w-full md:w-auto px-6 py-2.5 bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-[0.98]"
                             >
                                 View Details
                             </button>
@@ -598,17 +598,17 @@ export function ShareholderHero({
             )
         }
         actions={
-            <div className="flex flex-col md:flex-row gap-2 w-full">
+            <div className="flex flex-col md:flex-row gap-3 w-full">
                 <button
                     onClick={onOpenFeedback}
-                    className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                    className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/10 hover:border-white/20 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"
                 >
                     Feedback
                 </button>
                 {upcomingBooking && (
                     <button
                         onClick={() => onViewDetails(upcomingBooking)}
-                        className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white/60 hover:text-white border border-white/10 rounded-lg text-xs font-bold transition-colors"
+                        className="flex-1 px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
                     >
                         View Details
                     </button>
