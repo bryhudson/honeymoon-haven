@@ -51,14 +51,20 @@ export function AdminBookingManagement({
         const paymentClass = getPaymentClass(booking?.isPaid);
 
         return (
-            <div key={`${slot.name}-${slot.round}`} className="bg-white p-5 rounded-xl border shadow-sm space-y-4 relative overflow-hidden">
+            <div key={`${slot.name}-${slot.round}`} className={`p-5 rounded-xl border shadow-sm space-y-4 relative overflow-hidden ${(!isSlotBooked && (slot.status === 'ACTIVE' || slot.status === 'GRACE_PERIOD')) ? 'bg-emerald-50/30 ring-2 ring-emerald-500/50' : 'bg-white'}`}>
                 {isSlotBooked && (
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${booking.isFinalized ? 'bg-green-500' : 'bg-amber-400'}`}></div>
+                )}
+                {!isSlotBooked && slot.status === 'ACTIVE' && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 animate-pulse"></div>
+                )}
+                {!isSlotBooked && slot.status === 'GRACE_PERIOD' && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
                 )}
 
                 <div className="flex justify-between items-start pl-2">
                     <div>
-                        <h3 className="font-bold text-slate-900 text-lg">{slot.name}</h3>
+                        <h3 className={`font-bold text-lg ${!isSlotBooked && (slot.status === 'ACTIVE' || slot.status === 'GRACE_PERIOD') ? 'text-emerald-700' : 'text-slate-900'}`}>{slot.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
                                 Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
@@ -86,7 +92,25 @@ export function AdminBookingManagement({
                             return <div className="px-2 py-1 rounded text-[10px] font-bold border bg-green-50 text-green-700 border-green-200 w-24 justify-center flex">CONFIRMED</div>;
                         })()
                     ) : (
-                        <span className="text-xs text-slate-400 font-medium italic pr-2">Pending</span>
+                        (() => {
+                            const statusConfig = {
+                                'ACTIVE': { label: 'Active Now', className: 'bg-emerald-100 text-emerald-700 border-emerald-200 animate-pulse' },
+                                'GRACE_PERIOD': { label: 'Early Access', className: 'bg-amber-100 text-amber-700 border-amber-200' },
+                                'SKIPPED': { label: 'Skipped', className: 'bg-rose-100 text-rose-700 border-rose-200' },
+                                'FUTURE': { label: 'Pending', className: 'bg-slate-100 text-slate-400 border-slate-200' },
+                                'PASSED': { label: 'Passed', className: 'bg-slate-100 text-slate-500 border-slate-200' },
+                                'CANCELLED': { label: 'Cancelled', className: 'bg-rose-50 text-rose-500 border-rose-100 line-through' }
+                            };
+                            const config = statusConfig[slot.status] || statusConfig['FUTURE'];
+                            if (config.label === 'Pending') {
+                                return <span className="text-xs text-slate-400 font-medium pr-2">Pending</span>;
+                            }
+                            return (
+                                <span className={`mr-2 inline-flex items-center px-2 py-1 rounded text-[10px] font-bold border justify-center ${config.className}`}>
+                                    {config.label}
+                                </span>
+                            );
+                        })()
                     )}
                 </div>
 
@@ -157,11 +181,13 @@ export function AdminBookingManagement({
             };
             const config = statusConfig[slot.status] || statusConfig['FUTURE'];
 
+            const isActive = slot.status === 'ACTIVE' || slot.status === 'GRACE_PERIOD';
+
             return (
-                <tr key={`${slot.name}-${slot.round}`} className="bg-slate-50/30">
+                <tr key={`${slot.name}-${slot.round}`} className={`bg-slate-50/30 ${isActive ? 'ring-inset ring-2 ring-emerald-500/50 shadow-sm relative z-10 bg-emerald-50/30' : ''}`}>
                     <td className="px-6 py-5">
-                        <div className="font-semibold text-slate-400 text-base">{slot.name}</div>
-                        <div className="text-xs text-muted-foreground font-mono mt-0.5 opacity-50">
+                        <div className={`font-semibold text-base ${isActive ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>{slot.name}</div>
+                        <div className={`text-xs font-mono mt-0.5 ${isActive ? 'text-emerald-700/70 font-medium' : 'text-muted-foreground opacity-50'}`}>
                             Cabin #{owner?.cabin || "?"}
                         </div>
                     </td>

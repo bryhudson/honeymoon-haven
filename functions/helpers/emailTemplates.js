@@ -413,7 +413,7 @@ const emailTemplates = {
 
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🎁 Bonus Time!</strong><br>
-        This is extra time to browse the calendar and plan - no pressure. Your official 48-hour window doesn't start until <strong>${data.deadline_date} at 10:00 AM PT</strong>.</p>
+        This is extra time to browse the calendar and plan - no pressure. Your 48-hour booking deadline is <strong>${data.deadline_date} at ${data.deadline_time} PT</strong>.</p>
       </div>
 
       <div style="margin: 32px 0;">
