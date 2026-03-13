@@ -1,16 +1,16 @@
 import React from 'react';
-import { Caravan, Tent, Compass, Map, Coffee } from 'lucide-react';
+import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Palmtree } from 'lucide-react';
 
 /**
- * HeroBackground - GSAP-inspired layered animated hero background.
+ * HeroBackground - "Lakeside Memories" animated hero background.
  *
  * Layers (back to front):
  *   1. Perimeter glow - ambient edge lighting
  *   2. Gradient orbs - soft floating color blobs
- *   3. Floating mini icons - travel-themed icons drifting independently
- *   4. Giant Caravan watermark - signature brand mark, slowly rotating
+ *   3. Floating lakeside icons - themed icons drifting independently
+ *   4. Centered Caravan/Trailer - signature brand mark
  *
- * Pure CSS keyframes, zero dependencies beyond lucide icons, GPU-accelerated.
+ * Pure CSS keyframes, GPU-accelerated, accessibility-aware.
  *
  * @param {string} color - Theme color key
  */
@@ -27,12 +27,12 @@ const COLOR_MAP = {
     red:     ['rgba(239,68,68,0.4)', 'rgba(252,165,165,0.3)', 'rgba(220,38,38,0.25)'],
 };
 
-/* ── Perimeter glow colors ── */
+/* ── Perimeter glow ── */
 const GLOW_MAP = {
     emerald: 'rgba(16,185,129,0.15)',
     blue:    'rgba(59,130,246,0.15)',
-    indigo:  'rgba(99,102,241,0.15)',
-    amber:   'rgba(245,158,11,0.12)',
+    indigo:  'rgba(99,102,241,0.18)',
+    amber:   'rgba(245,158,11,0.14)',
     slate:   'rgba(148,163,184,0.1)',
     rose:    'rgba(244,63,94,0.15)',
     violet:  'rgba(139,92,246,0.15)',
@@ -46,12 +46,16 @@ const ORB_CONFIGS = [
     { size: 180, top: '35%', left: '45%',    anim: 'heroOrb3', dur: '22s' },
 ];
 
-/* ── Floating mini-icon configs ── */
-const MINI_ICONS = [
-    { Icon: Tent,    size: 38, top: '15%', left: '68%', anim: 'miniFloat1', dur: '16s', delay: '0s' },
-    { Icon: Compass, size: 32, top: '60%', left: '12%', anim: 'miniFloat2', dur: '20s', delay: '2s' },
-    { Icon: Map,     size: 36, top: '10%', left: '28%', anim: 'miniFloat3', dur: '18s', delay: '4s' },
-    { Icon: Coffee,  size: 30, top: '50%', left: '78%', anim: 'miniFloat4', dur: '14s', delay: '1s' },
+/* ── Floating lakeside icons - scattered around the hero ── */
+const LAKESIDE_ICONS = [
+    { Icon: Sailboat,  size: 36, top: '12%', left: '70%', anim: 'lakeFloat1', dur: '18s', delay: '0s' },
+    { Icon: Flame,     size: 30, top: '60%', left: '8%',  anim: 'lakeFloat2', dur: '15s', delay: '1s' },
+    { Icon: Beer,      size: 28, top: '18%', left: '25%', anim: 'lakeFloat3', dur: '20s', delay: '3s' },
+    { Icon: Fish,      size: 32, top: '55%', left: '82%', anim: 'lakeFloat4', dur: '16s', delay: '2s' },
+    { Icon: Sun,       size: 34, top: '8%',  left: '88%', anim: 'lakeFloat5', dur: '22s', delay: '0s' },
+    { Icon: Waves,     size: 30, top: '72%', left: '45%', anim: 'lakeFloat6', dur: '17s', delay: '4s' },
+    { Icon: Mountain,  size: 34, top: '10%', left: '48%', anim: 'lakeFloat7', dur: '24s', delay: '1s' },
+    { Icon: Anchor,    size: 26, top: '65%', left: '28%', anim: 'lakeFloat8', dur: '19s', delay: '2s' },
 ];
 
 /* ── All keyframes ── */
@@ -78,41 +82,67 @@ const KEYFRAMES = `
     100% { transform: translate(0, 0) scale(1); }
 }
 
-/* Floating Mini Icons */
-@keyframes miniFloat1 {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
-    25%  { transform: translate(-25px, 18px) rotate(18deg); opacity: 0.30; }
-    50%  { transform: translate(12px, -30px) rotate(-12deg); opacity: 0.22; }
-    75%  { transform: translate(-18px, -12px) rotate(22deg); opacity: 0.28; }
-    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
-}
-@keyframes miniFloat2 {
+/* Lakeside Floating Icons - 8 unique paths */
+@keyframes lakeFloat1 {
     0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
-    30%  { transform: translate(30px, -25px) rotate(-22deg); opacity: 0.28; }
-    60%  { transform: translate(-18px, 25px) rotate(18deg); opacity: 0.20; }
+    25%  { transform: translate(-20px, 12px) rotate(12deg); opacity: 0.28; }
+    50%  { transform: translate(15px, -18px) rotate(-8deg); opacity: 0.20; }
+    75%  { transform: translate(-10px, -8px) rotate(15deg); opacity: 0.26; }
     100% { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
 }
-@keyframes miniFloat3 {
+@keyframes lakeFloat2 {
     0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.22; }
-    20%  { transform: translate(22px, 28px) rotate(28deg); opacity: 0.30; }
-    50%  { transform: translate(-28px, -18px) rotate(-18deg); opacity: 0.18; }
-    80%  { transform: translate(15px, -22px) rotate(12deg); opacity: 0.26; }
+    30%  { transform: translate(25px, -15px) rotate(-15deg); opacity: 0.30; }
+    60%  { transform: translate(-12px, 20px) rotate(10deg); opacity: 0.18; }
     100% { transform: translate(0, 0) rotate(0deg); opacity: 0.22; }
 }
-@keyframes miniFloat4 {
+@keyframes lakeFloat3 {
     0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
-    35%  { transform: translate(-22px, -18px) rotate(-20deg); opacity: 0.28; }
-    70%  { transform: translate(25px, 15px) rotate(15deg); opacity: 0.16; }
+    20%  { transform: translate(18px, 22px) rotate(20deg); opacity: 0.28; }
+    50%  { transform: translate(-22px, -12px) rotate(-12deg); opacity: 0.16; }
+    80%  { transform: translate(10px, -16px) rotate(8deg); opacity: 0.25; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+}
+@keyframes lakeFloat4 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.16; }
+    35%  { transform: translate(-18px, -12px) rotate(-18deg); opacity: 0.26; }
+    70%  { transform: translate(22px, 10px) rotate(12deg); opacity: 0.18; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.16; }
+}
+@keyframes lakeFloat5 {
+    0%   { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.22; }
+    25%  { transform: translate(-8px, 10px) rotate(8deg) scale(1.08); opacity: 0.30; }
+    50%  { transform: translate(12px, -6px) rotate(-5deg) scale(0.95); opacity: 0.20; }
+    75%  { transform: translate(-6px, -12px) rotate(10deg) scale(1.05); opacity: 0.28; }
+    100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.22; }
+}
+@keyframes lakeFloat6 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
+    25%  { transform: translate(30px, 5px) rotate(5deg); opacity: 0.25; }
+    50%  { transform: translate(-10px, -8px) rotate(-8deg); opacity: 0.15; }
+    75%  { transform: translate(20px, -5px) rotate(3deg); opacity: 0.22; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
+}
+@keyframes lakeFloat7 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.15; }
+    30%  { transform: translate(-15px, 18px) rotate(10deg); opacity: 0.24; }
+    60%  { transform: translate(20px, -10px) rotate(-6deg); opacity: 0.18; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.15; }
+}
+@keyframes lakeFloat8 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+    40%  { transform: translate(15px, 15px) rotate(15deg); opacity: 0.28; }
+    70%  { transform: translate(-20px, -8px) rotate(-10deg); opacity: 0.16; }
     100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
 }
 
-/* Giant Caravan Watermark */
-@keyframes caravanDrift {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    25%  { transform: translate(-15px, 10px) rotate(5deg) scale(1.04); }
-    50%  { transform: translate(8px, -12px) rotate(-3deg) scale(0.96); }
-    75%  { transform: translate(-10px, -8px) rotate(6deg) scale(1.03); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+/* Center Caravan - gentle float */
+@keyframes caravanFloat {
+    0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+    25%  { transform: translate(calc(-50% - 6px), calc(-50% + 8px)) rotate(2deg) scale(1.02); }
+    50%  { transform: translate(calc(-50% + 4px), calc(-50% - 6px)) rotate(-1.5deg) scale(0.98); }
+    75%  { transform: translate(calc(-50% - 4px), calc(-50% - 3px)) rotate(2.5deg) scale(1.01); }
+    100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
 }
 
 /* Perimeter pulse */
@@ -123,7 +153,8 @@ const KEYFRAMES = `
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .hero-orb, .hero-mini-icon, .hero-caravan, .hero-glow { animation: none !important; }
+    .hero-orb, .hero-lake-icon, .hero-caravan-center, .hero-glow { animation: none !important; }
+    .hero-caravan-center { transform: translate(-50%, -50%) !important; }
 }
 `;
 
@@ -170,11 +201,11 @@ export function HeroBackground({ color = 'slate' }) {
                 );
             })}
 
-            {/* ── LAYER 3: Floating Mini Travel Icons ── */}
-            {MINI_ICONS.map(({ Icon, size, top, left, anim, dur, delay }, i) => (
+            {/* ── LAYER 3: Floating Lakeside Icons ── */}
+            {LAKESIDE_ICONS.map(({ Icon, size, top, left, anim, dur, delay }, i) => (
                 <div
-                    key={`mini-${i}`}
-                    className="hero-mini-icon absolute"
+                    key={`lake-${i}`}
+                    className="hero-lake-icon absolute"
                     style={{
                         top,
                         left,
@@ -184,26 +215,27 @@ export function HeroBackground({ color = 'slate' }) {
                 >
                     <Icon
                         style={{ width: size, height: size }}
-                        className="text-white/[0.25]"
-                        strokeWidth={1.5}
+                        className="text-white/[0.22]"
+                        strokeWidth={1.3}
                     />
                 </div>
             ))}
 
-            {/* ── LAYER 4: Giant Caravan Watermark ── */}
+            {/* ── LAYER 4: Centered Caravan / Trailer ── */}
             <div
-                className="hero-caravan absolute"
+                className="hero-caravan-center absolute"
                 style={{
-                    bottom: '-8%',
-                    right: '2%',
-                    animation: 'caravanDrift 20s ease-in-out infinite',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    animation: 'caravanFloat 22s ease-in-out infinite',
                     willChange: 'transform',
                 }}
             >
                 <Caravan
-                    className="text-white/[0.15]"
-                    style={{ width: 280, height: 280 }}
-                    strokeWidth={1.0}
+                    className="text-white/[0.10]"
+                    style={{ width: 240, height: 240 }}
+                    strokeWidth={0.8}
                 />
             </div>
         </div>
