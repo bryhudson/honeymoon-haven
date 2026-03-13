@@ -1,5 +1,5 @@
 import React from 'react';
-import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Target, Beef, Bath } from 'lucide-react';
+import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Target, Bath } from 'lucide-react';
 
 /**
  * HeroBackground - "Lakeside Memories" animated hero background.
@@ -48,17 +48,16 @@ const ORB_CONFIGS = [
 
 /* ── Floating lakeside icons - scattered around the hero ── */
 const LAKESIDE_ICONS = [
-    { Icon: Sailboat,  size: 36, top: '12%', left: '70%', anim: 'lakeFloat1', dur: '18s', delay: '0s' },
-    { Icon: Flame,     size: 30, top: '60%', left: '8%',  anim: 'lakeFloat2', dur: '15s', delay: '1s' },
-    { Icon: Beer,      size: 28, top: '18%', left: '25%', anim: 'lakeFloat3', dur: '20s', delay: '3s' },
-    { Icon: Fish,      size: 32, top: '55%', left: '82%', anim: 'lakeFloat4', dur: '16s', delay: '2s' },
-    { Icon: Sun,       size: 34, top: '8%',  left: '88%', anim: 'lakeFloat5', dur: '22s', delay: '0s' },
-    { Icon: Waves,     size: 30, top: '72%', left: '45%', anim: 'lakeFloat6', dur: '17s', delay: '4s' },
-    { Icon: Mountain,  size: 34, top: '10%', left: '48%', anim: 'lakeFloat7', dur: '24s', delay: '1s' },
-    { Icon: Anchor,    size: 26, top: '65%', left: '28%', anim: 'lakeFloat8', dur: '19s', delay: '2s' },
-    { Icon: Target,    size: 32, top: '40%', left: '90%', anim: 'lakeFloat9', dur: '21s', delay: '3s' },
-    { Icon: Beef,      size: 30, top: '75%', left: '70%', anim: 'lakeFloat10', dur: '16s', delay: '1s' },
-    { Icon: Bath,      size: 34, top: '35%', left: '5%',  anim: 'lakeFloat11', dur: '19s', delay: '2s' },
+    { Icon: Sailboat,  size: 44, top: '12%', left: '70%', anim: 'lakeFloat1', dur: '18s', delay: '0s' },
+    { Icon: Flame,     size: 40, top: '60%', left: '8%',  anim: 'lakeFloat2', dur: '15s', delay: '1s' },
+    { Icon: Beer,      size: 38, top: '18%', left: '25%', anim: 'lakeFloat3', dur: '20s', delay: '3s' },
+    { Icon: Fish,      size: 42, top: '55%', left: '82%', anim: 'lakeFloat4', dur: '16s', delay: '2s' },
+    { Icon: Sun,       size: 44, top: '8%',  left: '88%', anim: 'lakeFloat5', dur: '22s', delay: '0s' },
+    { Icon: Waves,     size: 40, top: '72%', left: '45%', anim: 'lakeFloat6', dur: '17s', delay: '4s' },
+    { Icon: Mountain,  size: 44, top: '10%', left: '48%', anim: 'lakeFloat7', dur: '24s', delay: '1s' },
+    { Icon: Anchor,    size: 38, top: '65%', left: '28%', anim: 'lakeFloat8', dur: '19s', delay: '2s' },
+    { Icon: Target,    size: 42, top: '40%', left: '90%', anim: 'lakeFloat9', dur: '21s', delay: '3s' },
+    { Icon: Bath,      size: 44, top: '35%', left: '5%',  anim: 'lakeFloat11', dur: '19s', delay: '2s' },
 ];
 
 /* ── All keyframes ── */
@@ -237,8 +236,8 @@ export function HeroBackground({ color = 'slate' }) {
                 >
                     <Icon
                         style={{ width: size, height: size }}
-                        className="text-white/[0.22]"
-                        strokeWidth={1.3}
+                        className="text-white/[0.35]"
+                        strokeWidth={1.8}
                     />
                 </div>
             ))}
@@ -255,9 +254,9 @@ export function HeroBackground({ color = 'slate' }) {
                 }}
             >
                 <Caravan
-                    className="text-white/[0.10]"
-                    style={{ width: 240, height: 240 }}
-                    strokeWidth={0.8}
+                    className="text-white/[0.15]"
+                    style={{ width: 260, height: 260 }}
+                    strokeWidth={1.0}
                 />
             </div>
         </div>
