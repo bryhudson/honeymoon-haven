@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, Info, AlertTriangle, PlayCircle, XCircle, Mail, DollarSign, Bell } from 'lucide-react';
+import { HeroBackground } from '../../../components/ui/HeroBackground';
 import { format, intervalToDuration } from 'date-fns';
 
 export function AdminTurnHero({
@@ -34,8 +35,8 @@ export function AdminTurnHero({
                         </p>
                     </div>
                 </div>
-                {/* Background Pattern */}
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-amber-200 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+                {/* Animated Background */}
+                <HeroBackground color="amber" />
             </div>
         );
     }
@@ -45,9 +46,8 @@ export function AdminTurnHero({
 
     return (
         <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-top-4 shadow-xl relative overflow-hidden text-white">
-            {/* Background Flair - distinct from Shareholder (Purple/Indigo theme) */}
-            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+            {/* Animated Background Flair */}
+            <HeroBackground color="indigo" />
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 text-center lg:text-left max-w-2xl">

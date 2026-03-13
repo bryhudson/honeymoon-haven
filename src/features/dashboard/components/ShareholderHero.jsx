@@ -1,4 +1,5 @@
 import React from 'react';
+import { HeroBackground } from '../../../components/ui/HeroBackground';
 import { format, differenceInDays, intervalToDuration } from 'date-fns';
 import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
@@ -732,9 +733,8 @@ function ModernTrailerWidget({
     return (
         <div data-tour="status-hero" className={`relative rounded-2xl border overflow-hidden shadow-2xl ${theme.bg} ${theme.border} p-6 md:p-8 animate-in fade-in slide-in-from-top-4 text-white`}>
 
-            {/* V5.6 Admin-Style Gradients */}
-            <div className={`absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
-            <div className={`absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none ${theme.highlight}`}></div>
+            {/* Animated Background Orbs */}
+            <HeroBackground color={accentColor} />
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                 {/* LEFT: Info Block */}
