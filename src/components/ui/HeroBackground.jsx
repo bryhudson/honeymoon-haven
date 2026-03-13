@@ -48,10 +48,10 @@ const ORB_CONFIGS = [
 
 /* ── Floating mini-icon configs ── */
 const MINI_ICONS = [
-    { Icon: Tent,    size: 28, top: '18%', left: '72%', anim: 'miniFloat1', dur: '16s', delay: '0s' },
-    { Icon: Compass, size: 22, top: '65%', left: '15%', anim: 'miniFloat2', dur: '20s', delay: '2s' },
-    { Icon: Map,     size: 26, top: '12%', left: '30%', anim: 'miniFloat3', dur: '18s', delay: '4s' },
-    { Icon: Coffee,  size: 20, top: '55%', left: '80%', anim: 'miniFloat4', dur: '14s', delay: '1s' },
+    { Icon: Tent,    size: 38, top: '15%', left: '68%', anim: 'miniFloat1', dur: '16s', delay: '0s' },
+    { Icon: Compass, size: 32, top: '60%', left: '12%', anim: 'miniFloat2', dur: '20s', delay: '2s' },
+    { Icon: Map,     size: 36, top: '10%', left: '28%', anim: 'miniFloat3', dur: '18s', delay: '4s' },
+    { Icon: Coffee,  size: 30, top: '50%', left: '78%', anim: 'miniFloat4', dur: '14s', delay: '1s' },
 ];
 
 /* ── All keyframes ── */
@@ -80,38 +80,38 @@ const KEYFRAMES = `
 
 /* Floating Mini Icons */
 @keyframes miniFloat1 {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.10; }
-    25%  { transform: translate(-20px, 15px) rotate(15deg); opacity: 0.18; }
-    50%  { transform: translate(10px, -25px) rotate(-10deg); opacity: 0.12; }
-    75%  { transform: translate(-15px, -10px) rotate(20deg); opacity: 0.16; }
-    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.10; }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+    25%  { transform: translate(-25px, 18px) rotate(18deg); opacity: 0.30; }
+    50%  { transform: translate(12px, -30px) rotate(-12deg); opacity: 0.22; }
+    75%  { transform: translate(-18px, -12px) rotate(22deg); opacity: 0.28; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
 }
 @keyframes miniFloat2 {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.08; }
-    30%  { transform: translate(25px, -20px) rotate(-20deg); opacity: 0.16; }
-    60%  { transform: translate(-15px, 20px) rotate(15deg); opacity: 0.10; }
-    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.08; }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
+    30%  { transform: translate(30px, -25px) rotate(-22deg); opacity: 0.28; }
+    60%  { transform: translate(-18px, 25px) rotate(18deg); opacity: 0.20; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
 }
 @keyframes miniFloat3 {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.12; }
-    20%  { transform: translate(18px, 22px) rotate(25deg); opacity: 0.18; }
-    50%  { transform: translate(-22px, -15px) rotate(-15deg); opacity: 0.08; }
-    80%  { transform: translate(12px, -18px) rotate(10deg); opacity: 0.15; }
-    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.12; }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.22; }
+    20%  { transform: translate(22px, 28px) rotate(28deg); opacity: 0.30; }
+    50%  { transform: translate(-28px, -18px) rotate(-18deg); opacity: 0.18; }
+    80%  { transform: translate(15px, -22px) rotate(12deg); opacity: 0.26; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.22; }
 }
 @keyframes miniFloat4 {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.10; }
-    35%  { transform: translate(-18px, -15px) rotate(-18deg); opacity: 0.16; }
-    70%  { transform: translate(20px, 12px) rotate(12deg); opacity: 0.08; }
-    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.10; }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+    35%  { transform: translate(-22px, -18px) rotate(-20deg); opacity: 0.28; }
+    70%  { transform: translate(25px, 15px) rotate(15deg); opacity: 0.16; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
 }
 
 /* Giant Caravan Watermark */
 @keyframes caravanDrift {
     0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    25%  { transform: translate(-8px, 6px) rotate(3deg) scale(1.02); }
-    50%  { transform: translate(4px, -8px) rotate(-2deg) scale(0.98); }
-    75%  { transform: translate(-6px, -4px) rotate(4deg) scale(1.01); }
+    25%  { transform: translate(-15px, 10px) rotate(5deg) scale(1.04); }
+    50%  { transform: translate(8px, -12px) rotate(-3deg) scale(0.96); }
+    75%  { transform: translate(-10px, -8px) rotate(6deg) scale(1.03); }
     100% { transform: translate(0, 0) rotate(0deg) scale(1); }
 }
 
@@ -184,8 +184,8 @@ export function HeroBackground({ color = 'slate' }) {
                 >
                     <Icon
                         style={{ width: size, height: size }}
-                        className="text-white/[0.12]"
-                        strokeWidth={1.2}
+                        className="text-white/[0.25]"
+                        strokeWidth={1.5}
                     />
                 </div>
             ))}
@@ -194,16 +194,16 @@ export function HeroBackground({ color = 'slate' }) {
             <div
                 className="hero-caravan absolute"
                 style={{
-                    bottom: '-5%',
-                    right: '-2%',
-                    animation: 'caravanDrift 25s ease-in-out infinite',
+                    bottom: '-8%',
+                    right: '2%',
+                    animation: 'caravanDrift 20s ease-in-out infinite',
                     willChange: 'transform',
                 }}
             >
                 <Caravan
-                    className="text-white/[0.06]"
-                    style={{ width: 340, height: 340 }}
-                    strokeWidth={0.6}
+                    className="text-white/[0.15]"
+                    style={{ width: 280, height: 280 }}
+                    strokeWidth={1.0}
                 />
             </div>
         </div>
