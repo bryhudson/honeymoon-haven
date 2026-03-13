@@ -1,5 +1,5 @@
 import React from 'react';
-import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Palmtree } from 'lucide-react';
+import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Target, Beef, Bath } from 'lucide-react';
 
 /**
  * HeroBackground - "Lakeside Memories" animated hero background.
@@ -56,6 +56,9 @@ const LAKESIDE_ICONS = [
     { Icon: Waves,     size: 30, top: '72%', left: '45%', anim: 'lakeFloat6', dur: '17s', delay: '4s' },
     { Icon: Mountain,  size: 34, top: '10%', left: '48%', anim: 'lakeFloat7', dur: '24s', delay: '1s' },
     { Icon: Anchor,    size: 26, top: '65%', left: '28%', anim: 'lakeFloat8', dur: '19s', delay: '2s' },
+    { Icon: Target,    size: 32, top: '40%', left: '90%', anim: 'lakeFloat9', dur: '21s', delay: '3s' },
+    { Icon: Beef,      size: 30, top: '75%', left: '70%', anim: 'lakeFloat10', dur: '16s', delay: '1s' },
+    { Icon: Bath,      size: 34, top: '35%', left: '5%',  anim: 'lakeFloat11', dur: '19s', delay: '2s' },
 ];
 
 /* ── All keyframes ── */
@@ -134,6 +137,25 @@ const KEYFRAMES = `
     40%  { transform: translate(15px, 15px) rotate(15deg); opacity: 0.28; }
     70%  { transform: translate(-20px, -8px) rotate(-10deg); opacity: 0.16; }
     100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+}
+@keyframes lakeFloat9 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
+    30%  { transform: translate(-15px, 20px) rotate(22deg); opacity: 0.28; }
+    55%  { transform: translate(20px, -10px) rotate(-10deg); opacity: 0.20; }
+    80%  { transform: translate(-8px, -15px) rotate(15deg); opacity: 0.26; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.18; }
+}
+@keyframes lakeFloat10 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+    25%  { transform: translate(18px, -12px) rotate(-15deg); opacity: 0.30; }
+    60%  { transform: translate(-14px, 18px) rotate(12deg); opacity: 0.18; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.20; }
+}
+@keyframes lakeFloat11 {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.22; }
+    35%  { transform: translate(12px, 15px) rotate(10deg); opacity: 0.30; }
+    65%  { transform: translate(-18px, -8px) rotate(-8deg); opacity: 0.18; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.22; }
 }
 
 /* Center Caravan - gentle float */
