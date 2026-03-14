@@ -14,18 +14,6 @@ import { Caravan } from 'lucide-react';
  * @param {string} color - Theme color key
  */
 
-/* ── Color palettes for orbs ── */
-const COLOR_MAP = {
-    emerald: ['rgba(16,185,129,0.30)', 'rgba(52,211,153,0.22)', 'rgba(6,215,130,0.18)'],
-    blue:    ['rgba(59,130,246,0.30)', 'rgba(96,165,250,0.22)', 'rgba(37,99,235,0.18)'],
-    indigo:  ['rgba(99,102,241,0.30)', 'rgba(129,140,248,0.22)', 'rgba(79,70,229,0.18)'],
-    amber:   ['rgba(245,158,11,0.30)', 'rgba(252,211,77,0.22)', 'rgba(217,119,6,0.18)'],
-    slate:   ['rgba(148,163,184,0.25)', 'rgba(100,116,139,0.18)', 'rgba(71,85,105,0.14)'],
-    rose:    ['rgba(244,63,94,0.30)', 'rgba(251,113,133,0.22)', 'rgba(225,29,72,0.18)'],
-    violet:  ['rgba(139,92,246,0.30)', 'rgba(167,139,250,0.22)', 'rgba(124,58,237,0.18)'],
-    red:     ['rgba(239,68,68,0.30)', 'rgba(252,165,165,0.22)', 'rgba(220,38,38,0.18)'],
-};
-
 /* ── Perimeter glow (subtle ambient lighting) ── */
 const GLOW_MAP = {
     emerald: 'rgba(16,185,129,0.10)',
@@ -38,13 +26,13 @@ const GLOW_MAP = {
     red:     'rgba(239,68,68,0.10)',
 };
 
-/* ── Gradient orb configs ── */
+/* ── Gradient orb configs - each with its own vibrant color ── */
 const ORB_CONFIGS = [
-    { size: 300, top: '-18%', right: '-8%',  anim: 'heroOrb1', dur: '14s' },
-    { size: 240, bottom: '-12%', left: '-6%', anim: 'heroOrb2', dur: '18s' },
-    { size: 180, top: '35%', left: '45%',    anim: 'heroOrb3', dur: '22s' },
-    { size: 160, top: '10%', left: '15%',    anim: 'heroOrb4', dur: '26s' },
-    { size: 140, bottom: '5%', right: '20%', anim: 'heroOrb5', dur: '20s' },
+    { size: 300, top: '-18%', right: '-8%',  anim: 'heroOrb1', dur: '14s', color: 'rgba(6,182,212,0.28)' },     // teal/cyan
+    { size: 240, bottom: '-12%', left: '-6%', anim: 'heroOrb2', dur: '18s', color: 'rgba(139,92,246,0.25)' },    // violet
+    { size: 180, top: '35%', left: '45%',    anim: 'heroOrb3', dur: '22s', color: 'rgba(245,158,11,0.22)' },     // amber/gold
+    { size: 160, top: '10%', left: '15%',    anim: 'heroOrb4', dur: '26s', color: 'rgba(244,63,94,0.22)' },      // rose/pink
+    { size: 140, bottom: '5%', right: '20%', anim: 'heroOrb5', dur: '20s', color: 'rgba(56,189,248,0.24)' },     // sky blue
 ];
 
 /* ── All keyframes ── */
@@ -116,7 +104,6 @@ const KEYFRAMES = `
 `;
 
 export function HeroBackground({ color = 'slate' }) {
-    const orbColors = COLOR_MAP[color] || COLOR_MAP.slate;
     const glowColor = GLOW_MAP[color] || GLOW_MAP.slate;
 
     return (
@@ -133,7 +120,7 @@ export function HeroBackground({ color = 'slate' }) {
                 }}
             />
 
-            {/* ── LAYER 2: Gradient Orbs (bigger + more intense) ── */}
+            {/* ── LAYER 2: Multicolor Gradient Orbs ── */}
             {ORB_CONFIGS.map((orb, i) => {
                 const pos = {};
                 if (orb.top) pos.top = orb.top;
@@ -149,7 +136,7 @@ export function HeroBackground({ color = 'slate' }) {
                             width: orb.size,
                             height: orb.size,
                             ...pos,
-                            background: `radial-gradient(circle, ${orbColors[i % orbColors.length]} 0%, transparent 65%)`,
+                            background: `radial-gradient(circle, ${orb.color} 0%, transparent 65%)`,
                             filter: 'blur(50px)',
                             animation: `${orb.anim} ${orb.dur} ease-in-out infinite`,
                             willChange: 'transform',
