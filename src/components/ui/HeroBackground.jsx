@@ -26,13 +26,13 @@ const GLOW_MAP = {
     red:     'rgba(239,68,68,0.10)',
 };
 
-/* ── Gradient orb configs - each with its own vibrant color ── */
+/* ── Gradient orb configs - each with its own vibrant color (boosted) ── */
 const ORB_CONFIGS = [
-    { size: 300, top: '-18%', right: '-8%',  anim: 'heroOrb1', dur: '14s', color: 'rgba(6,182,212,0.28)' },     // teal/cyan
-    { size: 240, bottom: '-12%', left: '-6%', anim: 'heroOrb2', dur: '18s', color: 'rgba(139,92,246,0.25)' },    // violet
-    { size: 180, top: '35%', left: '45%',    anim: 'heroOrb3', dur: '22s', color: 'rgba(245,158,11,0.22)' },     // amber/gold
-    { size: 160, top: '10%', left: '15%',    anim: 'heroOrb4', dur: '26s', color: 'rgba(244,63,94,0.22)' },      // rose/pink
-    { size: 140, bottom: '5%', right: '20%', anim: 'heroOrb5', dur: '20s', color: 'rgba(56,189,248,0.24)' },     // sky blue
+    { size: 400, top: '-15%', right: '-5%',  anim: 'heroOrb1', dur: '14s', color: 'rgba(6,182,212,0.45)' },     // teal/cyan
+    { size: 340, bottom: '-10%', left: '-4%', anim: 'heroOrb2', dur: '18s', color: 'rgba(139,92,246,0.42)' },    // violet
+    { size: 260, top: '30%', left: '42%',    anim: 'heroOrb3', dur: '22s', color: 'rgba(245,158,11,0.38)' },     // amber/gold
+    { size: 220, top: '8%', left: '12%',     anim: 'heroOrb4', dur: '26s', color: 'rgba(244,63,94,0.38)' },      // rose/pink
+    { size: 200, bottom: '3%', right: '15%', anim: 'heroOrb5', dur: '20s', color: 'rgba(56,189,248,0.40)' },     // sky blue
 ];
 
 /* ── All keyframes ── */
