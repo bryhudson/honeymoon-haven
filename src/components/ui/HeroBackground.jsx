@@ -254,30 +254,31 @@ export function HeroBackground({ color = 'slate' }) {
                     opacity: 0.15,
                     animation: 'caravanFloat 22s ease-in-out infinite',
                     willChange: 'transform',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '4px',
+                    position: 'absolute',
                 }}
             >
-                <Caravan
-                    className="text-white"
-                    style={{ width: 260, height: 260 }}
-                    strokeWidth={1.0}
-                />
-                <span
-                    className="text-white"
-                    style={{
-                        fontSize: '36px',
-                        fontWeight: 300,
-                        letterSpacing: '16px',
-                        marginTop: '-40px',
-                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                        userSelect: 'none',
-                    }}
-                >
-                    HHR
-                </span>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <Caravan
+                        className="text-white"
+                        style={{ width: 260, height: 260 }}
+                        strokeWidth={1.0}
+                    />
+                    <span
+                        className="text-white"
+                        style={{
+                            position: 'absolute',
+                            top: '52%',
+                            left: '32%',
+                            fontSize: '18px',
+                            fontWeight: 600,
+                            letterSpacing: '6px',
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
+                            userSelect: 'none',
+                        }}
+                    >
+                        HHR
+                    </span>
+                </div>
             </div>
         </div>
     );
