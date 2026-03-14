@@ -248,12 +248,13 @@ export function HeroBackground({ color = 'slate' }) {
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
+                    opacity: 0.15,
                     animation: 'caravanFloat 22s ease-in-out infinite',
                     willChange: 'transform',
                 }}
             >
                 <Caravan
-                    className="text-white/[0.15]"
+                    className="text-white"
                     style={{ width: 260, height: 260 }}
                     strokeWidth={1.0}
                 />
