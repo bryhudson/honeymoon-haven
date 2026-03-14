@@ -35,6 +35,50 @@ const ORB_CONFIGS = [
     { size: 200, bottom: '3%', right: '15%', anim: 'heroOrb5', dur: '20s', color: 'rgba(56,189,248,0.40)' },     // sky blue
 ];
 
+/* ── Cute Walking Puppy SVG ── */
+function WalkingPuppy() {
+    return (
+        <svg viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 48, height: 36 }}>
+            {/* Body */}
+            <ellipse cx="30" cy="24" rx="16" ry="10" fill="rgba(255,255,255,0.85)" />
+            {/* Head */}
+            <circle cx="46" cy="18" r="8" fill="rgba(255,255,255,0.9)" />
+            {/* Ear (floppy) */}
+            <ellipse cx="50" cy="13" rx="4" ry="6" fill="rgba(255,255,255,0.7)"
+                style={{ transformOrigin: '50px 10px', animation: 'puppyEarBounce 0.35s ease-in-out infinite' }} />
+            {/* Eye */}
+            <circle cx="49" cy="17" r="1.5" fill="rgba(30,41,59,0.9)" />
+            {/* Eye shine */}
+            <circle cx="49.8" cy="16.3" r="0.5" fill="white" />
+            {/* Nose */}
+            <ellipse cx="53" cy="19" rx="2" ry="1.5" fill="rgba(30,41,59,0.8)" />
+            {/* Tongue (little pink) */}
+            <ellipse cx="51" cy="23" rx="1.5" ry="2" fill="rgba(244,114,182,0.8)" />
+            {/* Spots on body */}
+            <circle cx="24" cy="21" r="3" fill="rgba(180,160,140,0.35)" />
+            <circle cx="33" cy="26" r="2.5" fill="rgba(180,160,140,0.3)" />
+            {/* Tail (wagging) */}
+            <g style={{ transformOrigin: '14px 24px', animation: 'puppyTailWag 0.4s ease-in-out infinite' }}>
+                <path d="M14 20 Q8 12, 6 14" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            </g>
+            {/* Front legs (alternate timing) */}
+            <line x1="38" y1="32" x2="40" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
+                style={{ transformOrigin: '38px 32px', animation: 'puppyFrontLegs 0.3s ease-in-out infinite' }} />
+            <line x1="34" y1="32" x2="32" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
+                style={{ transformOrigin: '34px 32px', animation: 'puppyBackLegs 0.3s ease-in-out infinite' }} />
+            {/* Back legs (offset from front) */}
+            <line x1="22" y1="32" x2="24" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
+                style={{ transformOrigin: '22px 32px', animation: 'puppyBackLegs 0.3s ease-in-out infinite' }} />
+            <line x1="18" y1="32" x2="16" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
+                style={{ transformOrigin: '18px 32px', animation: 'puppyFrontLegs 0.3s ease-in-out infinite' }} />
+            {/* Collar */}
+            <path d="M42 22 Q46 26, 50 23" stroke="rgba(244,63,94,0.7)" strokeWidth="1.5" fill="none" />
+            {/* Collar tag */}
+            <circle cx="47" cy="25" r="1.2" fill="rgba(250,204,21,0.8)" />
+        </svg>
+    );
+}
+
 /* ── All keyframes ── */
 const KEYFRAMES = `
 /* Gradient Orbs - dramatic movement */
@@ -88,18 +132,53 @@ const KEYFRAMES = `
     100% { opacity: 0.5; }
 }
 
-/* Edge sweep - ambient light moving around the edges */
-@keyframes edgeSweep {
-    0%   { background-position: 0% 0%; }
-    25%  { background-position: 100% 0%; }
-    50%  { background-position: 100% 100%; }
-    75%  { background-position: 0% 100%; }
-    100% { background-position: 0% 0%; }
+/* ── Puppy walk-across (GSAP-style cubic-bezier) ── */
+/* 25s total cycle: 10s walk across, 15s off-screen pause */
+@keyframes puppyWalkAcross {
+    0%   { left: -60px; opacity: 0; }
+    2%   { opacity: 0.6; }
+    38%  { opacity: 0.6; }
+    40%  { left: calc(100% + 60px); opacity: 0; }
+    100% { left: calc(100% + 60px); opacity: 0; }
+}
+
+/* Puppy body bounce while walking */
+@keyframes puppyBounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+}
+
+/* Front legs walking */
+@keyframes puppyFrontLegs {
+    0%   { transform: rotate(15deg); }
+    50%  { transform: rotate(-15deg); }
+    100% { transform: rotate(15deg); }
+}
+
+/* Back legs walking (offset) */
+@keyframes puppyBackLegs {
+    0%   { transform: rotate(-15deg); }
+    50%  { transform: rotate(15deg); }
+    100% { transform: rotate(-15deg); }
+}
+
+/* Tail wagging */
+@keyframes puppyTailWag {
+    0%   { transform: rotate(-20deg); }
+    50%  { transform: rotate(20deg); }
+    100% { transform: rotate(-20deg); }
+}
+
+/* Floppy ear bounce */
+@keyframes puppyEarBounce {
+    0%, 100% { transform: rotate(20deg) translateY(0); }
+    50%      { transform: rotate(20deg) translateY(2px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .hero-orb, .hero-caravan-center, .hero-glow, .hero-edge-sweep { animation: none !important; }
+    .hero-orb, .hero-caravan-center, .hero-glow, .hero-puppy-walker { animation: none !important; }
     .hero-caravan-center { transform: translate(-50%, -50%) !important; }
+    .puppy-front-legs, .puppy-back-legs, .puppy-tail, .puppy-ear { animation: none !important; }
 }
 `;
 
@@ -162,6 +241,22 @@ export function HeroBackground({ color = 'slate' }) {
                     style={{ width: 260, height: 260 }}
                     strokeWidth={1.0}
                 />
+            </div>
+
+            {/* ── LAYER 4: Walking Puppy ── */}
+            <div
+                className="hero-puppy-walker absolute"
+                style={{
+                    bottom: '12%',
+                    left: '-60px',
+                    animation: 'puppyWalkAcross 25s cubic-bezier(0.25, 0.1, 0.25, 1) infinite',
+                    willChange: 'left, opacity',
+                    zIndex: 5,
+                }}
+            >
+                <div style={{ animation: 'puppyBounce 0.35s ease-in-out infinite' }}>
+                    <WalkingPuppy />
+                </div>
             </div>
         </div>
     );
