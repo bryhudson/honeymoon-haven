@@ -14,37 +14,37 @@ import { Caravan } from 'lucide-react';
  * @param {string} color - Theme color key
  */
 
-/* ── Color palettes for orbs (boosted opacity) ── */
+/* ── Color palettes for orbs ── */
 const COLOR_MAP = {
-    emerald: ['rgba(16,185,129,0.55)', 'rgba(52,211,153,0.45)', 'rgba(6,215,130,0.35)'],
-    blue:    ['rgba(59,130,246,0.55)', 'rgba(96,165,250,0.45)', 'rgba(37,99,235,0.35)'],
-    indigo:  ['rgba(99,102,241,0.55)', 'rgba(129,140,248,0.45)', 'rgba(79,70,229,0.35)'],
-    amber:   ['rgba(245,158,11,0.55)', 'rgba(252,211,77,0.45)', 'rgba(217,119,6,0.35)'],
-    slate:   ['rgba(148,163,184,0.45)', 'rgba(100,116,139,0.35)', 'rgba(71,85,105,0.28)'],
-    rose:    ['rgba(244,63,94,0.55)', 'rgba(251,113,133,0.45)', 'rgba(225,29,72,0.35)'],
-    violet:  ['rgba(139,92,246,0.55)', 'rgba(167,139,250,0.45)', 'rgba(124,58,237,0.35)'],
-    red:     ['rgba(239,68,68,0.55)', 'rgba(252,165,165,0.45)', 'rgba(220,38,38,0.35)'],
+    emerald: ['rgba(16,185,129,0.30)', 'rgba(52,211,153,0.22)', 'rgba(6,215,130,0.18)'],
+    blue:    ['rgba(59,130,246,0.30)', 'rgba(96,165,250,0.22)', 'rgba(37,99,235,0.18)'],
+    indigo:  ['rgba(99,102,241,0.30)', 'rgba(129,140,248,0.22)', 'rgba(79,70,229,0.18)'],
+    amber:   ['rgba(245,158,11,0.30)', 'rgba(252,211,77,0.22)', 'rgba(217,119,6,0.18)'],
+    slate:   ['rgba(148,163,184,0.25)', 'rgba(100,116,139,0.18)', 'rgba(71,85,105,0.14)'],
+    rose:    ['rgba(244,63,94,0.30)', 'rgba(251,113,133,0.22)', 'rgba(225,29,72,0.18)'],
+    violet:  ['rgba(139,92,246,0.30)', 'rgba(167,139,250,0.22)', 'rgba(124,58,237,0.18)'],
+    red:     ['rgba(239,68,68,0.30)', 'rgba(252,165,165,0.22)', 'rgba(220,38,38,0.18)'],
 };
 
-/* ── Perimeter glow (intensified for GSAP-style ambient lighting) ── */
+/* ── Perimeter glow (subtle ambient lighting) ── */
 const GLOW_MAP = {
-    emerald: 'rgba(16,185,129,0.25)',
-    blue:    'rgba(59,130,246,0.25)',
-    indigo:  'rgba(99,102,241,0.28)',
-    amber:   'rgba(245,158,11,0.22)',
-    slate:   'rgba(148,163,184,0.18)',
-    rose:    'rgba(244,63,94,0.25)',
-    violet:  'rgba(139,92,246,0.25)',
-    red:     'rgba(239,68,68,0.25)',
+    emerald: 'rgba(16,185,129,0.10)',
+    blue:    'rgba(59,130,246,0.10)',
+    indigo:  'rgba(99,102,241,0.12)',
+    amber:   'rgba(245,158,11,0.10)',
+    slate:   'rgba(148,163,184,0.08)',
+    rose:    'rgba(244,63,94,0.10)',
+    violet:  'rgba(139,92,246,0.10)',
+    red:     'rgba(239,68,68,0.10)',
 };
 
-/* ── Gradient orb configs (bigger, more dramatic) ── */
+/* ── Gradient orb configs ── */
 const ORB_CONFIGS = [
-    { size: 380, top: '-18%', right: '-8%',  anim: 'heroOrb1', dur: '14s' },
-    { size: 320, bottom: '-12%', left: '-6%', anim: 'heroOrb2', dur: '18s' },
-    { size: 240, top: '35%', left: '45%',    anim: 'heroOrb3', dur: '22s' },
-    { size: 200, top: '10%', left: '15%',    anim: 'heroOrb4', dur: '26s' },
-    { size: 160, bottom: '5%', right: '20%', anim: 'heroOrb5', dur: '20s' },
+    { size: 300, top: '-18%', right: '-8%',  anim: 'heroOrb1', dur: '14s' },
+    { size: 240, bottom: '-12%', left: '-6%', anim: 'heroOrb2', dur: '18s' },
+    { size: 180, top: '35%', left: '45%',    anim: 'heroOrb3', dur: '22s' },
+    { size: 160, top: '10%', left: '15%',    anim: 'heroOrb4', dur: '26s' },
+    { size: 140, bottom: '5%', right: '20%', anim: 'heroOrb5', dur: '20s' },
 ];
 
 /* ── All keyframes ── */
@@ -123,32 +123,12 @@ export function HeroBackground({ color = 'slate' }) {
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
             <style>{KEYFRAMES}</style>
 
-            {/* ── LAYER 1: Perimeter Glow (intensified) ── */}
+            {/* ── LAYER 1: Perimeter Glow (subtle) ── */}
             <div
                 className="hero-glow absolute inset-0"
                 style={{
-                    boxShadow: `
-                        inset 0 0 100px 30px ${glowColor},
-                        inset 0 0 200px 60px ${glowColor},
-                        inset 0 0 300px 80px ${glowColor}
-                    `,
-                    animation: 'perimeterPulse 6s ease-in-out infinite',
-                    willChange: 'opacity',
-                }}
-            />
-
-            {/* ── LAYER 1b: Edge sweep - moving ambient light ── */}
-            <div
-                className="hero-edge-sweep absolute inset-0"
-                style={{
-                    background: `
-                        radial-gradient(ellipse 60% 40% at var(--sweep-x, 50%) 0%, ${glowColor} 0%, transparent 70%),
-                        radial-gradient(ellipse 40% 60% at 100% var(--sweep-y, 50%), ${glowColor} 0%, transparent 70%),
-                        radial-gradient(ellipse 60% 40% at var(--sweep-x2, 30%) 100%, ${glowColor} 0%, transparent 70%),
-                        radial-gradient(ellipse 40% 60% at 0% var(--sweep-y2, 30%), ${glowColor} 0%, transparent 70%)
-                    `,
-                    animation: 'perimeterPulse 10s ease-in-out 2s infinite',
-                    opacity: 0.7,
+                    boxShadow: `inset 0 0 80px 20px ${glowColor}`,
+                    animation: 'perimeterPulse 8s ease-in-out infinite',
                     willChange: 'opacity',
                 }}
             />
