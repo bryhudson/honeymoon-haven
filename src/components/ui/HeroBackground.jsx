@@ -241,7 +241,7 @@ export function HeroBackground({ color = 'slate' }) {
                 </div>
             ))}
 
-            {/* ── LAYER 4: Centered Caravan / Trailer ── */}
+            {/* ── LAYER 4: Centered Caravan / Trailer with HHR brand ── */}
             <div
                 className="hero-caravan-center absolute"
                 style={{
@@ -251,6 +251,10 @@ export function HeroBackground({ color = 'slate' }) {
                     opacity: 0.15,
                     animation: 'caravanFloat 22s ease-in-out infinite',
                     willChange: 'transform',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
                 }}
             >
                 <Caravan
@@ -258,6 +262,19 @@ export function HeroBackground({ color = 'slate' }) {
                     style={{ width: 260, height: 260 }}
                     strokeWidth={1.0}
                 />
+                <span
+                    className="text-white"
+                    style={{
+                        fontSize: '36px',
+                        fontWeight: 300,
+                        letterSpacing: '16px',
+                        marginTop: '-40px',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                        userSelect: 'none',
+                    }}
+                >
+                    HHR
+                </span>
             </div>
         </div>
     );
