@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { Caravan, Sparkles, Trophy, ArrowRight, HelpCircle, X } from 'lucide-react';
+import { Caravan, Sparkles, Trophy, ArrowRight, HelpCircle, X, Timer } from 'lucide-react';
 import { TRIVIA_QUESTIONS } from '../data/triviaData';
 import confetti from 'canvas-confetti';
+
+const QUESTION_TIME_LIMIT = 20; // seconds per question
 
 export function TriviaModal({ isOpen, onClose }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -11,6 +13,8 @@ export function TriviaModal({ isOpen, onClose }) {
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [isAnswered, setIsAnswered] = useState(false);
     const [gameComplete, setGameComplete] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_LIMIT);
+    const timerRef = useRef(null);
 
     const currentQuestion = TRIVIA_QUESTIONS[currentQuestionIndex];
 
@@ -33,8 +37,43 @@ export function TriviaModal({ isOpen, onClose }) {
             setSelectedAnswer(null);
             setIsAnswered(false);
             setGameComplete(false);
+            setTimeLeft(QUESTION_TIME_LIMIT);
         }
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, [isOpen]);
+
+    // ── Countdown timer ──
+    useEffect(() => {
+        if (!isOpen || gameComplete || isAnswered) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            return;
+        }
+
+        setTimeLeft(QUESTION_TIME_LIMIT);
+        timerRef.current = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    }, [currentQuestionIndex, isOpen, gameComplete, isAnswered]);
+
+    // ── Auto-advance when timer hits 0 ──
+    useEffect(() => {
+        if (timeLeft === 0 && !isAnswered && !gameComplete) {
+            // Time's up - mark as answered (no selection) and auto-advance after brief pause
+            setIsAnswered(true);
+            setSelectedAnswer('__TIMEOUT__');
+            setTimeout(() => {
+                handleNext();
+            }, 1500);
+        }
+    }, [timeLeft]);
 
     const [displayScore, setDisplayScore] = useState(0);
 
@@ -156,15 +195,16 @@ export function TriviaModal({ isOpen, onClose }) {
         }
     };
 
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         if (currentQuestionIndex < TRIVIA_QUESTIONS.length - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
             setSelectedAnswer(null);
             setIsAnswered(false);
+            setTimeLeft(QUESTION_TIME_LIMIT);
         } else {
             setGameComplete(true);
         }
-    };
+    }, [currentQuestionIndex]);
 
     const getScoreMessage = () => {
         const percentage = (score / TRIVIA_QUESTIONS.length) * 100;
@@ -207,12 +247,42 @@ export function TriviaModal({ isOpen, onClose }) {
                             </p>
                         </div>
 
-                        {/* Progress Bar */}
-                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out"
-                                style={{ width: `${((currentQuestionIndex) / TRIVIA_QUESTIONS.length) * 100}%` }}
-                            />
+                        {/* Progress Bar + Timer Row */}
+                        <div className="flex items-center gap-3">
+                            {/* Progress Bar */}
+                            <div className="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out"
+                                    style={{ width: `${((currentQuestionIndex) / TRIVIA_QUESTIONS.length) * 100}%` }}
+                                />
+                            </div>
+
+                            {/* Countdown Timer */}
+                            <div className="relative flex items-center justify-center shrink-0">
+                                <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                                    <circle
+                                        cx="18" cy="18" r="15.5"
+                                        fill="none"
+                                        stroke="#e2e8f0"
+                                        strokeWidth="2.5"
+                                    />
+                                    <circle
+                                        cx="18" cy="18" r="15.5"
+                                        fill="none"
+                                        stroke={timeLeft > 10 ? '#22c55e' : timeLeft > 5 ? '#f59e0b' : '#ef4444'}
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 15.5}`}
+                                        strokeDashoffset={`${2 * Math.PI * 15.5 * (1 - timeLeft / QUESTION_TIME_LIMIT)}`}
+                                        className="transition-all duration-1000 ease-linear"
+                                    />
+                                </svg>
+                                <span className={`absolute text-xs font-bold ${
+                                    timeLeft > 10 ? 'text-emerald-600' : timeLeft > 5 ? 'text-amber-600' : 'text-red-600'
+                                } ${timeLeft <= 5 && !isAnswered ? 'animate-pulse' : ''}`}>
+                                    {timeLeft}
+                                </span>
+                            </div>
                         </div>
 
                         {/* Question Card */}
@@ -254,8 +324,18 @@ export function TriviaModal({ isOpen, onClose }) {
                             </div>
                         </div>
 
+                        {/* Timeout Message */}
+                        {selectedAnswer === '__TIMEOUT__' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-center gap-3">
+                                    <Timer className="w-4 h-4 text-red-500 shrink-0" />
+                                    <p className="text-sm font-semibold text-red-700">Time's up! Moving on...</p>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Fact Reveal & Next Button */}
-                        {isAnswered && (
+                        {isAnswered && selectedAnswer !== '__TIMEOUT__' && (
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-3">
                                 <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 flex gap-3">
                                     <HelpCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
