@@ -1,5 +1,5 @@
 import React from 'react';
-import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Target, Ship } from 'lucide-react';
+import { Caravan, Sailboat, Flame, Beer, Fish, Sun, Waves, Mountain, Anchor, Ship } from 'lucide-react';
 
 /**
  * HeroBackground - "Lakeside Memories" animated hero background.
@@ -56,7 +56,6 @@ const LAKESIDE_ICONS = [
     { Icon: Waves,     size: 40, top: '72%', left: '45%', anim: 'lakeFloat6', dur: '17s', delay: '4s' },
     { Icon: Mountain,  size: 44, top: '10%', left: '48%', anim: 'lakeFloat7', dur: '24s', delay: '1s' },
     { Icon: Anchor,    size: 38, top: '65%', left: '28%', anim: 'lakeFloat8', dur: '19s', delay: '2s' },
-    { Icon: Target,    size: 42, top: '40%', left: '90%', anim: 'lakeFloat9', dur: '21s', delay: '3s' },
     { Icon: Ship,      size: 44, top: '35%', left: '5%',  anim: 'lakeFloat11', dur: '19s', delay: '2s' },
 ];
 
