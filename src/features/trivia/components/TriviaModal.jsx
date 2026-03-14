@@ -63,15 +63,12 @@ export function TriviaModal({ isOpen, onClose }) {
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, [currentQuestionIndex, isOpen, gameComplete, isAnswered]);
 
-    // ── Auto-advance when timer hits 0 ──
+    // ── Handle timer expiry ──
     useEffect(() => {
         if (timeLeft === 0 && !isAnswered && !gameComplete) {
-            // Time's up - mark as answered (no selection) and auto-advance after brief pause
+            // Time's up - mark as wrong answer, show explanation
             setIsAnswered(true);
             setSelectedAnswer('__TIMEOUT__');
-            setTimeout(() => {
-                handleNext();
-            }, 1500);
         }
     }, [timeLeft]);
 
@@ -324,19 +321,17 @@ export function TriviaModal({ isOpen, onClose }) {
                             </div>
                         </div>
 
-                        {/* Timeout Message */}
-                        {selectedAnswer === '__TIMEOUT__' && (
-                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-center gap-3">
-                                    <Timer className="w-4 h-4 text-red-500 shrink-0" />
-                                    <p className="text-sm font-semibold text-red-700">Time's up! Moving on...</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Fact Reveal & Next Button */}
-                        {isAnswered && selectedAnswer !== '__TIMEOUT__' && (
+                        {/* Fact Reveal & Next Button - shown for ALL answered states */}
+                        {isAnswered && (
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-3">
+                                {/* Timeout badge */}
+                                {selectedAnswer === '__TIMEOUT__' && (
+                                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-center gap-3">
+                                        <Timer className="w-4 h-4 text-red-500 shrink-0" />
+                                        <p className="text-sm font-semibold text-red-700">Time's up! The correct answer was: {currentQuestion.correctAnswer}</p>
+                                    </div>
+                                )}
+
                                 <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 flex gap-3">
                                     <HelpCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                                     <div>
