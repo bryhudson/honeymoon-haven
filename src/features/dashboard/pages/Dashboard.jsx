@@ -583,12 +583,7 @@ export function Dashboard() {
                         </div>
                     )}
 
-                    {/* --- NEW HEADER: Shareholder Hero --- */}
-                    <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-sm font-bold tracking-tight text-slate-400 uppercase">Shareholder Dashboard</h1>
-
-                    </div>
-
+                    {/* --- Shareholder Hero --- */}
                     <ShareholderHero
                         key={`hero-${masqueradeAs || loggedInShareholder || 'default'}`}
                         currentUser={currentUser}
