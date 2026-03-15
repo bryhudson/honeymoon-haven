@@ -2,14 +2,15 @@ import React from 'react';
 import { Caravan } from 'lucide-react';
 
 /**
- * HeroBackground - Atmospheric hero background with GSAP-style ambient lighting.
+ * HeroBackground - Atmospheric hero background with ambient lighting and fireworks.
  *
  * Layers (back to front):
  *   1. Perimeter glow - intense theme-colored ambient edge lighting
  *   2. Gradient orbs - soft floating color blobs (boosted intensity)
  *   3. Centered Caravan/Trailer - signature brand mark
+ *   4. Fireworks canvas - periodic celebratory firework bursts
  *
- * Pure CSS keyframes, GPU-accelerated, accessibility-aware.
+ * Pure CSS keyframes + canvas fireworks, GPU-accelerated, accessibility-aware.
  *
  * @param {string} color - Theme color key
  */
@@ -26,56 +27,202 @@ const GLOW_MAP = {
     red:     'rgba(239,68,68,0.10)',
 };
 
+/* ── Firework color palettes per theme ── */
+const FIREWORK_COLORS = {
+    emerald: ['#34d399', '#6ee7b7', '#a7f3d0', '#10b981', '#ffffff'],
+    blue:    ['#60a5fa', '#93c5fd', '#bfdbfe', '#3b82f6', '#ffffff'],
+    indigo:  ['#818cf8', '#a5b4fc', '#c7d2fe', '#6366f1', '#ffffff'],
+    amber:   ['#fbbf24', '#fcd34d', '#fde68a', '#f59e0b', '#ffffff'],
+    slate:   ['#94a3b8', '#cbd5e1', '#e2e8f0', '#64748b', '#ffffff'],
+    rose:    ['#fb7185', '#fda4af', '#fecdd3', '#f43f5e', '#ffffff'],
+    violet:  ['#a78bfa', '#c4b5fd', '#ddd6fe', '#8b5cf6', '#ffffff'],
+    red:     ['#f87171', '#fca5a5', '#fecaca', '#ef4444', '#ffffff'],
+};
+
 /* ── Gradient orb configs - each with its own vibrant color (boosted) ── */
 const ORB_CONFIGS = [
-    { size: 400, top: '-15%', right: '-5%',  anim: 'heroOrb1', dur: '14s', color: 'rgba(6,182,212,0.45)' },     // teal/cyan
-    { size: 340, bottom: '-10%', left: '-4%', anim: 'heroOrb2', dur: '18s', color: 'rgba(139,92,246,0.42)' },    // violet
-    { size: 260, top: '30%', left: '42%',    anim: 'heroOrb3', dur: '22s', color: 'rgba(245,158,11,0.38)' },     // amber/gold
-    { size: 220, top: '8%', left: '12%',     anim: 'heroOrb4', dur: '26s', color: 'rgba(244,63,94,0.38)' },      // rose/pink
-    { size: 200, bottom: '3%', right: '15%', anim: 'heroOrb5', dur: '20s', color: 'rgba(56,189,248,0.40)' },     // sky blue
+    { size: 400, top: '-15%', right: '-5%',  anim: 'heroOrb1', dur: '14s', color: 'rgba(6,182,212,0.45)' },
+    { size: 340, bottom: '-10%', left: '-4%', anim: 'heroOrb2', dur: '18s', color: 'rgba(139,92,246,0.42)' },
+    { size: 260, top: '30%', left: '42%',    anim: 'heroOrb3', dur: '22s', color: 'rgba(245,158,11,0.38)' },
+    { size: 220, top: '8%', left: '12%',     anim: 'heroOrb4', dur: '26s', color: 'rgba(244,63,94,0.38)' },
+    { size: 200, bottom: '3%', right: '15%', anim: 'heroOrb5', dur: '20s', color: 'rgba(56,189,248,0.40)' },
 ];
 
-/* ── Cute Walking Puppy SVG ── */
-function WalkingPuppy() {
+/* ── Fireworks Canvas Component ── */
+function FireworksCanvas({ colors }) {
+    const canvasRef = React.useRef(null);
+    const animRef = React.useRef(null);
+    const particlesRef = React.useRef([]);
+    const rocketsRef = React.useRef([]);
+    const lastLaunchRef = React.useRef(0);
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = React.useMemo(() => {
+        if (typeof window === 'undefined') return false;
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }, []);
+
+    React.useEffect(() => {
+        if (prefersReducedMotion) return;
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const resize = () => {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        const palette = colors || FIREWORK_COLORS.slate;
+
+        function createParticle(x, y, color) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 3 + 1.5;
+            return {
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                alpha: 1,
+                decay: Math.random() * 0.015 + 0.012,
+                color,
+                size: Math.random() * 2.5 + 1,
+                trail: [],
+            };
+        }
+
+        function createRocket(canvasW, canvasH) {
+            const x = canvasW * (0.15 + Math.random() * 0.7);
+            const targetY = canvasH * (0.15 + Math.random() * 0.35);
+            return {
+                x,
+                y: canvasH + 10,
+                targetY,
+                vy: -(Math.random() * 3 + 4),
+                alpha: 1,
+                color: palette[Math.floor(Math.random() * (palette.length - 1))],
+                exploded: false,
+            };
+        }
+
+        function explode(rocket) {
+            const count = 30 + Math.floor(Math.random() * 25);
+            const particles = particlesRef.current;
+            for (let i = 0; i < count; i++) {
+                const color = palette[Math.floor(Math.random() * palette.length)];
+                particles.push(createParticle(rocket.x, rocket.y, color));
+            }
+        }
+
+        function animate(timestamp) {
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Launch new rockets periodically (every 3-4 seconds, 1-2 at a time)
+            if (timestamp - lastLaunchRef.current > 3000 + Math.random() * 1500) {
+                lastLaunchRef.current = timestamp;
+                const count = Math.random() > 0.6 ? 2 : 1;
+                for (let i = 0; i < count; i++) {
+                    rocketsRef.current.push(createRocket(w, h));
+                }
+            }
+
+            // Update rockets
+            const rockets = rocketsRef.current;
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                const r = rockets[i];
+                r.y += r.vy;
+
+                // Draw rocket trail
+                ctx.beginPath();
+                ctx.arc(r.x, r.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = r.color;
+                ctx.globalAlpha = 0.8;
+                ctx.fill();
+
+                // Small trailing glow
+                ctx.beginPath();
+                ctx.arc(r.x, r.y + 6, 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#fef3c7';
+                ctx.globalAlpha = 0.5;
+                ctx.fill();
+
+                if (r.y <= r.targetY) {
+                    explode(r);
+                    rockets.splice(i, 1);
+                }
+            }
+
+            // Update particles
+            const particles = particlesRef.current;
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.trail.push({ x: p.x, y: p.y, alpha: p.alpha });
+                if (p.trail.length > 5) p.trail.shift();
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.04; // gravity
+                p.vx *= 0.99; // drag
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                // Draw trail
+                for (let t = 0; t < p.trail.length; t++) {
+                    const tp = p.trail[t];
+                    ctx.beginPath();
+                    ctx.arc(tp.x, tp.y, p.size * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = tp.alpha * 0.3 * (t / p.trail.length);
+                    ctx.fill();
+                }
+
+                // Draw particle
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+            }
+
+            ctx.globalAlpha = 1;
+            animRef.current = requestAnimationFrame(animate);
+        }
+
+        // Initial launch after a short delay
+        setTimeout(() => {
+            rocketsRef.current.push(createRocket(canvas.width, canvas.height));
+            if (Math.random() > 0.5) {
+                rocketsRef.current.push(createRocket(canvas.width, canvas.height));
+            }
+        }, 800);
+
+        animRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            cancelAnimationFrame(animRef.current);
+            window.removeEventListener('resize', resize);
+            particlesRef.current = [];
+            rocketsRef.current = [];
+        };
+    }, [colors, prefersReducedMotion]);
+
+    if (prefersReducedMotion) return null;
+
     return (
-        <svg viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 48, height: 36 }}>
-            {/* Body */}
-            <ellipse cx="30" cy="24" rx="16" ry="10" fill="rgba(255,255,255,0.85)" />
-            {/* Head */}
-            <circle cx="46" cy="18" r="8" fill="rgba(255,255,255,0.9)" />
-            {/* Ear (floppy) */}
-            <ellipse cx="50" cy="13" rx="4" ry="6" fill="rgba(255,255,255,0.7)"
-                style={{ transformOrigin: '50px 10px', animation: 'puppyEarBounce 0.35s ease-in-out infinite' }} />
-            {/* Eye */}
-            <circle cx="49" cy="17" r="1.5" fill="rgba(30,41,59,0.9)" />
-            {/* Eye shine */}
-            <circle cx="49.8" cy="16.3" r="0.5" fill="white" />
-            {/* Nose */}
-            <ellipse cx="53" cy="19" rx="2" ry="1.5" fill="rgba(30,41,59,0.8)" />
-            {/* Tongue (little pink) */}
-            <ellipse cx="51" cy="23" rx="1.5" ry="2" fill="rgba(244,114,182,0.8)" />
-            {/* Spots on body */}
-            <circle cx="24" cy="21" r="3" fill="rgba(180,160,140,0.35)" />
-            <circle cx="33" cy="26" r="2.5" fill="rgba(180,160,140,0.3)" />
-            {/* Tail (wagging) */}
-            <g style={{ transformOrigin: '14px 24px', animation: 'puppyTailWag 0.4s ease-in-out infinite' }}>
-                <path d="M14 20 Q8 12, 6 14" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-            </g>
-            {/* Front legs (alternate timing) */}
-            <line x1="38" y1="32" x2="40" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
-                style={{ transformOrigin: '38px 32px', animation: 'puppyFrontLegs 0.3s ease-in-out infinite' }} />
-            <line x1="34" y1="32" x2="32" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
-                style={{ transformOrigin: '34px 32px', animation: 'puppyBackLegs 0.3s ease-in-out infinite' }} />
-            {/* Back legs (offset from front) */}
-            <line x1="22" y1="32" x2="24" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
-                style={{ transformOrigin: '22px 32px', animation: 'puppyBackLegs 0.3s ease-in-out infinite' }} />
-            <line x1="18" y1="32" x2="16" y2="42" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round"
-                style={{ transformOrigin: '18px 32px', animation: 'puppyFrontLegs 0.3s ease-in-out infinite' }} />
-            {/* Collar */}
-            <path d="M42 22 Q46 26, 50 23" stroke="rgba(244,63,94,0.7)" strokeWidth="1.5" fill="none" />
-            {/* Collar tag */}
-            <circle cx="47" cy="25" r="1.2" fill="rgba(250,204,21,0.8)" />
-        </svg>
+        <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            style={{ zIndex: 5, opacity: 0.7, pointerEvents: 'none' }}
+        />
     );
 }
 
@@ -132,58 +279,15 @@ const KEYFRAMES = `
     100% { opacity: 0.5; }
 }
 
-/* ── Puppy walk-across (GSAP-style cubic-bezier) ── */
-/* 25s total cycle: 10s walk across, 15s off-screen pause */
-@keyframes puppyWalkAcross {
-    0%   { left: -60px; opacity: 0; }
-    2%   { opacity: 0.6; }
-    38%  { opacity: 0.6; }
-    40%  { left: calc(100% + 60px); opacity: 0; }
-    100% { left: calc(100% + 60px); opacity: 0; }
-}
-
-/* Puppy body bounce while walking */
-@keyframes puppyBounce {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-3px); }
-}
-
-/* Front legs walking */
-@keyframes puppyFrontLegs {
-    0%   { transform: rotate(15deg); }
-    50%  { transform: rotate(-15deg); }
-    100% { transform: rotate(15deg); }
-}
-
-/* Back legs walking (offset) */
-@keyframes puppyBackLegs {
-    0%   { transform: rotate(-15deg); }
-    50%  { transform: rotate(15deg); }
-    100% { transform: rotate(-15deg); }
-}
-
-/* Tail wagging */
-@keyframes puppyTailWag {
-    0%   { transform: rotate(-20deg); }
-    50%  { transform: rotate(20deg); }
-    100% { transform: rotate(-20deg); }
-}
-
-/* Floppy ear bounce */
-@keyframes puppyEarBounce {
-    0%, 100% { transform: rotate(20deg) translateY(0); }
-    50%      { transform: rotate(20deg) translateY(2px); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .hero-orb, .hero-caravan-center, .hero-glow, .hero-puppy-walker { animation: none !important; }
+    .hero-orb, .hero-caravan-center, .hero-glow { animation: none !important; }
     .hero-caravan-center { transform: translate(-50%, -50%) !important; }
-    .puppy-front-legs, .puppy-back-legs, .puppy-tail, .puppy-ear { animation: none !important; }
 }
 `;
 
 export function HeroBackground({ color = 'slate' }) {
     const glowColor = GLOW_MAP[color] || GLOW_MAP.slate;
+    const fireworkColors = FIREWORK_COLORS[color] || FIREWORK_COLORS.slate;
 
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -243,21 +347,8 @@ export function HeroBackground({ color = 'slate' }) {
                 />
             </div>
 
-            {/* ── LAYER 4: Walking Puppy ── */}
-            <div
-                className="hero-puppy-walker absolute"
-                style={{
-                    bottom: '12%',
-                    left: '-60px',
-                    animation: 'puppyWalkAcross 25s cubic-bezier(0.25, 0.1, 0.25, 1) infinite',
-                    willChange: 'left, opacity',
-                    zIndex: 5,
-                }}
-            >
-                <div style={{ animation: 'puppyBounce 0.35s ease-in-out infinite' }}>
-                    <WalkingPuppy />
-                </div>
-            </div>
+            {/* ── LAYER 4: Fireworks Canvas ── */}
+            <FireworksCanvas colors={fireworkColors} />
         </div>
     );
 }
