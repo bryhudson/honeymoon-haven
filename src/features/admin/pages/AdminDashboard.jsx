@@ -130,7 +130,28 @@ export function AdminDashboard() {
                 if (!freshSnap.exists()) { triggerAlert("Error", "Booking not found."); return; }
                 const freshIsPaid = !freshSnap.data().isPaid;
                 await updateDoc(doc(db, "bookings", booking.id), { isPaid: freshIsPaid });
-                triggerAlert("Success", "Payment updated.");
+
+                if (freshIsPaid) {
+                    // Look up shareholder details for the success message
+                    const shareholder = shareholders.find(s => normalizeName(s.name) === normalizeName(booking.shareholderName));
+                    const shareholderEmail = shareholder?.email || "unknown";
+                    const displayName = formatNameForDisplay(booking.shareholderName);
+
+                    triggerAlert("Payment Confirmed", <>
+                        <div style={{ textAlign: 'left', lineHeight: '1.8' }}>
+                            <p style={{ marginBottom: '12px' }}>Payment marked as <strong style={{ color: '#059669' }}>PAID</strong>.</p>
+                            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', marginBottom: '12px' }}>
+                                <p style={{ margin: '0 0 4px', fontWeight: 600, color: '#1e293b' }}>{displayName}</p>
+                                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>{shareholderEmail}</p>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span>✉️</span> A payment confirmation email has been sent.
+                            </p>
+                        </div>
+                    </>);
+                } else {
+                    triggerAlert("Success", "Payment reverted to UNPAID.");
+                }
             }
             catch (e) { triggerAlert("Error", e.message); }
         }, !isPaid);
