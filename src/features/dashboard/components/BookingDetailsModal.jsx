@@ -44,7 +44,8 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
 
     // Permission Logic
     // Enable Cancel in Masquerade (Read Only) mode to allow Admins to test the flow
-    const canCancel = isFinalized && !isCancelled && onCancel && (isAdmin || (isOwner && isFuture));
+    // Owners can cancel any finalized booking (past or future) - unpaid past bookings still carry a fee obligation
+    const canCancel = isFinalized && !isCancelled && onCancel && (isAdmin || isOwner);
     const canPass = !isReadOnly && !isFinalized && !isCancelled && onPass && (isAdmin || isOwner);
     const canEdit = !isReadOnly && !isFinalized && !isCancelled && onEdit && (isAdmin || isOwner);
 
