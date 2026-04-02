@@ -138,6 +138,19 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                         const r2Entry = fullSchedule[12 + (11 - index)];
                                         const isActive = name === status.activePicker;
 
+                                        // Helper: For completed/cancelled bookings, show actual reservation dates
+                                        // For active/future/passed turns, show turn window times
+                                        const getDisplayDates = (entry) => {
+                                            const hasBookingDates = entry.booking && entry.booking.from && entry.booking.to;
+                                            const isReservation = hasBookingDates && (entry.status === 'COMPLETED' || entry.status === 'CANCELLED');
+                                            if (isReservation) {
+                                                const from = entry.booking.from instanceof Date ? entry.booking.from : (entry.booking.from?.toDate ? entry.booking.from.toDate() : new Date(entry.booking.from));
+                                                const to = entry.booking.to instanceof Date ? entry.booking.to : (entry.booking.to?.toDate ? entry.booking.to.toDate() : new Date(entry.booking.to));
+                                                return { start: from, end: to, isReservation: true };
+                                            }
+                                            return { start: entry.start, end: entry.end, isReservation: false };
+                                        };
+
                                         // Helper to render cell (REUSED)
                                         const renderCell = (entry, label) => {
                                             if (!entry) return <span className="text-gray-300">-</span>;
@@ -167,13 +180,16 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                                 cellBg = "text-muted-foreground";
                                             }
 
+                                            const dates = getDisplayDates(entry);
+                                            const dateFormat = dates.isReservation ? 'MMM d, yyyy' : 'MMM d, h:mm a';
+
                                             return (
                                                 <div className={`px-4 py-2 rounded-md w-fit flex flex-col gap-1 ${cellBg}`}>
                                                     <div className="text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                                                         {badge || label}
                                                     </div>
                                                     <div className="text-xs opacity-90 whitespace-nowrap">
-                                                        {format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}
+                                                        {format(dates.start, dateFormat)} - {format(dates.end, dateFormat)}
                                                     </div>
                                                 </div>
                                             );
@@ -236,9 +252,16 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                             </div>
                                             <div className={`flex items-center gap-1.5 text-xs ${bgClass !== "bg-transparent" ? "bg-white/60 p-1.5 rounded mt-0.5" : "text-slate-600 pl-0"} `}>
                                                 <Calendar className="w-3 h-3 text-slate-400" />
-                                                <span>
-                                                    {format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}
-                                                </span>
+                                                {(() => {
+                                                    const hasBookingDates = entry.booking && entry.booking.from && entry.booking.to;
+                                                    const isReservation = hasBookingDates && (entry.status === 'COMPLETED' || entry.status === 'CANCELLED');
+                                                    if (isReservation) {
+                                                        const from = entry.booking.from instanceof Date ? entry.booking.from : (entry.booking.from?.toDate ? entry.booking.from.toDate() : new Date(entry.booking.from));
+                                                        const to = entry.booking.to instanceof Date ? entry.booking.to : (entry.booking.to?.toDate ? entry.booking.to.toDate() : new Date(entry.booking.to));
+                                                        return <span>{format(from, 'MMM d, yyyy')} - {format(to, 'MMM d, yyyy')}</span>;
+                                                    }
+                                                    return <span>{format(entry.start, 'MMM d, h:mm a')} - {format(entry.end, 'MMM d, h:mm a')}</span>;
+                                                })()}
                                             </div>
                                         </div>
                                     );
