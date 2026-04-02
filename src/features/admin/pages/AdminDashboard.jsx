@@ -217,7 +217,7 @@ export function AdminDashboard() {
     };
 
     const handleResetWelcomeBanner = async (user) => {
-        try { await updateDoc(doc(db, "shareholders", user.id), { hasSeenWelcome: deleteField() }); triggerAlert("Success", "Banner reset."); }
+        try { await updateDoc(doc(db, "shareholders", user.id), { seenWelcome: deleteField() }); triggerAlert("Success", "Banner reset."); }
         catch (e) { triggerAlert("Error", "Failed."); }
     };
 
