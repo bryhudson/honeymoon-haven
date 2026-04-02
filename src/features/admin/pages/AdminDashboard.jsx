@@ -529,7 +529,7 @@ export function AdminDashboard() {
                 />
             )}
 
-            {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={draftStatus || { phase: 'PRE_DRAFT' }} startDateOverride={startDateOverride} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
+            {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={status || { phase: 'PRE_DRAFT' }} startDateOverride={startDateOverride} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
             {activeTab === 'notifications' && <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />}
             {activeTab === 'system' && (
                 <SystemTab
