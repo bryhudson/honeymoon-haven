@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Play, Pause, Maximize, Volume2, VolumeX, Trees, ArrowRight } from 'lucide-react';
+import { Play, Pause, Maximize, Volume2, VolumeX, Caravan, ArrowRight } from 'lucide-react';
 import '../styles/demo.css';
 
 export function DemoPage() {
@@ -89,7 +89,7 @@ export function DemoPage() {
                 {/* Header */}
                 <div className="demo-header">
                     <div className="demo-logo">
-                        <Trees className="demo-logo-icon" />
+                        <Caravan className="demo-logo-icon" />
                         <span>Honeymoon Haven Resort</span>
                     </div>
                 </div>
