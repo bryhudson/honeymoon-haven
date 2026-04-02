@@ -55,7 +55,7 @@ export function ConfirmationModal({
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             placeholder={inputType === 'password' ? 'Enter Admin Password' : requireTyping}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono"
+                            className="w-full px-4 py-3 min-h-[44px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono text-base"
                             autoFocus
                         />
                     </div>
@@ -65,7 +65,7 @@ export function ConfirmationModal({
                     {showCancel && (
                         <button
                             onClick={onClose}
-                            className="flex-1 py-3 px-4 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all text-sm"
+                            className="flex-1 min-h-[48px] py-3 px-4 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all text-sm active:scale-[0.98]"
                         >
                             Cancel
                         </button>
@@ -78,7 +78,7 @@ export function ConfirmationModal({
                             }
                         }}
                         disabled={!isInputValid}
-                        className={`flex-1 py-3 px-4 font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-sm ${isDanger
+                        className={`flex-1 min-h-[48px] py-3 px-4 font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-sm active:scale-[0.98] ${isDanger
                             ? 'bg-rose-600 hover:bg-rose-700 text-white'
                             : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                             } ${!isInputValid ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}

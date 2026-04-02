@@ -29,9 +29,14 @@ export function MenuDropdown({
 
         if (buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
+            const menuLeft = align === 'right' ? rect.right - width : rect.left;
+
+            // Prevent menu from overflowing the right edge of the viewport
+            const clampedLeft = Math.min(menuLeft, window.innerWidth - width - 8);
+
             setPosition({
                 top: rect.bottom + 5,
-                left: align === 'right' ? rect.right - width : rect.left
+                left: Math.max(8, clampedLeft)
             });
             setIsOpen(true);
         }
@@ -55,19 +60,19 @@ export function MenuDropdown({
         <div className="relative inline-block">
             <div ref={buttonRef} onClick={toggle}>
                 {trigger || (
-                    <button className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
-                        <MoreVertical className="w-4 h-4" />
+                    <button className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                        <MoreVertical className="w-5 h-5" />
                     </button>
                 )}
             </div>
 
             {isOpen && createPortal(
                 <div
-                    className="fixed z-[9999] rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in zoom-in-95 duration-75"
+                    className="fixed z-[9999] rounded-xl shadow-lg bg-white ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
                     style={{ top: position.top, left: position.left, width: `${width}px` }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="py-1" role="menu">
+                    <div className="py-1.5" role="menu">
                         {visibleItems.map((item, idx) => (
                             <React.Fragment key={idx}>
                                 {item.divider && <div className="border-t border-slate-100 my-1"></div>}
@@ -77,12 +82,12 @@ export function MenuDropdown({
                                         setIsOpen(false);
                                         item.onClick && item.onClick();
                                     }}
-                                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors ${item.danger
-                                            ? 'text-red-600 hover:bg-red-50'
+                                    className={`w-full text-left px-4 py-3 text-sm flex items-center gap-2.5 transition-colors min-h-[44px] ${item.danger
+                                            ? 'text-red-600 hover:bg-red-50 font-medium'
                                             : item.className || 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
                                         }`}
                                 >
-                                    {item.icon && <item.icon className="w-4 h-4" />}
+                                    {item.icon && <item.icon className="w-4 h-4 shrink-0" />}
                                     {item.label}
                                 </button>
                             </React.Fragment>
@@ -94,3 +99,4 @@ export function MenuDropdown({
         </div>
     );
 }
+

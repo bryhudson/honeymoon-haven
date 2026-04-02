@@ -49,6 +49,9 @@ export function ForgotPassword() {
                         <div className="bg-emerald-500/10 text-emerald-600 p-4 rounded-lg mb-6 text-sm text-center border border-emerald-500/20 font-medium flex flex-col items-center gap-2 animate-in fade-in slide-in-from-top-2">
                             <CheckCircle className="w-6 h-6" />
                             {message}
+                            <span className="text-xs text-slate-500 mt-1">
+                                Don't see it? Check your spam or junk folder.
+                            </span>
                         </div>
                     )}
 
