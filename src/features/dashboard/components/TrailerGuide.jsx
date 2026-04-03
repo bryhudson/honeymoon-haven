@@ -82,7 +82,18 @@ export function TrailerGuide({ shareholderName, booking }) {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden relative">
+        <div className="flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <BookOpen className="w-8 h-8 text-slate-800" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Trailer Guide & Rules</h2>
+                        <p className="text-sm text-slate-500">Important rules, check-in out procedures, and troubleshooting.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden relative">
             {/* Header / Tabs */}
             <div className="flex border-b relative">
                 <button
@@ -455,6 +466,7 @@ export function TrailerGuide({ shareholderName, booking }) {
                 confirmText="OK"
                 showCancel={false}
             />
+        </div>
         </div>
     );
 }

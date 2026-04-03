@@ -29,9 +29,12 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
         <div className="flex flex-col gap-6">
             {/* Header + Toggle */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Bookings</h2>
-                    <p className="text-sm text-muted-foreground">View all confirmed bookings for the season.</p>
+                <div className="flex items-center gap-3">
+                    <Calendar className="w-8 h-8 text-slate-800" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Bookings</h2>
+                        <p className="text-sm text-slate-500">View all confirmed bookings for the season.</p>
+                    </div>
                 </div>
 
                 {/* View Toggle */}
