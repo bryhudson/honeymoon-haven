@@ -289,9 +289,15 @@ export function AdminBookingManagement({
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                    {bookingViewMode === 'list' ? 'Booking Management' : 'Calendar View'}
-                </h2>
+                <div className="flex items-center gap-3">
+                    <CalendarIcon className="w-8 h-8 text-slate-800" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">
+                            {bookingViewMode === 'list' ? 'Booking Management' : 'Calendar View'}
+                        </h2>
+                        <p className="text-sm text-slate-500">View, edit, and manage shareholder reservations</p>
+                    </div>
+                </div>
 
                 <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                     <div className="flex bg-slate-100 p-1 rounded-lg">

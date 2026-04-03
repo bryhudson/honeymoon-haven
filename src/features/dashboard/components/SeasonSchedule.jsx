@@ -10,6 +10,15 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
 
     return (
         <div id="tour-schedule" className="">
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <Calendar className="w-8 h-8 text-slate-800" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Draft Schedule</h2>
+                        <p className="text-sm text-slate-500">Season timeline, turn order, and historical archives</p>
+                    </div>
+                </div>
+            </div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div className="flex items-center bg-slate-100 p-1 rounded-lg">
                     <button

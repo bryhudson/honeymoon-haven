@@ -16,8 +16,14 @@ export function AdminUserManagement({
 }) {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800">Users & Roles</h2>
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <Users className="w-8 h-8 text-slate-800" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Users & Roles</h2>
+                        <p className="text-sm text-slate-500">Manage shareholders, roles, and account settings</p>
+                    </div>
+                </div>
                 <div className="flex gap-2">
                     {IS_SITE_OWNER && (
                         <button

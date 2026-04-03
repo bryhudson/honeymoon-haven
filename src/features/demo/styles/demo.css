@@ -1,9 +1,11 @@
 /* ==========================================
    DEMO PAGE - Premium Video Landing
+   Mobile-First, Optimized for iPhone/iPad
    ========================================== */
 
 .demo-page {
     min-height: 100vh;
+    min-height: 100dvh; /* iOS dynamic viewport height */
     position: relative;
     overflow: hidden;
     display: flex;
@@ -28,11 +30,11 @@
     width: 100%;
     max-width: 860px;
     margin: 0 auto;
-    padding: 24px 16px 40px;
+    padding: 16px 12px 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 28px;
+    gap: 20px;
 }
 
 /* Header / Logo */
@@ -40,7 +42,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    padding-top: 8px;
+    padding-top: 4px;
 }
 
 .demo-logo {
@@ -48,15 +50,15 @@
     align-items: center;
     gap: 10px;
     color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
 .demo-logo-icon {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     color: #6366f1;
 }
 
@@ -64,19 +66,20 @@
 .demo-title-section {
     text-align: center;
     max-width: 600px;
+    padding: 0 4px;
 }
 
 .demo-title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.5px;
     line-height: 1.2;
-    margin: 0 0 10px;
+    margin: 0 0 8px;
 }
 
 .demo-subtitle {
-    font-size: 15px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.5);
     line-height: 1.5;
     margin: 0;
@@ -85,21 +88,28 @@
 /* Video Player Wrapper */
 .demo-player-wrapper {
     width: 100%;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     background: #000;
     box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.06),
         0 20px 60px -10px rgba(0, 0, 0, 0.7),
         0 0 100px -20px rgba(99, 102, 241, 0.15);
+    /* Prevent iOS "bouncy" overscroll from revealing background */
+    -webkit-overflow-scrolling: touch;
 }
 
 .demo-player {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    /* Mobile-first: use a taller aspect ratio so the video fills more of the screen */
+    aspect-ratio: 4 / 3;
     background: #000;
     cursor: pointer;
+    /* Prevent text selection on tap-hold */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .demo-video {
@@ -107,6 +117,8 @@
     height: 100%;
     object-fit: contain;
     display: block;
+    /* Prevent iOS from trying to play video in native fullscreen */
+    -webkit-transform: translateZ(0);
 }
 
 /* Play Overlay */
@@ -117,19 +129,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     z-index: 5;
     animation: fadeIn 0.3s ease;
+    /* Large tap target - the entire overlay is tappable */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .demo-play-btn {
-    width: 80px;
-    height: 80px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 2px solid rgba(255, 255, 255, 0.25);
     display: flex;
     align-items: center;
@@ -137,12 +153,21 @@
     color: #fff;
     transition: all 0.25s ease;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    /* Prevent tap highlight on iOS */
+    -webkit-tap-highlight-color: transparent;
 }
 
-.demo-play-btn:hover {
+.demo-play-btn:active {
     background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.08);
-    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
+}
+
+@media (hover: hover) {
+    .demo-play-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.08);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
 }
 
 .demo-play-btn--small {
@@ -164,12 +189,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 0 12px 10px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+    padding: 0 12px 8px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
     z-index: 6;
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
+    /* Extra padding at top for larger gradient fade */
+    padding-top: 40px;
 }
 
 .demo-controls--visible {
@@ -177,27 +204,41 @@
     pointer-events: auto;
 }
 
-.demo-player:hover .demo-controls {
-    opacity: 1;
-    pointer-events: auto;
+/* On touch devices, show controls when visible (no hover) */
+@media (hover: hover) {
+    .demo-player:hover .demo-controls {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
+/* Progress bar - enlarged for touch */
 .demo-progress {
     position: relative;
-    height: 4px;
+    height: 6px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
     cursor: pointer;
     margin-bottom: 8px;
     transition: height 0.15s ease;
+    /* Expand touch target without expanding visual size */
+    padding: 10px 0;
+    margin-top: -10px;
+    margin-bottom: -2px;
+    background-clip: content-box;
 }
 
-.demo-progress:hover {
-    height: 6px;
+@media (hover: hover) {
+    .demo-progress:hover {
+        height: 8px;
+    }
 }
 
 .demo-progress-fill {
-    height: 100%;
+    position: absolute;
+    top: 10px; /* offset for padding */
+    left: 0;
+    height: 6px;
     background: linear-gradient(90deg, #6366f1, #a855f7);
     border-radius: 4px;
     transition: width 0.1s linear;
@@ -205,44 +246,62 @@
 
 .demo-progress-thumb {
     position: absolute;
-    top: 50%;
-    width: 14px;
-    height: 14px;
+    top: 13px; /* center on the bar: 10px padding + 3px (half of 6px) */
+    width: 16px;
+    height: 16px;
     background: #fff;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-    opacity: 0;
-    transition: opacity 0.15s ease;
+    /* Always visible on touch devices for easier scrubbing */
+    opacity: 1;
+    transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.demo-progress:hover .demo-progress-thumb {
-    opacity: 1;
+@media (hover: hover) {
+    .demo-progress-thumb {
+        opacity: 0;
+    }
+    .demo-progress:hover .demo-progress-thumb {
+        opacity: 1;
+    }
 }
 
 .demo-controls-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
+    padding-top: 6px;
 }
 
+/* Control buttons - 44px minimum touch target (Apple HIG) */
 .demo-ctrl-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: rgba(255, 255, 255, 0.85);
     background: transparent;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent double-tap zoom on buttons */
+    touch-action: manipulation;
 }
 
-.demo-ctrl-btn:hover {
+.demo-ctrl-btn:active {
     color: #fff;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+@media (hover: hover) {
+    .demo-ctrl-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+    }
 }
 
 /* CTA Section */
@@ -250,16 +309,20 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     padding-top: 4px;
+    width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .demo-cta-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    padding: 14px 28px;
-    font-size: 15px;
+    padding: 16px 28px;
+    font-size: 16px;
     font-weight: 700;
     color: #fff;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -271,29 +334,36 @@
     box-shadow:
         0 4px 16px rgba(99, 102, 241, 0.3),
         0 0 0 1px rgba(99, 102, 241, 0.2);
-}
-
-.demo-cta-btn:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        0 8px 24px rgba(99, 102, 241, 0.4),
-        0 0 0 1px rgba(139, 92, 246, 0.3);
-    background: linear-gradient(135deg, #7c7ff7, #9d6ff9);
+    /* 48px min touch target */
+    min-height: 52px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .demo-cta-btn:active {
-    transform: translateY(0);
+    transform: scale(0.97);
+}
+
+@media (hover: hover) {
+    .demo-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 24px rgba(99, 102, 241, 0.4),
+            0 0 0 1px rgba(139, 92, 246, 0.3);
+        background: linear-gradient(135deg, #7c7ff7, #9d6ff9);
+    }
 }
 
 .demo-cta-hint {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.35);
     margin: 0;
+    text-align: center;
 }
 
 /* Footer */
 .demo-footer {
-    padding-top: 20px;
+    padding-top: 16px;
 }
 
 .demo-footer p {
@@ -309,30 +379,69 @@
     to { opacity: 1; }
 }
 
-/* Mobile responsive */
+/* ==========================================
+   Tablet (iPad mini / iPad)
+   ========================================== */
 @media (min-width: 640px) {
+    .demo-content {
+        padding: 32px 24px 48px;
+        gap: 28px;
+    }
+
+    .demo-title {
+        font-size: 32px;
+    }
+
+    .demo-subtitle {
+        font-size: 15px;
+    }
+
+    .demo-logo {
+        font-size: 14px;
+    }
+
+    .demo-logo-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .demo-play-btn {
+        width: 84px;
+        height: 84px;
+    }
+
+    .demo-player {
+        /* Tablets in portrait - 3:2 is a nice middle ground */
+        aspect-ratio: 3 / 2;
+    }
+
+    .demo-player-wrapper {
+        border-radius: 16px;
+    }
+}
+
+/* ==========================================
+   iPad landscape / small desktop
+   ========================================== */
+@media (min-width: 900px) {
+    .demo-player {
+        /* At this width we can safely go 16:9 */
+        aspect-ratio: 16 / 9;
+    }
+}
+
+@media (min-width: 1024px) {
     .demo-content {
         padding: 40px 24px 60px;
         gap: 36px;
     }
 
     .demo-title {
-        font-size: 36px;
+        font-size: 42px;
     }
 
     .demo-subtitle {
         font-size: 16px;
-    }
-
-    .demo-play-btn {
-        width: 88px;
-        height: 88px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .demo-title {
-        font-size: 42px;
     }
 
     .demo-player-wrapper {
@@ -340,21 +449,73 @@
     }
 }
 
-/* Fullscreen adjustments */
+/* ==========================================
+   Landscape orientation on phones
+   ========================================== */
+@media (max-height: 500px) and (orientation: landscape) {
+    .demo-content {
+        padding: 8px 16px 16px;
+        gap: 8px;
+    }
+
+    .demo-header {
+        display: none;
+    }
+
+    .demo-title-section {
+        display: none;
+    }
+
+    .demo-player {
+        aspect-ratio: 16 / 9;
+    }
+
+    .demo-cta-section {
+        padding-top: 0;
+    }
+
+    .demo-footer {
+        display: none;
+    }
+}
+
+/* ==========================================
+   Fullscreen adjustments
+   ========================================== */
 .demo-player-wrapper:fullscreen {
     border-radius: 0;
+    box-shadow: none;
 }
 
 .demo-player-wrapper:fullscreen .demo-player {
     aspect-ratio: unset;
     height: 100vh;
+    height: 100dvh;
 }
 
 .demo-player-wrapper:-webkit-full-screen {
     border-radius: 0;
+    box-shadow: none;
 }
 
 .demo-player-wrapper:-webkit-full-screen .demo-player {
     aspect-ratio: unset;
     height: 100vh;
+    height: 100dvh;
+}
+
+/* ==========================================
+   Safe area insets (iPhone notch/dynamic island)
+   ========================================== */
+@supports (padding: env(safe-area-inset-top)) {
+    .demo-content {
+        padding-top: calc(16px + env(safe-area-inset-top));
+        padding-bottom: calc(32px + env(safe-area-inset-bottom));
+        padding-left: calc(12px + env(safe-area-inset-left));
+        padding-right: calc(12px + env(safe-area-inset-right));
+    }
+
+    .demo-controls {
+        padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
 }

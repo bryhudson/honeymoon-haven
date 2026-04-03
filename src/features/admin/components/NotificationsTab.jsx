@@ -69,11 +69,14 @@ export function NotificationsTab({ triggerAlert, isTestMode = true }) {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <Bell className="w-8 h-8 text-slate-800" /> Notification Center
-                </h2>
-                <p className="text-sm text-slate-500">Manage, test, and audit system communications.</p>
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <Bell className="w-8 h-8 text-slate-800" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Notification Center</h2>
+                        <p className="text-sm text-slate-500">Manage, test, and audit system communications</p>
+                    </div>
+                </div>
             </div>
 
             <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit">

@@ -1,16 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Play, Pause, Maximize, Volume2, VolumeX, Caravan, ArrowRight } from 'lucide-react';
+import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, Caravan, ArrowRight } from 'lucide-react';
 import '../styles/demo.css';
 
 export function DemoPage() {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
     const [progress, setProgress] = useState(0);
     const [showOverlay, setShowOverlay] = useState(true);
     const [hasStarted, setHasStarted] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const progressRef = useRef(null);
 
     const handlePlayPause = () => {
         const video = videoRef.current;
@@ -51,14 +53,26 @@ export function DemoPage() {
         }
     };
 
-    const handleProgressClick = (e) => {
+    const seekToPosition = useCallback((clientX) => {
         const video = videoRef.current;
-        const bar = e.currentTarget;
+        const bar = progressRef.current;
         if (!video || !bar) return;
         const rect = bar.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
+        const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
         video.currentTime = pos * video.duration;
+    }, []);
+
+    const handleProgressClick = (e) => {
+        seekToPosition(e.clientX);
     };
+
+    // Touch scrubbing support for mobile
+    const handleProgressTouch = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const touch = e.touches[0];
+        if (touch) seekToPosition(touch.clientX);
+    }, [seekToPosition]);
 
     const handleFullscreen = (e) => {
         e.stopPropagation();
@@ -66,18 +80,36 @@ export function DemoPage() {
         const el = containerRef.current;
         if (!video || !el) return;
 
-        // Try native video fullscreen first (best on mobile), fall back to container
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-            (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+        // Check if currently in fullscreen
+        const inFullscreen = document.fullscreenElement || document.webkitFullscreenElement || video.webkitDisplayingFullscreen;
+
+        if (inFullscreen) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (video.webkitExitFullscreen) {
+                // iOS Safari - video element level
+                video.webkitExitFullscreen();
+            }
+            setIsFullscreen(false);
         } else {
-            const target = video.requestFullscreen ? el : el;
-            target.requestFullscreen?.() || target.webkitRequestFullscreen?.();
+            // iOS Safari doesn't support container fullscreen - use video element
+            if (video.webkitEnterFullscreen) {
+                video.webkitEnterFullscreen();
+            } else if (el.requestFullscreen) {
+                el.requestFullscreen();
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            }
+            setIsFullscreen(true);
         }
     };
 
     const handleEnded = () => {
         setIsPlaying(false);
         setShowOverlay(true);
+        setIsFullscreen(false);
     };
 
     return (
@@ -112,6 +144,8 @@ export function DemoPage() {
                             onTimeUpdate={handleTimeUpdate}
                             onEnded={handleEnded}
                             playsInline
+                            webkit-playsinline="true"
+                            muted={isMuted}
                             preload="metadata"
                             onClick={handleVideoClick}
                         />
@@ -132,24 +166,30 @@ export function DemoPage() {
                         {hasStarted && (
                             <div className={`demo-controls ${showOverlay ? 'demo-controls--visible' : ''}`} onClick={(e) => e.stopPropagation()}>
                                 {/* Progress bar */}
-                                <div className="demo-progress" onClick={(e) => { e.stopPropagation(); handleProgressClick(e); }}>
+                                <div
+                                    className="demo-progress"
+                                    ref={progressRef}
+                                    onClick={(e) => { e.stopPropagation(); handleProgressClick(e); }}
+                                    onTouchStart={(e) => { e.stopPropagation(); handleProgressTouch(e); }}
+                                    onTouchMove={(e) => { e.stopPropagation(); handleProgressTouch(e); }}
+                                >
                                     <div className="demo-progress-fill" style={{ width: `${progress}%` }} />
                                     <div className="demo-progress-thumb" style={{ left: `${progress}%` }} />
                                 </div>
 
                                 <div className="demo-controls-row">
                                     <button className="demo-ctrl-btn" onClick={(e) => { e.stopPropagation(); handlePlayPause(); }} aria-label={isPlaying ? "Pause" : "Play"}>
-                                        {isPlaying ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: 2 }} />}
+                                        {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: 2 }} />}
                                     </button>
 
                                     <button className="demo-ctrl-btn" onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if (videoRef.current) videoRef.current.muted = !isMuted; }} aria-label={isMuted ? "Unmute" : "Mute"}>
-                                        {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                                     </button>
 
                                     <div style={{ flex: 1 }} />
 
-                                    <button className="demo-ctrl-btn" onClick={handleFullscreen} aria-label="Fullscreen">
-                                        <Maximize size={18} />
+                                    <button className="demo-ctrl-btn" onClick={handleFullscreen} aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+                                        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
                                     </button>
                                 </div>
                             </div>
