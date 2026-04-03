@@ -7,7 +7,7 @@ export function DemoPage() {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isMuted, setIsMuted] = useState(true);
+    const [isMuted, setIsMuted] = useState(false);
     const [progress, setProgress] = useState(0);
     const [showOverlay, setShowOverlay] = useState(true);
     const [hasStarted, setHasStarted] = useState(false);
