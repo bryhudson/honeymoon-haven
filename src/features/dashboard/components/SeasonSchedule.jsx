@@ -252,7 +252,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                     else if (entry.status === 'SKIPPED') { statusColor = "text-red-400 line-through"; statusText = "Skipped"; }
 
                                     return (
-                                        <div className="flex flex-col py-2 border-b last:border-0 border-slate-100 gap-1">
+                                        <div className="flex flex-col py-3 border-b last:border-0 border-slate-100 gap-1">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{roundLabel}</span>
                                                 <span className={`text-[10px] uppercase tracking-wider font-bold ${statusColor} ${bgClass === "bg-transparent" ? "" : "px-1.5 py-0.5"}`}>
@@ -278,7 +278,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
 
                                 return (
                                     <div key={name} className={`bg-white rounded-lg border shadow-sm overflow-hidden ${isActive ? 'ring-2 ring-blue-500 border-transparent shadow-md' : 'border-slate-200'}`}>
-                                        <div className={`px-3 py-2 flex justify-between items-center ${isActive ? 'bg-blue-50/50' : 'bg-slate-50/30 border-b border-slate-100'}`}>
+                                        <div className={`px-4 py-3 flex justify-between items-center ${isActive ? 'bg-blue-50/50' : 'bg-slate-50/30 border-b border-slate-100'}`}>
                                             <div className="flex items-center gap-2">
                                                 <span className="font-mono text-[10px] text-slate-400 font-bold bg-slate-100 px-1 py-0.5 rounded">#{index + 1}</span>
                                                 <span className="font-bold text-sm text-slate-900 line-clamp-1">{name}</span>

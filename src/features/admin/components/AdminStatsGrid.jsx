@@ -6,7 +6,7 @@ export function AdminStatsGrid({ analytics }) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-6 rounded-xl border shadow-sm">
+            <div className="bg-white p-4 sm:p-6 rounded-xl border shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-green-100 text-green-700 rounded-lg">
                         <DollarSign className="w-6 h-6" />
@@ -18,7 +18,7 @@ export function AdminStatsGrid({ analytics }) {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border shadow-sm">
+            <div className="bg-white p-4 sm:p-6 rounded-xl border shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-rose-100 text-rose-700 rounded-lg">
                         <AlertTriangle className="w-6 h-6" />
@@ -33,7 +33,7 @@ export function AdminStatsGrid({ analytics }) {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border shadow-sm">
+            <div className="bg-white p-4 sm:p-6 rounded-xl border shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-blue-100 text-blue-700 rounded-lg">
                         <Calendar className="w-6 h-6" />
@@ -45,7 +45,7 @@ export function AdminStatsGrid({ analytics }) {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border shadow-sm">
+            <div className="bg-white p-4 sm:p-6 rounded-xl border shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-purple-100 text-purple-700 rounded-lg">
                         <Moon className="w-6 h-6" />

@@ -4,6 +4,7 @@ const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
 const { normalizeName } = require("../helpers/shareholders");
+const { toZonedTime, fromZonedTime } = require("date-fns-tz");
 
 // Ensure admin is initialized
 if (admin.apps.length === 0) {
@@ -23,41 +24,18 @@ const db = admin.firestore();
  * @returns {Date} - A Date object representing the target time in PT
  */
 function getTargetPstTime(baseDate, targetHour, daysOffset = 0) {
+    const tz = 'America/Los_Angeles';
     // 1. Get the date components in Pacific Time
-    const adjustedDate = new Date(baseDate);
-    adjustedDate.setDate(adjustedDate.getDate() + daysOffset);
+    const zoned = toZonedTime(baseDate, tz);
 
-    // 2. Get year/month/day in PT for the target date
-    const ptParts = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/Los_Angeles',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric'
-    }).formatToParts(adjustedDate);
+    // 2. Add requested days offset
+    zoned.setDate(zoned.getDate() + daysOffset);
 
-    const year = parseInt(ptParts.find(p => p.type === 'year').value);
-    const month = parseInt(ptParts.find(p => p.type === 'month').value);
-    const day = parseInt(ptParts.find(p => p.type === 'day').value);
+    // 3. Set exactly to the target hour in local Pacific Time
+    zoned.setHours(targetHour, 0, 0, 0);
 
-    // 3. Start with a guess: targetHour + 8 hours (PST offset)
-    // We'll refine this based on actual PT hour
-    const guess = new Date(Date.UTC(year, month - 1, day, targetHour + 8, 0, 0, 0));
-
-    // 4. Check what hour this actually is in PT
-    const checkParts = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/Los_Angeles',
-        hour: 'numeric',
-        hour12: false
-    }).formatToParts(guess);
-    const actualHour = parseInt(checkParts.find(p => p.type === 'hour').value);
-
-    // 5. Adjust if needed (handles DST: PDT is UTC-7, PST is UTC-8)
-    if (actualHour !== targetHour) {
-        const correction = targetHour - actualHour;
-        guess.setUTCHours(guess.getUTCHours() + correction);
-    }
-
-    return guess;
+    // 4. Convert back to absolute UTC Date
+    return fromZonedTime(zoned, tz);
 }
 
 /**
@@ -122,6 +100,20 @@ exports.turnReminderScheduler = onSchedule(
             const notificationLogRef = db.collection("notification_log").doc(notificationLogId);
             const notificationLogDoc = await notificationLogRef.get();
             const notificationLog = notificationLogDoc.exists ? notificationLogDoc.data() : {};
+            const now = new Date();
+
+            // CRITICAL FIX: Ghost Timeout Transaction Lockout
+            // Ensure we don't collide with onDraftStatusChange skipped messages by enforcing a 5-minute evaluation gap
+            if (notificationLog.lastEvaluated && !isTestMode) {
+                const diffMins = (now.getTime() - notificationLog.lastEvaluated.toDate().getTime()) / 60000;
+                if (diffMins < 5) {
+                    logger.info(`[Lockout Active] Skipping evaluation for ${activePicker}. Last eval ${diffMins.toFixed(1)} mins ago.`);
+                    return;
+                }
+            }
+
+            // Update lastEvaluated to claim the evaluation window
+            await notificationLogRef.set({ lastEvaluated: admin.firestore.Timestamp.now() }, { merge: true });
 
             // CRITICAL FIX: Race Condition Check
             // Before proceeding, verify this user hasn't ALREADY booked.
@@ -141,7 +133,6 @@ exports.turnReminderScheduler = onSchedule(
                 return;
             }
 
-            const now = new Date();
             const turnStart = windowStarts ? new Date(windowStarts.toDate()) : null;
             const turnEnd = windowEnds ? new Date(windowEnds.toDate()) : null;
 
@@ -161,7 +152,6 @@ exports.turnReminderScheduler = onSchedule(
                 const isGrace = draftStatus.isGracePeriod === true;
                 await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, isTestMode, cabinNumber, isGrace);
 
-                // Update notification log
                 await notificationLogRef.set({
                     shareholderName: activePicker,
                     round: round,
@@ -276,7 +266,7 @@ async function handleNormalModeReminders(
             });
         }
         // 2. Final Morning 6 AM (4h)
-        else if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
+        else if (now >= finalMorning6am && now < turnEnd && !notificationLog.finalMorning6amSent) {
             logger.info("Sending final morning reminder (6 AM)");
             await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, '4 hours', cabinNumber);
             await notificationLogRef.update({
@@ -284,7 +274,7 @@ async function handleNormalModeReminders(
             });
         }
         // 3. Day 2 Evening (7 PM)
-        else if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
+        else if (now >= nextDayEvening && now < turnEnd && !notificationLog.nextDayEveningSent) {
             logger.info("Sending Day 2 evening reminder (7 PM)");
             await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'day2evening', cabinNumber);
             await notificationLogRef.update({
@@ -292,7 +282,7 @@ async function handleNormalModeReminders(
             });
         }
         // 4. Day 2 Morning (9 AM)
-        else if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
+        else if (now >= nextDayMorning && now < turnEnd && !notificationLog.nextDayMorningSent) {
             logger.info("Sending next day 9am reminder");
             await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'day2', cabinNumber);
             await notificationLogRef.update({
@@ -300,7 +290,7 @@ async function handleNormalModeReminders(
             });
         }
         // 5. Day 1 Evening (7 PM)
-        else if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
+        else if (now >= sameDayEvening && now < turnEnd && !notificationLog.sameDayEveningSent) {
             logger.info("Sending same day 7pm reminder");
             await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
             await notificationLogRef.update({

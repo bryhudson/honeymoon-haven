@@ -55,7 +55,7 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="p-8 text-center">
+                <div className="p-4 md:p-8 text-center">
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong.</h1>
                     <p className="font-mono text-sm bg-gray-100 p-4 rounded text-left overflow-auto">
                         {this.state.error && this.state.error.toString()}
@@ -122,16 +122,27 @@ export function Dashboard() {
     }, [currentUser, shareholders, masqueradeAs]);
 
     // --- WELCOME MODAL LOGIC ---
+    const welcomeShownRef = React.useRef(false);
+    
     useEffect(() => {
         if (loggedInShareholder && shareholders.length > 0 && !masqueradeAs) {
+            const storageKey = `welcome_dismissed_${normalizeName(loggedInShareholder)}`;
+            const hasDismissedLocally = localStorage.getItem(storageKey);
+            
             // Find the robust shareholder object (with ID)
             const myRecord = shareholders.find(s => normalizeName(s.name) === normalizeName(loggedInShareholder));
             if (myRecord) {
                 setCurrentShareholderDoc(myRecord);
+                
                 // Show welcome modal on every login UNLESS user has permanently dismissed it
-                if (!myRecord.seenWelcome) {
-                    // Small delay for effect
-                    const timer = setTimeout(() => setShowWelcomeModal(true), 1500);
+                if (myRecord.seenWelcome || hasDismissedLocally) return;
+
+                // Stop duplicate timeouts when shareholders update from DB
+                if (!welcomeShownRef.current) {
+                    const timer = setTimeout(() => {
+                        setShowWelcomeModal(true);
+                        welcomeShownRef.current = true;
+                    }, 1500);
                     return () => clearTimeout(timer);
                 }
             }
@@ -146,6 +157,10 @@ export function Dashboard() {
     // Permanently dismiss (won't show again)
     const handleWelcomeDismissPermanently = async () => {
         setShowWelcomeModal(false);
+        if (loggedInShareholder) {
+            localStorage.setItem(`welcome_dismissed_${normalizeName(loggedInShareholder)}`, 'true');
+        }
+        
         if (currentShareholderDoc?.id) {
             try {
                 // Optimistic UI update
@@ -164,7 +179,11 @@ export function Dashboard() {
 
     // Determine if we should defer the tour
     const isWelcomePending = React.useMemo(() => {
-        if (!loggedInShareholder || shareholders.length === 0) return false;
+        if (!loggedInShareholder) return false;
+        const storageKey = `welcome_dismissed_${normalizeName(loggedInShareholder)}`;
+        if (localStorage.getItem(storageKey)) return false;
+        
+        if (shareholders.length === 0) return false;
         const myRecord = shareholders.find(s => normalizeName(s.name) === normalizeName(loggedInShareholder));
         return myRecord && !myRecord.seenWelcome;
     }, [loggedInShareholder, shareholders]);
@@ -749,7 +768,7 @@ export function Dashboard() {
                     {
                         passStep > 0 && (
                             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                                <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
+                                <div className="bg-background border rounded-xl shadow-2xl max-w-md w-full p-4 md:p-6 animate-in fade-in zoom-in-95">
                                     <h2 className={`text-2xl font-bold mb-2 ${passStep === 2 ? 'text-destructive' : 'text-foreground'}`}>
                                         {passStep === 1 ? "Pass Your Turn?" : "Are You Sure?"}
                                     </h2>
@@ -857,7 +876,7 @@ export function Dashboard() {
                     {
                         showPreDraftModal && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                                <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+                                <div className="bg-background border rounded-lg shadow-lg max-w-md w-full p-4 md:p-6 space-y-4 animate-in fade-in zoom-in-95">
                                     <div className="text-center text-xs text-slate-400 py-4">
                                         v{__APP_VERSION__}
                                     </div>

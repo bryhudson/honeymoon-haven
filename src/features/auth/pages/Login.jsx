@@ -80,9 +80,9 @@ export function Login() {
     }
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-muted/5">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 bg-muted/5">
             <div className="w-full max-w-md">
-                <div className="bg-card p-8 rounded-2xl shadow-xl border border-border/50">
+                <div className="bg-card p-4 sm:p-8 rounded-2xl shadow-xl border border-border/50">
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold tracking-tight text-foreground">Sign In</h2>
 

@@ -214,7 +214,7 @@ export function LiveTurnMonitor() {
 
     return (
         <>
-            <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-6 mb-8 group">
+            <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden p-4 sm:p-6 mb-8 group">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
                         <div className="relative">

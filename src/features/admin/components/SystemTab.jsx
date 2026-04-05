@@ -31,7 +31,7 @@ export function SystemTab({
 
             <div className="space-y-8">
                 {/* 1. Operation Mode (Two-Mode System) */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
                     <div className="flex items-center gap-3 mb-6 relative z-10">
                         <div className="p-2 bg-indigo-100 rounded-lg">
                             <Zap className="w-6 h-6 text-indigo-700" />
@@ -94,7 +94,7 @@ export function SystemTab({
                 </div>
 
                 {/* 2. Maintenance Mode */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Maintenance Mode</h3>
@@ -199,7 +199,7 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
     useEffect(() => { loadBackups(); }, []);
 
     return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Data Recovery Zone</h3>
