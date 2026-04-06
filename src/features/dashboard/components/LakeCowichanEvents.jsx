@@ -84,25 +84,29 @@ const HIKING_TRAILS = [
         name: "Bald Mountain (Peninsula)",
         difficulty: "Moderate",
         time: "2 - 3 hours",
-        description: "Beautiful switchback trail with panoramic lake views at the summit. One of the area's most rewarding hikes."
+        description: "Beautiful switchback trail with panoramic lake views at the summit. One of the area's most rewarding hikes.",
+        url: "https://cowichanlaketrailblazers.com"
     },
     {
         name: "Christopher Rock (Youbou)",
         difficulty: "Easy-Moderate",
         time: "20 - 30 min",
-        description: "Short but steep scramble with stunning views of the entire lake. Quick and worth it."
+        description: "Short but steep scramble with stunning views of the entire lake. Quick and worth it.",
+        url: "https://cowichanlaketrailblazers.com"
     },
     {
         name: "Cowichan River Footpath",
         difficulty: "Easy",
         time: "1 - 4 hours",
-        description: "Multi-kilometer trail along the river with scenic banks, swimming holes, and access near Skutz Falls."
+        description: "Multi-kilometer trail along the river with scenic banks, swimming holes, and access near Skutz Falls.",
+        url: "https://cowichanlaketrailblazers.com"
     },
     {
         name: "Robertson River Falls",
         difficulty: "Moderate",
         time: "1.5 - 2 hours",
-        description: "Beautiful waterfall hike. Getting to the base of the falls can be challenging - stay on marked paths."
+        description: "Beautiful waterfall hike. Getting to the base of the falls can be challenging - stay on marked paths.",
+        url: "https://cowichanlaketrailblazers.com"
     },
     {
         name: "Kinsol Trestle",
@@ -437,6 +441,11 @@ export function LakeCowichanEvents() {
                                             </div>
                                         </div>
                                         <p className="text-sm text-slate-600 leading-relaxed">{trail.description}</p>
+                                        {trail.url && (
+                                            <a href={trail.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-emerald-600 hover:underline">
+                                                Trail Info <ExternalLink className="w-3 h-3" />
+                                            </a>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -464,6 +473,11 @@ export function LakeCowichanEvents() {
                                         </div>
                                         <p className="text-xs text-slate-400 font-medium mb-2">{spot.type}</p>
                                         <p className="text-sm text-slate-600 leading-relaxed">{spot.description}</p>
+                                        {spot.url && (
+                                            <a href={spot.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-orange-600 hover:underline">
+                                                {spot.url.includes('google.com/maps') ? 'View on Google Maps' : 'Visit Website'} <ExternalLink className="w-3 h-3" />
+                                            </a>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -497,6 +511,11 @@ export function LakeCowichanEvents() {
                                             </span>
                                         </div>
                                         <p className="text-sm text-slate-600 leading-relaxed">{market.description}</p>
+                                        {market.url && (
+                                            <a href={market.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-purple-600 hover:underline">
+                                                Visit Website <ExternalLink className="w-3 h-3" />
+                                            </a>
+                                        )}
                                     </div>
                                 ))}
                             </div>
