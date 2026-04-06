@@ -108,18 +108,30 @@ export function ShareholderHero({
         return aTime - bTime;
     });
 
-    // Detect auto-skipped rounds and inject them into myActions
-    if (status.phase === 'ROUND_2' || status.phase === 'OPEN_SEASON') {
-        if (myActions.length === 0) {
-            myActions.unshift({ id: 'skip-r1', type: 'skipped', createdAt: status.draftStart });
-        }
-    }
-    if (status.phase === 'OPEN_SEASON') {
-        if (myActions.length === 1) {
-            myActions.push({ id: 'skip-r2', type: 'skipped', createdAt: new Date() });
-        } else if (myActions.length === 0) {
-            myActions.push({ id: 'skip-r2', type: 'skipped', createdAt: new Date() });
-        }
+    // Detect auto-skipped rounds from schedule and inject them into myActions
+    if (status.schedule) {
+        status.schedule.forEach(s => {
+            if (normalizeName(s.name) === normalizedMe && s.status === 'SKIPPED') {
+                // Only push if we don't already have an action for this round that happens to be 'skipped' (prevents duplicates if DB somehow has it)
+                const existing = myActions.find(a => a.id === `skip-r${s.round}`);
+                if (!existing) {
+                    myActions.push({
+                        id: `skip-r${s.round}`,
+                        type: 'skipped',
+                        createdAt: s.end || new Date()
+                    });
+                }
+            }
+        });
+
+        // Re-sort myActions after potential injection
+        myActions.sort((a, b) => {
+            const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+            const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+            const aTime = isNaN(aRaw.getTime()) ? 0 : aRaw.getTime();
+            const bTime = isNaN(bRaw.getTime()) ? 0 : bRaw.getTime();
+            return aTime - bTime;
+        });
     }
 
     // Note: Cancelled bookings DO count toward round completion.
@@ -130,7 +142,7 @@ export function ShareholderHero({
     const myScheduleCurrentRound = status.schedule?.find(s =>
         normalizeName(s.name) === normalizedMe && s.round === roundTarget
     );
-    const isDoneForRound = myScheduleCurrentRound ? myScheduleCurrentRound.isCompleted : (effectiveActions.length >= roundTarget);
+    const isDoneForRound = myScheduleCurrentRound ? (myScheduleCurrentRound.isCompleted || myScheduleCurrentRound.status === 'SKIPPED') : (effectiveActions.length >= roundTarget);
 
     const lastAction = myActions[myActions.length - 1];
     const latestAction = bookings
