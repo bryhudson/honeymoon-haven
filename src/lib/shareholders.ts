@@ -34,6 +34,7 @@ export interface DraftStatus {
     officialStart: Date;
     debugPhase: string;
     round: number;
+    schedule?: ScheduleItem[];
 }
 
 const NAME_MAP: Record<string, string> = {
@@ -216,6 +217,7 @@ export function calculateDraftSchedule(
     startDateOverride: Date | null = null,
     bypassTenAM: boolean = false
 ): DraftStatus {
+    const schedule = mapOrderToSchedule(shareholders, bookings, startDateOverride, bypassTenAM);
     const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
     const PICK_DURATION_MS = getPickDurationMS();
 
@@ -299,7 +301,8 @@ export function calculateDraftSchedule(
         windowStarts: currentWindowStart,
         officialStart: currentWindowStart,
         debugPhase: phase,
-        round: currentRound
+        round: currentRound,
+        schedule
     };
 }
 

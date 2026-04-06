@@ -479,12 +479,12 @@ export function ShareholderHero({
     // ============================================
     // 5. DONE FOR ROUND
     // ============================================
-    if (isDoneForRound) {
-        const lastEffective = effectiveActions[effectiveActions.length - 1];
-        const isPassed = lastEffective?.type === 'pass';
-        const isSkipped = lastEffective?.type === 'skipped';
-        const isCancelled = lastEffective?.type === 'cancelled'; // Strictly check 'type', ignore 'status' which might be 'cancelled' for passes
+    const lastEffective = effectiveActions[effectiveActions.length - 1];
+    const isPassed = lastEffective?.type === 'pass';
+    const isSkipped = lastEffective?.type === 'skipped';
+    const isCancelled = lastEffective?.type === 'cancelled'; // Strictly check 'type'
 
+    if (isDoneForRound || isPassed || isSkipped || isCancelled) {
         let hero;
 
         if (isPassed || isSkipped || isCancelled) {
@@ -492,13 +492,12 @@ export function ShareholderHero({
             let nextPhaseInfo;
             if (status.phase === 'OPEN_SEASON') {
                 nextPhaseInfo = 'Open Season is active - book anytime!';
-            } else if (status.phase === 'ROUND_2') {
-                // They passed/cancelled in R2 - next is Open Season
+            } else if (isDoneForRound && status.phase === 'ROUND_2') {
                 nextPhaseInfo = 'Open Season begins after Round 2 completes.';
             } else if (queueInfo?.diff) {
-                nextPhaseInfo = `You're #${getOrdinal(queueInfo.diff)} in line for Round 2.`;
+                nextPhaseInfo = `You're #${getOrdinal(queueInfo.diff)} in line for your next turn.`;
             } else {
-                nextPhaseInfo = 'Round 2 is coming up next.';
+                nextPhaseInfo = 'Your next turn is coming up.';
             }
 
             let icon = isSkipped ? ArrowRight : isCancelled ? XCircle : ArrowRight;
@@ -564,16 +563,8 @@ export function ShareholderHero({
         ) : hero;
     }
 
-    // ============================================
     // 7. WAITING IN LINE
     // ============================================
-    const upcomingBooking = bookings
-        .filter(b => normalizeName(b.shareholderName) === normalizedMe && b.isFinalized && b.type !== 'cancelled' && b.type !== 'pass')
-        .sort((a, b) => {
-            const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
-            const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
-            return (isNaN(bRaw.getTime()) ? 0 : bRaw.getTime()) - (isNaN(aRaw.getTime()) ? 0 : aRaw.getTime());
-        })[0];
 
     const isUpNext = queueInfo?.diff === 1;
 
