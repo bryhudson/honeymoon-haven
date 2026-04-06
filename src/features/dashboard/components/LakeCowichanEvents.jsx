@@ -25,7 +25,7 @@ const FESTIVALS = [
         location: "Laketown Ranch, Lake Cowichan",
         description: "Vancouver Island's biggest country music festival. Four days of incredible live performances, camping under the stars, and lakeside vibes.",
         lineup: ["Tyler Hubbard", "Jon Pardi", "Riley Green", "James Barker Band", "Nate Smith"],
-        url: "https://sunfestcountry.com",
+        url: "https://sunfestconcerts.com",
         color: "rose"
     },
     {
@@ -124,7 +124,7 @@ const HIKING_TRAILS = [
         name: "Kinsol Trestle",
         difficulty: "Easy",
         time: "40 min round trip",
-        description: "One of the world's tallest free-standing timber railway trestles. Easy 1km walk from parking. Wheelchair accessible. Free!",
+        description: "One of the world's tallest free-standing timber railway trestles. Easy 1.2km walk from parking. Wheelchair accessible. Free!",
         highlight: true
     }
 ];
@@ -149,9 +149,9 @@ const DINING = [
         vibe: "🍺 Riverside Vibes"
     },
     {
-        name: "The Cow Cafe West Coast Grill",
+        name: "The Cow Restaurant",
         type: "Family Restaurant",
-        description: "Family-run with dog-friendly patio. Burgers, fresh salads, pasta, and daily specials from local ingredients.",
+        description: "Family-run Lake Cowichan favorite with dog-friendly patio. Burgers, brunch, fresh salads, and daily specials from local ingredients.",
         vibe: "🐄 Dog-Friendly"
     },
     {
@@ -172,7 +172,7 @@ const MARKETS = [
     {
         name: "Honeymoon Bay Outdoor Market",
         schedule: "Saturdays, Victoria Day - Thanksgiving",
-        location: "10063 South Shore Road",
+        location: "10052 South Shore Road, Honeymoon Bay",
         description: "Local vendors, crafts, produce, and a warm community atmosphere right near the resort."
     },
     {
