@@ -34,6 +34,13 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
     const [fastTestingMode, setFastTestingMode] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
+    // Tick every 60s so time-dependent status (turn expiry) recalculates without a Firestore write
+    const [now, setNow] = useState<Date>(new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 60_000);
+        return () => clearInterval(timer);
+    }, []);
+
     // Track auth state - only subscribe to Firestore when authenticated
     useEffect(() => {
         const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -121,8 +128,8 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
     const currentOrder = useMemo(() => getShareholderOrder(2026), []);
 
     const status = useMemo(
-        () => calculateDraftSchedule(currentOrder, allBookings, new Date(), startDateOverride, bypassTenAM),
-        [currentOrder, allBookings, startDateOverride, bypassTenAM]
+        () => calculateDraftSchedule(currentOrder, allBookings, now, startDateOverride, bypassTenAM),
+        [currentOrder, allBookings, now, startDateOverride, bypassTenAM]
     );
 
     const value = useMemo<BookingRealtimeContextValue>(() => ({

@@ -71,29 +71,13 @@ const WATER_ACTIVITIES = [
         provider: "Local Guides Available",
         description: "Cowichan Lake and River are renowned for rainbow trout, cutthroat trout, and bass fishing. Guided trips available.",
         price: "Varies by guide",
-        tip: "Check BC fishing regulations and get your freshwater license before heading out.",
+        tip: "You need a BC freshwater fishing license - purchase online through the WILD system.",
         icon: Fish,
-        url: null
+        url: "https://www2.gov.bc.ca/gov/content/sports-culture/recreation/fishing-hunting/fishing-hunting-licences"
     }
 ];
 
-const SWIMMING_SPOTS = [
-    {
-        name: "Arbutus Park (Youbou)",
-        description: "Popular family beach with sandy shore, floating dock, lifeguard in summer, playground, and picnic areas.",
-        vibe: "Family Favorite"
-    },
-    {
-        name: "Gordon Bay Provincial Park",
-        description: "Large sandy beach in Honeymoon Bay with marked swimming area, shade trees, boat launch, and 126-site campground.",
-        vibe: "Full Day Destination"
-    },
-    {
-        name: "The Duck Pond (Riverside Park)",
-        description: "Town of Lake Cowichan near the control weir. Sandy beach, floating dock, perfect for small kids. Great tubing launch point.",
-        vibe: "Kid-Friendly"
-    }
-];
+
 
 const HIKING_TRAILS = [
     {
@@ -125,7 +109,8 @@ const HIKING_TRAILS = [
         difficulty: "Easy",
         time: "40 min round trip",
         description: "One of the world's tallest free-standing timber railway trestles. Easy 1.2km walk from parking. Wheelchair accessible. Free!",
-        highlight: true
+        highlight: true,
+        url: "https://www.cvrd.ca/kinsol-trestle"
     }
 ];
 
@@ -134,37 +119,43 @@ const DINING = [
         name: "Jake's at the Lake",
         type: "Waterfront Grill",
         description: "West Coast classics - fish tacos, salads, poutine. Beautiful lake views and outdoor patio.",
-        vibe: "🌊 Lakeside Dining"
+        vibe: "🌊 Lakeside Dining",
+        url: "https://csbrewery.ca"
     },
     {
         name: "Youbou Bar & Grill",
         type: "Pub & Comfort Food",
         description: "Incredible patio views of the lake. Burgers, pizza, and sandwiches done right.",
-        vibe: "🍔 Local Favorite"
+        vibe: "🍔 Local Favorite",
+        url: "https://www.youboubargrill.ca"
     },
     {
         name: "The Riverside Pub + River Cafe",
         type: "Pub & Cafe",
         description: "Right on the Cowichan River. Pub-style menu, local craft beers, family-friendly until 9 PM.",
-        vibe: "🍺 Riverside Vibes"
+        vibe: "🍺 Riverside Vibes",
+        url: "https://riversideinnlakecowichan.com"
     },
     {
         name: "The Cow Restaurant",
         type: "Family Restaurant",
         description: "Family-run Lake Cowichan favorite with dog-friendly patio. Burgers, brunch, fresh salads, and daily specials from local ingredients.",
-        vibe: "🐄 Dog-Friendly"
+        vibe: "🐄 Dog-Friendly",
+        url: "https://www.google.com/maps/search/The+Cow+Restaurant+Lake+Cowichan"
     },
     {
         name: "Poblanos",
         type: "Mexican",
         description: "Quick and flavorful Mexican food. Perfect stop after a day of tubing.",
-        vibe: "🌮 Quick Bite"
+        vibe: "🌮 Quick Bite",
+        url: "https://www.google.com/maps/search/Poblanos+Mexican+Lake+Cowichan"
     },
     {
         name: "Garden Made",
         type: "Health & Wellness",
         description: "Smoothies, bubble tea, and healthy eats in a unique biophilic design cafe.",
-        vibe: "🥤 Healthy Fuel"
+        vibe: "🥤 Healthy Fuel",
+        url: "https://gardenmade.ca"
     }
 ];
 
@@ -173,19 +164,22 @@ const MARKETS = [
         name: "Honeymoon Bay Outdoor Market",
         schedule: "Saturdays, Victoria Day - Thanksgiving",
         location: "10052 South Shore Road, Honeymoon Bay",
-        description: "Local vendors, crafts, produce, and a warm community atmosphere right near the resort."
+        description: "Local vendors, crafts, produce, and a warm community atmosphere right near the resort.",
+        url: "https://honeymoonbaymarket.com"
     },
     {
         name: "Duncan Farmers' Market",
         schedule: "Saturdays, Year-Round",
         location: "Craig & Ingram Streets, Downtown Duncan",
-        description: "One of the largest markets in the region. Local produce, artisan foods, crafts, and baked goods."
+        description: "One of the largest markets in the region. Local produce, artisan foods, crafts, and baked goods.",
+        url: "https://duncanfarmersmarket.ca"
     },
     {
         name: "Chemainus Wednesday Market",
         schedule: "Wednesdays, Mid-May - Mid-September",
         location: "Waterwheel Park, Chemainus",
-        description: "Charming mid-week market in the famous mural town."
+        description: "Charming mid-week market in the famous mural town.",
+        url: "https://visitchemainus.ca"
     }
 ];
 
@@ -396,24 +390,7 @@ export function LakeCowichanEvents() {
                                 {WATER_ACTIVITIES.map(a => <ActivityCard key={a.name} activity={a} />)}
                             </div>
 
-                            {/* Swimming Spots */}
-                            <div className="mt-8">
-                                <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <Sun className="w-4 h-4 text-cyan-500" />
-                                    Best Swimming Spots
-                                </h4>
-                                <div className="grid md:grid-cols-3 gap-3">
-                                    {SWIMMING_SPOTS.map(spot => (
-                                        <div key={spot.name} className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-xs font-bold text-cyan-600 bg-white/70 px-2 py-0.5 rounded-full border border-cyan-200">{spot.vibe}</span>
-                                            </div>
-                                            <h5 className="font-bold text-slate-900 text-sm">{spot.name}</h5>
-                                            <p className="text-xs text-slate-600 mt-1 leading-relaxed">{spot.description}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+
                         </div>
                     )}
 
