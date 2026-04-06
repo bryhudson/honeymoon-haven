@@ -603,14 +603,7 @@ export function ShareholderHero({
         }
         actions={
             <div className="flex flex-col gap-3 w-full">
-                {upcomingBooking && (
-                    <button
-                        onClick={() => onViewDetails(upcomingBooking)}
-                        className="w-full px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-50 rounded-lg text-sm font-bold transition-all shadow-md active:scale-[0.98]"
-                    >
-                        View Details
-                    </button>
-                )}
+                {/* View Details removed - upcomingBooking not available in this context */}
                 <button
                     onClick={onOpenFeedback}
                     className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/10 hover:border-white/20 rounded-lg text-sm font-bold transition-all active:scale-[0.98]"

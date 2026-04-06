@@ -1,4 +1,4 @@
-import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info, BookOpen, User, History } from 'lucide-react';
+import { LogOut, Calendar, Home, Clock, AlertTriangle, CheckCircle, XCircle, Info, BookOpen, User, History, Sun } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
@@ -28,6 +28,7 @@ const BookingDetailsModal = React.lazy(() => import('../components/BookingDetail
         throw error;
     }));
 import { TrailerGuide } from '../components/TrailerGuide';
+import { LakeCowichanEvents } from '../components/LakeCowichanEvents';
 import { ShareholderHero } from '../components/ShareholderHero';
 import { BookingSection } from '../components/BookingSection';
 import { EmailGuestModal } from '../components/EmailGuestModal';
@@ -658,6 +659,14 @@ export function Dashboard() {
                                 <BookOpen className="w-4 h-4" />
                                 Trailer Guide & Rules
                             </button>
+                            <button
+                                id="tour-events"
+                                onClick={() => setActiveTab('events')}
+                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'events' ? 'border-amber-500 text-amber-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                            >
+                                <Sun className="w-4 h-4" />
+                                What's On
+                            </button>
                         </div>
                     </div>
 
@@ -716,6 +725,13 @@ export function Dashboard() {
                                         return myBookings[0] || null;
                                     })()}
                                 />
+                            </div>
+                        )}
+
+                        {/* 5. LAKE COWICHAN EVENTS */}
+                        {activeTab === 'events' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <LakeCowichanEvents />
                             </div>
                         )}
 
