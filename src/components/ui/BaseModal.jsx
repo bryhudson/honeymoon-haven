@@ -31,7 +31,38 @@ export function BaseModal({
 }) {
     const [shouldRender, setShouldRender] = useState(isOpen);
 
-    // ... (keep existing effects) ...
+    // Sync rendering state with animation timing
+    useEffect(() => {
+        if (isOpen) {
+            setShouldRender(true);
+        } else {
+            const timer = setTimeout(() => {
+                setShouldRender(false);
+            }, 200); // Wait for the 200ms Tailwind animation to finish
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    // Close on escape key
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape' && isOpen && onClose) onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
+    // Prevent body scroll when open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = 'unset';
+            };
+        }
+    }, [isOpen]);
+
+    if (!shouldRender) return null;
 
     return createPortal(
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
