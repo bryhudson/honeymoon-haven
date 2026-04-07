@@ -49,9 +49,9 @@ export function TestRecipientModal({
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                        <div className="font-black text-slate-800 text-sm tracking-tight">{r.name}</div>
+                                        <div className="font-semibold text-slate-800 text-sm tracking-tight">{r.name}</div>
                                         {testRecipient === r.email && (
-                                            <span className="px-1.5 py-0.5 bg-indigo-100 text-[9px] font-black text-indigo-700 uppercase tracking-wider rounded">Selected</span>
+                                            <span className="px-1.5 py-0.5 bg-indigo-100 text-[9px] font-bold text-indigo-700 uppercase tracking-wider rounded">Selected</span>
                                         )}
                                     </div>
                                     <div className="text-xs text-slate-400 font-medium">{r.email}</div>
@@ -65,13 +65,13 @@ export function TestRecipientModal({
                 <div className="flex gap-3 pt-2">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all text-xs"
+                        className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-semibold uppercase tracking-widest rounded-md hover:bg-slate-50 transition-all text-xs"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="flex-1 py-3.5 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 text-xs"
+                        className="flex-1 py-3.5 bg-indigo-600 text-white rounded-md font-semibold uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 text-xs"
                     >
                         <Zap className="w-4 h-4" />
                         Send Test

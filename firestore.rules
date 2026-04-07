@@ -57,9 +57,14 @@ service cloud.firestore {
         isValidBooking() &&
         (isAdmin() || resource.data.uid == request.auth.uid);
       
-      // DELETE: Admins only (as per current system policy)
-      // Exception: Users can delete their own booking IF it's not finalized? (Optional)
-      allow delete: if isAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
+      // DELETE: Admins can delete any booking.
+      // Users can delete their own booking ONLY if it has NOT been finalized.
+      // This prevents shareholders from destroying confirmed/paid booking records.
+      allow delete: if isAdmin() || (
+        request.auth != null && 
+        resource.data.uid == request.auth.uid && 
+        resource.data.isFinalized != true
+      );
     }
 
     // USERS COLLECTION
@@ -78,9 +83,9 @@ service cloud.firestore {
     }
 
     // SETTINGS (Global Config)
-    // Publicly readable (required for frontend config pre-login). Only Admins can write.
+    // Authenticated users can read settings. Only Admins can write.
     match /settings/{docId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow write: if isAdmin();
     }
 

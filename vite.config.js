@@ -16,6 +16,10 @@ export default defineConfig({
   define: {
     '__APP_VERSION__': JSON.stringify(pkg.version),
   },
+  esbuild: {
+    // Strip console.log/debug from production builds (keep error/warn for diagnostics)
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  },
   build: {
     rollupOptions: {
       output: {

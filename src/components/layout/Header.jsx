@@ -11,7 +11,7 @@ import { ConfirmationModal } from '../ui/ConfirmationModal';
 const FeedbackModal = lazy(() => import('../../features/feedback/components/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
 const TriviaModal = lazy(() => import('../../features/trivia/components/TriviaModal').then(m => ({ default: m.TriviaModal })));
 
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
+
 
 export function Header() {
     const { currentUser, logout } = useAuth();
@@ -45,16 +45,18 @@ export function Header() {
         if (!currentUser?.email) return null;
         const owner = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
         if (owner) return formatNameForDisplay(owner.name);
-        if (ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) return 'Admin';
+        // Admin name resolved from Firestore role (no env var fallback)
+        const adminMatch = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim() && (o.role === 'admin' || o.role === 'super_admin'));
+        if (adminMatch) return 'Admin';
         return null;
     }, [currentUser, shareholders]);
 
     // Admin check: Firestore role or env var fallback
+    // Admin check: Firestore role only (no env var fallback)
     const isAdmin = React.useMemo(() => {
         if (!currentUser?.email) return false;
         const match = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
-        if (match && (match.role === 'admin' || match.role === 'super_admin')) return true;
-        return ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+        return !!(match && (match.role === 'admin' || match.role === 'super_admin'));
     }, [currentUser, shareholders]);
 
     // Fetch Active Picker for Masquerade (Admin Only)

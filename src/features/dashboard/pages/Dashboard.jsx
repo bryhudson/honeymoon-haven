@@ -34,9 +34,9 @@ import { BookingSection } from '../components/BookingSection';
 import { EmailGuestModal } from '../components/EmailGuestModal';
 import { ShareholderCalendarView } from '../components/ShareholderCalendarView';
 
-import { FeedbackModal } from '../../feedback/components/FeedbackModal';
 
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
+
+
 
 // Basic Error Boundary
 class ErrorBoundary extends React.Component {
@@ -117,8 +117,9 @@ export function Dashboard() {
         const userEmail = currentUser.email.toLowerCase().trim();
         const owner = shareholders.find(o => o.email && o.email.toLowerCase().trim() === userEmail);
         if (owner) return owner.name;
-        // Fallback for admin accounts not in shareholders list
-        if (ADMIN_EMAILS.includes(userEmail)) return 'Admin';
+        // Fallback for admin accounts - check Firestore role (no env var)
+        const adminMatch = shareholders.find(o => o.email && o.email.toLowerCase().trim() === userEmail && (o.role === 'admin' || o.role === 'super_admin'));
+        if (adminMatch) return 'Admin';
         return null;
     }, [currentUser, shareholders, masqueradeAs]);
 
@@ -192,7 +193,7 @@ export function Dashboard() {
     const isSuperAdmin = React.useMemo(() => {
         if (!currentUser?.email) return false;
         const match = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
-        return match?.role === 'super_admin' || currentUser.email.toLowerCase() === ADMIN_EMAILS[0];
+        return match?.role === 'super_admin';
     }, [currentUser, shareholders]);
 
     // Using Custom Hook for Realtime Data
@@ -242,11 +243,12 @@ export function Dashboard() {
     // Auto-redirect admins to Admin Dashboard (unless masquerading as shareholder)
     useEffect(() => {
         if (!loading && currentUser && !masqueradeAs) {
-            if (ADMIN_EMAILS.includes(currentUser.email?.toLowerCase())) {
+            const match = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email?.toLowerCase().trim());
+            if (match && (match.role === 'admin' || match.role === 'super_admin')) {
                 navigate('/admin', { replace: true });
             }
         }
-    }, [currentUser, masqueradeAs, loading, navigate]);
+    }, [currentUser, masqueradeAs, loading, navigate, shareholders]);
 
     // Reset Booking Form visibility when turn changes
     useEffect(() => {
@@ -941,11 +943,7 @@ export function Dashboard() {
                 </>
             )}
 
-            <FeedbackModal
-                isOpen={isFeedbackOpen}
-                onClose={() => setIsFeedbackOpen(false)}
-                shareholderName={loggedInShareholder}
-            />
+
         </div >
     );
 }
