@@ -29,13 +29,7 @@ const SUMMER_EVENTS_2026 = [
         location: 'Laketown Ranch',
         color: 'purple',
     },
-    {
-        name: 'Cowichan Valley Wine Festival',
-        from: new Date(2026, 7, 1),  // August 1
-        to: new Date(2026, 7, 31),   // August 31
-        location: 'Cowichan Valley Wineries',
-        color: 'amber',
-    },
+
 ];
 
 export function ShareholderCalendarView({ bookings }) {
