@@ -710,12 +710,12 @@ const emailTemplates = {
   openSeasonStarted: (data) => {
     const subject = `HHR Trailer Booking App: Open Season is Here! 🌲`;
     const body = `
-      <h1 style="${THEME.typography.h1}">The Booking Schedule is Complete.</h1>
-      <p style="${THEME.typography.body}">All rounds are finished, and Open Season has officially begun.</p>
+      <h1 style="${THEME.typography.h1}">The draft is done - let's go! 🎉</h1>
+      <p style="${THEME.typography.body}">Hi ${formatName(data.name)}, all rounds are finished and Open Season has officially begun.</p>
       
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
         <p style="${THEME.typography.body} margin: 0; color: #004085;"><strong>🚀 First-Come, First-Served</strong><br>
-        Remaining dates are now available to all shareholders. No more turns, no more waiting.</p>
+        Remaining dates are now available to all shareholders. No more turns, no more waiting - just pick your dates and book.</p>
       </div>
 
       <div style="text-align: center; margin-top: 32px;">

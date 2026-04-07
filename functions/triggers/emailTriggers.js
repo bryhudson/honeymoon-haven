@@ -409,19 +409,17 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                 const allShareholders = await db.collection("shareholders").get();
                 const recipients = allShareholders.docs.map(d => ({ name: d.data().name, email: d.data().email })).filter(r => r.email);
 
-                // Prepare Email
-                const { subject, htmlContent } = emailTemplates.openSeasonStarted({});
-
-                // Send to each shareholder (or use BCC if we had a bulk sender, but individual is safer for deliverability here)
-                const sendPromises = recipients.map(recipient =>
-                    sendGmail({
+                // Send to each shareholder with personalized greeting
+                const sendPromises = recipients.map(recipient => {
+                    const { subject, htmlContent } = emailTemplates.openSeasonStarted({ name: recipient.name });
+                    return sendGmail({
                         to: recipient,
                         subject: subject,
                         htmlContent: htmlContent,
                         templateId: 'openSeasonBlast'
                     })
-                        .catch(e => logger.error(`Failed to send Open Season email to ${recipient.email}`, e))
-                );
+                        .catch(e => logger.error(`Failed to send Open Season email to ${recipient.email}`, e));
+                });
 
                 await Promise.all(sendPromises);
 
