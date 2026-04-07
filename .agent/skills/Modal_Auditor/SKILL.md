@@ -37,6 +37,12 @@ Every modal must have at least two ways to exit: a clear "Cancel/Close" button a
     *   **Primary Action**: High-contrast, brand-colored button on the right.
     *   **Secondary Action**: Ghost/Text-only button on the left.
     *   **Copy**: Limit to "Sign in to HHR," "Book Now," or "Got it."
+6.  **"Announce" / Update Modals**:
+    *   If the modal is an update or global announcement banner:
+    *   **Iconography**: Use a large, soft-colored circular background (e.g., `bg-indigo-50`) with an inset icon (e.g., `Sparkles`) placed top-center, outside flow or as the primary hero image.
+    *   **Title Constraints**: Short, bold, centered (e.g., "Update Available").
+    *   **Primary Action**: Full-width dark button (`bg-slate-900`) placed prominently below the text.
+    *   **Helper Footer**: Add a small assurance below the button (`text-[13px] text-slate-400`) to increase opt-in rates (e.g., "This only takes a second").
 
 ## 💬 Usage Example
 "Using your Modal Auditor Skill, audit the BookingConfirmationModal.tsx file. Ensure the typography matches our Apple-style guide and the tone is fun and encouraging."
