@@ -3,6 +3,7 @@ import { BaseModal } from '../../../components/ui/BaseModal';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
 import { Calendar, User, Users, Home, Clock, Info, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
 import { CABIN_OWNERS } from '../../../lib/shareholders';
+import { calculateBookingCost } from '../../../lib/pricing';
 import { db } from '../../../lib/firebase';
 
 export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings = [] }) {
@@ -113,11 +114,20 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
             return new Date(y, m - 1, d, 12, 0, 0);
         };
 
+        const newFrom = createDate(formData.from);
+        const newTo = createDate(formData.to);
+
+        // Recalculate fees from the (possibly adjusted) date range
+        const cost = calculateBookingCost(newFrom, newTo);
+
         const updated = {
             ...booking,
             ...formData,
-            from: createDate(formData.from),
-            to: createDate(formData.to)
+            from: newFrom,
+            to: newTo,
+            totalPrice: cost.total,
+            priceBreakdown: cost.breakdown,
+            updatedAt: new Date()
         };
 
         if (updated.type === 'pass' || updated.type === 'auto-pass' || updated.type === 'cancelled') {
@@ -234,6 +244,43 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                     </div>
                 </div>
 
+                {/* Live Fee Preview */}
+                {formData.from && formData.to && !error && (() => {
+                    const createPreviewDate = (ds) => {
+                        const [y, m, d] = ds.split('-').map(Number);
+                        return new Date(y, m - 1, d, 12, 0, 0);
+                    };
+                    const preview = calculateBookingCost(createPreviewDate(formData.from), createPreviewDate(formData.to));
+                    if (!preview || preview.nights <= 0) return null;
+
+                    const oldTotal = booking?.totalPrice;
+                    const hasChanged = oldTotal != null && oldTotal !== preview.total;
+
+                    return (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Maintenance Fee</span>
+                                <div className="text-right">
+                                    <span className="text-lg font-black text-slate-800">${preview.total.toLocaleString()}</span>
+                                    {hasChanged && (
+                                        <span className="ml-2 text-xs font-bold text-amber-600 line-through">${oldTotal.toLocaleString()}</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex gap-3 text-[10px] text-slate-500 font-medium">
+                                <span>{preview.nights} night{preview.nights !== 1 ? 's' : ''}</span>
+                                {preview.breakdown?.weeknights > 0 && <span>{preview.breakdown.weeknights} weeknight{preview.breakdown.weeknights !== 1 ? 's' : ''}</span>}
+                                {preview.breakdown?.weekends > 0 && <span>{preview.breakdown.weekends} weekend{preview.breakdown.weekends !== 1 ? 's' : ''}</span>}
+                                {preview.breakdown?.discount > 0 && <span className="text-emerald-600">-${preview.breakdown.discount} discount</span>}
+                            </div>
+                            {hasChanged && (
+                                <div className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 inline-block">
+                                    Fee updated from ${oldTotal.toLocaleString()} to ${preview.total.toLocaleString()}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
                 {/* Error Message */}
                 {error && (
                     <div className="flex items-start gap-3 p-4 bg-rose-50 text-rose-600 rounded-2xl text-xs font-bold border border-rose-100 animate-in fade-in slide-in-from-top-2 duration-300">
