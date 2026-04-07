@@ -1,0 +1,16 @@
+{
+  "short_name": "HHR",
+  "name": "Honeymoon Haven Trailer Booking",
+  "icons": [
+    {
+      "src": "hhr-favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}

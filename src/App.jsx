@@ -14,11 +14,13 @@ import { AuthProvider } from './features/auth/AuthContext';
 import { BookingRealtimeProvider } from './hooks/BookingRealtimeContext';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { AdminRoute } from './features/auth/AdminRoute';
+import { MobileLandscapeOverlay } from './components/ui/MobileLandscapeOverlay';
 
 function App() {
   return (
     <AuthProvider>
       <BookingRealtimeProvider>
+        <MobileLandscapeOverlay />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Standalone page - no header/footer */}
