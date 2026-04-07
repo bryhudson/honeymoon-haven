@@ -18,15 +18,7 @@ import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
 import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
-    .then(module => ({ default: module.BookingDetailsModal }))
-    .catch(error => {
-        // Auto-reload/recover on chunk load errors (deployments)
-        if (error.message.includes('Failed to fetch dynamically imported module') ||
-            error.message.includes('Importing a module script failed')) {
-            window.location.reload();
-        }
-        throw error;
-    }));
+    .then(module => ({ default: module.BookingDetailsModal })));
 import { TrailerGuide } from '../components/TrailerGuide';
 import { LakeCowichanEvents } from '../components/LakeCowichanEvents';
 import { ShareholderHero } from '../components/ShareholderHero';
@@ -55,6 +47,14 @@ class ErrorBoundary extends React.Component {
 
     render() {
         if (this.state.hasError) {
+            // Rethrow chunk load errors to be handled cleanly by the global ErrorBoundary / VersionWatcher popup
+            const errorMsg = this.state.error?.message || '';
+            const isChunkError = errorMsg.includes('Failed to fetch dynamically imported module') ||
+                                 errorMsg.includes('Importing a module script failed');
+            if (isChunkError) {
+                throw this.state.error;
+            }
+
             return (
                 <div className="p-4 md:p-8 text-center">
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong.</h1>
