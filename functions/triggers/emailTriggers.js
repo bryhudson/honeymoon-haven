@@ -485,12 +485,15 @@ exports.sendGuestGuideEmail = onCall({ secrets: gmailSecrets }, async (request) 
     });
 
     try {
+        const shareholderEmail = request.auth.token.email;
+
         await sendGmail({
             to: { name: guestName || "Guest", email: guestEmail },
+            cc: shareholderEmail ? { name: senderName, email: shareholderEmail } : null,
             subject: subject,
             htmlContent: htmlContent,
             senderName: senderName,
-            replyTo: request.auth.token.email,
+            replyTo: shareholderEmail,
             templateId: 'guestGuide'
         });
         return { success: true, message: `Guest Guide sent to ${guestEmail}` };

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { Mail, Send, Loader2, CheckCircle2, AlertTriangle, User, ShieldCheck } from 'lucide-react';
+import { Mail, Send, Loader2, CheckCircle2, AlertTriangle, User, ShieldCheck, Copy } from 'lucide-react';
 import { emailService } from '../../../services/emailService';
 import { format } from 'date-fns';
 
-export function EmailGuestModal({ booking, currentUser, onClose }) {
+export function EmailGuestModal({ booking, currentUser, shareholderEmail, onClose }) {
     const [guestEmail, setGuestEmail] = useState('');
     const [guestName, setGuestName] = useState('Guest');
     const [sending, setSending] = useState(false);
@@ -62,6 +62,16 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
                                 </div>
                             </div>
                         </div>
+
+                        {shareholderEmail && (
+                            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-indigo-50/60 border border-indigo-100/80 rounded-xl">
+                                <Copy className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">CC - You'll receive a copy</p>
+                                    <p className="text-xs font-semibold text-indigo-600 truncate">{shareholderEmail}</p>
+                                </div>
+                            </div>
+                        )}
 
                         <form onSubmit={(e) => { e.preventDefault(); handleSendEmail(); }} className="space-y-4">
                             <div className="space-y-4">
@@ -138,7 +148,8 @@ export function EmailGuestModal({ booking, currentUser, onClose }) {
                         <div>
                             <h4 className="font-black text-slate-900 text-lg tracking-tight">Guide Sent!</h4>
                             <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                                The guest guide has been successfully delivered to <span className="text-indigo-600 font-bold">{guestEmail}</span>.
+                                The guest guide has been delivered to <span className="text-indigo-600 font-bold">{guestEmail}</span>.
+                                {shareholderEmail && <><br/>A copy was sent to <span className="text-indigo-600 font-bold">{shareholderEmail}</span>.</>}
                             </p>
                         </div>
                         <button

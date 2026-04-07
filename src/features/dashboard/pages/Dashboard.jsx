@@ -871,6 +871,7 @@ export function Dashboard() {
                             <EmailGuestModal
                                 booking={emailingBooking}
                                 currentUser={loggedInShareholder}
+                                shareholderEmail={currentUser?.email}
                                 onClose={() => setEmailingBooking(null)}
                             />
                         )

@@ -17,7 +17,7 @@ const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
  * @param {string} data.htmlContent - HTML body
  * @returns {Promise<{success: boolean, messageId: string}>}
  */
-async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, bypassTestMode = false, templateId = null }) {
+async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, bypassTestMode = false, templateId = null }) {
     const user = gmailEmail.value();
     const pass = gmailAppPassword.value();
 
@@ -85,6 +85,15 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
         html: htmlContent,
     };
 
+    // Add CC if provided (respect test mode redirect)
+    if (cc) {
+        const ccEmail = typeof cc === 'string' ? cc : cc?.email;
+        if (ccEmail) {
+            mailOptions.cc = isTestMode ? DEV_EMAIL_OVERRIDE : ccEmail;
+            logger.info(`CC added: ${isTestMode ? DEV_EMAIL_OVERRIDE + ' (redirected from ' + ccEmail + ')' : ccEmail}`);
+        }
+    }
+
     // Add Reply-To if provided
     if (replyTo) {
         mailOptions.replyTo = replyTo;
@@ -104,6 +113,7 @@ async function sendGmail({ to, subject, htmlContent, senderName = "Honeymoon Hav
 
             await db.collection("email_logs").add({
                 to: recipient,
+                cc: mailOptions.cc || null,
                 original_to: typeof to === 'object' ? JSON.stringify(to) : to, // Capture original intent
                 subject: subject,
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
