@@ -605,8 +605,9 @@ const emailTemplates = {
 
     // Custom content logic for the guide (more text heavy)
     const customContent = `
-      <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${data.guest_name}!</h1>
-        <p style="${THEME.typography.body}">${formatName(data.shareholder_name)} wants to ensure you have the best stay possible.</p>
+      <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${data.guest_name}! 🌲</h1>
+      <p style="${THEME.typography.body}">${formatName(data.shareholder_name)} want to make sure you have the best stay possible at Honeymoon Haven Resort - a little lakeside paradise on Lake Cowichan, BC.</p>
+      <p style="${THEME.typography.body}">Here's everything you need to know to hit the ground running (or relaxing, we won't judge). 😎</p>
 
       ${details.checkIn ? `
       <div style="margin: 32px 0;">
