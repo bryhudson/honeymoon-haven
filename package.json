@@ -1,12 +1,12 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.87.256",
+  "version": "2.87.257",
   "type": "module",
   "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"require('fs').writeFileSync('dist/meta.json', JSON.stringify({version: require('./package.json').version}))\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",

@@ -15,12 +15,14 @@ import { BookingRealtimeProvider } from './hooks/BookingRealtimeContext';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { AdminRoute } from './features/auth/AdminRoute';
 import { MobileLandscapeOverlay } from './components/ui/MobileLandscapeOverlay';
+import { VersionWatcher } from './components/ui/VersionWatcher';
 
 function App() {
   return (
     <AuthProvider>
       <BookingRealtimeProvider>
         <MobileLandscapeOverlay />
+        <VersionWatcher />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Standalone page - no header/footer */}
