@@ -17,7 +17,7 @@ export function UpdateAvailableModal({ onReload }) {
                 <h1 className="text-2xl font-bold text-slate-900 mb-3">Update Available</h1>
                 
                 <p className="text-slate-500 mb-8 text-[15px] leading-relaxed">
-                    A new version of HHR has been installed. Please relaunch the app to apply the latest features and improvements.
+                    A new version of HHR web app has been installed. Please relaunch the app to apply the latest features and improvements.
                 </p>
                 
                 <button
