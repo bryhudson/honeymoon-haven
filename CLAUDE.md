@@ -11,9 +11,21 @@ npm run lint         # ESLint v9 flat config
 npm test             # Vitest (run once)
 npm run test:watch   # Vitest watch mode
 
-./scripts/deploy-dev.sh    # Build (--mode development) + deploy to hhr-trailer-booking-dev
-./scripts/deploy-prod.sh   # Build (--mode production) + deploy to hhr-trailer-booking (requires typed confirmation)
+./scripts/deploy-dev.sh    # Build (--mode development) + deploy to hhr-trailer-booking-dev (no version bump)
+./scripts/deploy-prod.sh   # Auto-bumps patch in package.json, commits "chore: release vX.Y.Z", builds (--mode production), deploys to hhr-trailer-booking (requires typed confirmation)
+BUMP=minor ./scripts/deploy-prod.sh   # Minor bump for new features. Other options: major, none
 ```
+
+### Release / versioning
+
+Every prod deploy increments `package.json` version (patch by default) and creates a `chore: release vX.Y.Z` commit that's pushed before the build. The version renders in the app footer via `__APP_VERSION__` (injected by `vite.config.js`).
+
+- **patch** (default) — bug fixes, copy/styling tweaks, non-user-facing refactors
+- **minor** (`BUMP=minor`) — new user-visible features, new email templates, new admin tools
+- **major** (`BUMP=major`) — breaking data-model or auth changes
+- **none** (`BUMP=none`) — redeploy same version (e.g. secret rotation, functions-only hotfix that reuses existing code)
+
+Dev deploys never bump; they ship whatever version is currently in `package.json`.
 
 ## Environments
 

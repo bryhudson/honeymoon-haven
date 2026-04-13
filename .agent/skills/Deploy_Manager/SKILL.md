@@ -36,7 +36,7 @@ Run before either script:
    firebase functions:secrets:access GMAIL_EMAIL --project prod
    ```
    If a secret was rotated, functions must be redeployed to pick up the new version (pinned versions don't auto-update).
-6. Bump `package.json` version if shipping user-visible changes (injected as `__APP_VERSION__` for the footer).
+6. Version bump is **automatic on prod deploy** — `deploy-prod.sh` runs `npm version patch`, commits `chore: release vX.Y.Z`, and pushes before building. Override with `BUMP=minor|major|none ./scripts/deploy-prod.sh` (e.g. breaking changes, hotfix-only re-deploys). Dev deploys do NOT bump — they always ship whatever version is currently in `package.json`.
 
 ## 🚀 Standard flows
 
@@ -50,10 +50,15 @@ Run before either script:
 
 ### Full prod deploy
 ```bash
-./scripts/deploy-prod.sh
+./scripts/deploy-prod.sh                    # patch bump (default)
+BUMP=minor ./scripts/deploy-prod.sh         # minor bump
+BUMP=major ./scripts/deploy-prod.sh         # major bump
+BUMP=none  ./scripts/deploy-prod.sh         # skip bump (hotfix re-deploy of same version)
 ```
+- Shows preview of next version
 - Prompts for typed "deploy production" confirmation
-- Builds with `--mode production`
+- Bumps `package.json`, commits `chore: release vX.Y.Z`, pushes to origin
+- Builds with `--mode production` (version injected as `__APP_VERSION__`)
 - Deploys to `hhr-trailer-booking`
 
 ### Backend-only (faster, no frontend rebuild)
@@ -106,10 +111,19 @@ For functions, the only safe rollback is `git revert <sha>` → redeploy. There 
 ## 📋 When to deploy to prod (checklist before typing "deploy production")
 
 - [ ] Change verified on dev (real email received, UI exercised, no error logs)
-- [ ] `git status` clean — no unintended files bundled
-- [ ] `package.json` version bumped if user-visible
+- [ ] `git status` clean — no unintended files bundled (the script will create one more commit for the version bump)
+- [ ] Decide bump size: default `patch` for UI tweaks/bug fixes, `minor` for new features, `major` for breaking changes, `none` for a redeploy of the same version
 - [ ] No active shareholder turn about to expire (check `draft_status` — avoid racing schedulers mid-deploy)
 - [ ] Aware of which secret versions prod functions will bind to
+
+## 🏷 Versioning conventions
+
+Semantic versioning, prod-deploy-driven:
+- **patch** (X.Y.**Z**) — bug fixes, copy tweaks, styling, non-user-facing refactors. Default.
+- **minor** (X.**Y**.0) — new user-visible features, new email templates, new admin tools.
+- **major** (**X**.0.0) — breaking changes to data model, Firestore schema migrations, auth changes.
+- Release commits look like `chore: release v2.87.267` and are created automatically by `deploy-prod.sh`.
+- The version shipped to prod is visible in the app footer (injected via `__APP_VERSION__` from `vite.config.js`).
 
 ## 💬 Usage
 
