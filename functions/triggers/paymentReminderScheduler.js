@@ -249,7 +249,6 @@ async function sendOverdueAdminAlert(booking, bookingId, hoursSinceCreation) {
                 to: adminRecipient,
                 subject: subject,
                 htmlContent: htmlContent,
-                bypassTestMode: true
             });
             logger.info(`Overdue admin alert sent to ${adminRecipient.email}`);
         } catch (error) {

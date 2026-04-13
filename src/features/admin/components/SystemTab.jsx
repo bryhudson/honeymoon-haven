@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Shield, Settings, AlertTriangle, Clock, RefreshCw, ChevronDown, ChevronUp, Zap, TestTube, Play, Users, CheckCircle, ArrowRight, Info, Trash2 } from 'lucide-react';
-import { collection, onSnapshot, getDocs, getDoc, Timestamp, writeBatch, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { calculateDraftSchedule, getShareholderOrder } from '../../../lib/shareholders';
+import { Settings, Trash2, Zap } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { useAuth } from '../../auth/AuthContext';
 import { getAvailableBackups, restoreBackup, deleteBackup } from '../services/backupService';
-import { db } from '../../../lib/firebase';
+import { IS_PROD, IS_DEV_ENV, PROJECT_ID } from '../../../lib/env';
 
 export function SystemTab({
-    isTestMode,
     isSystemFrozen,
     toggleSystemFreeze,
-    handleActivateProductionMode,
-    handleActivateTestMode,
-    IS_SITE_OWNER,
+    handleResetDraft,
     triggerAlert
 }) {
     return (
@@ -24,74 +19,46 @@ export function SystemTab({
                     <Settings className="w-8 h-8 text-slate-800" />
                     <div>
                         <h2 className="text-2xl font-bold text-slate-900">Booking System Control</h2>
-                        <p className="text-sm text-slate-500">Manage testing, schedule, and system status</p>
+                        <p className="text-sm text-slate-500">Manage schedule and system status</p>
                     </div>
                 </div>
             </div>
 
             <div className="space-y-8">
-                {/* 1. Operation Mode (Two-Mode System) */}
-                <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
-                    <div className="flex items-center gap-3 mb-6 relative z-10">
+                {/* 1. Environment Banner */}
+                <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 rounded-lg">
                             <Zap className="w-6 h-6 text-indigo-700" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-slate-900">Operation Mode</h3>
+                            <h3 className="font-bold text-slate-900">Environment</h3>
                             <p className="text-sm text-slate-500">
-                                Current Status:
-                                <span className={`ml-2 px-2 py-0.5 text-xs font-bold uppercase tracking-wider rounded-full ${isTestMode ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
-                                    {isTestMode ? 'TEST MODE' : 'PRODUCTION'}
+                                Project:
+                                <span className={`ml-2 px-2 py-0.5 text-xs font-bold uppercase tracking-wider rounded-full ${IS_PROD ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                    {IS_PROD ? 'PRODUCTION' : `DEV (${PROJECT_ID})`}
                                 </span>
                             </p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 transition-all">
-                        {/* Production Card */}
-                        <div className={`p-6 rounded-xl border-2 transition-all ${!isTestMode ? 'border-green-500 bg-green-50/50' : 'border-slate-100 bg-slate-50 hover:border-green-200'}`}>
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                                    <CheckCircle className={`w-5 h-5 ${!isTestMode ? 'text-green-600' : 'text-slate-400'}`} />
-                                    Production Mode
-                                </h4>
-                            </div>
-                            <p className="text-xs text-slate-600 mb-6 leading-relaxed">
-                                - <strong>Start Date:</strong> April 13, 2026<br />
-                                - <strong>Emails:</strong> Sent to REAL SHAREHOLDERS<br />
-                                - <strong>Action:</strong> <span className="text-red-600 font-bold">WIPES DB ON ACTIVATION</span>
-                            </p>
-                            <button
-                                onClick={handleActivateProductionMode}
-                                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${!isTestMode ? 'bg-green-600 text-white shadow-lg shadow-green-500/30 hover:bg-green-700' : 'bg-white text-slate-700 border border-slate-200 hover:border-green-500 hover:text-green-700 shadow-sm'}`}
-                            >
-                                {!isTestMode ? "↻ Reset & Start Production" : "Activate Production (Wipe DB)"}
-                            </button>
-                        </div>
-
-                        {/* Test Mode Card */}
-                        <div className={`p-6 rounded-xl border-2 transition-all ${isTestMode ? 'border-amber-500 bg-amber-50/50' : 'border-slate-100 bg-slate-50 hover:border-amber-200'}`}>
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                                    <TestTube className={`w-5 h-5 ${isTestMode ? 'text-amber-600' : 'text-slate-400'}`} />
-                                    Testing Mode
-                                </h4>
-                            </div>
-                            <p className="text-xs text-slate-600 mb-6 leading-relaxed">
-                                - <strong>Start Date:</strong> Today @ 10:00 AM<br />
-                                - <strong>Emails:</strong> Redirected to Admin<br />
-                                - <strong>Action:</strong> <span className="text-red-600 font-bold">WIPES DATABASE ON ACTIVATION</span>
-                            </p>
-                            <button
-                                onClick={handleActivateTestMode}
-                                disabled={!IS_SITE_OWNER}
-                                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${isTestMode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-500 hover:text-amber-700 shadow-sm'}`}
-                            >
-                                {isTestMode ? "↻ Reset & Wipe Database" : "Activate & Wipe DB"}
-                            </button>
+                            {IS_DEV_ENV && (
+                                <p className="text-xs text-slate-500 mt-1">All outgoing emails are redirected to the super admin.</p>
+                            )}
                         </div>
                     </div>
                 </div>
+
+                {/* 2. Dev-only: Reset Draft */}
+                {IS_DEV_ENV && (
+                    <div className="bg-white p-4 sm:p-6 rounded-xl border border-amber-200 shadow-sm">
+                        <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Reset Draft (Dev Only)</h3>
+                        <p className="text-sm text-slate-500 mb-4">Wipes bookings/logs and resets the clock to today @ 10am. Creates a backup first.</p>
+                        <button
+                            onClick={handleResetDraft}
+                            className="px-4 py-2 bg-amber-500 text-white rounded-lg font-bold text-sm hover:bg-amber-600 shadow-sm"
+                        >
+                            ↻ Wipe & Reset Draft
+                        </button>
+                    </div>
+                )}
 
                 {/* 2. Maintenance Mode */}
                 <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">

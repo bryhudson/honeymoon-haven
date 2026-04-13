@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { db } from '../lib/firebase';
 import { collection, onSnapshot, doc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '../features/auth/AuthContext';
+import { IS_DEV_ENV } from '../lib/env';
 import {
     getShareholderOrder,
     calculateDraftSchedule,
@@ -30,7 +31,6 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
     const [startDateOverride, setStartDateOverride] = useState<Date | null>(null);
     const [isSystemFrozen, setIsSystemFrozen] = useState<boolean>(false);
     const [bypassTenAM, setBypassTenAM] = useState<boolean>(false);
-    const [isTestMode, setIsTestMode] = useState<boolean>(false);
     const [fastTestingMode, setFastTestingMode] = useState<boolean>(false);
     const { currentUser } = useAuth();
 
@@ -64,13 +64,11 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
                 }
                 setIsSystemFrozen(data.isSystemFrozen || false);
                 setBypassTenAM(data.bypassTenAM || false);
-                setIsTestMode(data.isTestMode !== undefined ? data.isTestMode : false);
                 setFastTestingMode(data.fastTestingMode || false);
             } else {
                 setStartDateOverride(null);
                 setIsSystemFrozen(false);
                 setBypassTenAM(false);
-                setIsTestMode(false);
                 setFastTestingMode(false);
             }
         }, (error) => {
@@ -126,9 +124,9 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
         startDateOverride,
         isSystemFrozen,
         bypassTenAM,
-        isTestMode,
+        isTestMode: IS_DEV_ENV,
         fastTestingMode,
-    }), [allBookings, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM, isTestMode, fastTestingMode]);
+    }), [allBookings, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM, fastTestingMode]);
 
     return (
         <BookingRealtimeContext.Provider value={value}>

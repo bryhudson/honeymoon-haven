@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "hhr-trailer-booking"
+    "default": "hhr-trailer-booking",
+    "prod": "hhr-trailer-booking",
+    "dev": "hhr-trailer-booking-dev"
   }
 }

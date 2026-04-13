@@ -5,13 +5,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # Vite dev server with HMR
+npm run dev          # Vite dev server with HMR (uses .env.development → dev Firebase)
 npm run build        # Production build to dist/
 npm run lint         # ESLint v9 flat config
 npm test             # Vitest (run once)
 npm run test:watch   # Vitest watch mode
-npm run deploy       # Builds then firebase deploy (hosting + functions + rules)
+
+./scripts/deploy-dev.sh    # Build (--mode development) + deploy to hhr-trailer-booking-dev
+./scripts/deploy-prod.sh   # Build (--mode production) + deploy to hhr-trailer-booking (requires typed confirmation)
 ```
+
+## Environments
+
+Two isolated Firebase projects:
+- **prod:** `hhr-trailer-booking` — real shareholders, real emails
+- **dev:** `hhr-trailer-booking-dev` — seeded from prod, **all emails redirect to `SUPER_ADMIN_EMAIL`** (bryan.m.hudson@gmail.com)
+
+Environment routing is **runtime-detected**, not Firestore-toggled:
+- **Frontend:** `src/lib/env.ts` reads `VITE_FIREBASE_PROJECT_ID` from `.env.development` / `.env.production` and exposes `IS_PROD` / `IS_DEV_ENV` / `PROJECT_ID`
+- **Cloud Functions:** `isProduction()` in [functions/helpers/email.js](functions/helpers/email.js) checks `process.env.GCLOUD_PROJECT === "hhr-trailer-booking"`. Non-prod → `sendGmail` redirects all `to`/`cc` to `SUPER_ADMIN_EMAIL`
+
+Legacy `settings/general.isTestMode` flag is **no longer read by any code path** — the context field `isTestMode` is just an alias for `IS_DEV_ENV` used by UI badges. Do not reintroduce Firestore-based test-mode toggling.
+
+Firebase CLI aliases in `.firebaserc`: `firebase deploy --project dev` / `--project prod`.
 
 **Run a single test file:**
 ```bash
@@ -34,7 +50,7 @@ npx vitest run tests/shareholders.test.ts
 
 ```
 useBookingRealtime() hook (called in Header on every page)
-  ├── onSnapshot("settings/general")  → startDate, isSystemFrozen, bypassTenAM, isTestMode
+  ├── onSnapshot("settings/general")  → startDate, isSystemFrozen, bypassTenAM, fastTestingMode
   └── onSnapshot("bookings")          → allBookings[]
       → calculateDraftSchedule()      → DraftStatus { phase, activePicker, windowEnds, ... }
 ```
@@ -67,7 +83,7 @@ src/components/  # layout/ (Header, Footer, Layout) and ui/ (BaseModal, Confirma
 
 - Admins auto-redirect to `/admin`
 - **Masquerade:** visit `/?masquerade=<shareholderName>` to see dashboard as any shareholder (read-only, shows purple banner)
-- Test mode: toggled via `settings/general.isTestMode` in Firestore; wipes DB and sets booking clock to today (test) or April 13, 2026 (production)
+- **Wipe & Reset Draft (dev only):** SystemTab button that clears bookings/logs and resets the clock to today @ 10am. Only rendered when `IS_DEV_ENV`.
 
 ### Cloud Functions
 
@@ -77,7 +93,7 @@ Triggers: `onBookingChangeTrigger` (booking writes → emails), `onDraftStatusCh
 
 Scheduled: `turnReminderScheduler`, `paymentReminderScheduler`, `autosyncTurnStatus`.
 
-Email transport: Gmail SMTP via nodemailer. Secrets (`GMAIL_USER`, `GMAIL_APP_PASSWORD`, `SUPER_ADMIN_EMAIL`) are Firebase secret parameters, not env vars.
+Email transport: Gmail SMTP via nodemailer. Secrets (`GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`, `SUPER_ADMIN_EMAIL`) are Firebase secret parameters set per-project (prod and dev each have their own). When rotating a secret, redeploy functions so they bind to the latest version.
 
 Email templates: 16 HTML templates in `functions/helpers/emailTemplates.js` using Apple-inspired design system (white cards on gray, `#0071e3` blue, system fonts).
 

@@ -1,7 +1,7 @@
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
-const { sendGmail, gmailSecrets } = require("../helpers/email");
+const { sendGmail, gmailSecrets, isProduction } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
 const { normalizeName } = require("../helpers/shareholders");
 const { toZonedTime, fromZonedTime } = require("date-fns-tz");
@@ -69,10 +69,8 @@ exports.turnReminderScheduler = onSchedule(
 
             logger.info(`Active Picker: ${activePicker}, Round: ${round}`);
 
-            // 2. Fetch settings for test mode and timing
-            const settingsDoc = await db.collection("settings").doc("general").get();
-            const settings = settingsDoc.exists ? settingsDoc.data() : {};
-            const isTestMode = settings.isTestMode !== false; // Default to true for safety
+            // 2. Environment-based routing: dev uses catch-up mode, prod uses priority mode.
+            const isDevMode = !isProduction();
 
             // 3. Get shareholder email (Robust Lookup)
             // Fetch all (only ~12) and find via normalized name to handle "&" vs "and" mismatch
@@ -104,7 +102,7 @@ exports.turnReminderScheduler = onSchedule(
 
             // CRITICAL FIX: Ghost Timeout Transaction Lockout
             // Ensure we don't collide with onDraftStatusChange skipped messages by enforcing a 5-minute evaluation gap
-            if (notificationLog.lastEvaluated && !isTestMode) {
+            if (notificationLog.lastEvaluated && !isDevMode) {
                 const diffMins = (now.getTime() - notificationLog.lastEvaluated.toDate().getTime()) / 60000;
                 if (diffMins < 5) {
                     logger.info(`[Lockout Active] Skipping evaluation for ${activePicker}. Last eval ${diffMins.toFixed(1)} mins ago.`);
@@ -145,12 +143,20 @@ exports.turnReminderScheduler = onSchedule(
             const lastTurnStartTime = notificationLog.turnStartTime?.toDate();
             const isNewTurn = !lastTurnStartTime || lastTurnStartTime.getTime() !== turnStart.getTime();
 
-            if (isNewTurn) {
-                logger.info("New turn detected, checking for Early Access vs Official Start...");
+            // CRITICAL: Determine which template to use based on isGracePeriod
+            const isGrace = draftStatus.isGracePeriod === true;
 
-                // CRITICAL: Determine which template to use based on isGracePeriod
-                const isGrace = draftStatus.isGracePeriod === true;
-                await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, isTestMode, cabinNumber, isGrace);
+            if (isNewTurn) {
+                // Inaugural Guard: block ONLY the true season-start picker before the anchor.
+                // Grace-period pickers (previous picker finished early) SHOULD receive the
+                // Early Access email immediately so they can book during bonus time.
+                if (now < turnStart && !isGrace) {
+                    logger.info(`[Inaugural Guard] Season-start turn has not opened yet. now=${now.toISOString()} turnStart=${turnStart.toISOString()}. Deferring email.`);
+                    return;
+                }
+
+                logger.info(`New turn detected (isGrace=${isGrace}), sending turn-start email...`);
+                await sendTurnStartEmail(shareholderEmail, activePicker, turnEnd, round, phase, cabinNumber, isGrace);
 
                 await notificationLogRef.set({
                     shareholderName: activePicker,
@@ -167,7 +173,7 @@ exports.turnReminderScheduler = onSchedule(
             // 6. Send reminders based on 48-hour schedule
             await handleNormalModeReminders(
                 now, turnStart, turnEnd, shareholderEmail, activePicker,
-                notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
+                notificationLog, notificationLogRef, round, phase, isDevMode, cabinNumber
             );
 
         } catch (error) {
@@ -185,7 +191,7 @@ exports.turnReminderScheduler = onSchedule(
  */
 async function handleNormalModeReminders(
     now, turnStart, turnEnd, email, shareholderName,
-    notificationLog, notificationLogRef, round, phase, isTestMode, cabinNumber
+    notificationLog, notificationLogRef, round, phase, isDevMode, cabinNumber
 ) {
     // Calculate specific reminder times using PST-aware helper
     // This handles DST automatically (PST = UTC-8, PDT = UTC-7)
@@ -211,7 +217,7 @@ async function handleNormalModeReminders(
 
     logger.info(`Normal Mode - Checking reminders at ${now.toISOString()}`);
 
-    if (isTestMode) {
+    if (isDevMode) {
         // --- TEST MODE: SEQUENTIAL CATCH-UP LOGIC ---
         // Checks ALL milestones in order. If they are overdue and not sent, send them NOW.
         // This allows "Fast Forwarding" time to trigger multiple emails in sequence.
@@ -219,35 +225,35 @@ async function handleNormalModeReminders(
         // 1. Day 1 Evening (7 PM)
         if (now >= sameDayEvening && !notificationLog.sameDayEveningSent) {
             logger.info("[TEST MODE] Sending Day 1 evening reminder (Catch-Up)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isDevMode, 'evening', cabinNumber);
             await notificationLogRef.update({ sameDayEveningSent: admin.firestore.Timestamp.now() });
         }
 
         // 2. Day 2 Morning (9 AM)
         if (now >= nextDayMorning && !notificationLog.nextDayMorningSent) {
             logger.info("[TEST MODE] Sending Day 2 morning reminder (Catch-Up)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'morning', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isDevMode, 'morning', cabinNumber);
             await notificationLogRef.update({ nextDayMorningSent: admin.firestore.Timestamp.now() });
         }
 
         // 3. Day 2 Evening (7 PM)
         if (now >= nextDayEvening && !notificationLog.nextDayEveningSent) {
             logger.info("[TEST MODE] Sending Day 2 evening reminder (Catch-Up)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'evening', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isDevMode, 'evening', cabinNumber);
             await notificationLogRef.update({ nextDayEveningSent: admin.firestore.Timestamp.now() });
         }
 
         // 4. Final Morning 6 AM (4h)
         if (now >= finalMorning6am && !notificationLog.finalMorning6amSent) {
             logger.info("[TEST MODE] Sending final morning reminder (6 AM) (Catch-Up)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, 'morning', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isDevMode, 'morning', cabinNumber);
             await notificationLogRef.update({ finalMorning6amSent: admin.firestore.Timestamp.now() });
         }
 
         // 5. Final Morning 9 AM (Urgent 1h)
         if (now >= finalMorning9am && !notificationLog.finalMorning9amSent) {
             logger.info("[TEST MODE] Sending final urgent reminder (9 AM) (Catch-Up)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, 'morning', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isDevMode, 'morning', cabinNumber);
             await notificationLogRef.update({ finalMorning9amSent: admin.firestore.Timestamp.now() });
         }
 
@@ -260,7 +266,7 @@ async function handleNormalModeReminders(
         if (now >= finalMorning9am && now < turnEnd && !notificationLog.finalMorning9amSent) {
             logger.info("Sending final urgent reminder (9 AM)");
             // Note: 'finalWarning' template is triggered by isUrgent=true, so type string matters less here but good for consistency
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isTestMode, '1 hour', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "1 hour", true, isDevMode, '1 hour', cabinNumber);
             await notificationLogRef.update({
                 finalMorning9amSent: admin.firestore.Timestamp.now()
             });
@@ -268,7 +274,7 @@ async function handleNormalModeReminders(
         // 2. Final Morning 6 AM (4h)
         else if (now >= finalMorning6am && now < turnEnd && !notificationLog.finalMorning6amSent) {
             logger.info("Sending final morning reminder (6 AM)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isTestMode, '4 hours', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "4 hours", false, isDevMode, '4 hours', cabinNumber);
             await notificationLogRef.update({
                 finalMorning6amSent: admin.firestore.Timestamp.now()
             });
@@ -276,7 +282,7 @@ async function handleNormalModeReminders(
         // 3. Day 2 Evening (7 PM)
         else if (now >= nextDayEvening && now < turnEnd && !notificationLog.nextDayEveningSent) {
             logger.info("Sending Day 2 evening reminder (7 PM)");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isTestMode, 'day2evening', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2 evening", false, isDevMode, 'day2evening', cabinNumber);
             await notificationLogRef.update({
                 nextDayEveningSent: admin.firestore.Timestamp.now()
             });
@@ -284,7 +290,7 @@ async function handleNormalModeReminders(
         // 4. Day 2 Morning (9 AM)
         else if (now >= nextDayMorning && now < turnEnd && !notificationLog.nextDayMorningSent) {
             logger.info("Sending next day 9am reminder");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isTestMode, 'day2', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "day 2", false, isDevMode, 'day2', cabinNumber);
             await notificationLogRef.update({
                 nextDayMorningSent: admin.firestore.Timestamp.now()
             });
@@ -292,7 +298,7 @@ async function handleNormalModeReminders(
         // 5. Day 1 Evening (7 PM)
         else if (now >= sameDayEvening && now < turnEnd && !notificationLog.sameDayEveningSent) {
             logger.info("Sending same day 7pm reminder");
-            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isTestMode, 'evening', cabinNumber);
+            await sendReminderEmail(email, shareholderName, turnEnd, round, phase, "evening", false, isDevMode, 'evening', cabinNumber);
             await notificationLogRef.update({
                 sameDayEveningSent: admin.firestore.Timestamp.now()
             });
@@ -300,7 +306,7 @@ async function handleNormalModeReminders(
         // 6. OFFICIAL START (10 AM Day 1) - Only if Early Access
         else if (now >= officialStart && notificationLog.isEarlyAccess && !notificationLog.officialStartSent) {
             logger.info("Sending Official Start (10 AM) email to Early Access user");
-            await sendOfficialStartEmail(email, shareholderName, turnEnd, round, phase, isTestMode, cabinNumber);
+            await sendOfficialStartEmail(email, shareholderName, turnEnd, round, phase, isDevMode, cabinNumber);
             await notificationLogRef.update({
                 officialStartSent: admin.firestore.Timestamp.now()
             });
@@ -311,7 +317,7 @@ async function handleNormalModeReminders(
 /**
  * Send Official Turn Start Email (10 AM Follow-up)
  */
-async function sendOfficialStartEmail(email, shareholderName, deadline, round, phase, isTestMode, cabinNumber) {
+async function sendOfficialStartEmail(email, shareholderName, deadline, round, phase, isDevMode, cabinNumber) {
     const templateData = {
         name: shareholderName,
         round: round,
@@ -338,7 +344,7 @@ async function sendOfficialStartEmail(email, shareholderName, deadline, round, p
 /**
  * Send Turn Start Email
  */
-async function sendTurnStartEmail(email, shareholderName, deadline, round, phase, isTestMode, cabinNumber, isGrace = false) {
+async function sendTurnStartEmail(email, shareholderName, deadline, round, phase, cabinNumber, isGrace = false) {
     const templateData = {
         name: shareholderName,
         round: round,
@@ -353,7 +359,7 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
     const { subject, htmlContent } = emailFunction(templateData);
 
     // SAFETY: We pass the REAL recipient. 
-    // The 'sendGmail' helper will check 'isTestMode' and intercept it if necessary.
+    // The 'sendGmail' helper will check 'isDevMode' and intercept it if necessary.
     const recipient = email;
     const finalSubject = subject;
 
@@ -370,7 +376,7 @@ async function sendTurnStartEmail(email, shareholderName, deadline, round, phase
 /**
  * Send Reminder Email
  */
-async function sendReminderEmail(email, shareholderName, deadline, round, phase, timeRemaining, isUrgent, isTestMode, reminderType = 'morning', cabinNumber) {
+async function sendReminderEmail(email, shareholderName, deadline, round, phase, timeRemaining, isUrgent, isDevMode, reminderType = 'morning', cabinNumber) {
     const urgencyMessage = isUrgent
         ? "⚠️ URGENT: Your booking window is about to expire!"
         : "Friendly reminder to complete your booking.";
@@ -397,7 +403,7 @@ async function sendReminderEmail(email, shareholderName, deadline, round, phase,
     const { subject, htmlContent } = emailFunction(templateData);
 
     // SAFETY: We pass the REAL recipient. 
-    // The 'sendGmail' helper will check 'isTestMode' and intercept it if necessary.
+    // The 'sendGmail' helper will check 'isDevMode' and intercept it if necessary.
     const recipient = email;
     const finalSubject = subject;
 

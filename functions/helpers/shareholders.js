@@ -98,7 +98,7 @@ const DRAFT_CONFIG = {
 
 function getOfficialStart(finishTime) {
     if (!finishTime) return null;
-    const date = new Date(finishTime);
+    const date = finishTime && finishTime.toDate ? finishTime.toDate() : new Date(finishTime);
 
     // Get PT components accurately to check for exact 10:00:00
     const ptParts = new Intl.DateTimeFormat('en-US', {
@@ -180,15 +180,21 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
 
         const userActions = bookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
-            .sort((a, b) => a.createdAt - b.createdAt);
+            .filter(b => b.isFinalized || ['pass', 'skipped', 'cancelled'].includes(b.type || b.status))
+            .sort((a, b) => {
+                const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+                const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt && b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+                const aTime = isNaN(aRaw.getTime()) ? 0 : aRaw.getTime();
+                const bTime = isNaN(bRaw.getTime()) ? 0 : bRaw.getTime();
+                return aTime - bTime;
+            });
 
         const action = userActions[bookingIndex];
 
         if (action) {
-            // Turn is done. Next window starts at official 10 AM anchor.
             let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
             if (!actionTime) actionTime = currentWindowStart;
-            let pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
+            let pTime = actionTime instanceof Date ? actionTime : (actionTime && actionTime.toDate ? actionTime.toDate() : new Date(actionTime || 0));
             if (!isNaN(pTime.getTime())) {
                 currentWindowStart = startAnchor(pTime);
             }
@@ -254,7 +260,13 @@ function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = nul
 
         const userActions = bookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(name))
-            .sort((a, b) => a.createdAt - b.createdAt);
+            .sort((a, b) => {
+                const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));
+                const bRaw = b.createdAt instanceof Date ? b.createdAt : (b.createdAt && b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0));
+                const aTime = isNaN(aRaw.getTime()) ? 0 : aRaw.getTime();
+                const bTime = isNaN(bRaw.getTime()) ? 0 : bRaw.getTime();
+                return aTime - bTime;
+            });
 
         const action = userActions[turnIndex];
         const isCompleted = action && (action.type === 'pass' || action.type === 'cancelled' || action.isFinalized !== false);
@@ -273,7 +285,7 @@ function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = nul
             let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
             if (!actionTime) actionTime = windowStart;
             const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
-            windowEnd = pTime instanceof Date && !isNaN(pTime) ? pTime : new Date();
+            windowEnd = pTime instanceof Date && !isNaN(pTime.getTime()) ? pTime : new Date();
             lastCompletionTime = windowEnd;
             currentWindowStart = startAnchor(windowEnd);
         } else {

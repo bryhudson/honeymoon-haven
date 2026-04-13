@@ -40,7 +40,7 @@ description: Expert-level capability for auditing communication stacks, enforcin
   1. A valid `templateId` exists and can hydrate subject/html, OR
   2. Raw `subject` AND `htmlContent` are provided
 * **Reject if both are missing** - never send blank emails
-* **Deployment Sync**: Frontend changes require `npm run release` to deploy; backend-only needs `firebase deploy --only functions`
+* **Deployment Sync**: Use `./scripts/deploy-dev.sh` to test on dev first, then `./scripts/deploy-prod.sh` for prod. Backend-only on prod: `firebase deploy --only functions --project prod`. Backend-only on dev: `firebase deploy --only functions --project dev`
 
 ## 🧠 Logic Steps (The Skill Workflow)
 
@@ -76,7 +76,7 @@ When an email arrives blank or with "(No Subject)":
 2. **Look for these error patterns**:
    - `Cannot use "undefined" as a Firestore value (found in field "subject")` → subject not passed
    - `Email subject and HTML content are required` → validation caught missing data
-   - `[TEST MODE ACTIVE]` → email was intercepted (check test mode settings)
+   - `[NON-PROD ENV] Redirecting email intended for ... → SUPER_ADMIN_EMAIL` → email intercepted by env-based redirect (expected on dev project `hhr-trailer-booking-dev`, unexpected on prod)
 
 3. **Trace the data flow**:
    - Frontend: Is `emailService.sendEmail({ subject, htmlContent, ... })` being called with all params?
@@ -85,7 +85,7 @@ When an email arrives blank or with "(No Subject)":
 
 4. **Common fixes**:
    - Add missing parameters to `emailService.sendEmail()` call
-   - Ensure frontend is redeployed (`npm run release "message"`)
+   - Ensure frontend is redeployed via `./scripts/deploy-dev.sh` (dev) or `./scripts/deploy-prod.sh` (prod)
    - Add validation in backend to reject incomplete emails early
 
 ## 📊 Admin Report Requirements

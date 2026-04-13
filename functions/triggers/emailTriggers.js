@@ -289,7 +289,6 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
         // 1. Fetch necessary data
         const settingsDoc = await db.collection("settings").doc("general").get();
         const settings = settingsDoc.exists ? settingsDoc.data() : {};
-        const isTestMode = settings.isTestMode !== false; // Default true
 
         const bookingsSnapshot = await db.collection("bookings").get();
         let allBookings = bookingsSnapshot.docs.map(doc => ({

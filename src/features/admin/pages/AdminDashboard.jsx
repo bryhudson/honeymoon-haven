@@ -168,8 +168,8 @@ export function AdminDashboard() {
         // Find shareholder email
         const shareholder = shareholders.find(s => s.name === booking.shareholderName);
         const fallbackEmail = import.meta.env.VITE_SUPPORT_EMAIL || ADMIN_EMAILS[0];
-        const targetEmail = isTestMode ? fallbackEmail : (shareholder?.email || fallbackEmail);
-        const targetName = isTestMode ? `[TEST] ${booking.shareholderName}` : booking.shareholderName;
+        const targetEmail = shareholder?.email || fallbackEmail;
+        const targetName = booking.shareholderName;
 
         triggerConfirm("Send Reminder?", `Send reminder to ${targetName} (${targetEmail})?`, async () => {
             try {
@@ -223,10 +223,44 @@ export function AdminDashboard() {
 
     // Handlers: System Actions
     const handleToggleFreeze = async () => {
-        requireAuth("Maintenance Mode", "Toggle system maintenance?", async () => {
-            try { const ref = doc(db, "settings", "general"); const snap = await getDoc(ref); const cur = snap.exists() ? snap.data().isSystemFrozen : false; await setDoc(ref, { isSystemFrozen: !cur }, { merge: true }); triggerAlert("Success", !cur ? "System is in Maintenance Mode" : "System No Longer in Maintenance Mode"); }
-            catch (e) { triggerAlert("Error", "Failed."); }
-        });
+        const writeFreeze = async (next) => {
+            try {
+                const ref = doc(db, "settings", "general");
+                await setDoc(ref, { isSystemFrozen: next }, { merge: true });
+                triggerAlert("Success", next ? "System is in Maintenance Mode" : "System No Longer in Maintenance Mode");
+            } catch (e) {
+                triggerAlert("Error", "Failed.");
+            }
+        };
+
+        // When turning OFF, no safeguard needed.
+        if (isSystemFrozen) {
+            requireAuth("Maintenance Mode", "Exit system maintenance?", () => writeFreeze(false));
+            return;
+        }
+
+        // When turning ON, warn if an active window is close to expiry.
+        // Maintenance time is NOT added back to the window, so freezing near
+        // a deadline could cause an auto-pass the shareholder can't prevent.
+        const activePicker = status?.activePicker;
+        const windowEnds = status?.windowEnds;
+        let warning = "";
+        if (activePicker && windowEnds) {
+            const msRemaining = new Date(windowEnds).getTime() - Date.now();
+            if (msRemaining > 0) {
+                const hrs = Math.floor(msRemaining / 3_600_000);
+                const mins = Math.floor((msRemaining % 3_600_000) / 60_000);
+                const remainingLabel = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+                if (msRemaining < 2 * 3_600_000) {
+                    warning = `\u26A0\uFE0F ${activePicker} has only ${remainingLabel} left on their turn. Maintenance time is NOT added back — they may be auto-passed. Proceed?`;
+                } else {
+                    warning = `${activePicker} is active with ${remainingLabel} remaining. Maintenance time is NOT added back to their window. Proceed?`;
+                }
+            }
+        }
+
+        const message = warning || "Enable system maintenance? Shareholders will see a maintenance banner.";
+        requireAuth("Maintenance Mode", message, () => writeFreeze(true));
     };
 
     const handleWipeDatabase = () => {
@@ -276,8 +310,11 @@ export function AdminDashboard() {
         return true;
     };
 
-    const handleActivateProductionMode = async () => {
-        requireAuth("ACTIVATE PRODUCTION", "⚠️ DANGER: Switch to LIVE PRODUCTION? This will WIPE ALL TEST DATA and set date to April 13, 2026.", async () => {
+    const handleResetDraft = async () => {
+        const warnMsg = isTestMode
+            ? "⚠️ Wipe dev DB and reset clock to today 10am?"
+            : "⚠️ DANGER: Wipe PRODUCTION DB and reset draft anchor to Apr 13 2026 10am PDT?";
+        requireAuth("RESET DRAFT", warnMsg, async () => {
             try {
                 // STEP 1: PERMISSIONS CHECK
                 try {
@@ -344,104 +381,26 @@ export function AdminDashboard() {
                     throw new Error("STATUS RESET FAILED: " + e.message);
                 }
 
-                // STEP 6: SETTINGS UPDATE
+                // STEP 6: SETTINGS UPDATE — dev uses today @ 10am local; prod anchored to Apr 13, 2026 10am PDT.
                 try {
                     const ref = doc(db, "settings", "general");
-                    const prodDate = new Date("2026-04-13T10:00:00");
-                    await setDoc(ref, {
-                        isTestMode: false,
-                        draftStartDate: Timestamp.fromDate(prodDate)
-                    }, { merge: true });
-                } catch (e) {
-                    throw new Error("SETTINGS UPDATE FAILED: " + e.message);
-                }
-
-                triggerAlert("Success", "Production Mode ACTIVATED. DB Wiped.");
-
-            } catch (e) {
-                console.error(e);
-                triggerAlert("System Error", e.message);
-            }
-        });
-    };
-
-    const handleActivateTestMode = async () => {
-        if (!IS_SITE_OWNER) return;
-        requireAuth("ACTIVATE TEST MODE", "⚠️ DANGER: WIPE DATABASE + RESET CLOCK? This will DELETE ALL DATA and set the clock to Today @ 10am.", async () => {
-            try {
-                // STEP 1: PERMISSIONS CHECK
-                try {
-                    await checkAdminStatus();
-                } catch (e) {
-                    throw new Error("PRE-FLIGHT CHECK FAILED: " + e.message);
-                }
-
-                // STEP 2: BACKUP
-                let backupId = null;
-                try {
-                    triggerAlert("Info", "Step 1/5: Creating Backup...");
-                    backupId = await backupBookingsToFirestore();
-                } catch (e) {
-                    throw new Error("BACKUP FAILED: " + e.message);
-                }
-
-                // STEP 3: CSV
-                try {
-                    const snap = await getDocs(collection(db, "bookings"));
-                    const currentBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    exportBookingsToCSV(currentBookings);
-                } catch (e) { console.warn("CSV Error", e); }
-
-                if (backupId) {
-                    // triggerAlert("Success", `Backup Saved: ${backupId}. Proceeding...`);
-                }
-
-                // STEP 4: WIPE COLLECTIONS
-                const clearCollections = ["bookings", "email_logs", "shareholder_status", "notification_log"];
-
-                for (const colName of clearCollections) {
-                    try {
-                        const colSnap = await getDocs(collection(db, colName));
-
-                        const chunks = [];
-                        let batch = writeBatch(db);
-                        let count = 0;
-                        colSnap.docs.forEach(d => {
-                            batch.delete(d.ref);
-                            count++;
-                            if (count >= 400) { chunks.push(batch); batch = writeBatch(db); count = 0; }
-                        });
-                        if (count > 0) chunks.push(batch);
-
-                        await Promise.all(chunks.map(b => b.commit()));
-
-                    } catch (e) {
-                        throw new Error(`WIPE FAILED (${colName}): ` + e.message);
+                    let anchorDate;
+                    if (isTestMode) {
+                        anchorDate = new Date();
+                        anchorDate.setHours(10, 0, 0, 0);
+                    } else {
+                        anchorDate = new Date("2026-04-13T10:00:00-07:00");
                     }
-                }
-
-                // STEP 5: RESET STATUS
-                try {
-                    await setDoc(doc(db, "status", "draftStatus"), { activePicker: null, round: 1, phase: 'ROUND_1' });
-                } catch (e) {
-                    throw new Error("STATUS RESET FAILED: " + e.message);
-                }
-
-                // STEP 6: SETTINGS UPDATE
-                try {
-                    const todayTenAm = new Date();
-                    todayTenAm.setHours(10, 0, 0, 0);
-
-                    const ref = doc(db, "settings", "general");
                     await setDoc(ref, {
-                        isTestMode: true,
-                        draftStartDate: Timestamp.fromDate(todayTenAm)
+                        bypassTenAM: false,
+                        isSystemFrozen: false,
+                        draftStartDate: Timestamp.fromDate(anchorDate)
                     }, { merge: true });
                 } catch (e) {
                     throw new Error("SETTINGS UPDATE FAILED: " + e.message);
                 }
 
-                triggerAlert("Success", "Test Mode ACTIVATED. DB Wiped. Clock Reset.");
+                triggerAlert("Success", "Draft reset complete. DB wiped.");
 
             } catch (e) {
                 console.error(e);
@@ -533,9 +492,7 @@ export function AdminDashboard() {
             {activeTab === 'notifications' && <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />}
             {activeTab === 'system' && (
                 <SystemTab
-                    isTestMode={isTestMode}
-                    handleActivateProductionMode={handleActivateProductionMode}
-                    handleActivateTestMode={handleActivateTestMode}
+                    handleResetDraft={handleResetDraft}
                     isSystemFrozen={isSystemFrozen}
                     toggleSystemFreeze={handleToggleFreeze}
                     IS_SITE_OWNER={IS_SITE_OWNER}
@@ -547,8 +504,6 @@ export function AdminDashboard() {
             <EditBookingModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveEdit} booking={editingBooking} otherBookings={allBookings.filter(b => b.id !== editingBooking?.id)} />
             <ReauthenticationModal isOpen={authModal.isOpen} onClose={() => setAuthModal(prev => ({ ...prev, isOpen: false }))} onConfirm={authModal.onConfirm} title={authModal.title} message={authModal.message} />
             <PromptModal isOpen={promptData.isOpen} onClose={() => setPromptData(prev => ({ ...prev, isOpen: false }))} onConfirm={promptData.onConfirm} title={promptData.title} message={promptData.message} defaultValue={promptData.defaultValue} inputType={promptData.inputType} confirmText={promptData.confirmText} />
-
-            <div className="mt-12 pt-8 border-t text-center pb-8"><p className="text-xs text-muted-foreground">&copy; 2026 Honeymoon Haven Resort</p><p className="text-[10px] text-muted-foreground/60 mt-1">v{__APP_VERSION__}</p></div>
         </div>
     );
 }

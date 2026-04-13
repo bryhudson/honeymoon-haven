@@ -1,7 +1,7 @@
 {
   "name": "hhr",
   "private": true,
-  "version": "2.87.265",
+  "version": "2.87.266",
   "type": "module",
   "homepage": "https://hhr-trailer-booking.web.app",
   "scripts": {
@@ -11,6 +11,9 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "firebase deploy",
+    "deploy:dev": "sh scripts/deploy-dev.sh",
+    "deploy:prod": "sh scripts/deploy-prod.sh",
+    "dev:remote": "vite --mode development",
     "release": "sh scripts/release.sh",
     "auto-deploy": "sh scripts/auto_deploy.sh",
     "test": "vitest run",

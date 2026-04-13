@@ -2,157 +2,113 @@ const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const nodemailer = require("nodemailer");
 
-// Define access to Gmail secrets
-// Note: You must set these using `firebase functions:secrets:set GMAIL_EMAIL` etc.
 const gmailEmail = defineSecret("GMAIL_EMAIL");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
 
+// Environment detection — single source of truth for email routing.
+// Production project emails real shareholders; any other project (dev, etc.)
+// redirects ALL mail to SUPER_ADMIN_EMAIL. Fail-closed: unknown env = redirect.
+const PROD_PROJECT_ID = "hhr-trailer-booking";
+function isProduction() {
+    const pid = process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "";
+    return pid === PROD_PROJECT_ID;
+}
+
 /**
- * Sends an email via Gmail SMTP using Nodemailer.
- * 
- * @param {object} data
- * @param {object} data.to - { name: string, email: string }
- * @param {string} data.subject - Subject line
- * @param {string} data.htmlContent - HTML body
- * @returns {Promise<{success: boolean, messageId: string}>}
+ * Sends an email via Gmail SMTP. In non-prod environments (dev, staging, local),
+ * all emails are redirected to SUPER_ADMIN_EMAIL for safety.
  */
-async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, bypassTestMode = false, templateId = null }) {
+async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon Haven Resort", replyTo, templateId = null }) {
     const user = gmailEmail.value();
     const pass = gmailAppPassword.value();
 
     if (!user || !pass) {
         logger.error("Gmail secrets are missing.");
-        throw new Error('Email service configuration error: Missing Credentials');
+        throw new Error("Email service configuration error: Missing Credentials");
     }
 
-    // Create Transporter
     const transporter = nodemailer.createTransport({
         service: "gmail",
-        auth: {
-            user: user,
-            pass: pass,
-        },
+        auth: { user, pass },
     });
 
-    // Sender Info
     const from = `"${senderName}" <${user}>`;
-
-    // Check Firestore for Test Mode and Override Email
-    let isTestMode = true; // Default to TRUE (Safety First)
-    let dynamicOverride = superAdminEmail.value(); // Default fallback to Super Admin
-
-    if (bypassTestMode) {
-        isTestMode = false; // TRUST THE CALLER
-        logger.warn(`[SAFETY OVERRIDE] Bypassing Test Mode for email to: ${JSON.stringify(to)}`);
-    } else {
-        try {
-            const admin = require("firebase-admin");
-            if (admin.apps.length === 0) {
-                admin.initializeApp();
-            }
-            const db = admin.firestore();
-            const settingsDoc = await db.collection("settings").doc("general").get();
-            if (settingsDoc.exists) {
-                const data = settingsDoc.data();
-                isTestMode = data.isTestMode !== false; // Default true if undefined
-                if (data.testEmailReceiver) {
-                    dynamicOverride = data.testEmailReceiver;
-                }
-            }
-        } catch (err) {
-            logger.warn("Failed to fetch settings for email safety check, defaulting to TEST MODE", err);
-            isTestMode = true;
-        }
-    }
-
-    // --- DYNAMIC SAFETY OVERRIDE ---
-    const DEV_EMAIL_OVERRIDE = dynamicOverride;
+    const IS_PROD = isProduction();
+    const REDIRECT_TO = superAdminEmail.value();
 
     let recipient;
-    if (isTestMode) {
-        logger.info(`[TEST MODE ACTIVE] Intercepting email intended for: ${JSON.stringify(to)}. Redirecting to: ${DEV_EMAIL_OVERRIDE}`);
-        recipient = DEV_EMAIL_OVERRIDE;
+    if (IS_PROD) {
+        recipient = typeof to === "string" ? to : to?.email;
     } else {
-        recipient = typeof to === 'string' ? to : to?.email;
+        logger.info(`[NON-PROD ENV] Redirecting email intended for ${JSON.stringify(to)} → ${REDIRECT_TO} (project: ${process.env.GCLOUD_PROJECT || "unknown"})`);
+        recipient = REDIRECT_TO;
     }
 
     const mailOptions = {
-        from: from,
+        from,
         to: recipient,
-        // REMOVED [TEST] prefix per user request (Production Readiness)
-        subject: subject,
+        subject,
         html: htmlContent,
     };
 
-    // Add CC if provided (respect test mode redirect)
     if (cc) {
-        const ccEmail = typeof cc === 'string' ? cc : cc?.email;
+        const ccEmail = typeof cc === "string" ? cc : cc?.email;
         if (ccEmail) {
-            mailOptions.cc = isTestMode ? DEV_EMAIL_OVERRIDE : ccEmail;
-            logger.info(`CC added: ${isTestMode ? DEV_EMAIL_OVERRIDE + ' (redirected from ' + ccEmail + ')' : ccEmail}`);
+            mailOptions.cc = IS_PROD ? ccEmail : REDIRECT_TO;
         }
     }
 
-    // Add Reply-To if provided
     if (replyTo) {
         mailOptions.replyTo = replyTo;
     }
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        logger.info("Email sent successfully", { messageId: info.messageId });
+        logger.info("Email sent successfully", { messageId: info.messageId, isProd: IS_PROD });
 
-        // --- CENTRALIZED LOGGING TO FIRESTORE ---
-        try {
-            const admin = require("firebase-admin");
-            if (admin.apps.length === 0) {
-                admin.initializeApp();
-            }
-            const db = admin.firestore();
-
-            await db.collection("email_logs").add({
-                to: recipient,
-                cc: mailOptions.cc || null,
-                original_to: typeof to === 'object' ? JSON.stringify(to) : to, // Capture original intent
-                subject: subject,
-                timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                status: 'sent',
-                messageId: info.messageId,
-                isTestMode: isTestMode,
-                templateId: templateId || null, // Log template ID if provided
-                cabinNumber: to?.cabinNumber || null // Capture cabin number if available
-            });
-        } catch (logErr) {
-            // Non-blocking error - don't fail the email if logging fails
-            logger.error("Failed to write to email_logs", logErr);
-        }
-
-        return { success: true, messageId: info.messageId };
-
-    } catch (error) {
-        logger.error("Gmail send failed", error);
-
-        // Log failure if possible
         try {
             const admin = require("firebase-admin");
             if (admin.apps.length === 0) admin.initializeApp();
             const db = admin.firestore();
             await db.collection("email_logs").add({
                 to: recipient,
-                subject: subject,
+                cc: mailOptions.cc || null,
+                original_to: typeof to === "object" ? JSON.stringify(to) : to,
+                subject,
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                status: 'failed',
+                status: "sent",
+                messageId: info.messageId,
+                isTestMode: !IS_PROD,
+                templateId: templateId || null,
+                cabinNumber: to?.cabinNumber || null,
+            });
+        } catch (logErr) {
+            logger.error("Failed to write to email_logs", logErr);
+        }
+
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        logger.error("Gmail send failed", error);
+        try {
+            const admin = require("firebase-admin");
+            if (admin.apps.length === 0) admin.initializeApp();
+            const db = admin.firestore();
+            await db.collection("email_logs").add({
+                to: recipient,
+                subject,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                status: "failed",
                 error: error.message,
-                isTestMode: isTestMode
+                isTestMode: !IS_PROD,
             });
         } catch (e) { /* ignore */ }
-
         throw error;
     }
 }
 
 module.exports = {
     sendGmail,
-    gmailSecrets: [gmailEmail, gmailAppPassword, superAdminEmail] // Export secrets for consumers
+    isProduction,
+    gmailSecrets: [gmailEmail, gmailAppPassword, superAdminEmail],
 };

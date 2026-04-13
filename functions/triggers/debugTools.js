@@ -85,11 +85,7 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             // --- SIMULATION MODE ---
             log("Starting Simulation for: " + targetName);
 
-            // 1. Fetch Bookings & Settings
-            const settingsDoc = await db.collection("settings").doc("general").get();
-            const settings = settingsDoc.exists ? settingsDoc.data() : {};
-            log("Settings loaded. TestMode: " + settings.isTestMode);
-
+            // 1. Fetch Bookings
             const bookingsSnapshot = await db.collection("bookings").get();
             const allBookings = bookingsSnapshot.docs.map(doc => ({
                 id: doc.id,

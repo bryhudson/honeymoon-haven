@@ -930,17 +930,6 @@ export function Dashboard() {
                         userName={formatNameForDisplay(loggedInShareholder)}
                     />
 
-                    <div className="mt-12 pt-8 border-t text-center space-y-2">
-                        <p className="text-xs text-muted-foreground mb-1">&copy; 2026 Honeymoon Haven Resort</p>
-                        <div className="flex justify-center gap-4 text-[10px] items-center text-muted-foreground/50 font-mono">
-                            <span>v{__APP_VERSION__}</span>
-                            <span>•</span>
-                            <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                <span>{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                        </div>
-                    </div>
                 </>
             )}
 

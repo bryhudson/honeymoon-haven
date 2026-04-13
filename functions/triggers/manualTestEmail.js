@@ -74,10 +74,6 @@ exports.sendTestEmail = onCall({ secrets: [gmailSecrets[0], gmailSecrets[1], sup
             var cabinNumber = sData.cabin || sData.cabinNumber || sData.defaultCabin;
         }
 
-        // 4. Get test mode setting
-        const settingsDoc = await db.collection("settings").doc("general").get();
-        const isTestMode = settingsDoc.exists ? (settingsDoc.data().isTestMode !== false) : true;
-
         // 5. Prepare test email data
         const testDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h from now
 
@@ -217,8 +213,8 @@ exports.sendTestEmail = onCall({ secrets: [gmailSecrets[0], gmailSecrets[1], sup
                 throw new HttpsError('invalid-argument', `Unknown email type: ${emailType}`);
         }
 
-        // 7. Use testEmail if provided, otherwise apply test mode override
-        const recipient = testEmail || (isTestMode ? superAdminEmail.value() : shareholderEmail);
+        // 7. Use testEmail override if admin provided one; sendGmail redirects to super admin on non-prod envs.
+        const recipient = testEmail || shareholderEmail;
         const finalSubject = subject;
 
         await sendGmail({
