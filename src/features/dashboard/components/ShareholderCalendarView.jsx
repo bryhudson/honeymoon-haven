@@ -94,10 +94,15 @@ export function ShareholderCalendarView({ bookings }) {
                         const events = getEventsForDate(day);
                         const hasEvent = events.length > 0;
                         const hasInfo = booking || holiday || hasEvent;
+                        const isPast = startOfDay(day) < startOfDay(new Date());
 
-                        // Priority: booking > holiday > event > default
+                        // Priority: past > booking > holiday > event > default
                         let bgClass = "bg-white hover:bg-slate-50 text-slate-700";
-                        if (booking) {
+                        if (isPast) {
+                            bgClass = booking
+                                ? "bg-slate-200 text-slate-500"
+                                : "bg-slate-50 text-slate-400";
+                        } else if (booking) {
                             bgClass = "bg-green-500 text-white hover:bg-green-600";
                         } else if (holiday && hasEvent) {
                             bgClass = "bg-red-50 text-red-700 hover:bg-red-100 ring-1 ring-red-200";
@@ -118,7 +123,7 @@ export function ShareholderCalendarView({ bookings }) {
                                 {format(day, 'd')}
 
                                 {/* Dot indicators - stacked top-right */}
-                                <span className="absolute top-0 right-0 flex gap-px p-px">
+                                <span className={`absolute top-0 right-0 flex gap-px p-px ${isPast ? 'opacity-40' : ''}`}>
                                     {holiday && <span className="w-1.5 h-1.5 rounded-full bg-red-500" />}
                                     {hasEvent && <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
                                 </span>
