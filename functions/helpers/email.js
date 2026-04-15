@@ -37,13 +37,32 @@ async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon
     const IS_PROD = isProduction();
     const REDIRECT_TO = superAdminEmail.value();
 
-    let recipient;
-    if (IS_PROD) {
-        recipient = typeof to === "string" ? to : to?.email;
-    } else {
-        logger.info(`[NON-PROD ENV] Redirecting email intended for ${JSON.stringify(to)} → ${REDIRECT_TO} (project: ${process.env.GCLOUD_PROJECT || "unknown"})`);
-        recipient = REDIRECT_TO;
+    const intendedTo = typeof to === "string" ? to : to?.email;
+
+    if (!IS_PROD) {
+        logger.info(`[NON-PROD ENV] Skipping email send to ${JSON.stringify(to)} (project: ${process.env.GCLOUD_PROJECT || "unknown"})`);
+        try {
+            const admin = require("firebase-admin");
+            if (admin.apps.length === 0) admin.initializeApp();
+            const db = admin.firestore();
+            await db.collection("email_logs").add({
+                to: intendedTo,
+                cc: (typeof cc === "string" ? cc : cc?.email) || null,
+                original_to: typeof to === "object" ? JSON.stringify(to) : to,
+                subject,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                status: "skipped_non_prod",
+                isTestMode: true,
+                templateId: templateId || null,
+                cabinNumber: to?.cabinNumber || null,
+            });
+        } catch (logErr) {
+            logger.error("Failed to write skipped email to email_logs", logErr);
+        }
+        return { success: true, skipped: true };
     }
+
+    const recipient = intendedTo;
 
     const mailOptions = {
         from,
@@ -55,7 +74,7 @@ async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon
     if (cc) {
         const ccEmail = typeof cc === "string" ? cc : cc?.email;
         if (ccEmail) {
-            mailOptions.cc = IS_PROD ? ccEmail : REDIRECT_TO;
+            mailOptions.cc = ccEmail;
         }
     }
 
