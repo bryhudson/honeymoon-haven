@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./scripts/deploy-prod.sh)",
+      "Bash(node -e ':*)",
+      "Bash(firebase functions:log --project prod --only turnReminderScheduler -n 3)",
+      "Bash(firebase functions:log --project dev --only onDraftStatusChange -n 3)",
+      "Bash(firebase functions:log --project dev --only onDraftStatusChange -n 5)",
+      "Bash(firebase functions:log --project dev --only onDraftStatusChange -n 8)",
+      "Bash(firebase functions:log --project dev -n 20)",
+      "Bash(gcloud scheduler:*)",
+      "Bash(firebase functions:log --only paymentReminderScheduler -n 30 --project hhr-trailer-booking-dev)",
+      "Bash(firebase functions:log --only paymentReminderScheduler -n 25 --project hhr-trailer-booking-dev)",
+      "Bash(firebase functions:log --only paymentReminderScheduler -n 50 --project hhr-trailer-booking-dev)",
+      "Bash(firebase functions:log --only paymentReminderScheduler -n 100 --project hhr-trailer-booking-dev)",
+      "Bash(firebase functions:log --only paymentReminderScheduler -n 15 --project hhr-trailer-booking-dev)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(./scripts/deploy-dev.sh)"
+    ]
+  }
+}

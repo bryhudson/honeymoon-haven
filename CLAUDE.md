@@ -130,15 +130,54 @@ Email templates: 16 HTML templates in `functions/helpers/emailTemplates.js` usin
 
 Tests live in `tests/` (Vitest). Current coverage: `pricing.test.ts`, `emailTemplates.test.js`, `shareholders.test.ts`, `utils.test.ts`. See `TEST_PLAN.md` for what's covered and what's intentionally deferred (component/Firebase tests require additional setup).
 
----
+## Non-negotiable rules
 
-## /run-tests
+### Timezone: Pacific, never UTC
 
-Execute the testing strategy in `TEST_PLAN.md`.
+All user-facing times are PST (`America/Los_Angeles` or `America/Vancouver`). The 10 AM PST draft start is a core business rule and UTC math has caused real bugs (missed scheduled emails).
 
-1. Read `TEST_PLAN.md` — identify any items not marked ✅
-2. For each pending item:
-   - Create or update the test file
-   - Run `npx vitest run tests/<filename>` and iterate until passing
-   - Mark the item ✅ in `TEST_PLAN.md`
-3. Run `npm test` at the end to confirm all tests pass
+- **Never:** `new Date().getHours()`, `date.setHours(...)`, or hardcoded UTC offsets in Cloud Functions (they run in UTC).
+- **Always:** `date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles', ... })` for display and comparisons. Store timestamps as Firestore `Timestamp`; convert to PST only at display/comparison time.
+- Code reviews must flag bare `getHours()`/`setHours()` or hardcoded offsets.
+
+### Security
+
+- Never `dangerouslySetInnerHTML` without explicit justification and sanitization.
+- Never propose `allow read, write: if true;` in `firestore.rules`, even for "testing." Authenticated-minimum always.
+- If `firestore.rules` changes, invoke the `security-audit` skill.
+- Secrets live in Firebase secret parameters per project (dev/prod each have their own). Redeploy functions after rotating.
+
+### Typography
+
+**Never use the em dash character (—).** Use a regular hyphen (-), comma, colon, or parentheses. Applies to text, emails, code comments, and UI content.
+
+### Mobile-first
+
+Mobile styles first; scale up with `md:` / `lg:` breakpoints. If it doesn't work on a phone, it doesn't work. Lazy-load heavy admin routes (`React.lazy`) to keep the main bundle light.
+
+### Troubleshooting protocol
+
+When the user reports a bug, **stop and ask for evidence** before guessing:
+1. Console errors?
+2. Screenshot?
+3. Network tab — what did the API return?
+
+### Auth & RBAC
+
+- **Super Admin** (Bryan Hudson): full system access.
+- **Admin** (HHR Admin): operational access.
+- **Shareholder:** draft participation only.
+- Never hardcode credentials — always `.env` variables.
+
+## Skills and commands
+
+Project skills live in `.claude/skills/`. Invoke them via the Skill tool when the task matches:
+
+- **`deploy-manager`** — any dev/prod deploy work. Also available as slash commands `/deploy-dev` and `/deploy-prod`.
+- **`email-auditor`** — reviewing email templates or triggers, 10 AM PST "Bonus Time" logic.
+- **`modal-auditor`** — auditing/refactoring modals, dialogs, overlays.
+- **`architect-auditor`** — structural/hygiene audits of the codebase.
+- **`design-guidelines`** — before writing any className string or UI component.
+- **`hhr-testing`** — test suite work. Also `/run-tests`.
+- **`performance-audit`** — bundle size, Firestore costs, slow loads.
+- **`security-audit`** — firestore.rules review, auth path review, vulnerability scan.

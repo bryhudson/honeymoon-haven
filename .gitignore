@@ -16,6 +16,12 @@ dist-ssr
 .env
 .env.*
 
+# Firebase local cache
+.firebase/
+
+# Claude Code local-only settings
+.claude/settings.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
