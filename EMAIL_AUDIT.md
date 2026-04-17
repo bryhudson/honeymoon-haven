@@ -1,7 +1,7 @@
 # HHR Email Infrastructure Audit Report
 
 **Date:** January 26, 2026
-**Auditor:** Antigravity (Lead Full-Stack Architect)
+**Auditor:** Lead Full-Stack Architect
 
 ## 1. Executive Summary
 The email infrastructure for Honeymoon Haven Resort (HHR) is **robust, secure, and production-ready**. It uses a centralized sending service with a reliable "Test Mode" safety net, ensuring no accidental emails are sent to shareholders during development.
