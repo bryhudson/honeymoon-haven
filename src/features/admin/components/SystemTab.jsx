@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Trash2, Zap } from 'lucide-react';
+import { Settings, Trash2, Zap, Mail } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { useAuth } from '../../auth/AuthContext';
 import { getAvailableBackups, restoreBackup, deleteBackup } from '../services/backupService';
 import { IS_PROD, IS_DEV_ENV, PROJECT_ID } from '../../../lib/env';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../../../lib/firebase';
 
 export function SystemTab({
     isSystemFrozen,
@@ -11,6 +13,24 @@ export function SystemTab({
     handleResetDraft,
     triggerAlert
 }) {
+    const [devEmailEnabled, setDevEmailEnabled] = useState(false);
+    useEffect(() => {
+        if (!IS_DEV_ENV) return;
+        const unsub = onSnapshot(doc(db, 'settings/general'), (snap) => {
+            setDevEmailEnabled(snap.exists() && snap.data()?.devEmailEnabled === true);
+        });
+        return () => unsub();
+    }, []);
+
+    const toggleDevEmail = async () => {
+        try {
+            await setDoc(doc(db, 'settings/general'), { devEmailEnabled: !devEmailEnabled }, { merge: true });
+            triggerAlert?.('Success', !devEmailEnabled ? 'Dev emails ENABLED — all sends will redirect to the super admin inbox.' : 'Dev emails DISABLED — sends will be skipped.');
+        } catch (e) {
+            triggerAlert?.('Error', e.message);
+        }
+    };
+
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
@@ -40,11 +60,38 @@ export function SystemTab({
                                 </span>
                             </p>
                             {IS_DEV_ENV && (
-                                <p className="text-xs text-slate-500 mt-1">All outgoing emails are redirected to the super admin.</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    {devEmailEnabled
+                                        ? 'Dev emails ENABLED — sends redirect to the super admin inbox.'
+                                        : 'Dev emails DISABLED — all sends are skipped.'}
+                                </p>
                             )}
                         </div>
                     </div>
                 </div>
+
+                {/* Dev-only: Email Redirect Toggle */}
+                {IS_DEV_ENV && (
+                    <div className="bg-white p-4 sm:p-6 rounded-xl border border-amber-200 shadow-sm">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-amber-100 rounded-lg shrink-0">
+                                    <Mail className="w-5 h-5 text-amber-700" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-900">Dev Email Redirect</h3>
+                                    <p className="text-sm text-slate-500 mt-1">When enabled, all outgoing emails redirect to the super admin inbox for testing. Disabled = sends are skipped entirely.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={toggleDevEmail}
+                                className={`shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all ${devEmailEnabled ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                            >
+                                {devEmailEnabled ? 'Enabled' : 'Disabled'}
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* 2. Dev-only: Reset Draft */}
                 {IS_DEV_ENV && (

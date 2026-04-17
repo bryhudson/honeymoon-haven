@@ -39,7 +39,21 @@ async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon
 
     const intendedTo = typeof to === "string" ? to : to?.email;
 
+    // In non-prod: by default skip sends entirely. If settings/general.devEmailEnabled === true,
+    // redirect all mail to SUPER_ADMIN_EMAIL so admins can test templates safely.
+    let devEmailEnabled = false;
     if (!IS_PROD) {
+        try {
+            const admin = require("firebase-admin");
+            if (admin.apps.length === 0) admin.initializeApp();
+            const settingsSnap = await admin.firestore().doc("settings/general").get();
+            devEmailEnabled = settingsSnap.exists && settingsSnap.data()?.devEmailEnabled === true;
+        } catch (e) {
+            logger.warn("Could not read devEmailEnabled setting; defaulting to skip.", e);
+        }
+    }
+
+    if (!IS_PROD && !devEmailEnabled) {
         logger.info(`[NON-PROD ENV] Skipping email send to ${JSON.stringify(to)} (project: ${process.env.GCLOUD_PROJECT || "unknown"})`);
         try {
             const admin = require("firebase-admin");
@@ -62,7 +76,8 @@ async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon
         return { success: true, skipped: true };
     }
 
-    const recipient = intendedTo;
+    // In non-prod with devEmailEnabled, redirect to super admin so we don't mail real shareholders.
+    const recipient = IS_PROD ? intendedTo : REDIRECT_TO;
 
     const mailOptions = {
         from,
@@ -71,7 +86,8 @@ async function sendGmail({ to, cc, subject, htmlContent, senderName = "Honeymoon
         html: htmlContent,
     };
 
-    if (cc) {
+    // Only attach CC in production — in dev-redirect mode we don't want to cc real shareholders.
+    if (cc && IS_PROD) {
         const ccEmail = typeof cc === "string" ? cc : cc?.email;
         if (ccEmail) {
             mailOptions.cc = ccEmail;
