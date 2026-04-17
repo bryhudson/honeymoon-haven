@@ -225,10 +225,17 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
         logger.info(`Sending Payment Received Confirmation for ${bookingId}`);
         const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
 
+        const expectedAmount = afterData.totalPrice || 0;
+        const receivedAmount = afterData.paymentDetails?.amount != null
+            ? afterData.paymentDetails.amount
+            : expectedAmount;
+
         const templateData = {
             name: afterData.shareholderName || userProfile.displayName || "Shareholder",
             booking_ref: bookingId,
-            amount: afterData.totalPrice || "0",
+            amount: receivedAmount || "0",
+            expected_amount: expectedAmount || 0,
+            payment_reference: afterData.paymentDetails?.reference || null,
             check_in: formatDate(afterData.from || afterData.checkInDate),
             check_out: formatDate(afterData.to || afterData.checkOutDate),
             cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",

@@ -183,8 +183,15 @@ export const exportBookingsToCSV = (bookings) => {
     try {
         const headers = [
             "ID", "Shareholder", "Cabin", "Check In", "Check Out",
-            "Total Price", "Status", "Created At"
+            "Expected Fee", "Fee Status", "Amount Collected", "Date Received",
+            "Reference", "Notes", "Status", "Created At"
         ];
+
+        const csvEscape = (val) => {
+            if (val == null) return '';
+            const s = String(val).replace(/"/g, '""');
+            return `"${s}"`;
+        };
 
         const rows = bookings.map(b => {
             let cabin = b.cabinNumber || '?';
@@ -205,15 +212,25 @@ export const exportBookingsToCSV = (bookings) => {
                 displayStatus = b.isFinalized ? 'Confirmed' : 'Unfinalized';
             }
 
+            const isBookable = b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled';
+            const pd = b.paymentDetails || {};
+            const dateReceived = pd.paidAt?.toDate ? pd.paidAt.toDate()
+                : pd.paidAt ? new Date(pd.paidAt) : null;
+
             return [
-                b.id,
-                `"${b.shareholderName || ''}"`,
-                cabin,
-                b.from && b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled' ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : '',
-                b.to && b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled' ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : '',
-                b.totalPrice || 0,
-                displayStatus,
-                b.createdAt ? format(b.createdAt instanceof Date ? b.createdAt : b.createdAt.toDate(), 'yyyy-MM-dd HH:mm') : ''
+                csvEscape(b.id),
+                csvEscape(b.shareholderName || ''),
+                csvEscape(cabin),
+                csvEscape(b.from && isBookable ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : ''),
+                csvEscape(b.to && isBookable ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : ''),
+                csvEscape(isBookable ? (b.totalPrice || 0) : ''),
+                csvEscape(isBookable ? (b.isPaid ? 'RECEIVED' : 'OUTSTANDING') : ''),
+                csvEscape(b.isPaid && pd.amount != null ? pd.amount : ''),
+                csvEscape(dateReceived ? format(dateReceived, 'yyyy-MM-dd') : ''),
+                csvEscape(pd.reference || ''),
+                csvEscape(pd.notes || ''),
+                csvEscape(displayStatus),
+                csvEscape(b.createdAt ? format(b.createdAt instanceof Date ? b.createdAt : b.createdAt.toDate(), 'yyyy-MM-dd HH:mm') : '')
             ];
         });
 

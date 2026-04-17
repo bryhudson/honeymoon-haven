@@ -583,8 +583,10 @@ const emailTemplates = {
         ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
-          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Total Paid</span>
+          <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Amount Received</span>
           <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.amount}</span>
+          ${data.expected_amount && Number(data.amount) !== Number(data.expected_amount) ? `<div style="font-size: 12px; color: #b45309; margin-top: 4px;">Expected fee was <strong>$${data.expected_amount}</strong>. If this differs from what you sent, please reach out.</div>` : ''}
+          ${data.payment_reference ? `<div style="font-size: 12px; color: ${THEME.colors.textLight}; margin-top: 6px;">Reference: <span style="color: ${THEME.colors.text}; font-weight: 600;">${data.payment_reference}</span></div>` : ''}
           ${breakdownHtml}
         </div>
       </div>

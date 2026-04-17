@@ -257,9 +257,12 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                     const hasChanged = oldTotal != null && oldTotal !== preview.total;
 
                     return (
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                             <div className="flex justify-between items-center">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Maintenance Fee</span>
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Maintenance Fee</span>
+                                    <span className="text-[10px] text-slate-500 font-medium mt-0.5">{preview.nights} night{preview.nights !== 1 ? 's' : ''}</span>
+                                </div>
                                 <div className="text-right">
                                     <span className="text-lg font-black text-slate-800">${preview.total.toLocaleString()}</span>
                                     {hasChanged && (
@@ -267,12 +270,31 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                                     )}
                                 </div>
                             </div>
-                            <div className="flex gap-3 text-[10px] text-slate-500 font-medium">
-                                <span>{preview.nights} night{preview.nights !== 1 ? 's' : ''}</span>
-                                {preview.breakdown?.weeknights > 0 && <span>{preview.breakdown.weeknights} weeknight{preview.breakdown.weeknights !== 1 ? 's' : ''}</span>}
-                                {preview.breakdown?.weekends > 0 && <span>{preview.breakdown.weekends} weekend{preview.breakdown.weekends !== 1 ? 's' : ''}</span>}
-                                {preview.breakdown?.discount > 0 && <span className="text-emerald-600">-${preview.breakdown.discount} discount</span>}
-                            </div>
+                            {preview.breakdown && (preview.breakdown.weeknights > 0 || preview.breakdown.weekends > 0) && (
+                                <>
+                                    <div className="h-px bg-slate-200" />
+                                    <div className="space-y-1.5">
+                                        {preview.breakdown.weeknights > 0 && (
+                                            <div className="flex justify-between text-xs text-slate-600">
+                                                <span>{preview.breakdown.weeknights} Weeknight{preview.breakdown.weeknights !== 1 ? 's' : ''} × $100</span>
+                                                <span className="font-bold text-slate-900">${preview.breakdown.weeknightTotal.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        {preview.breakdown.weekends > 0 && (
+                                            <div className="flex justify-between text-xs text-slate-600">
+                                                <span>{preview.breakdown.weekends} Weekend night{preview.breakdown.weekends !== 1 ? 's' : ''} × $125</span>
+                                                <span className="font-bold text-slate-900">${preview.breakdown.weekendTotal.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        {preview.breakdown.discount > 0 && (
+                                            <div className="flex justify-between text-xs text-emerald-600 font-bold">
+                                                <span>Weekly Discount ({preview.breakdown.fullWeeks} week{preview.breakdown.fullWeeks !== 1 ? 's' : ''})</span>
+                                                <span>−${preview.breakdown.discount.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                             {hasChanged && (
                                 <div className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 inline-block">
                                     Fee updated from ${oldTotal.toLocaleString()} to ${preview.total.toLocaleString()}

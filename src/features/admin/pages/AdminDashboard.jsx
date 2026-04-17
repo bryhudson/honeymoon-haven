@@ -11,6 +11,7 @@ import { format, differenceInDays } from 'date-fns';
 import { List, Calendar, Users, CheckCircle, XCircle, Mail, Download, Settings, Bell, PlusCircle } from 'lucide-react';
 import { calculateBookingCost } from '../../../lib/pricing';
 import { EditBookingModal } from '../components/EditBookingModal';
+import { PaymentConfirmModal } from '../components/PaymentConfirmModal';
 import { UserActionsDropdown } from '../../dashboard/components/UserActionsDropdown';
 import { ReauthenticationModal } from '../../auth/components/ReauthenticationModal';
 import { PromptModal } from '../../../components/ui/PromptModal';
@@ -77,8 +78,8 @@ export function AdminDashboard() {
         setConfirmation({ isOpen: true, title, message, onConfirm: () => { }, isDanger: false, confirmText: "OK", showCancel: false });
     };
 
-    const triggerPrompt = (title, message, defaultValue, onConfirm, inputType = "text", confirmText = "Confirm") => {
-        setPromptData({ isOpen: true, title, message, defaultValue, onConfirm, inputType, confirmText });
+    const triggerPrompt = (title, message, defaultValue, onConfirm, inputType = "text", confirmText = "Confirm", requireConfirmation = false, confirmPlaceholder = "Confirm") => {
+        setPromptData({ isOpen: true, title, message, defaultValue, onConfirm, inputType, confirmText, requireConfirmation, confirmPlaceholder });
     };
 
     // Removed local draftStatus. Now using strictly realtime status from context.
@@ -86,6 +87,7 @@ export function AdminDashboard() {
     // Editing State (Bookings)
     const [editingBooking, setEditingBooking] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [payingBooking, setPayingBooking] = useState(null);
     const [bookingViewMode, setBookingViewMode] = useState('list');
 
     // Editing State (Users)
@@ -122,39 +124,78 @@ export function AdminDashboard() {
     };
 
     const handleTogglePaid = async (booking) => {
-        const isPaid = !booking.isPaid;
-        triggerConfirm(isPaid ? "Confirm Payment" : "Revert Payment", isPaid ? "Mark as PAID?" : "Mark as UNPAID?", async () => {
+        // Marking as PAID → open detailed payment modal
+        if (!booking.isPaid) {
+            setPayingBooking(booking);
+            return;
+        }
+        // Reverting PAID → UNPAID stays a simple confirm
+        triggerConfirm("Clear Fee Record", "Clear the fee record for this booking?", async () => {
             try {
-                // Fetch fresh data to prevent stale-state race condition
                 const freshSnap = await getDoc(doc(db, "bookings", booking.id));
                 if (!freshSnap.exists()) { triggerAlert("Error", "Booking not found."); return; }
-                const freshIsPaid = !freshSnap.data().isPaid;
-                await updateDoc(doc(db, "bookings", booking.id), { isPaid: freshIsPaid });
-
-                if (freshIsPaid) {
-                    // Look up shareholder details for the success message
-                    const shareholder = shareholders.find(s => normalizeName(s.name) === normalizeName(booking.shareholderName));
-                    const shareholderEmail = shareholder?.email || "unknown";
-                    const displayName = formatNameForDisplay(booking.shareholderName);
-
-                    triggerAlert("Payment Confirmed", <>
-                        <div style={{ textAlign: 'left', lineHeight: '1.8' }}>
-                            <p style={{ marginBottom: '12px' }}>Payment marked as <strong style={{ color: '#059669' }}>PAID</strong>.</p>
-                            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', marginBottom: '12px' }}>
-                                <p style={{ margin: '0 0 4px', fontWeight: 600, color: '#1e293b' }}>{displayName}</p>
-                                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>{shareholderEmail}</p>
-                            </div>
-                            <p style={{ margin: 0, fontSize: '13px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>✉️</span> A payment confirmation email has been sent.
-                            </p>
-                        </div>
-                    </>);
-                } else {
-                    triggerAlert("Success", "Payment reverted to UNPAID.");
-                }
+                await updateDoc(doc(db, "bookings", booking.id), {
+                    isPaid: false,
+                    paymentDetails: deleteField()
+                });
+                triggerAlert("Success", "Fee record cleared.");
             }
             catch (e) { triggerAlert("Error", e.message); }
-        }, !isPaid);
+        }, false);
+    };
+
+    const handleEditPayment = (booking) => {
+        setPayingBooking(booking);
+    };
+
+    const handleConfirmPayment = async (details) => {
+        if (!payingBooking) return;
+        try {
+            const freshSnap = await getDoc(doc(db, "bookings", payingBooking.id));
+            if (!freshSnap.exists()) { triggerAlert("Error", "Booking not found."); return; }
+
+            await updateDoc(doc(db, "bookings", payingBooking.id), {
+                isPaid: true,
+                paymentDetails: {
+                    amount: details.paidAmount,
+                    reference: details.paymentRef,
+                    notes: details.paymentNotes,
+                    paidAt: Timestamp.fromDate(details.paidAt),
+                    recordedBy: currentUser?.email || null,
+                    recordedAt: Timestamp.now()
+                }
+            });
+
+            const wasAlreadyPaid = payingBooking.isPaid === true;
+            const shareholder = shareholders.find(s => normalizeName(s.name) === normalizeName(payingBooking.shareholderName));
+            const shareholderEmail = shareholder?.email || "unknown";
+            const displayName = formatNameForDisplay(payingBooking.shareholderName);
+            setPayingBooking(null);
+
+            triggerAlert(wasAlreadyPaid ? "Fee Details Updated" : "Fee Recorded", <>
+                <div style={{ textAlign: 'left', lineHeight: '1.8' }}>
+                    <p style={{ marginBottom: '12px' }}>
+                        {wasAlreadyPaid
+                            ? <>Fee details saved.</>
+                            : <>Fee marked as <strong style={{ color: '#059669' }}>RECEIVED</strong>.</>}
+                    </p>
+                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', marginBottom: '12px' }}>
+                        <p style={{ margin: '0 0 4px', fontWeight: 600, color: '#1e293b' }}>{displayName}</p>
+                        <p style={{ margin: '0 0 6px', fontSize: '13px', color: '#64748b' }}>{shareholderEmail}</p>
+                        <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#475569' }}>Amount: <strong>${details.paidAmount.toLocaleString()}</strong></p>
+                        {details.paymentRef && (
+                            <p style={{ margin: 0, fontSize: '12px', color: '#475569' }}>Ref: <strong>{details.paymentRef}</strong></p>
+                        )}
+                    </div>
+                    {!wasAlreadyPaid && (
+                        <p style={{ margin: 0, fontSize: '13px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>✉️</span> A fee confirmation email has been sent.
+                        </p>
+                    )}
+                </div>
+            </>);
+        }
+        catch (e) { triggerAlert("Error", e.message); }
     };
 
     const handleCancelBooking = (booking) => {
@@ -204,9 +245,9 @@ export function AdminDashboard() {
     const handlePasswordChange = async (user) => {
         triggerPrompt("Reset Password", `Enter new password for ${user.name}:`, "", async (pass) => {
             if (!pass || pass.length < 6) { triggerAlert("Error", "Min 6 characters."); return; }
-            try { const resetFn = httpsCallable(functions, 'adminResetUserPassword'); await resetFn({ email: user.email, newPassword: pass }); triggerAlert("Success", "Password reset."); }
+            try { const resetFn = httpsCallable(functions, 'adminUpdatePassword'); await resetFn({ targetEmail: user.email, newPassword: pass }); triggerAlert("Success", "Password reset."); }
             catch (e) { triggerAlert("Error", e.message); }
-        }, "password");
+        }, "password", "Confirm", true, "Re-enter password");
     };
 
     const handleDeleteUser = (user) => {
@@ -416,9 +457,14 @@ export function AdminDashboard() {
             if (b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'auto-pass') {
                 const nights = (b.from && b.to) ? differenceInDays(b.to, b.from) : 0;
                 const cost = calculateBookingCost(b.from, b.to);
-                const amount = b.totalPrice || cost.total;
+                const expected = b.totalPrice || cost.total;
                 stats.totalBookings++; stats.totalNights += nights;
-                if (b.isPaid) stats.totalRevenue += amount; else { stats.outstandingFees += amount; stats.unpaidCount++; }
+                if (b.isPaid) {
+                    const received = b.paymentDetails?.amount != null ? b.paymentDetails.amount : expected;
+                    stats.totalRevenue += received;
+                } else {
+                    stats.outstandingFees += expected; stats.unpaidCount++;
+                }
             }
         });
         return stats;
@@ -470,7 +516,7 @@ export function AdminDashboard() {
             {activeTab === 'bookings' && (
                 <div className="space-y-6">
                     <AdminStatsGrid analytics={analytics} />
-                    <AdminBookingManagement schedule={schedule} allBookings={allBookings} bookingViewMode={bookingViewMode} setBookingViewMode={setBookingViewMode} handleEditClick={(b) => { setEditingBooking(b); setIsEditModalOpen(true); }} handleCancelBooking={handleCancelBooking} handleToggleFinalized={handleToggleFinalized} handleTogglePaid={handleTogglePaid} handleSendPaymentReminder={handleSendPaymentReminder} triggerAlert={triggerAlert} />
+                    <AdminBookingManagement schedule={schedule} allBookings={allBookings} bookingViewMode={bookingViewMode} setBookingViewMode={setBookingViewMode} handleEditClick={(b) => { setEditingBooking(b); setIsEditModalOpen(true); }} handleCancelBooking={handleCancelBooking} handleToggleFinalized={handleToggleFinalized} handleTogglePaid={handleTogglePaid} handleEditPayment={handleEditPayment} handleSendPaymentReminder={handleSendPaymentReminder} triggerAlert={triggerAlert} />
                 </div>
             )}
 
@@ -502,8 +548,9 @@ export function AdminDashboard() {
 
             <ConfirmationModal isOpen={confirmation.isOpen} onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))} onConfirm={confirmation.onConfirm} title={confirmation.title} message={confirmation.message} isDanger={confirmation.isDanger} confirmText={confirmation.confirmText} showCancel={confirmation.showCancel} requireTyping={confirmation.requireTyping} />
             <EditBookingModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveEdit} booking={editingBooking} otherBookings={allBookings.filter(b => b.id !== editingBooking?.id)} />
+            <PaymentConfirmModal isOpen={!!payingBooking} onClose={() => setPayingBooking(null)} onConfirm={handleConfirmPayment} booking={payingBooking} />
             <ReauthenticationModal isOpen={authModal.isOpen} onClose={() => setAuthModal(prev => ({ ...prev, isOpen: false }))} onConfirm={authModal.onConfirm} title={authModal.title} message={authModal.message} />
-            <PromptModal isOpen={promptData.isOpen} onClose={() => setPromptData(prev => ({ ...prev, isOpen: false }))} onConfirm={promptData.onConfirm} title={promptData.title} message={promptData.message} defaultValue={promptData.defaultValue} inputType={promptData.inputType} confirmText={promptData.confirmText} />
+            <PromptModal isOpen={promptData.isOpen} onClose={() => setPromptData(prev => ({ ...prev, isOpen: false }))} onConfirm={promptData.onConfirm} title={promptData.title} message={promptData.message} defaultValue={promptData.defaultValue} inputType={promptData.inputType} confirmText={promptData.confirmText} requireConfirmation={promptData.requireConfirmation} confirmPlaceholder={promptData.confirmPlaceholder} />
         </div>
     );
 }

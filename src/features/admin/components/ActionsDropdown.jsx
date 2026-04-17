@@ -10,6 +10,7 @@ export function ActionsDropdown({
     isFinalized,
     onTogglePaid,
     isPaid,
+    onEditPayment,
     onSendReminder,
     onRemindToBook
 }) {
@@ -29,7 +30,15 @@ export function ActionsDropdown({
             className: "text-orange-600 hover:bg-orange-50 hover:text-orange-700"
         },
         {
-            label: isPaid ? "Mark as Unpaid" : "Mark as Paid",
+            label: "Edit Fee Details",
+            icon: Edit,
+            onClick: onEditPayment,
+            hidden: !isPaid || isCancelled || !onEditPayment,
+            divider: true,
+            className: "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+        },
+        {
+            label: isPaid ? "Clear Fee Record" : "Mark Fee Received",
             icon: DollarSign,
             onClick: onTogglePaid,
             hidden: isCancelled || !onTogglePaid,

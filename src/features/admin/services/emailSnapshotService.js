@@ -74,6 +74,78 @@ export const sendCalendarEmailSnapshot = async (bookings, recipient, onNotify) =
             monthsHtml += gridHtml;
         });
 
+        // Build booking summary table with fee details
+        const activeBookings = bookings
+            .filter(b => b.type !== 'pass' && b.type !== 'auto-pass' && b.type !== 'cancelled' && b.from && b.to)
+            .sort((a, b) => {
+                const aFrom = a.from instanceof Date ? a.from : a.from.toDate ? a.from.toDate() : new Date(a.from);
+                const bFrom = b.from instanceof Date ? b.from : b.from.toDate ? b.from.toDate() : new Date(b.from);
+                return aFrom - bFrom;
+            });
+
+        const totalExpected = activeBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+        const totalCollected = activeBookings.reduce((sum, b) => {
+            if (!b.isPaid) return sum;
+            const amt = b.paymentDetails?.amount != null ? b.paymentDetails.amount : (b.totalPrice || 0);
+            return sum + amt;
+        }, 0);
+        const totalOutstanding = activeBookings.reduce((sum, b) => b.isPaid ? sum : sum + (b.totalPrice || 0), 0);
+
+        const rowsHtml = activeBookings.map(b => {
+            const from = b.from instanceof Date ? b.from : b.from.toDate ? b.from.toDate() : new Date(b.from);
+            const to = b.to instanceof Date ? b.to : b.to.toDate ? b.to.toDate() : new Date(b.to);
+            const pd = b.paymentDetails || {};
+            const received = b.isPaid ? (pd.amount != null ? pd.amount : (b.totalPrice || 0)) : null;
+            const statusColor = b.isPaid ? '#059669' : '#dc2626';
+            const statusLabel = b.isPaid ? 'RECEIVED' : 'OUTSTANDING';
+
+            return `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 8px; font-size: 12px; color: #334155;">${b.shareholderName || ''}<br><span style="color: #94a3b8; font-size: 10px;">Cabin #${b.cabinNumber || '?'}</span></td>
+                    <td style="padding: 8px; font-size: 12px; color: #334155;">${format(from, 'MMM d')} – ${format(to, 'MMM d, yyyy')}</td>
+                    <td style="padding: 8px; font-size: 12px; color: #334155; text-align: right;">$${(b.totalPrice || 0).toLocaleString()}</td>
+                    <td style="padding: 8px; font-size: 12px; text-align: center;"><span style="color: ${statusColor}; font-weight: 600;">${statusLabel}</span></td>
+                    <td style="padding: 8px; font-size: 12px; color: #334155; text-align: right;">${received != null ? '$' + received.toLocaleString() : '—'}</td>
+                    <td style="padding: 8px; font-size: 11px; color: #64748b; font-family: monospace;">${pd.reference || '—'}</td>
+                    <td style="padding: 8px; font-size: 11px; color: #64748b; font-style: italic;">${pd.notes || ''}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const summaryHtml = `
+            <div style="margin-top: 40px; page-break-before: always;">
+                <h2 style="color: #0f172a;">Booking Fee Summary</h2>
+                <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 140px;">
+                        <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Expected</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #0f172a;">$${totalExpected.toLocaleString()}</div>
+                    </div>
+                    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 140px;">
+                        <div style="font-size: 10px; color: #059669; text-transform: uppercase; letter-spacing: 0.05em;">Collected</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #059669;">$${totalCollected.toLocaleString()}</div>
+                    </div>
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 140px;">
+                        <div style="font-size: 10px; color: #dc2626; text-transform: uppercase; letter-spacing: 0.05em;">Outstanding</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #dc2626;">$${totalOutstanding.toLocaleString()}</div>
+                    </div>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e8f0;">
+                    <thead>
+                        <tr style="background: #f1f5f9;">
+                            <th style="padding: 8px; text-align: left; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Shareholder</th>
+                            <th style="padding: 8px; text-align: left; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Dates</th>
+                            <th style="padding: 8px; text-align: right; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Fee</th>
+                            <th style="padding: 8px; text-align: center; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
+                            <th style="padding: 8px; text-align: right; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Collected</th>
+                            <th style="padding: 8px; text-align: left; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Reference</th>
+                            <th style="padding: 8px; text-align: left; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml || '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">No bookings yet</td></tr>'}</tbody>
+                </table>
+            </div>
+        `;
+
         const fullHtml = `
             <div style="font-family: sans-serif; max-width: 800px; margin: 0 auto;">
                 <h2 style="color: #0f172a; text-align: center;">2026 Season Calendar</h2>
@@ -81,6 +153,7 @@ export const sendCalendarEmailSnapshot = async (bookings, recipient, onNotify) =
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     ${monthsHtml}
                 </div>
+                ${summaryHtml}
             </div>
         `;
 
