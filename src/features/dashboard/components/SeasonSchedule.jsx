@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown } from 'lucide-react';
 import { format, differenceInHours, addDays, isPast } from 'date-fns';
 import { DRAFT_CONFIG, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
 import { HistoricalOrders } from './HistoricalOrders';
@@ -45,21 +45,37 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                 <HistoricalOrders />
             ) : (
                 <div className="bg-card border rounded-lg shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="p-6 bg-slate-50 border-b">
+                    <div className="bg-slate-50 border-b">
                         <button
                             onClick={() => setIsInfoExpanded(!isInfoExpanded)}
-                            className="w-full flex items-center justify-between text-left mb-4 focus:outline-none group"
+                            aria-expanded={isInfoExpanded}
+                            aria-controls="schedule-info-panel"
+                            className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 hover:bg-slate-100/70 transition-colors group"
                         >
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                                <Info className="w-4 h-4 text-slate-500" />
-                                How the Schedule Works
-                            </h3>
-                            <div className={`p-1 rounded-full text-slate-400 group-hover:bg-slate-100 transition-colors`}>
-                                {isInfoExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="p-2 rounded-lg bg-blue-100/70 text-blue-600 shrink-0">
+                                    <Info className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                        Fees &amp; How the Schedule Works
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                                        {isInfoExpanded
+                                            ? 'Tap to hide details'
+                                            : 'Tap to see maintenance fees, turn timing, and draft rules'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${isInfoExpanded ? 'bg-slate-200 text-slate-700' : 'bg-white border border-slate-200 text-slate-600 group-hover:bg-slate-200 group-hover:border-slate-300'}`}>
+                                <span className="hidden sm:inline">{isInfoExpanded ? 'Hide' : 'Show more'}</span>
+                                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isInfoExpanded ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
 
-                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-300 ease-in-out overflow-hidden ${isInfoExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div
+                            id="schedule-info-panel"
+                            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6 transition-all duration-300 ease-in-out overflow-hidden ${isInfoExpanded ? 'max-h-[1200px] opacity-100 pt-2 pb-6' : 'max-h-0 opacity-0'}`}>
                             <div className="flex items-start gap-3">
                                 <div className="p-2 bg-blue-100/50 text-blue-600 rounded-lg shrink-0">
                                     <RotateCw className="w-5 h-5" />

@@ -19,6 +19,8 @@ import { SeasonSchedule } from '../components/SeasonSchedule';
 import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
     .then(module => ({ default: module.BookingDetailsModal })));
+const FeedbackModal = React.lazy(() => import('../../feedback/components/FeedbackModal')
+    .then(module => ({ default: module.FeedbackModal })));
 import { TrailerGuide } from '../components/TrailerGuide';
 import { LakeCowichanEvents } from '../components/LakeCowichanEvents';
 import { ShareholderHero } from '../components/ShareholderHero';
@@ -834,6 +836,13 @@ export function Dashboard() {
                         )
                     }
 
+
+                    {/* Feedback Modal */}
+                    <FeedbackModal
+                        isOpen={isFeedbackOpen}
+                        onClose={() => setIsFeedbackOpen(false)}
+                        shareholderName={loggedInShareholder}
+                    />
 
                     {/* Booking Details Modal Overlay */}
                     {
