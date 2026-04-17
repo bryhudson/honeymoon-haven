@@ -1,8 +1,16 @@
 #!/bin/bash
 set -e
 
+YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+
+# Warn (don't block) on a dirty tree — dev is a sandbox, but divergence is easy to lose track of.
+if [ -n "$(git status --porcelain)" ]; then
+  echo -e "${YELLOW}⚠ Working tree is dirty. Dev bundle will include uncommitted changes.${NC}"
+  git status --short
+  echo ""
+fi
 
 echo -e "${GREEN}Building for development (dev Firebase project)...${NC}"
 npx vite build --mode development

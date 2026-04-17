@@ -11,6 +11,14 @@ echo -e "${YELLOW}Target: hhr-trailer-booking (LIVE)${NC}"
 echo -e "${YELLOW}URL:    https://hhr-trailer-booking.web.app${NC}"
 echo ""
 
+# Refuse to deploy a dirty tree — prod must always match git.
+if [ -n "$(git status --porcelain)" ]; then
+  echo -e "${RED}✗ Working tree is dirty. Commit, stash, or discard before a prod deploy.${NC}"
+  echo ""
+  git status --short
+  exit 1
+fi
+
 # Preview next version
 CURRENT_VERSION=$(node -p "require('./package.json').version")
 NEXT_VERSION=$(node -p "const v=require('./package.json').version.split('.');v[2]=+v[2]+1;v.join('.')")

@@ -26,7 +26,7 @@ Runtime detection:
 
 Run before either script:
 
-1. `git status` — working tree clean or intentionally staged
+1. `git status` — **prod requires a clean tree** (the script hard-fails on any uncommitted/untracked change so the bundle always matches git). Dev tolerates a dirty tree but warns.
 2. `npm run lint` — zero errors
 3. `npm test` — all Vitest passing
 4. `.env.development` and `.env.production` both present (build will white-screen without them)
