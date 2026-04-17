@@ -11,19 +11,30 @@ export function PromptModal({
     defaultValue = "",
     confirmText = "Confirm",
     cancelText = "Cancel",
-    inputType = "text"
+    inputType = "text",
+    requireConfirmation = false,
+    confirmPlaceholder = "Confirm"
 }) {
     const [value, setValue] = useState(defaultValue);
+    const [confirmValue, setConfirmValue] = useState("");
+    const [error, setError] = useState("");
 
-    // Reset value when modal opens
     useEffect(() => {
         if (isOpen) {
             setValue(defaultValue);
+            setConfirmValue("");
+            setError("");
         }
     }, [isOpen, defaultValue]);
 
+    const mismatch = requireConfirmation && confirmValue.length > 0 && value !== confirmValue;
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (requireConfirmation && value !== confirmValue) {
+            setError("Values do not match.");
+            return;
+        }
         onConfirm(value);
         onClose();
     };
@@ -44,11 +55,21 @@ export function PromptModal({
                     <input
                         type={inputType}
                         value={value}
-                        onChange={(e) => setValue(e.target.value)}
+                        onChange={(e) => { setValue(e.target.value); setError(""); }}
                         placeholder={placeholder}
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium text-slate-900"
                         autoFocus
                     />
+                    {requireConfirmation && (
+                        <input
+                            type={inputType}
+                            value={confirmValue}
+                            onChange={(e) => { setConfirmValue(e.target.value); setError(""); }}
+                            placeholder={confirmPlaceholder}
+                            className={`w-full px-3 py-2 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all font-medium text-slate-900 ${mismatch ? "border-red-300 focus:ring-red-500/20" : "border-slate-200 focus:ring-indigo-500/20"}`}
+                        />
+                    )}
+                    {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
                 </div>
 
                 <div className="flex gap-3 pt-2">
@@ -61,7 +82,8 @@ export function PromptModal({
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-600/10 transition-all bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+                        disabled={requireConfirmation && (!value || value !== confirmValue)}
+                        className="flex-1 py-3.5 font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-600/10 transition-all bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed text-white text-xs"
                     >
                         {confirmText}
                     </button>
