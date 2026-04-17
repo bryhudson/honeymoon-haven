@@ -29,6 +29,14 @@ const FESTIVALS = [
         color: "rose"
     },
     {
+        name: "Rock on the Dock",
+        dates: "Summer 2026 — check Facebook for dates",
+        location: "Youbou, Lake Cowichan",
+        description: "Community lakeside music festival at the Youbou dock. Live local bands, food, and that perfect small-town Youbou atmosphere. Follow the Facebook page for the latest lineup and dates.",
+        url: "https://www.facebook.com/rockonthedockyoubou/",
+        color: "cyan"
+    },
+    {
         name: "Cowichan Valley Wine Festival",
         dates: "August 1 - 31, 2026",
         location: "Cowichan Valley Wineries",
@@ -220,6 +228,7 @@ function FestivalCard({ festival }) {
         amber: { bg: "bg-amber-50", border: "border-amber-200", badge: "bg-amber-100 text-amber-700", accent: "text-amber-600" },
         rose: { bg: "bg-rose-50", border: "border-rose-200", badge: "bg-rose-100 text-rose-700", accent: "text-rose-600" },
         purple: { bg: "bg-purple-50", border: "border-purple-200", badge: "bg-purple-100 text-purple-700", accent: "text-purple-600" },
+        cyan: { bg: "bg-cyan-50", border: "border-cyan-200", badge: "bg-cyan-100 text-cyan-700", accent: "text-cyan-600" },
     };
     const c = colorMap[festival.color] || colorMap.amber;
 
