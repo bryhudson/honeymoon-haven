@@ -137,12 +137,14 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         onSave(updated);
     };
 
+    const isNewForSkipped = !!booking?._isNewBookingForSkipped;
+
     return (
         <BaseModal
             isOpen={isOpen}
             onClose={onClose}
-            title="Edit Booking"
-            description="Adjust details for this specific reservation"
+            title={isNewForSkipped ? `Book Dates for ${booking?.shareholderName || ''}` : "Edit Booking"}
+            description={isNewForSkipped ? "Admin override: booking on behalf of a skipped shareholder" : "Adjust details for this specific reservation"}
             maxSize="max-w-lg"
         >
             <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 text-xs text-slate-600 space-y-2 mb-6">
@@ -327,7 +329,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/10'
                             }`}
                     >
-                        Save Changes
+                        {isNewForSkipped ? 'Create Booking' : 'Save Changes'}
                     </button>
                 </div>
             </form>

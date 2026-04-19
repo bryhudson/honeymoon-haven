@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Ban, DollarSign, Bell } from 'lucide-react';
+import { Edit, Ban, DollarSign, Bell, Calendar } from 'lucide-react';
 import { MenuDropdown } from '../../../components/ui/MenuDropdown';
 
 export function ActionsDropdown({
@@ -12,9 +12,17 @@ export function ActionsDropdown({
     isPaid,
     onEditPayment,
     onSendReminder,
-    onRemindToBook
+    onRemindToBook,
+    onBookDates
 }) {
     const items = [
+        {
+            label: "Book Dates",
+            icon: Calendar,
+            onClick: onBookDates,
+            hidden: !onBookDates,
+            className: "text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+        },
         {
             label: "Edit Details",
             icon: Edit,

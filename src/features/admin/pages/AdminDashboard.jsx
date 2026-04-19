@@ -5,7 +5,7 @@ import { CABIN_OWNERS, getShareholderOrder, mapOrderToSchedule, normalizeName, f
 import { emailService } from '../../../services/emailService';
 import { db, functions } from '../../../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { collection, getDocs, writeBatch, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, deleteField, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, updateDoc, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, deleteField, getDoc, Timestamp } from 'firebase/firestore';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { format, differenceInDays } from 'date-fns';
 import { List, Calendar, Users, CheckCircle, XCircle, Mail, Download, Settings, Bell, PlusCircle } from 'lucide-react';
@@ -231,8 +231,48 @@ export function AdminDashboard() {
     };
 
     const handleSaveEdit = async (updated) => {
-        try { const { id, ...data } = updated; await updateDoc(doc(db, "bookings", id), data); setIsEditModalOpen(false); setEditingBooking(null); triggerAlert("Success", "Updated."); }
+        try {
+            const { id, _isNewBookingForSkipped, ...data } = updated;
+            if (_isNewBookingForSkipped) {
+                const now = new Date();
+                await addDoc(collection(db, "bookings"), {
+                    ...data,
+                    type: 'booking',
+                    uid: currentUser?.uid || null,
+                    isFinalized: true,
+                    isPaid: false,
+                    createdAt: now,
+                    phase: `ROUND_${data.round}`,
+                    adminBookedOnBehalf: true,
+                    adminBackfilled: true,
+                    adminBookedBy: currentUser?.email || null,
+                    adminBookedAt: now
+                });
+                setIsEditModalOpen(false);
+                setEditingBooking(null);
+                triggerAlert("Success", "Booking created. Payment reminders will follow the normal schedule.");
+                return;
+            }
+            await updateDoc(doc(db, "bookings", id), data);
+            setIsEditModalOpen(false);
+            setEditingBooking(null);
+            triggerAlert("Success", "Updated.");
+        }
         catch (e) { triggerAlert("Error", "Failed."); }
+    };
+
+    const handleBookSkippedSlot = (slot) => {
+        const owner = CABIN_OWNERS.find(o => normalizeName(o.name) === normalizeName(slot.name));
+        setEditingBooking({
+            _isNewBookingForSkipped: true,
+            shareholderName: slot.name,
+            cabinNumber: owner?.cabin ? String(owner.cabin) : '',
+            round: slot.round,
+            guests: 1,
+            from: null,
+            to: null
+        });
+        setIsEditModalOpen(true);
     };
 
     // Handlers: User Actions
@@ -516,7 +556,7 @@ export function AdminDashboard() {
             {activeTab === 'bookings' && (
                 <div className="space-y-6">
                     <AdminStatsGrid analytics={analytics} />
-                    <AdminBookingManagement schedule={schedule} allBookings={allBookings} bookingViewMode={bookingViewMode} setBookingViewMode={setBookingViewMode} handleEditClick={(b) => { setEditingBooking(b); setIsEditModalOpen(true); }} handleCancelBooking={handleCancelBooking} handleToggleFinalized={handleToggleFinalized} handleTogglePaid={handleTogglePaid} handleEditPayment={handleEditPayment} handleSendPaymentReminder={handleSendPaymentReminder} triggerAlert={triggerAlert} />
+                    <AdminBookingManagement schedule={schedule} allBookings={allBookings} bookingViewMode={bookingViewMode} setBookingViewMode={setBookingViewMode} handleEditClick={(b) => { setEditingBooking(b); setIsEditModalOpen(true); }} handleCancelBooking={handleCancelBooking} handleToggleFinalized={handleToggleFinalized} handleTogglePaid={handleTogglePaid} handleEditPayment={handleEditPayment} handleSendPaymentReminder={handleSendPaymentReminder} handleBookSkippedSlot={handleBookSkippedSlot} triggerAlert={triggerAlert} />
                 </div>
             )}
 

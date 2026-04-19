@@ -192,11 +192,18 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
         const action = userActions[bookingIndex];
 
         if (action) {
-            let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
-            if (!actionTime) actionTime = currentWindowStart;
-            let pTime = actionTime instanceof Date ? actionTime : (actionTime && actionTime.toDate ? actionTime.toDate() : new Date(actionTime || 0));
-            if (!isNaN(pTime.getTime())) {
-                currentWindowStart = startAnchor(pTime);
+            if (action.adminBackfilled) {
+                // Admin manually filled a previously skipped slot. Don't let this
+                // retroactively shift rotation timing; advance as if still SKIPPED.
+                const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);
+                currentWindowStart = startAnchor(windowLimit);
+            } else {
+                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
+                if (!actionTime) actionTime = currentWindowStart;
+                let pTime = actionTime instanceof Date ? actionTime : (actionTime && actionTime.toDate ? actionTime.toDate() : new Date(actionTime || 0));
+                if (!isNaN(pTime.getTime())) {
+                    currentWindowStart = startAnchor(pTime);
+                }
             }
         } else {
             const windowLimit = new Date(currentWindowStart.getTime() + PICK_DURATION_MS);
@@ -282,12 +289,22 @@ function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = nul
             } else {
                 status = action.type === 'pass' ? 'PASSED' : 'COMPLETED';
             }
-            let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
-            if (!actionTime) actionTime = windowStart;
-            const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
-            windowEnd = pTime instanceof Date && !isNaN(pTime.getTime()) ? pTime : new Date();
-            lastCompletionTime = windowEnd;
-            currentWindowStart = startAnchor(windowEnd);
+
+            if (action.adminBackfilled) {
+                // Admin manually filled a previously skipped slot. Don't let this
+                // retroactively shift rotation timing; advance as if still SKIPPED.
+                const projectedLimit = new Date(windowStart.getTime() + PICK_DURATION_MS);
+                windowEnd = projectedLimit;
+                lastCompletionTime = projectedLimit;
+                currentWindowStart = startAnchor(projectedLimit);
+            } else {
+                let actionTime = (action.type === 'cancelled' && action.cancelledAt) ? action.cancelledAt : (action.createdAt || action.from);
+                if (!actionTime) actionTime = windowStart;
+                const pTime = actionTime?.toDate ? actionTime.toDate() : new Date(actionTime);
+                windowEnd = pTime instanceof Date && !isNaN(pTime.getTime()) ? pTime : new Date();
+                lastCompletionTime = windowEnd;
+                currentWindowStart = startAnchor(windowEnd);
+            }
         } else {
             const now = new Date();
             const projectedLimit = new Date(windowStart.getTime() + PICK_DURATION_MS);

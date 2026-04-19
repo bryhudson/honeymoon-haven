@@ -22,6 +22,7 @@ export function AdminBookingManagement({
     handleTogglePaid,
     handleEditPayment,
     handleSendPaymentReminder,
+    handleBookSkippedSlot,
     triggerAlert
 }) {
     const { currentUser } = useAuth();
@@ -183,6 +184,11 @@ export function AdminBookingManagement({
                         />
                     </div>
                 )}
+                {!isSlotBooked && slot.status === 'SKIPPED' && handleBookSkippedSlot && (
+                    <div className="flex justify-end px-5 pb-4 pt-1 border-t border-slate-50">
+                        <ActionsDropdown onBookDates={() => handleBookSkippedSlot(slot)} />
+                    </div>
+                )}
             </div>
         );
     };
@@ -223,7 +229,13 @@ export function AdminBookingManagement({
                     <td className="px-5 py-4 text-center text-slate-300">—</td>
                     <td className="px-5 py-4 text-center text-slate-300">—</td>
                     <td className="px-5 py-4 text-slate-300">—</td>
-                    <td className="px-5 py-4 text-right text-slate-300">—</td>
+                    <td className="px-5 py-4 text-right">
+                        {slot.status === 'SKIPPED' && handleBookSkippedSlot ? (
+                            <ActionsDropdown onBookDates={() => handleBookSkippedSlot(slot)} />
+                        ) : (
+                            <span className="text-slate-300">—</span>
+                        )}
+                    </td>
                 </tr>
             );
         }
