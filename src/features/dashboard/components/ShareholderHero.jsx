@@ -535,32 +535,69 @@ export function ShareholderHero({
 
         const previousActions = myActions.slice(0, -1);
 
-        return previousActions.length > 0 ? (
-            <div className="flex flex-col gap-4">
-                {hero}
-                <div className="mt-4">
-                    <button
-                        onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                        className="w-full flex items-center justify-between pb-3 border-b border-slate-200 group focus:outline-none"
-                    >
-                        <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-slate-100 rounded-md group-hover:bg-slate-200 transition-colors">
-                                <History className="w-4 h-4 text-slate-600" />
-                            </div>
-                            <span className="text-sm font-bold text-slate-700">Booking History</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
-                            <span>{isHistoryExpanded ? 'HIDE' : `SHOW (${previousActions.length})`}</span>
-                        </div>
-                    </button>
-                    {isHistoryExpanded && (
-                        <div className="flex flex-col mt-3">
-                            {previousActions.map((action, idx) => renderPastAction(action, idx))}
-                        </div>
-                    )}
+        // Secondary strip: surface next-turn info for users who've completed current round
+        // but still have an upcoming turn (typically R2 after R1 confirmed booking).
+        const nextRoundSchedule = status.schedule?.find(s =>
+            normalizeName(s.name) === normalizedMe && s.round === (queueInfo?.round || 2)
+        );
+        const nextRoundStartRaw = nextRoundSchedule?.officialStart || nextRoundSchedule?.start;
+        const nextRoundStart = nextRoundStartRaw
+            ? (nextRoundStartRaw.toDate ? nextRoundStartRaw.toDate() : new Date(nextRoundStartRaw))
+            : null;
+        const showNextTurnStrip =
+            !(isPassed || isSkipped || isCancelled) &&
+            queueInfo?.diff > 0 &&
+            status.phase !== 'OPEN_SEASON';
+
+        const nextTurnStrip = showNextTurnStrip ? (
+            <div className="rounded-xl bg-gradient-to-r from-indigo-50 to-sky-50 border border-indigo-200 px-4 py-3 flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                    <Compass className="w-4 h-4 text-indigo-700" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-slate-800">
+                        {queueInfo.round === 2
+                            ? `Round 2 ${nextRoundStart ? `opens ${format(nextRoundStart, "MMM d 'at' h:mm a")}` : 'coming up'}`
+                            : 'Your next turn is coming up'}
+                    </div>
+                    <div className="text-xs text-slate-600 mt-0.5">
+                        {queueInfo.diff === 1
+                            ? 'You are up next'
+                            : `You are #${getOrdinal(queueInfo.diff)} in the queue`}
+                    </div>
                 </div>
             </div>
-        ) : hero;
+        ) : null;
+
+        return (
+            <div className="flex flex-col gap-4">
+                {hero}
+                {nextTurnStrip}
+                {previousActions.length > 0 && (
+                    <div className="mt-4">
+                        <button
+                            onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                            className="w-full flex items-center justify-between pb-3 border-b border-slate-200 group focus:outline-none"
+                        >
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-slate-100 rounded-md group-hover:bg-slate-200 transition-colors">
+                                    <History className="w-4 h-4 text-slate-600" />
+                                </div>
+                                <span className="text-sm font-bold text-slate-700">Booking History</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
+                                <span>{isHistoryExpanded ? 'HIDE' : `SHOW (${previousActions.length})`}</span>
+                            </div>
+                        </button>
+                        {isHistoryExpanded && (
+                            <div className="flex flex-col mt-3">
+                                {previousActions.map((action, idx) => renderPastAction(action, idx))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
     }
 
     // 7. WAITING IN LINE
