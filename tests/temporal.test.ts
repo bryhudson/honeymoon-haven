@@ -34,7 +34,7 @@ function getTargetPstTime(baseDate: Date, targetHour: number, daysOffset: number
 describe('Temporal Logic & DST Boundaries', () => {
     it('calculates official start correctly during Standard Time', () => {
         // e.g. Feb 1, 2026 5:00 AM UTC (Feb 1 9:00 PM PST previous day)
-        // Wait, DRAFT_CONFIG.START_DATE is Mar 1, 2026.
+        // Note: DRAFT_CONFIG.START_DATE is April 14, 2026.
         const baseDate = new Date('2026-02-01T15:00:00Z'); // 7:00 AM PST
         const start = getOfficialStart(baseDate);
         expect(start!.toISOString()).toBe('2026-02-01T18:00:00.000Z'); // 10:00 AM PST is 18:00 UTC

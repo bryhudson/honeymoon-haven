@@ -5,6 +5,7 @@ import { format, addWeeks, addDays, differenceInCalendarDays, eachDayOfInterval,
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG } from '../../../lib/shareholders';
+import { isHoliday, isEventDay, getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { db } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
@@ -103,7 +104,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     });
 
     // Calendar View State (Fix for stuck navigation)
-    const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // Default to March 2026
+    const [currentMonth, setCurrentMonth] = useState(new Date(2026, 4)); // Default to May 2026
 
     // Hydrate form if editing
     useEffect(() => {
@@ -142,8 +143,8 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     // Email service initialized in services/emailService.js
 
     // --- CONFIGURATION ---
-    const SEASON_START = new Date(2026, 2, 1); // March 1, 2026
-    const SEASON_END = new Date(2026, 9, 31);  // Oct 31, 2026
+    const SEASON_START = new Date(2026, 4, 1); // May 1, 2026
+    const SEASON_END = new Date(2026, 8, 30);  // Sept 30, 2026
 
     const isBooked = (day) => {
         try {
@@ -164,6 +165,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
     const isOutsideSeason = (day) => {
         return day < SEASON_START || day > SEASON_END;
+    };
+
+    const isPast = (day) => {
+        return startOfDay(day) < startOfDay(new Date());
     };
 
     const handleInputChange = (e) => {
@@ -441,7 +446,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             {step === 3 && "Review & Confirm"}
                         </h2>
                         <p className="text-xs md:text-sm text-muted-foreground font-medium mt-1">
-                            {step === 1 && <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> Mar 1 - Oct 31</span>}
+                            {step === 1 && <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> May 1 - Sep 30</span>}
                             {step === 2 && <span>Max 6 guests per booking</span>}
                             {step === 3 && <span>Guest: <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>}
                             {isSuccess && <span>Booking Complete!</span>}
@@ -487,14 +492,43 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                         onSelect={handleSelectRange}
                                         numberOfMonths={1}
                                         pagedNavigation
-                                        disabled={date => isBooked(date) || isOutsideSeason(date)}
+                                        disabled={date => isBooked(date) || isOutsideSeason(date) || isPast(date)}
                                         modifiers={{
                                             booked: isBooked,
-                                            outsideSeason: isOutsideSeason
+                                            outsideSeason: isOutsideSeason,
+                                            past: isPast,
+                                            holiday: isHoliday,
+                                            event: isEventDay
                                         }}
                                         modifiersStyles={{
                                             booked: { textDecoration: 'line-through', color: 'gray' },
-                                            outsideSeason: { opacity: 0.5 }
+                                            outsideSeason: { opacity: 0.5 },
+                                            past: { opacity: 0.4, color: '#94a3b8' },
+                                            holiday: { backgroundColor: '#fef2f2', color: '#b91c1c', boxShadow: 'inset 0 0 0 1px #fecaca' },
+                                            event: { backgroundColor: '#faf5ff', color: '#7e22ce', boxShadow: 'inset 0 0 0 1px #e9d5ff' }
+                                        }}
+                                        components={{
+                                            DayButton: (props) => {
+                                                const d = props.day?.date;
+                                                const holiday = d ? getHolidayForDate(d) : undefined;
+                                                const events = d ? getEventsForDate(d) : [];
+                                                const hasInfo = holiday || events.length > 0;
+                                                const tooltip = [
+                                                    holiday?.name,
+                                                    ...events.map(e => e.subtitle ? `${e.name} — ${e.subtitle}` : e.name)
+                                                ].filter(Boolean).join(' · ');
+                                                return (
+                                                    <button {...props} title={hasInfo ? tooltip : undefined} style={{ ...(props.style || {}), position: 'relative' }}>
+                                                        {props.children}
+                                                        {hasInfo && (
+                                                            <span style={{ position: 'absolute', top: 2, right: 2, display: 'flex', gap: 1 }}>
+                                                                {holiday && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#ef4444' }} />}
+                                                                {events.length > 0 && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#a855f7' }} />}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            }
                                         }}
                                         className="p-0 border-0"
                                         styles={{

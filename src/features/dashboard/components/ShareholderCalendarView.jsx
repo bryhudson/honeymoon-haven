@@ -1,48 +1,15 @@
 import React from 'react';
-import { format, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay, isWithinInterval, isSameDay } from 'date-fns';
-
-// 2026 Canadian Statutory Holidays (BC) within the March-October season
-const CANADIAN_HOLIDAYS_2026 = [
-    { date: new Date(2026, 2, 30), name: 'Good Friday' },
-    { date: new Date(2026, 4, 18), name: 'Victoria Day' },
-    { date: new Date(2026, 6, 1),  name: 'Canada Day 🇨🇦' },
-    { date: new Date(2026, 7, 3),  name: 'BC Day' },
-    { date: new Date(2026, 8, 7),  name: 'Labour Day' },
-    { date: new Date(2026, 8, 30), name: 'National Day for Truth & Reconciliation' },
-    { date: new Date(2026, 9, 12), name: 'Thanksgiving' },
-];
-
-// 2026 Summer Festivals & Events in the Cowichan Valley
-const SUMMER_EVENTS_2026 = [
-    {
-        name: 'Cowichan Valley Bluegrass Festival',
-        subtitle: '25th Anniversary!',
-        from: new Date(2026, 5, 19), // June 19
-        to: new Date(2026, 5, 21),   // June 21
-        location: 'Laketown Ranch',
-        color: 'purple',
-    },
-    {
-        name: 'Sunfest Country Music Festival',
-        from: new Date(2026, 6, 30), // July 30
-        to: new Date(2026, 7, 2),    // August 2
-        location: 'Laketown Ranch',
-        color: 'purple',
-    },
-
-];
+import { format, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay, isWithinInterval } from 'date-fns';
+import { getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 
 export function ShareholderCalendarView({ bookings }) {
-    // 2026 Season: March - October
+    // 2026 Season: May - September
     const months = [
-        new Date(2026, 2, 1), // March
-        new Date(2026, 3, 1), // April
         new Date(2026, 4, 1), // May
         new Date(2026, 5, 1), // June
         new Date(2026, 6, 1), // July
         new Date(2026, 7, 1), // Aug
         new Date(2026, 8, 1), // Sept
-        new Date(2026, 9, 1), // Oct
     ];
 
     // Helper to find booking for a specific date
@@ -54,18 +21,6 @@ export function ShareholderCalendarView({ bookings }) {
             const end = b.to instanceof Date ? b.to : b.to.toDate ? b.to.toDate() : new Date(b.to);
             return isWithinInterval(startOfDay(date), { start: startOfDay(start), end: startOfDay(end) });
         });
-    };
-
-    // Helper to find holiday for a specific date
-    const getHolidayForDate = (date) => {
-        return CANADIAN_HOLIDAYS_2026.find(h => isSameDay(h.date, date));
-    };
-
-    // Helper to find events overlapping a specific date
-    const getEventsForDate = (date) => {
-        return SUMMER_EVENTS_2026.filter(e =>
-            isWithinInterval(startOfDay(date), { start: startOfDay(e.from), end: startOfDay(e.to) })
-        );
     };
 
     const renderMonth = (monthDate) => {

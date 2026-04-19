@@ -4,16 +4,13 @@ import { emailService } from '../../../services/emailService';
 export const sendCalendarEmailSnapshot = async (bookings, recipient, onNotify) => {
     if (!recipient) return;
 
-    // 2026 Season: March - October
+    // 2026 Season: May - September
     const months = [
-        new Date(2026, 2, 1), // March
-        new Date(2026, 3, 1), // April
         new Date(2026, 4, 1), // May
         new Date(2026, 5, 1), // June
         new Date(2026, 6, 1), // July
         new Date(2026, 7, 1), // Aug
         new Date(2026, 8, 1), // Sept
-        new Date(2026, 9, 1), // Oct
     ];
 
     // Helper to find booking for a specific date
