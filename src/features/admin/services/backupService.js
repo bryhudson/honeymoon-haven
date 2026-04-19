@@ -8,7 +8,7 @@ import { CABIN_OWNERS, normalizeName } from '../../../lib/shareholders';
  * Collection Path: _backups/{timestamp_id}/bookings/{bookingId}
  * @returns {Promise<string>} The backup ID (timestamp string)
  */
-export const backupBookingsToFirestore = async () => {
+export const backupBookingsToFirestore = async (type = 'manual_wipe_safety') => {
     try {
         const bookingsRef = collection(db, 'bookings');
         const snapshot = await getDocs(bookingsRef);
@@ -47,7 +47,7 @@ export const backupBookingsToFirestore = async () => {
             createdAt: serverTimestamp(),
             timestampId,
             count: snapshot.size,
-            type: 'manual_wipe_safety'
+            type
         });
         chunks.push(metaBatch);
 

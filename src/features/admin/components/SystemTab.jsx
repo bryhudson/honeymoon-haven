@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Trash2, Zap, Mail } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { useAuth } from '../../auth/AuthContext';
-import { getAvailableBackups, restoreBackup, deleteBackup } from '../services/backupService';
+import { getAvailableBackups, restoreBackup, deleteBackup, backupBookingsToFirestore } from '../services/backupService';
 import { IS_PROD, IS_DEV_ENV, PROJECT_ID } from '../../../lib/env';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
@@ -127,6 +127,7 @@ export function SystemTab({
                 <RecoveryZone
                     restoreBackup={restoreBackup}
                     getAvailableBackups={getAvailableBackups}
+                    backupBookingsToFirestore={backupBookingsToFirestore}
                     triggerAlert={triggerAlert || console.log}
                 />
             </div>
@@ -134,12 +135,30 @@ export function SystemTab({
     );
 }
 
-function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
+function RecoveryZone({ restoreBackup, getAvailableBackups, backupBookingsToFirestore, triggerAlert }) {
     const { currentUser, reauthenticateUser } = useAuth();
     const [backups, setBackups] = useState([]);
     const [selectedBackups, setSelectedBackups] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isBackingUp, setIsBackingUp] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete', id, count, isBulk }
+
+    const handleForceBackup = async () => {
+        setIsBackingUp(true);
+        try {
+            const id = await backupBookingsToFirestore('manual_force');
+            if (id) {
+                triggerAlert('Success', `Backup created: ${id}`);
+                loadBackups();
+            } else {
+                triggerAlert('No Bookings', 'Nothing to back up (bookings collection is empty).');
+            }
+        } catch (e) {
+            triggerAlert('Error', e.message || 'Backup failed.');
+        } finally {
+            setIsBackingUp(false);
+        }
+    };
 
     const loadBackups = async () => {
         setIsLoading(true);
@@ -214,14 +233,23 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
 
     return (
         <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                 <div>
                     <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Data Recovery Zone</h3>
-                    <p className="text-sm text-slate-500">Restore points created automatically before wipes or via weekly schedule.</p>
+                    <p className="text-sm text-slate-500">Restore points created automatically before wipes, every Sunday at 11 PM PST, or on-demand via Force Backup.</p>
                 </div>
-                <button onClick={loadBackups} className="text-indigo-600 text-xs font-bold hover:underline">
-                    ↻ Refresh List
-                </button>
+                <div className="flex items-center gap-3 shrink-0">
+                    <button
+                        onClick={handleForceBackup}
+                        disabled={isBackingUp}
+                        className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                    >
+                        {isBackingUp ? 'Backing up...' : '⬇ Force Backup'}
+                    </button>
+                    <button onClick={loadBackups} className="text-indigo-600 text-xs font-bold hover:underline">
+                        ↻ Refresh List
+                    </button>
+                </div>
             </div>
 
             {/* Bulk Action Bar */}
@@ -278,7 +306,7 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, triggerAlert }) {
                                     <div>
                                         <p className="font-mono text-xs font-bold text-slate-700">{b.timestampId}</p>
                                         <p className="text-[10px] text-slate-500">
-                                            {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : b.type === 'scheduled_weekly' ? 'Weekly Scheduled Backup' : 'Manual'}
+                                            {b.count} bookings • {b.type === 'manual_wipe_safety' ? 'Safety Auto-Archive' : b.type === 'scheduled_weekly' ? 'Weekly Scheduled Backup' : b.type === 'manual_force' ? 'Manual Force Backup' : 'Manual'}
                                         </p>
                                     </div>
                                 </div>
