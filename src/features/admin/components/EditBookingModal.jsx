@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
-import { Calendar, User, Users, Home, Clock, Info, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
+import { Calendar, User, Users, Home, Clock, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
 import { CABIN_OWNERS } from '../../../lib/shareholders';
 import { calculateBookingCost } from '../../../lib/pricing';
 import { db } from '../../../lib/firebase';
@@ -48,7 +48,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         }
 
         if (parseInt(formData.guests) > 6) {
-            setError("Max 6 guests permitted (Total 8 occupants).");
+            setError("Max 6 guests permitted.");
             return;
         }
 
@@ -147,22 +147,6 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
             description={isNewForSkipped ? "Admin override: booking on behalf of a skipped shareholder" : "Adjust details for this specific reservation"}
             maxSize="max-w-lg"
         >
-            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 text-xs text-slate-600 space-y-2 mb-6">
-                <div className="flex gap-2">
-                    <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                    <div className="space-y-2">
-                        <p>
-                            <span className="font-bold text-blue-700 block mb-0.5">Overnight Policy:</span>
-                            You are permitted a maximum of 8 people (including yourself and your family).
-                        </p>
-                        <p>
-                            <span className="font-bold text-blue-700 block mb-0.5">Daytime Policy:</span>
-                            You can have "day gatherings" of up to 10 people (including yourself and family) without needing special permission.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                     {/* Shareholder */}
@@ -213,7 +197,7 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all"
                             />
-                            <p className="text-[10px] text-slate-400 font-medium px-1">Max 6 (Total 8 occupants)</p>
+                            <p className="text-[10px] text-slate-400 font-medium px-1">Max 6 guests</p>
                         </div>
                     </div>
 
