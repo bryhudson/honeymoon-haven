@@ -43,6 +43,9 @@ export function LiveTurnMonitor() {
 
     // Calculate Expected Times
     const getExpectedTime = (type) => {
+        // Early Access is event-driven (fires when the previous picker finishes),
+        // so there is no fixed scheduled time to compare against.
+        if (type === 'earlyAccess') return null;
         if (!windowStarts) return null;
         const d = new Date(windowStarts);
         switch (type) {
@@ -255,12 +258,28 @@ export function LiveTurnMonitor() {
                         ))
                     ) : (
                         <>
-                            {renderChecklistItem('lastTurnStartSent', 'turnStarted', '1. Turn Started (Day 1 - 10 AM)')}
-                            {renderChecklistItem('sameDayEveningSent', 'evening', '2. Day 1 Evening (7 PM)')}
-                            {renderChecklistItem('nextDayMorningSent', 'day2', '3. Day 2 Morning (9 AM)')}
-                            {renderChecklistItem('nextDayEveningSent', 'evening2', '4. Day 2 Evening (7 PM)')}
-                            {renderChecklistItem('finalMorning6amSent', 'final6am', '5. Day 3 Morning (6 AM)')}
-                            {renderChecklistItem('finalMorning9amSent', 'final9am', '6. Day 3 Urgent (9 AM)')}
+                            {(() => {
+                                // Early Access row appears only once the early-access email has fired.
+                                // When present, the "Turn Started (10 AM)" row reads officialStartSent
+                                // instead of lastTurnStartSent so its timestamp reflects the 10 AM email.
+                                const hasEarlyAccess = log.isEarlyAccess === true && !!log.lastTurnStartSent;
+                                const steps = [
+                                    ...(hasEarlyAccess
+                                        ? [{ timestampKey: 'lastTurnStartSent', type: 'earlyAccess', label: 'Early Access Started' }]
+                                        : []),
+                                    { timestampKey: hasEarlyAccess ? 'officialStartSent' : 'lastTurnStartSent', type: 'turnStarted', label: 'Turn Started (Day 1 - 10 AM)' },
+                                    { timestampKey: 'sameDayEveningSent', type: 'evening', label: 'Day 1 Evening (7 PM)' },
+                                    { timestampKey: 'nextDayMorningSent', type: 'day2', label: 'Day 2 Morning (9 AM)' },
+                                    { timestampKey: 'nextDayEveningSent', type: 'evening2', label: 'Day 2 Evening (7 PM)' },
+                                    { timestampKey: 'finalMorning6amSent', type: 'final6am', label: 'Day 3 Morning (6 AM)' },
+                                    { timestampKey: 'finalMorning9amSent', type: 'final9am', label: 'Day 3 Urgent (9 AM)' },
+                                ];
+                                return steps.map((step, i) => (
+                                    <React.Fragment key={step.type}>
+                                        {renderChecklistItem(step.timestampKey, step.type, `${i + 1}. ${step.label}`)}
+                                    </React.Fragment>
+                                ));
+                            })()}
                         </>
                     )}
                 </div>
