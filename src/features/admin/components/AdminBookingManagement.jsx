@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 import { List, Calendar as CalendarIcon, Users, CheckCircle, XCircle, Ban, StickyNote } from 'lucide-react';
 import { ActionsDropdown } from './ActionsDropdown';
@@ -6,10 +6,7 @@ import { AdminCalendarView } from './AdminCalendarView';
 import { CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { calculateBookingCost } from '../../../lib/pricing';
 import { exportBookingsToCSV } from '../services/backupService';
-import { sendCalendarEmailSnapshot } from '../services/emailSnapshotService';
-import { PromptModal } from '../../../components/ui/PromptModal';
-import { useAuth } from '../../auth/AuthContext';
-import { Download, Mail } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 export function AdminBookingManagement({
     schedule,
@@ -25,9 +22,6 @@ export function AdminBookingManagement({
     handleBookSkippedSlot,
     triggerAlert
 }) {
-    const { currentUser } = useAuth();
-    const [isPromptOpen, setIsPromptOpen] = useState(false);
-
     const handleDownloadCSV = () => {
         try {
             exportBookingsToCSV(allBookings);
@@ -35,11 +29,6 @@ export function AdminBookingManagement({
             console.error("CSV Export Error:", err);
             triggerAlert("Error", "Failed to export CSV");
         }
-    };
-
-    const handleSendEmail = async (recipient) => {
-        setIsPromptOpen(false);
-        await sendCalendarEmailSnapshot(allBookings, recipient, triggerAlert);
     };
 
     // Helper for payment status style
@@ -383,16 +372,6 @@ export function AdminBookingManagement({
                                 <span className="hidden sm:inline">Export</span>
                             </div>
                         </button>
-                        <button
-                            onClick={() => setIsPromptOpen(true)}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/50`}
-                            title="Email Snapshot"
-                        >
-                            <div className="flex items-center gap-2">
-                                <Mail className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Email</span>
-                            </div>
-                        </button>
                     </div>
 
                     <div className="h-6 w-px bg-slate-200 hidden sm:block mx-1"></div>
@@ -465,15 +444,6 @@ export function AdminBookingManagement({
                 </div>
             )}
 
-            <PromptModal
-                isOpen={isPromptOpen}
-                onClose={() => setIsPromptOpen(false)}
-                onConfirm={handleSendEmail}
-                title="Email Calendar View"
-                message="Enter recipient email:"
-                defaultValue={currentUser?.email || ""}
-                confirmText="Send Calendar"
-            />
         </div>
     );
 }
