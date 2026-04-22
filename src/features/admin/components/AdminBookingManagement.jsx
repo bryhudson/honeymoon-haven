@@ -88,16 +88,16 @@ export function AdminBookingManagement({
                     <div className="pl-1">
                         <h3 className={`font-bold text-base ${isActive ? 'text-emerald-700' : 'text-slate-900'}`}>{slot.name}</h3>
                         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                            <span className="text-[11px] font-mono text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md">
+                            <span className="text-xs font-mono text-slate-700 bg-slate-100/80 px-2 py-1 rounded-md">
                                 Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
                             </span>
                             {isSlotBooked && booking.guests && (
-                                <span className="text-[11px] font-mono text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
-                                    <Users className="w-3 h-3" />
+                                <span className="text-xs font-mono text-slate-700 bg-slate-100/80 px-2 py-1 rounded-md inline-flex items-center gap-1">
+                                    <Users className="w-3.5 h-3.5" />
                                     {booking.guests}
                                 </span>
                             )}
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                            <span className="text-xs font-bold uppercase tracking-widest text-slate-600">
                                 R{slot.round}
                             </span>
                         </div>
