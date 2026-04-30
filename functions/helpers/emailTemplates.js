@@ -281,7 +281,7 @@ const emailTemplates = {
   // New Template: Payment Urgent (T-6h) - Fixes the "Turn Skip" confusion
   paymentUrgent: (data) => {
     const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
-    const subject = `URGENT: ${roundLabel}Maintenance Fee Deadline 💸`;
+    const subject = `HHR Trailer Booking App: URGENT: ${roundLabel}Maintenance Fee Deadline 💸`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -732,7 +732,7 @@ const emailTemplates = {
   feedback: (data) => {
     const isBug = data.type === 'bug';
     const title = isBug ? 'Bug Report' : 'Feature Request';
-    const subject = `HHR Trailer Booking: New Feedback 📬 (${title})`;
+    const subject = `HHR Trailer Booking App: New Feedback 📬 (${title})`;
 
     const body = `
       <h3 style="${THEME.typography.h3}">${title}</h3>
@@ -749,7 +749,7 @@ const emailTemplates = {
 
   // 15. Payment Overdue - Admin Alert
   paymentOverdueAdmin: (data) => {
-    const subject = `⚠️ Overdue Payment: ${formatName(data.name)} - ${data.check_in}`;
+    const subject = `HHR Trailer Booking App: ⚠️ Overdue Payment: ${formatName(data.name)} - ${data.check_in}`;
 
     // Price breakdown HTML
     let breakdownHtml = '';
