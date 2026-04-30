@@ -3,6 +3,7 @@ const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
+const { normalizeName } = require("../helpers/shareholders");
 const { defineSecret } = require("firebase-functions/params");
 
 const superAdminEmail = defineSecret("SUPER_ADMIN_EMAIL");
@@ -280,19 +281,22 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
             throw new HttpsError('failed-precondition', 'No active picker. Draft may not have started.');
         }
 
-        // Get shareholder email
-        const shareholderQuery = await db.collection("shareholders")
-            .where("name", "==", activePicker)
-            .limit(1)
-            .get();
+        // Robust shareholder lookup (handles "&" vs "and" via normalizeName),
+        // mirroring turnReminderScheduler. Non-fatal on miss: testEmail overrides
+        // the recipient and cabinNumber is only used for log metadata.
+        const allShareholdersSnap = await db.collection("shareholders").get();
+        const shareholderDoc = allShareholdersSnap.docs.find(d =>
+            normalizeName(d.data().name) === normalizeName(activePicker)
+        );
 
-        if (shareholderQuery.empty) {
-            throw new HttpsError('not-found', `Shareholder not found: ${activePicker}`);
+        let cabinNumber = null;
+        if (shareholderDoc) {
+            const sData = shareholderDoc.data();
+            cabinNumber = sData.cabin || sData.cabinNumber || sData.defaultCabin || null;
+        } else {
+            logger.warn(`Test reminder: shareholder doc not found for activePicker="${activePicker}" (normalized="${normalizeName(activePicker)}"). Continuing with defaults.`);
         }
 
-        const sData = shareholderQuery.docs[0].data();
-        const shareholderEmail = sData.email;
-        const cabinNumber = sData.cabin || sData.cabinNumber || sData.defaultCabin;
         const deadline = windowEnds ? windowEnds.toDate() : new Date(Date.now() + 48 * 60 * 60 * 1000);
 
         // Define reminder messages
@@ -336,7 +340,7 @@ exports.sendTestReminder = onCall({ secrets: gmailSecrets }, async (request) => 
         const finalSubject = subject;
 
         await sendGmail({
-            to: { activePicker, email: recipient, cabinNumber: cabinNumber },
+            to: { name: activePicker, email: recipient, cabinNumber: cabinNumber },
             subject: finalSubject,
             htmlContent: htmlContent
         });

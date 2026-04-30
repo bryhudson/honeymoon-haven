@@ -25,7 +25,7 @@ export function SystemTab({
     const toggleDevEmail = async () => {
         try {
             await setDoc(doc(db, 'settings/general'), { devEmailEnabled: !devEmailEnabled }, { merge: true });
-            triggerAlert?.('Success', !devEmailEnabled ? 'Dev emails ENABLED — all sends will redirect to the super admin inbox.' : 'Dev emails DISABLED — sends will be skipped.');
+            triggerAlert?.('Success', !devEmailEnabled ? 'Dev emails ENABLED: all sends will redirect to the super admin inbox.' : 'Dev emails DISABLED: sends will be skipped.');
         } catch (e) {
             triggerAlert?.('Error', e.message);
         }
@@ -62,8 +62,8 @@ export function SystemTab({
                             {IS_DEV_ENV && (
                                 <p className="text-xs text-slate-500 mt-1">
                                     {devEmailEnabled
-                                        ? 'Dev emails ENABLED — sends redirect to the super admin inbox.'
-                                        : 'Dev emails DISABLED — all sends are skipped.'}
+                                        ? 'Dev emails ENABLED: sends redirect to the super admin inbox.'
+                                        : 'Dev emails DISABLED: all sends are skipped.'}
                                 </p>
                             )}
                         </div>
