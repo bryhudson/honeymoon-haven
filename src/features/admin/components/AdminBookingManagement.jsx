@@ -88,16 +88,16 @@ export function AdminBookingManagement({
                     <div className="pl-1">
                         <h3 className={`font-bold text-base ${isActive ? 'text-emerald-700' : 'text-slate-900'}`}>{slot.name}</h3>
                         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                            <span className="text-[11px] font-mono text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md">
+                            <span className="text-[11px] font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
                                 Cabin #{isSlotBooked ? (booking.cabinNumber || "?") : "?"}
                             </span>
                             {isSlotBooked && booking.guests && (
-                                <span className="text-[11px] font-mono text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
+                                <span className="text-[11px] font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
                                     <Users className="w-3 h-3" />
                                     {booking.guests}
                                 </span>
                             )}
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">
                                 R{slot.round}
                             </span>
                         </div>
@@ -360,7 +360,7 @@ export function AdminBookingManagement({
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <div className="flex bg-slate-100 p-1 rounded-lg">
                         <button
                             onClick={handleDownloadCSV}
@@ -369,7 +369,7 @@ export function AdminBookingManagement({
                         >
                             <div className="flex items-center gap-2">
                                 <Download className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Export</span>
+                                <span>Export</span>
                             </div>
                         </button>
                     </div>

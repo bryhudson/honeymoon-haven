@@ -182,9 +182,9 @@ export const exportBookingsToCSV = (bookings) => {
 
     try {
         const headers = [
-            "ID", "Shareholder", "Cabin", "Check In", "Check Out",
-            "Expected Fee", "Fee Status", "Amount Collected", "Date Received",
-            "Reference", "Notes", "Status", "Created At"
+            "ID", "Shareholder", "Cabin", "Round", "Guests", "Check In", "Check Out",
+            "Nights", "Expected Fee", "Fee Status", "Amount Collected", "Date Received",
+            "Reference", "Notes", "Booking Type", "Status", "Created At"
         ];
 
         const csvEscape = (val) => {
@@ -217,18 +217,37 @@ export const exportBookingsToCSV = (bookings) => {
             const dateReceived = pd.paidAt?.toDate ? pd.paidAt.toDate()
                 : pd.paidAt ? new Date(pd.paidAt) : null;
 
+            // Compute nights from from/to when both available
+            let nights = '';
+            if (isBookable && b.from && b.to) {
+                const fromDate = b.from instanceof Date ? b.from : b.from.toDate();
+                const toDate = b.to instanceof Date ? b.to : b.to.toDate();
+                const msPerDay = 1000 * 60 * 60 * 24;
+                nights = Math.max(0, Math.round((toDate - fromDate) / msPerDay));
+            }
+
+            // Friendly round label (R1/R2/Open Season)
+            const roundLabel = b.round === 1 ? 'R1' : b.round === 2 ? 'R2' : b.round === 3 ? 'Open Season' : (b.round ?? '');
+
+            // Booking type: pass, auto-pass, cancelled, or booking (regular)
+            const bookingType = b.type || 'booking';
+
             return [
                 csvEscape(b.id),
                 csvEscape(b.shareholderName || ''),
                 csvEscape(cabin),
+                csvEscape(roundLabel),
+                csvEscape(isBookable ? (b.guests || 1) : ''),
                 csvEscape(b.from && isBookable ? format(b.from instanceof Date ? b.from : b.from.toDate(), 'yyyy-MM-dd') : ''),
                 csvEscape(b.to && isBookable ? format(b.to instanceof Date ? b.to : b.to.toDate(), 'yyyy-MM-dd') : ''),
+                csvEscape(nights),
                 csvEscape(isBookable ? (b.totalPrice || 0) : ''),
                 csvEscape(isBookable ? (b.isPaid ? 'RECEIVED' : 'OUTSTANDING') : ''),
                 csvEscape(b.isPaid && pd.amount != null ? pd.amount : ''),
                 csvEscape(dateReceived ? format(dateReceived, 'yyyy-MM-dd') : ''),
                 csvEscape(pd.reference || ''),
                 csvEscape(pd.notes || ''),
+                csvEscape(bookingType),
                 csvEscape(displayStatus),
                 csvEscape(b.createdAt ? format(b.createdAt instanceof Date ? b.createdAt : b.createdAt.toDate(), 'yyyy-MM-dd HH:mm') : '')
             ];
