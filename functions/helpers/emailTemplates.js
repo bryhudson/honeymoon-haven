@@ -583,7 +583,8 @@ const emailTemplates = {
       </div>
 
       <div style="margin: 32px 0;">
-        ${dataItem('Dates', `${data.check_in || 'TBD'} - ${data.check_out || 'TBD'}`)}
+        ${dataItem('Check-In', data.check_in ? `${data.check_in} (${CHECK_IN_TIME})` : 'TBD')}
+        ${dataItem('Check-Out', data.check_out ? `${data.check_out} (${CHECK_OUT_TIME})` : 'TBD')}
         ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">

@@ -543,10 +543,28 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                             {/* Validation Messages for Step 1 */}
                             <div className="px-6 pb-2">
-                                <p className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 mb-1">
-                                    <span className="inline-block w-3 h-3 rounded-sm border border-slate-200" style={{ backgroundImage: 'linear-gradient(135deg, rgba(34,197,94,0.55) 0 45%, transparent 45%)' }} />
-                                    Corner mark: someone checks out that morning - you can check in the same day.
-                                </p>
+                                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs text-slate-500 mb-2">
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="inline-block w-3.5 h-3.5 rounded-sm border border-slate-200 shrink-0" style={{ backgroundImage: 'linear-gradient(135deg, rgba(34,197,94,0.6) 0 45%, transparent 45%)' }} />
+                                        Check-out day (open to check in)
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="line-through text-slate-400 font-semibold">14</span>
+                                        Booked
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="relative inline-block w-3.5 h-3.5 rounded-sm bg-red-50 ring-1 ring-red-200 shrink-0">
+                                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+                                        </span>
+                                        Holiday
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="relative inline-block w-3.5 h-3.5 rounded-sm bg-purple-50 ring-1 ring-purple-200 shrink-0">
+                                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                        </span>
+                                        Event
+                                    </span>
+                                </div>
                                 {isTooLong && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Max stay is 7 nights</p>}
                                 {isTooShort && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Select check-out date</p>}
                                 {isOverlap && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Dates unavailable</p>}
