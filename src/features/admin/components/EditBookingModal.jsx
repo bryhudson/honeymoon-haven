@@ -4,6 +4,7 @@ import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
 import { Calendar, User, Users, Home, Clock, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
 import { CABIN_OWNERS } from '../../../lib/shareholders';
 import { calculateBookingCost } from '../../../lib/pricing';
+import { nightsOverlap } from '../../../lib/availability';
 import { db } from '../../../lib/firebase';
 
 export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings = [] }) {
@@ -56,17 +57,8 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         const conflict = allBookings.find(b => {
             if (b.id === currentId) return false;
             if (b.type === 'pass' || b.type === 'auto-pass' || b.type === 'cancelled') return false;
-
-            const bStart = new Date(b.from);
-            bStart.setHours(0, 0, 0, 0);
-            const bEnd = new Date(b.to);
-            bEnd.setHours(0, 0, 0, 0);
-            const myStart = new Date(start);
-            myStart.setHours(0, 0, 0, 0);
-            const myEnd = new Date(end);
-            myEnd.setHours(0, 0, 0, 0);
-
-            return (myStart <= bEnd && myEnd >= bStart);
+            // Half-open [from, to): a stay's check-out day may be another's check-in day.
+            return nightsOverlap(start, end, b.from, b.to);
         });
 
         if (conflict) {

@@ -1,7 +1,7 @@
 import { emailService } from '../../../services/emailService';
 import { Calendar } from 'lucide-react';
 import React, { useState, useEffect } from 'react'; // Assuming React and useEffect are needed for the change
-import { format, addWeeks, addDays, differenceInCalendarDays, eachDayOfInterval, startOfDay } from 'date-fns';
+import { format, addWeeks, addDays, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG } from '../../../lib/shareholders';
@@ -11,6 +11,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestor
 
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { calculateBookingCost } from '../../../lib/pricing';
+import { nightsOverlap, isNightBooked, getDayOccupancy } from '../../../lib/availability';
 import ErrorBoundary from '../../../components/ui/ErrorBoundary';
 
 
@@ -149,13 +150,11 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     const isBooked = (day) => {
         try {
             if (!day) return false;
-            // Normalize day to start of day for comparison
-            const d = startOfDay(day);
+            // A stay occupies nights [from, to); the check-out day stays free
+            // so it can be the next shareholder's check-in day.
             return activeBookedDates.some(range => {
                 if (!range || !range.from || !range.to) return false; // Defensive check
-                const start = startOfDay(range.from);
-                const end = startOfDay(range.to);
-                return d >= start && d <= end;
+                return isNightBooked(day, range.from, range.to);
             });
         } catch (e) {
             console.error("isBooked CRASHED for day:", day, e);
@@ -169,6 +168,18 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
     const isPast = (day) => {
         return startOfDay(day) < startOfDay(new Date());
+    };
+
+    // A selectable check-out day: someone leaves that morning and no one occupies the night,
+    // so it's free to start a new stay on. Marked with a corner accent (not disabled).
+    const isCheckoutAvailable = (day) => {
+        try {
+            if (!day || isPast(day)) return false;
+            const { occupant, departing } = getDayOccupancy(day, activeBookedDates);
+            return !!departing && !occupant;
+        } catch {
+            return false;
+        }
     };
 
     const handleInputChange = (e) => {
@@ -215,25 +226,12 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             isTooLong = true;
         }
 
-        // Check for overlaps with existing bookings
-        const interval = eachDayOfInterval({ start: selectedRange.from, end: selectedRange.to });
-
-        // Find the specific booking that conflicts
-        conflictingBooking = activeBookedDates.find(booking =>
-            interval.some(day => {
-                // Double check validity before date math
-                if (!booking || !booking.from || !booking.to) return false;
-
-                try {
-                    const d = startOfDay(day);
-                    const start = startOfDay(booking.from);
-                    const end = startOfDay(booking.to);
-                    return d >= start && d <= end;
-                } catch (err) {
-                    return false;
-                }
-            })
-        );
+        // Check for overlaps with existing bookings. Ranges are half-open
+        // [from, to): a stay's check-out day may be another's check-in day.
+        conflictingBooking = activeBookedDates.find(booking => {
+            if (!booking || !booking.from || !booking.to) return false;
+            return nightsOverlap(selectedRange.from, selectedRange.to, booking.from, booking.to);
+        });
 
         if (conflictingBooking) {
             isOverlap = true;
@@ -498,14 +496,16 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                             outsideSeason: isOutsideSeason,
                                             past: isPast,
                                             holiday: isHoliday,
-                                            event: isEventDay
+                                            event: isEventDay,
+                                            checkoutAvailable: isCheckoutAvailable
                                         }}
                                         modifiersStyles={{
                                             booked: { textDecoration: 'line-through', color: 'gray' },
                                             outsideSeason: { opacity: 0.5 },
                                             past: { opacity: 0.4, color: '#94a3b8' },
                                             holiday: { backgroundColor: '#fef2f2', color: '#b91c1c', boxShadow: 'inset 0 0 0 1px #fecaca' },
-                                            event: { backgroundColor: '#faf5ff', color: '#7e22ce', boxShadow: 'inset 0 0 0 1px #e9d5ff' }
+                                            event: { backgroundColor: '#faf5ff', color: '#7e22ce', boxShadow: 'inset 0 0 0 1px #e9d5ff' },
+                                            checkoutAvailable: { backgroundImage: 'linear-gradient(135deg, rgba(34,197,94,0.55) 0 26%, transparent 26%)' }
                                         }}
                                         components={{
                                             DayButton: (props) => {
@@ -543,6 +543,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
                             {/* Validation Messages for Step 1 */}
                             <div className="px-6 pb-2">
+                                <p className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 mb-1">
+                                    <span className="inline-block w-3 h-3 rounded-sm border border-slate-200" style={{ backgroundImage: 'linear-gradient(135deg, rgba(34,197,94,0.55) 0 45%, transparent 45%)' }} />
+                                    Corner mark: someone checks out that morning - you can check in the same day.
+                                </p>
                                 {isTooLong && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Max stay is 7 nights</p>}
                                 {isTooShort && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Select check-out date</p>}
                                 {isOverlap && <p className="text-center text-red-500 text-xs font-bold bg-red-50 p-2 rounded-lg">Dates unavailable</p>}

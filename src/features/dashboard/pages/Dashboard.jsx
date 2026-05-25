@@ -17,6 +17,7 @@ import { StatusCard } from '../components/StatusCard';
 import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
 import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { nightsOverlap } from '../../../lib/availability';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
     .then(module => ({ default: module.BookingDetailsModal })));
 const FeedbackModal = React.lazy(() => import('../../feedback/components/FeedbackModal')
@@ -456,12 +457,12 @@ export function Dashboard() {
         const days = (end - start) / (1000 * 60 * 60 * 24);
         if (days > 7) return triggerAlert("Booking Limit Exceeded", "To ensure everyone has a fair chance, bookings are limited to a maximum of 7 days during the schedule.");
 
-        // Overlap Check
+        // Overlap Check - half-open [from, to): a stay's check-out day may be another's check-in day.
         const isOverlap = allBookings.some(b => {
             if (b.type === 'pass') return false;
             const bStart = b.from?.toDate ? b.from.toDate() : new Date(b.from);
             const bEnd = b.to?.toDate ? b.to.toDate() : new Date(b.to);
-            return (start < bEnd && end > bStart);
+            return nightsOverlap(start, end, bStart, bEnd);
         });
 
         if (isOverlap) return triggerAlert("Date Conflict", "The dates you've selected overlap with an existing booking. Please choose a different range.");
