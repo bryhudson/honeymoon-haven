@@ -587,7 +587,7 @@ export function AdminDashboard() {
             )}
 
             <ConfirmationModal isOpen={confirmation.isOpen} onClose={() => setConfirmation(prev => ({ ...prev, isOpen: false }))} onConfirm={confirmation.onConfirm} title={confirmation.title} message={confirmation.message} isDanger={confirmation.isDanger} confirmText={confirmation.confirmText} showCancel={confirmation.showCancel} requireTyping={confirmation.requireTyping} />
-            <EditBookingModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveEdit} booking={editingBooking} otherBookings={allBookings.filter(b => b.id !== editingBooking?.id)} />
+            <EditBookingModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveEdit} booking={editingBooking} allBookings={allBookings.filter(b => b.id !== editingBooking?.id)} />
             <PaymentConfirmModal isOpen={!!payingBooking} onClose={() => setPayingBooking(null)} onConfirm={handleConfirmPayment} booking={payingBooking} />
             <ReauthenticationModal isOpen={authModal.isOpen} onClose={() => setAuthModal(prev => ({ ...prev, isOpen: false }))} onConfirm={authModal.onConfirm} title={authModal.title} message={authModal.message} />
             <PromptModal isOpen={promptData.isOpen} onClose={() => setPromptData(prev => ({ ...prev, isOpen: false }))} onConfirm={promptData.onConfirm} title={promptData.title} message={promptData.message} defaultValue={promptData.defaultValue} inputType={promptData.inputType} confirmText={promptData.confirmText} requireConfirmation={promptData.requireConfirmation} confirmPlaceholder={promptData.confirmPlaceholder} />

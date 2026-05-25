@@ -84,6 +84,19 @@ describe('Email Templates', () => {
             expect(result.htmlContent).toContain('June 22');
         });
 
+        it('escapes HTML in user-controlled fields to prevent injection', () => {
+            const result = emailTemplates.bookingConfirmed({
+                ...bookingData,
+                name: '<img src=x onerror=alert(1)>',
+                cabin_number: '<script>evil</script>',
+            });
+            // Raw tags must NOT survive into the rendered HTML
+            expect(result.htmlContent).not.toContain('<img src=x onerror=');
+            expect(result.htmlContent).not.toContain('<script>evil');
+            // The escaped form should be present instead
+            expect(result.htmlContent).toContain('&lt;img src=x onerror=');
+        });
+
         it('paymentReminder includes price breakdown', () => {
             const data = { ...bookingData, price_breakdown: priceBreakdown };
             const result = emailTemplates.paymentReminder(data);

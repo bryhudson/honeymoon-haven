@@ -293,7 +293,7 @@ export function TrailerGuide({ shareholderName, booking }) {
                             <div>
                                 <p className="text-xs font-bold text-rose-700 uppercase tracking-wide">Check-out</p>
                                 <p className="text-base font-bold text-slate-900">By {CHECK_OUT_TIME}</p>
-                                <p className="text-sm text-slate-600 leading-relaxed mt-1">Please be packed up and out by {CHECK_OUT_TIME} so the next family can settle in at {CHECK_IN_TIME}.</p>
+                                <p className="text-sm text-slate-600 leading-relaxed mt-1">Please be packed up and out by {CHECK_OUT_TIME} so the next shareholder can check in at {CHECK_IN_TIME}.</p>
                             </div>
                         </div>
 

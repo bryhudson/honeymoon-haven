@@ -127,11 +127,13 @@ const NAME_MAP = {
   "Julia, Mandy & Bryan": "Julia, Mandy and Bryan"
 };
 
+// Escape user-controlled values before interpolating into email HTML.
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
 function formatName(name) {
   if (!name) return 'friend';
-  // Rewrite to conversational form if match exists
-  if (NAME_MAP[name]) return NAME_MAP[name];
-  return name;
+  // Rewrite to conversational form if match exists, then escape for HTML safety.
+  return esc(NAME_MAP[name] || name);
 }
 
 /**
@@ -346,7 +348,7 @@ const emailTemplates = {
     }
 
     const body = `
-      <h1 style="${THEME.typography.h1}">You're all set, ${data.name || 'friend'}! 🎊</h1>
+      <h1 style="${THEME.typography.h1}">You're all set, ${formatName(data.name)}! 🎊</h1>
       <p style="${THEME.typography.body}">Great news - the trailer is officially reserved for your guests! They're going to love it. Time to start planning those lake days together. ☀️</p>
 
       <div style="background-color: #E8F5FF; border: 1px solid #B6E0FE; border-radius: 12px; padding: 20px; margin: 24px 0;">
@@ -356,7 +358,7 @@ const emailTemplates = {
       <div style="margin: 32px 0;">
         ${dataItem('CHECK IN', `${data.check_in} (${CHECK_IN_TIME})`)}
         ${dataItem('CHECK OUT', `${data.check_out} (${CHECK_OUT_TIME})`)}
-        ${dataItem('TRAILER', `Cabin #${data.cabin_number}`)}
+        ${dataItem('TRAILER', `Cabin #${esc(data.cabin_number)}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
           <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">MAINTENANCE FEE</span>
@@ -539,7 +541,7 @@ const emailTemplates = {
           <span style="font-size: 16px; font-weight: 700; color: ${THEME.colors.text}; display: block;">$${data.total_price}</span>
           ${breakdownHtml}
         </div>
-        ${dataItem('Message', `${formatName(data.name)} - Cabin ${data.cabin_number}`, true)}
+        ${dataItem('Message', `${formatName(data.name)} - Cabin ${esc(data.cabin_number)}`, true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px; background-color: #F5F5F7; padding: 24px; border-radius: 12px; border: 1px solid #e5e5ea;">
@@ -585,7 +587,7 @@ const emailTemplates = {
       <div style="margin: 32px 0;">
         ${dataItem('Check-In', data.check_in ? `${data.check_in} (${CHECK_IN_TIME})` : 'TBD')}
         ${dataItem('Check-Out', data.check_out ? `${data.check_out} (${CHECK_OUT_TIME})` : 'TBD')}
-        ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
+        ${dataItem('Cabin', `Cabin #${esc(data.cabin_number)}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
           <span style="font-size: 13px; color: ${THEME.colors.textLight}; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Amount Received</span>
@@ -612,7 +614,7 @@ const emailTemplates = {
 
     // Custom content logic for the guide (more text heavy)
     const customContent = `
-      <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${data.guest_name}! 🌲</h1>
+      <h1 style="${THEME.typography.h1} margin-bottom: 8px;">Welcome, ${esc(data.guest_name)}! 🌲</h1>
       <p style="${THEME.typography.body}">${formatName(data.shareholder_name)} want to make sure you have the best stay possible at Honeymoon Haven Resort - a little lakeside paradise on Lake Cowichan, BC.</p>
       <p style="${THEME.typography.body}">Here's everything you need to know to hit the ground running (or relaxing, we won't judge). 😎</p>
 
@@ -621,7 +623,7 @@ const emailTemplates = {
         <h3 style="${THEME.typography.h3}">Your Stay</h3>
         ${dataItem('Check In', `${details.checkIn} (${CHECK_IN_TIME})`)}
         ${dataItem('Check Out', `${details.checkOut} (${CHECK_OUT_TIME})`)}
-        ${dataItem('Cabin', `Cabin #${details.cabinNumber}`, true)}
+        ${dataItem('Cabin', `Cabin #${esc(details.cabinNumber)}`, true)}
       </div>
       ` : ''
       }
@@ -781,7 +783,7 @@ const emailTemplates = {
 
       <div style="margin: 32px 0;">
         ${dataItem('Shareholder', formatName(data.name))}
-        ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
+        ${dataItem('Cabin', `Cabin #${esc(data.cabin_number)}`)}
         ${dataItem('Check-In', `${data.check_in} (${CHECK_IN_TIME})`)}
         ${dataItem('Check-Out', `${data.check_out} (${CHECK_OUT_TIME})`)}
         ${dataItem('Guests', data.guests || 'Not specified')}

@@ -515,7 +515,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                                                 const hasInfo = holiday || events.length > 0;
                                                 const tooltip = [
                                                     holiday?.name,
-                                                    ...events.map(e => e.subtitle ? `${e.name} — ${e.subtitle}` : e.name)
+                                                    ...events.map(e => e.subtitle ? `${e.name} - ${e.subtitle}` : e.name)
                                                 ].filter(Boolean).join(' · ');
                                                 return (
                                                     <button {...props} title={hasInfo ? tooltip : undefined} style={{ ...(props.style || {}), position: 'relative' }}>
