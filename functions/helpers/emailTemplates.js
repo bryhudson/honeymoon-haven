@@ -5,6 +5,10 @@
  * Tone: Friendly, Warm, Mobile-First
  */
 
+// Check-in / check-out times. Mirror of src/lib/bookingPolicy.ts (separate codebase, cannot import).
+const CHECK_IN_TIME = '3:00 PM';
+const CHECK_OUT_TIME = '11:00 AM';
+
 // --- DESIGN SYSTEM (Apple Style) ---
 const THEME = {
   colors: {
@@ -350,8 +354,8 @@ const emailTemplates = {
       </div>
 
       <div style="margin: 32px 0;">
-        ${dataItem('CHECK IN', data.check_in)}
-        ${dataItem('CHECK OUT', data.check_out)}
+        ${dataItem('CHECK IN', `${data.check_in} (${CHECK_IN_TIME})`)}
+        ${dataItem('CHECK OUT', `${data.check_out} (${CHECK_OUT_TIME})`)}
         ${dataItem('TRAILER', `Cabin #${data.cabin_number}`)}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">
@@ -614,8 +618,8 @@ const emailTemplates = {
       ${details.checkIn ? `
       <div style="margin: 32px 0;">
         <h3 style="${THEME.typography.h3}">Your Stay</h3>
-        ${dataItem('Check In', `${details.checkIn} (3:00 PM)`)}
-        ${dataItem('Check Out', `${details.checkOut} (11:00 AM)`)}
+        ${dataItem('Check In', `${details.checkIn} (${CHECK_IN_TIME})`)}
+        ${dataItem('Check Out', `${details.checkOut} (${CHECK_OUT_TIME})`)}
         ${dataItem('Cabin', `Cabin #${details.cabinNumber}`, true)}
       </div>
       ` : ''
@@ -777,8 +781,8 @@ const emailTemplates = {
       <div style="margin: 32px 0;">
         ${dataItem('Shareholder', formatName(data.name))}
         ${dataItem('Cabin', `Cabin #${data.cabin_number}`)}
-        ${dataItem('Check-In', data.check_in)}
-        ${dataItem('Check-Out', data.check_out)}
+        ${dataItem('Check-In', `${data.check_in} (${CHECK_IN_TIME})`)}
+        ${dataItem('Check-Out', `${data.check_out} (${CHECK_OUT_TIME})`)}
         ${dataItem('Guests', data.guests || 'Not specified')}
         
         <div style="${THEME.components.dataRow} border-bottom: none;">

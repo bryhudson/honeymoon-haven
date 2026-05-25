@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown } from 'lucide-react';
+import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown, LogIn } from 'lucide-react';
 import { format, differenceInHours, addDays, isPast } from 'date-fns';
 import { DRAFT_CONFIG, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
+import { CHECK_IN_TIME, CHECK_OUT_TIME } from '../../../lib/bookingPolicy';
 import { HistoricalOrders } from './HistoricalOrders';
 
 export function SeasonSchedule({ currentOrder, allBookings, status, startDateOverride, onAction, bypassTenAM = false }) {
@@ -134,6 +135,20 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                                         <strong>Weeknights (Sun-Thu):</strong> $100<br />
                                         <strong>Weekends (Fri-Sat):</strong> $125<br />
                                         <strong>Full Week (7 Nights):</strong> $650
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-indigo-100/50 text-indigo-600 rounded-lg shrink-0">
+                                    <LogIn className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-900 text-sm">Check-in & Check-out</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                                        <strong>Check-in:</strong> {CHECK_IN_TIME}<br />
+                                        <strong>Check-out:</strong> {CHECK_OUT_TIME}<br />
+                                        A stay's check-out day is open for the next shareholder to check in.
                                     </p>
                                 </div>
                             </div>

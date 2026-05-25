@@ -28,6 +28,7 @@ import {
     Mail
 } from 'lucide-react';
 import { CABIN_OWNERS } from '../../../lib/shareholders';
+import { CHECK_IN_TIME, CHECK_OUT_TIME } from '../../../lib/bookingPolicy';
 import { emailService } from '../../../services/emailService';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 
@@ -133,6 +134,16 @@ export function TrailerGuide({ shareholderName, booking }) {
             <div className="p-4 md:p-8">
                 {activeTab === 'check-in' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0">
+                                <LogIn className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Check-in</p>
+                                <p className="text-base font-bold text-slate-900">From {CHECK_IN_TIME}</p>
+                            </div>
+                        </div>
+
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0 mt-1">
                                 <Zap className="w-5 h-5" />
@@ -275,6 +286,17 @@ export function TrailerGuide({ shareholderName, booking }) {
 
                 {activeTab === 'check-out' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                            <div className="p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0">
+                                <LogOut className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-rose-700 uppercase tracking-wide">Check-out</p>
+                                <p className="text-base font-bold text-slate-900">By {CHECK_OUT_TIME}</p>
+                                <p className="text-sm text-slate-600 leading-relaxed mt-1">Please be packed up and out by {CHECK_OUT_TIME} so the next family can settle in at {CHECK_IN_TIME}.</p>
+                            </div>
+                        </div>
+
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0 mt-1">
                                 <LogOut className="w-5 h-5" />

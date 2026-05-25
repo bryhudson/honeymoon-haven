@@ -1,8 +1,9 @@
 import React from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
-import { Mail, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Mail, AlertTriangle, CheckCircle2, LogIn, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateBookingCost } from '../../../lib/pricing';
+import { CHECK_IN_TIME, CHECK_OUT_TIME } from '../../../lib/bookingPolicy';
 
 // Helper: Normalize names for comparison (e.g. "Brian & Monique" == "Monique and Brian")
 const areNamesEquivalent = (name1, name2) => {
@@ -136,15 +137,29 @@ export function BookingDetailsModal({ booking, onClose, onCancel, onPass, onEdit
                     <div className="p-5 space-y-5">
 
                         {/* Row: Dates */}
-                        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                            <div>
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dates</span>
-                                <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
-                                    {format(start, 'MMM d')} - {format(end, 'MMM d, yyyy')}
+                        <div className="pb-4 border-b border-slate-100">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dates</span>
+                            <div className="font-black text-slate-800 text-lg leading-tight mt-0.5">
+                                {format(start, 'MMM d')} - {format(end, 'MMM d, yyyy')}
+                            </div>
+                            <div className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
+                                {/* Duration Calc */}
+                                {Math.round((end - start) / (1000 * 60 * 60 * 24))} nights
+                            </div>
+
+                            {/* Check-in / Check-out times */}
+                            <div className="mt-3 flex flex-col gap-1.5 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <LogIn className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <span className="text-slate-500 font-medium">Check-in</span>
+                                    <span className="text-slate-300">·</span>
+                                    <span className="font-semibold text-slate-800">{format(start, 'EEE, MMM d')}, {CHECK_IN_TIME}</span>
                                 </div>
-                                <div className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-                                    {/* Duration Calc */}
-                                    {Math.round((end - start) / (1000 * 60 * 60 * 24))} nights
+                                <div className="flex items-center gap-2">
+                                    <LogOut className="w-4 h-4 text-rose-600 shrink-0" />
+                                    <span className="text-slate-500 font-medium">Check-out</span>
+                                    <span className="text-slate-300">·</span>
+                                    <span className="font-semibold text-slate-800">{format(end, 'EEE, MMM d')}, {CHECK_OUT_TIME}</span>
                                 </div>
                             </div>
                         </div>
