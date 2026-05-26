@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useBookingRealtimeContext } from '../../../hooks/BookingRealtimeContext';
-import { CABIN_OWNERS, getShareholderOrder, mapOrderToSchedule, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { CABIN_OWNERS, getShareholderOrder, getCurrentSeasonYear, mapOrderToSchedule, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { emailService } from '../../../services/emailService';
 import { db, functions } from '../../../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -511,7 +511,7 @@ export function AdminDashboard() {
     }, [allBookings]);
 
     const { schedule, activeTurn } = React.useMemo(() => {
-        const order = getShareholderOrder(2026);
+        const order = getShareholderOrder(getCurrentSeasonYear());
         const sched = mapOrderToSchedule(order, allBookings, startDateOverride, fastTestingMode, bypassTenAM);
         const active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD') || sched.find(s => s.name === status?.activePicker && s.round == status?.round);
         return { schedule: sched, activeTurn: active };
@@ -574,7 +574,7 @@ export function AdminDashboard() {
                 />
             )}
 
-            {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(2026)} allBookings={allBookings} status={status || { phase: 'PRE_DRAFT' }} startDateOverride={startDateOverride} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
+            {activeTab === 'schedule' && <SeasonSchedule currentOrder={getShareholderOrder(getCurrentSeasonYear())} allBookings={allBookings} status={status || { phase: 'PRE_DRAFT' }} startDateOverride={startDateOverride} fastTestingMode={fastTestingMode} bypassTenAM={bypassTenAM} />}
             {activeTab === 'notifications' && <NotificationsTab triggerAlert={triggerAlert} isTestMode={isTestMode} />}
             {activeTab === 'system' && (
                 <SystemTab

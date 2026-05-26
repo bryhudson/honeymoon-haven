@@ -358,7 +358,7 @@ export function ShareholderHero({
             accentColor="slate"
             icon={Calendar}
             title="Pre-Season"
-            subtitle="2026 Draft"
+            subtitle={`${getCurrentSeasonYear()} Draft`}
             mainContent={status.windowStarts ? `Draft Starts ${format(new Date(status.windowStarts), 'MMMM d')} @ 10am` : 'Schedule Coming Soon'}
         />;
     }

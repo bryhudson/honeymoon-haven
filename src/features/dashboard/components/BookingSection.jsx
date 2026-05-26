@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'; // Assuming React and useEff
 import { format, addWeeks, addDays, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
-import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
+import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, getSeasonConfig, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
 import { isHoliday, isEventDay, getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { db } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
@@ -105,7 +105,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     });
 
     // Calendar View State (Fix for stuck navigation)
-    const [currentMonth, setCurrentMonth] = useState(new Date(2026, 4)); // Default to May 2026
+    const [currentMonth, setCurrentMonth] = useState(new Date(getCurrentSeasonYear(), 4)); // Default to May of the current season
 
     // Hydrate form if editing
     useEffect(() => {
@@ -144,9 +144,10 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     // Email service initialized in services/emailService.js
 
     // --- CONFIGURATION ---
-    // Single source of truth: season window lives in DRAFT_CONFIG.
-    const SEASON_START = DRAFT_CONFIG.SEASON_START;
-    const SEASON_END = DRAFT_CONFIG.SEASON_END;
+    // Single source of truth: season window derived from the current season year (auto-rolls).
+    const seasonCfg = getSeasonConfig(getCurrentSeasonYear());
+    const SEASON_START = seasonCfg.SEASON_START;
+    const SEASON_END = seasonCfg.SEASON_END;
 
     const isBooked = (day) => {
         try {
@@ -458,7 +459,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                             {step === 3 && "Review & Confirm"}
                         </h2>
                         <p className="text-xs md:text-sm text-muted-foreground font-medium mt-1">
-                            {step === 1 && <span className="flex items-center gap-1">Season: 2026 <span className="opacity-50">|</span> May 1 - Sep 30</span>}
+                            {step === 1 && <span className="flex items-center gap-1">Season: {getCurrentSeasonYear()} <span className="opacity-50">|</span> May 1 - Sep 30</span>}
                             {step === 2 && <span>Max 6 guests per booking</span>}
                             {step === 3 && <span>Guest: <strong className="text-primary">{formData.shareholderName || "Guest"}</strong></span>}
                             {isSuccess && <span>Booking Complete!</span>}

@@ -279,7 +279,11 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
 }
 
 function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = null, bypassTenAM = false) {
-    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
+    // Year-aware (mirrors calculateDraftSchedule): scope bookings to the active
+    // season and anchor the start on that season's April 1.
+    const seasonYear = startDateOverride ? new Date(startDateOverride).getFullYear() : getCurrentSeasonYear();
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : getSeasonConfig(seasonYear).START_DATE;
+    const seasonBookings = filterBookingsToSeason(bookings, seasonYear);
     const PICK_DURATION_MS = getPickDurationMS();
 
     const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];
@@ -300,7 +304,7 @@ function mapOrderToSchedule(shareholders, bookings = [], startDateOverride = nul
         userTurnCounts[name]++;
         let returnStart = null;
 
-        const userActions = bookings
+        const userActions = seasonBookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(name))
             .sort((a, b) => {
                 const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt && a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));

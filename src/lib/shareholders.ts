@@ -207,6 +207,11 @@ export function getSeasonConfig(year: number): SeasonConfig {
     };
 }
 
+/** The bookable months (May-September, the 1st of each) for a season year. */
+export function getSeasonMonths(year: number): Date[] {
+    return [4, 5, 6, 7, 8].map(m => new Date(year, m, 1));
+}
+
 /**
  * Scope bookings to a single season. Bookings carry no explicit season field,
  * but every record (real booking, pass, auto-pass, cancellation) has a `from`
@@ -410,7 +415,12 @@ export function mapOrderToSchedule(
     startDateOverride: Date | null = null,
     bypassTenAM: boolean = false
 ): ScheduleItem[] {
-    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
+    // Year-aware (mirrors calculateDraftSchedule): scope bookings to the active
+    // season and anchor the start on that season's April 1, so the rendered
+    // schedule rolls over each year and ignores prior seasons.
+    const seasonYear = startDateOverride ? new Date(startDateOverride).getFullYear() : getCurrentSeasonYear();
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : getSeasonConfig(seasonYear).START_DATE;
+    const seasonBookings = filterBookingsToSeason(bookings, seasonYear);
     const PICK_DURATION_MS = getPickDurationMS();
 
     const fullTurnOrder = [...shareholders, ...[...shareholders].reverse()];
@@ -431,7 +441,7 @@ export function mapOrderToSchedule(
         userTurnCounts[name]++;
         let returnStart: Date | null = null;
 
-        const userActions = bookings
+        const userActions = seasonBookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(name))
             .sort((a, b) => {
                 const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);

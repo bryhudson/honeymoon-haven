@@ -11,6 +11,7 @@ import {
     getSeasonState,
     getCurrentSeasonYear,
     getSeasonConfig,
+    getSeasonMonths,
     filterBookingsToSeason,
     SHAREHOLDERS_2025,
     DRAFT_CONFIG,
@@ -110,6 +111,23 @@ describe('filterBookingsToSeason', () => {
     });
 });
 
+describe('getSeasonMonths', () => {
+    it('returns May through September (the 1st of each) for the season year', () => {
+        expect(getSeasonMonths(2027)).toEqual([
+            new Date(2027, 4, 1), // May
+            new Date(2027, 5, 1), // June
+            new Date(2027, 6, 1), // July
+            new Date(2027, 7, 1), // Aug
+            new Date(2027, 8, 1), // Sept
+        ]);
+    });
+
+    it('rolls with the year', () => {
+        expect(getSeasonMonths(2030)[0]).toEqual(new Date(2030, 4, 1));
+        expect(getSeasonMonths(2030)[4]).toEqual(new Date(2030, 8, 1));
+    });
+});
+
 describe('calculateDraftSchedule auto-rollover', () => {
     it('ignores prior-season bookings so a new season drafts from scratch', () => {
         // Last season (2026) Alice & Bob both finalized picks. This season is 2027.
@@ -139,6 +157,22 @@ describe('calculateDraftSchedule auto-rollover', () => {
         expect(result.phase).toBe('ROUND_1');
         expect(result.activePicker).toBe('Alice');
         expect(result.isSeasonStart).toBe(true);
+    });
+});
+
+describe('mapOrderToSchedule auto-rollover', () => {
+    it('ignores prior-season bookings so the new season schedules from scratch', () => {
+        const bookings: Booking[] = [
+            makeBooking('Alice', new Date('2026-04-06T22:00:00.000Z')),
+            makeBooking('Bob',   new Date('2026-04-08T22:00:00.000Z')),
+        ];
+        // Override anchors the 2027 draft start; the 2026 picks must not count.
+        const start2027 = new Date('2027-04-06T17:00:00.000Z');
+        const schedule = mapOrderToSchedule(SHAREHOLDERS_3, bookings, start2027);
+
+        expect(schedule[0].name).toBe('Alice');
+        expect(schedule[0].isCompleted).toBeFalsy(); // no 2026 pick counts toward 2027
+        expect(schedule[0].booking).toBeNull();
     });
 });
 

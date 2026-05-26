@@ -2,20 +2,16 @@ import React from 'react';
 import { format, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay } from 'date-fns';
 import { getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { getDayOccupancy } from '../../../lib/availability';
+import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders';
 
 // Diagonal split (top-left = departing, bottom-right = arriving) for turnover days.
 const splitBg = (depart, arrive) =>
     `linear-gradient(135deg, ${depart} 0 calc(50% - 0.5px), #ffffff calc(50% - 0.5px) calc(50% + 0.5px), ${arrive} calc(50% + 0.5px) 100%)`;
 
 export function ShareholderCalendarView({ bookings }) {
-    // 2026 Season: May - September
-    const months = [
-        new Date(2026, 4, 1), // May
-        new Date(2026, 5, 1), // June
-        new Date(2026, 6, 1), // July
-        new Date(2026, 7, 1), // Aug
-        new Date(2026, 8, 1), // Sept
-    ];
+    // Bookable season months (May - September), auto-rolling each year.
+    const seasonYear = getCurrentSeasonYear();
+    const months = getSeasonMonths(seasonYear);
 
     const renderMonth = (monthDate) => {
         const start = startOfMonth(monthDate);
@@ -151,7 +147,7 @@ export function ShareholderCalendarView({ bookings }) {
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800">2026 Season Calendar</h2>
+                    <h2 className="text-xl font-bold text-slate-800">{seasonYear} Season Calendar</h2>
                     <p className="text-sm text-muted-foreground">Visual snapshot of any claimed dates for the season.</p>
                 </div>
                 <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">

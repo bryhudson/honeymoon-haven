@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown, LogIn } from 'lucide-react';
 import { format, differenceInHours, addDays, isPast } from 'date-fns';
-import { DRAFT_CONFIG, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
+import { getCurrentSeasonYear, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
 import { CHECK_IN_TIME, CHECK_OUT_TIME } from '../../../lib/bookingPolicy';
 import { HistoricalOrders } from './HistoricalOrders';
 
@@ -27,7 +27,7 @@ export function SeasonSchedule({ currentOrder, allBookings, status, startDateOve
                         className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${view === 'current' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                     >
                         <Calendar className="w-4 h-4" />
-                        2026 Season
+                        {getCurrentSeasonYear()} Season
                     </button>
                     <button
                         onClick={() => setView('history')}
