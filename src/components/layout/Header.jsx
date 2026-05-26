@@ -61,7 +61,14 @@ export function Header() {
 
     // Fetch Active Picker for Masquerade (Admin Only)
     const { status } = useBookingRealtime();
-    const masqueradeTarget = isAdmin ? status?.activePicker : null;
+    // "View as Shareholder" must always carry a masquerade target, otherwise the
+    // admin auto-redirect (Dashboard.jsx) bounces straight back to /admin. Prefer
+    // the active draft picker, then the admin's own shareholder identity, then the
+    // first shareholder - so it works in Open Season (no active picker) too.
+    const ownShareholderName = (loggedInShareholder && loggedInShareholder !== 'Admin') ? loggedInShareholder : null;
+    const masqueradeTarget = isAdmin
+        ? (status?.activePicker || ownShareholderName || shareholders[0]?.name || null)
+        : null;
 
     const viewAsLink = masqueradeTarget
         ? `/?masquerade=${encodeURIComponent(masqueradeTarget)}`
