@@ -183,6 +183,31 @@ export function getSeasonState(now: Date = new Date()): SeasonState {
 }
 
 /**
+ * The season year currently in focus. Oct-Dec roll forward to the upcoming
+ * season (the off-season points at next year); Jan-Sep map to that year.
+ */
+export function getCurrentSeasonYear(now: Date = new Date()): number {
+    return now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+}
+
+export interface SeasonConfig {
+    START_DATE: Date;    // draft opens (April 1)
+    SEASON_START: Date;  // first bookable night (May 1)
+    SEASON_END: Date;    // last bookable night (Sept 30)
+    BOOKING_CLOSE: Date; // booking closes (3rd Monday of September)
+}
+
+/** All season anchors derived from a season year (the basis for auto-rollover). */
+export function getSeasonConfig(year: number): SeasonConfig {
+    return {
+        START_DATE: new Date(year, 3, 1),
+        SEASON_START: new Date(year, 4, 1),
+        SEASON_END: new Date(year, 8, 30),
+        BOOKING_CLOSE: getBookingCloseDate(year),
+    };
+}
+
+/**
  * STRICT RULE: Every turn officially starts at 10:00 AM.
  */
 export function getOfficialStart(finishTime: Date | any): Date | null {

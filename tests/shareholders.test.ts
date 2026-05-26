@@ -9,6 +9,8 @@ import {
     mapOrderToSchedule,
     getBookingCloseDate,
     getSeasonState,
+    getCurrentSeasonYear,
+    getSeasonConfig,
     SHAREHOLDERS_2025,
     DRAFT_CONFIG,
     type Booking,
@@ -35,6 +37,26 @@ describe('Season booking cutoff & lifecycle', () => {
     it('is OFF_SEASON from Oct 1 onward', () => {
         expect(getSeasonState(new Date(2026, 9, 1))).toBe('OFF_SEASON');     // Oct 1
         expect(getSeasonState(new Date(2026, 11, 25))).toBe('OFF_SEASON');   // Dec 25
+    });
+
+    it('getCurrentSeasonYear maps Jan-Sep to that year', () => {
+        expect(getCurrentSeasonYear(new Date(2026, 0, 15))).toBe(2026); // Jan
+        expect(getCurrentSeasonYear(new Date(2026, 4, 1))).toBe(2026);  // May
+        expect(getCurrentSeasonYear(new Date(2026, 8, 30))).toBe(2026); // Sep 30
+    });
+
+    it('getCurrentSeasonYear rolls Oct-Dec to the next year (off-season points at the upcoming season)', () => {
+        expect(getCurrentSeasonYear(new Date(2026, 9, 1))).toBe(2027);   // Oct 1
+        expect(getCurrentSeasonYear(new Date(2026, 11, 31))).toBe(2027); // Dec 31
+        expect(getCurrentSeasonYear(new Date(2027, 0, 5))).toBe(2027);   // Jan (next yr)
+    });
+
+    it('getSeasonConfig derives every anchor from the year', () => {
+        const c = getSeasonConfig(2027);
+        expect(c.START_DATE).toEqual(new Date(2027, 3, 1));     // Apr 1
+        expect(c.SEASON_START).toEqual(new Date(2027, 4, 1));   // May 1
+        expect(c.SEASON_END).toEqual(new Date(2027, 8, 30));    // Sep 30
+        expect(c.BOOKING_CLOSE).toEqual(new Date(2027, 8, 20)); // 3rd Mon Sep 2027
     });
 });
 
