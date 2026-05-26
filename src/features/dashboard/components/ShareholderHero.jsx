@@ -224,10 +224,12 @@ export function ShareholderHero({
     };
 
     const renderPastAction = (action, index) => {
-        const isPassed = action.type === 'pass';
+        const isPassed = action.type === 'pass' || action.type === 'auto-pass';
         const isSkipped = action.type === 'skipped';
         const roundLabel = `Round ${index + 1}`;
         const isCancelled = action.type === 'cancelled' || action.status === 'cancelled';
+        // Passed/skipped turns have no booking behind them, so there are no details to view.
+        const hasDetails = !isPassed && !isSkipped;
 
         let badgeClass = "bg-green-50 text-green-700 border-green-200";
         let badgeLabel = "Confirmed";
@@ -260,8 +262,8 @@ export function ShareholderHero({
         return (
             <div
                 key={action.id || `past-${index}`}
-                onClick={() => onViewDetails(action)}
-                className="flex items-center justify-between px-5 py-4 mb-2 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer last:mb-0"
+                onClick={hasDetails ? () => onViewDetails(action) : undefined}
+                className={`flex items-center justify-between px-5 py-4 mb-2 bg-white rounded-xl border border-slate-200 shadow-sm last:mb-0 ${hasDetails ? 'cursor-pointer' : ''}`}
             >
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -280,10 +282,12 @@ export function ShareholderHero({
                     </span>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-semibold text-slate-400 pl-4 shrink-0">
-                    <span className="hidden sm:inline">View Details</span>
-                    <ChevronRight className="w-4 h-4" />
-                </div>
+                {hasDetails && (
+                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-400 pl-4 shrink-0">
+                        <span className="hidden sm:inline">View Details</span>
+                        <ChevronRight className="w-4 h-4" />
+                    </div>
+                )}
             </div>
         );
     };
@@ -527,7 +531,7 @@ export function ShareholderHero({
     // 5. DONE FOR ROUND
     // ============================================
     const lastEffective = effectiveActions[effectiveActions.length - 1];
-    const isPassed = lastEffective?.type === 'pass';
+    const isPassed = lastEffective?.type === 'pass' || lastEffective?.type === 'auto-pass';
     const isSkipped = lastEffective?.type === 'skipped';
     const isCancelled = lastEffective?.type === 'cancelled'; // Strictly check 'type'
 
