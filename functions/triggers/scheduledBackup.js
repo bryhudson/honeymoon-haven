@@ -1,6 +1,7 @@
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
+const { getSeasonState, getCurrentSeasonYear, decideWeeklyBackup } = require("../helpers/shareholders");
 
 // Ensure admin is initialized
 if (admin.apps.length === 0) {
@@ -20,10 +21,23 @@ exports.weeklyDatabaseBackup = onSchedule({
     memory: "256MiB"
 }, async (event) => {
     try {
-        logger.info("Starting scheduled weekly booking backup...");
+        const now = new Date();
 
-        // 1. Only run if we are actually in an active booking season (or we can just run it always to be safe).
-        // It's safer and cheaper to just run it and take a snapshot if there are bookings.
+        // Off-season hibernation: in-season this is the regular weekly snapshot;
+        // on the first off-season run it takes ONE "season-end" snapshot of the
+        // season that just closed, then skips the rest of the winter. The
+        // season-end snapshot uses a stable id so it's taken exactly once.
+        const endedYear = getCurrentSeasonYear(now) - 1; // season that just closed (off-season)
+        let seasonEndExists = false;
+        if (getSeasonState(now) === 'OFF_SEASON') {
+            seasonEndExists = (await db.doc(`_backups/season_end_${endedYear}`).get()).exists;
+        }
+        const action = decideWeeklyBackup(now, seasonEndExists);
+
+        if (action === 'skip') {
+            logger.info(`Off-season: season-end backup (season_end_${endedYear}) already exists. Skipping.`);
+            return;
+        }
 
         const bookingsRef = db.collection('bookings');
         const snapshot = await bookingsRef.get();
@@ -33,18 +47,24 @@ exports.weeklyDatabaseBackup = onSchedule({
             return;
         }
 
-        // Format timestamp: YYYY-MM-DD_HH-mm-ss
-        // Since we are server-side, we'll format it manually or use standard ISO-like
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const timestampId = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}_CRON`;
+        // The backup id + type depend on the action.
+        let backupId, backupType;
+        if (action === 'season_end') {
+            backupId = `season_end_${endedYear}`; // stable id -> idempotent one-time snapshot
+            backupType = 'season_end';
+        } else {
+            // Weekly snapshot: timestamped id (YYYY-MM-DD_HH-mm-ss).
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            backupId = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}_CRON`;
+            backupType = 'scheduled_weekly';
+        }
 
-        const backupPath = `_backups/${timestampId}/bookings`;
+        const backupPath = `_backups/${backupId}/bookings`;
 
         const chunks = [];
         let batch = db.batch();
@@ -67,19 +87,19 @@ exports.weeklyDatabaseBackup = onSchedule({
 
         // Save Metadata Doc so we can list backups easily in the Admin UI
         const metaBatch = db.batch();
-        metaBatch.set(db.doc(`_backups/${timestampId}`), {
+        metaBatch.set(db.doc(`_backups/${backupId}`), {
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            timestampId,
+            timestampId: backupId,
             count: snapshot.size,
-            type: 'scheduled_weekly'
+            type: backupType
         });
         chunks.push(metaBatch);
 
         await Promise.all(chunks.map(b => b.commit()));
 
-        logger.info(`Successfully completed weekly backup: ${timestampId} with ${snapshot.size} records.`);
+        logger.info(`Successfully completed ${backupType} backup: ${backupId} with ${snapshot.size} records.`);
 
     } catch (error) {
-        logger.error("Failed to run scheduled weekly backup:", error);
+        logger.error("Failed to run scheduled backup:", error);
     }
 });

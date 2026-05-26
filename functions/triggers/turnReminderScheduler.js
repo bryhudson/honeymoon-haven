@@ -3,7 +3,7 @@ const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets, isProduction } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
-const { normalizeName } = require("../helpers/shareholders");
+const { normalizeName, getSeasonState } = require("../helpers/shareholders");
 const { toZonedTime, fromZonedTime } = require("date-fns-tz");
 
 // Ensure admin is initialized
@@ -49,6 +49,11 @@ exports.turnReminderScheduler = onSchedule(
         secrets: gmailSecrets
     },
     async (event) => {
+        // Off-season hibernation: no draft turns to remind before April 1.
+        if (getSeasonState() === 'OFF_SEASON') {
+            logger.info("[TurnReminder] Off-season - skipping until the season reopens.");
+            return;
+        }
         logger.info("=== Turn Reminder Scheduler Started ===");
 
         try {

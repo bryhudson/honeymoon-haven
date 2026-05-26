@@ -4,6 +4,7 @@ import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { useAuth } from '../../auth/AuthContext';
 import { getAvailableBackups, restoreBackup, deleteBackup, backupBookingsToFirestore } from '../services/backupService';
 import { IS_PROD, IS_DEV_ENV, PROJECT_ID } from '../../../lib/env';
+import { getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 
@@ -231,12 +232,15 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, backupBookingsToFire
     // Load available backups on mount
     useEffect(() => { loadBackups(); }, []);
 
+    const seasonState = getSeasonState();
+    const upcomingSeasonYear = getCurrentSeasonYear();
+
     return (
         <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                 <div>
                     <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Data Recovery Zone</h3>
-                    <p className="text-sm text-slate-500">Restore points created automatically before wipes, every Sunday at 11 PM PST, or on-demand via Force Backup.</p>
+                    <p className="text-sm text-slate-500">Restore points are created automatically before wipes, weekly during the season, once at season-end (Oct 1), or on-demand via Force Backup.</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                     <button
@@ -251,6 +255,13 @@ function RecoveryZone({ restoreBackup, getAvailableBackups, backupBookingsToFire
                     </button>
                 </div>
             </div>
+
+            {/* Off-season hibernation status */}
+            {seasonState === 'OFF_SEASON' && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4 text-sm text-slate-600">
+                    <span className="font-bold text-slate-800">Off-season.</span> Scheduled backups and reminders are paused until the {upcomingSeasonYear} season opens April 1. Booking data isn't changing, so your latest season-end snapshot below is the current restore point. Force Backup still works anytime.
+                </div>
+            )}
 
             {/* Bulk Action Bar */}
             {selectedBackups.length > 0 && (

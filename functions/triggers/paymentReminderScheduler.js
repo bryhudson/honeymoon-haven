@@ -4,7 +4,7 @@ const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
-const { normalizeName } = require("../helpers/shareholders");
+const { normalizeName, getSeasonState } = require("../helpers/shareholders");
 
 if (admin.apps.length === 0) {
     admin.initializeApp();
@@ -58,6 +58,11 @@ exports.paymentReminderScheduler = onSchedule(
         timeZone: "America/Vancouver"
     },
     async (event) => {
+        // Off-season hibernation: pause fee nudges until the season reopens (April 1).
+        if (getSeasonState() === 'OFF_SEASON') {
+            logger.info("[PaymentReminder] Off-season - skipping until the season reopens.");
+            return;
+        }
         logger.info("=== Payment Reminder Scheduler Started ===");
 
         try {

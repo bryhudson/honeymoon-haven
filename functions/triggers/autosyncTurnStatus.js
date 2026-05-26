@@ -11,7 +11,7 @@ if (admin.apps.length === 0) {
 const db = admin.firestore();
 
 // Import shared logic
-const { calculateDraftSchedule, getShareholderOrder, getCurrentSeasonYear } = require("../helpers/shareholders");
+const { calculateDraftSchedule, getShareholderOrder, getCurrentSeasonYear, getSeasonState } = require("../helpers/shareholders");
 
 /**
  * Auto-Sync Turn Status Scheduler
@@ -27,6 +27,12 @@ exports.autosyncTurnStatus = onSchedule(
         secrets: gmailSecrets
     },
     async (event) => {
+        // Off-season hibernation: there's no draft to sync before April 1, so exit
+        // immediately. Auto-resumes when getSeasonState() leaves OFF_SEASON.
+        if (getSeasonState() === 'OFF_SEASON') {
+            logger.info("[AutoSync] Off-season - skipping until the season reopens.");
+            return;
+        }
         logger.info("=== Auto-Sync Turn Status Started ===");
 
         try {

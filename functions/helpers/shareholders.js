@@ -173,6 +173,29 @@ function getSeasonConfig(year) {
     };
 }
 
+// Shareholder booking lifecycle (mirrors client getSeasonState):
+//   OFF_SEASON  - before the draft opens (Oct of the prior year through March)
+//   OPEN        - April 1 through the September cutoff
+//   CLOSED      - cutoff through the season's last day (Sept 30)
+function getSeasonState(now = new Date()) {
+    const cfg = getSeasonConfig(getCurrentSeasonYear(now));
+    const t = now.getTime();
+    if (t < cfg.START_DATE.getTime()) return 'OFF_SEASON';
+    if (t < cfg.BOOKING_CLOSE.getTime()) return 'OPEN';
+    return 'CLOSED';
+}
+
+// Off-season hibernation: decide what the weekly backup cron should do on a run.
+//   'weekly'      - in-season (OPEN/CLOSED): take the regular weekly snapshot
+//   'season_end'  - first off-season run: take one season-end snapshot
+//   'skip'        - off-season and the season-end snapshot already exists
+// `seasonEndExists` is supplied by the caller (a Firestore existence check) so
+// this stays pure and unit-testable.
+function decideWeeklyBackup(now, seasonEndExists) {
+    if (getSeasonState(now) !== 'OFF_SEASON') return 'weekly';
+    return seasonEndExists ? 'skip' : 'season_end';
+}
+
 // Scope bookings to a single season by their `from` (or `createdAt`) calendar year.
 function filterBookingsToSeason(bookings, seasonYear) {
     return bookings.filter(b => {
@@ -397,6 +420,8 @@ module.exports = {
     getBookingCloseDate,
     getCurrentSeasonYear,
     getSeasonConfig,
+    getSeasonState,
+    decideWeeklyBackup,
     filterBookingsToSeason,
     calculateDraftSchedule,
     adjustForCourtesy,
