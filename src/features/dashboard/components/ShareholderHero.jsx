@@ -738,7 +738,7 @@ function getOrdinal(n) {
 
 // --- Admin-Style Widget (V5.6) ---
 // Moved outside main component and declared as function to ensure hoisting and avoid initialization/hoisting errors in prod builds
-function ModernTrailerWidget({
+export function ModernTrailerWidget({
     accentColor = "emerald",
     icon: Icon,
     title,

@@ -8,7 +8,7 @@ import { httpsCallable } from 'firebase/functions';
 import { collection, getDocs, writeBatch, updateDoc, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, deleteField, getDoc, Timestamp } from 'firebase/firestore';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { format, differenceInDays } from 'date-fns';
-import { List, Calendar, Users, CheckCircle, XCircle, Mail, Download, Settings, Bell, PlusCircle } from 'lucide-react';
+import { List, Calendar, Users, CheckCircle, XCircle, Mail, Download, Settings, Bell, PlusCircle, Tent } from 'lucide-react';
 import { calculateBookingCost } from '../../../lib/pricing';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { PaymentConfirmModal } from '../components/PaymentConfirmModal';
@@ -16,7 +16,7 @@ import { UserActionsDropdown } from '../../dashboard/components/UserActionsDropd
 import { ReauthenticationModal } from '../../auth/components/ReauthenticationModal';
 import { PromptModal } from '../../../components/ui/PromptModal';
 import { CreateUserModal } from '../components/CreateUserModal';
-import { ShareholderHero } from '../../dashboard/components/ShareholderHero';
+import { ShareholderHero, ModernTrailerWidget } from '../../dashboard/components/ShareholderHero';
 import { AdminTurnHero } from '../../dashboard/components/AdminTurnHero';
 import { SeasonSchedule } from '../../dashboard/components/SeasonSchedule';
 import { backupBookingsToFirestore, exportBookingsToCSV } from '../services/backupService';
@@ -527,9 +527,17 @@ export function AdminDashboard() {
 
             {myProfile && activeTurn ? (
                 <ShareholderHero currentUser={currentUser} status={status} shareholderName={myProfile.name} drafts={allBookings} isSuperAdmin={true} onOpenBooking={() => window.location.hash = '#book'} />
-            ) : activeTurn && (
+            ) : activeTurn ? (
                 <AdminTurnHero activeTurn={activeTurn} drafts={allBookings} isTestMode={isTestMode} isSystemFrozen={isSystemFrozen} />
-            )}
+            ) : status?.phase === 'OPEN_SEASON' ? (
+                <ModernTrailerWidget
+                    accentColor="emerald"
+                    icon={Tent}
+                    title="Open Season"
+                    subtitle="First Come, First Served"
+                    mainContent={`The ${getCurrentSeasonYear()} season is in Open Season - all remaining dates are first-come, first-served.`}
+                />
+            ) : null}
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
