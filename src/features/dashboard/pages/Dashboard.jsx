@@ -643,12 +643,12 @@ export function Dashboard() {
                     />
 
                     {/* --- TAB NAVIGATION --- */}
-                    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">
-                        <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+                    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mt-6 py-2">
+                        <div className="flex overflow-x-auto hide-scrollbar space-x-1 bg-slate-100/80 p-1 rounded-xl w-full md:w-fit snap-x snap-mandatory">
                             <button
                                 id="tour-recent"
                                 onClick={() => setActiveTab('bookings')}
-                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                                className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-center flex items-center gap-2 ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'}`}
                             >
                                 <Calendar className="w-4 h-4" />
                                 Bookings
@@ -657,7 +657,7 @@ export function Dashboard() {
                                 id="tour-schedule"
                                 data-tour="season-tab"
                                 onClick={() => setActiveTab('schedule')}
-                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                                className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-center flex items-center gap-2 ${activeTab === 'schedule' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'}`}
                             >
                                 <Clock className="w-4 h-4" />
                                 Schedule
@@ -665,7 +665,7 @@ export function Dashboard() {
                             <button
                                 id="tour-guide"
                                 onClick={() => setActiveTab('guide')}
-                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'guide' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                                className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-center flex items-center gap-2 ${activeTab === 'guide' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'}`}
                             >
                                 <BookOpen className="w-4 h-4" />
                                 Trailer Guide & Rules
@@ -673,7 +673,7 @@ export function Dashboard() {
                             <button
                                 id="tour-events"
                                 onClick={() => setActiveTab('events')}
-                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'events' ? 'border-amber-500 text-amber-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                                className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-center flex items-center gap-2 ${activeTab === 'events' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'}`}
                             >
                                 <Sun className="w-4 h-4" />
                                 What's On
