@@ -383,39 +383,33 @@ export function AdminBookingManagement({
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                    <div className="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
                         <button
                             onClick={handleDownloadCSV}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/50`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/50`}
                             title="Download CSV"
                         >
-                            <div className="flex items-center gap-2">
-                                <Download className="w-3.5 h-3.5" />
-                                <span>Export</span>
-                            </div>
+                            <Download className="w-4 h-4" />
+                            <span>Export</span>
                         </button>
                     </div>
 
                     <div className="h-6 w-px bg-slate-200 hidden sm:block mx-1"></div>
 
-                    <div className="flex bg-slate-100 p-1 rounded-lg">
-                        <button
-                            onClick={() => setBookingViewMode('list')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${bookingViewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            <div className="flex items-center gap-2">
-                                <List className="w-3.5 h-3.5" />
-                                List
-                            </div>
-                        </button>
+                    <div className="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
                         <button
                             onClick={() => setBookingViewMode('calendar')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${bookingViewMode === 'calendar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${bookingViewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                         >
-                            <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-3.5 h-3.5" />
-                                Calendar
-                            </div>
+                            <CalendarIcon className="w-4 h-4" />
+                            Calendar
+                        </button>
+                        <button
+                            onClick={() => setBookingViewMode('list')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${bookingViewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            <List className="w-4 h-4" />
+                            List
                         </button>
                     </div>
                 </div>
