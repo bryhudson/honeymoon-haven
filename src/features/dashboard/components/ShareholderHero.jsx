@@ -26,7 +26,7 @@ export function ShareholderHero({
     onCelebrated
 }) {
     const [now, setNow] = React.useState(new Date());
-    const [isHistoryExpanded, setIsHistoryExpanded] = React.useState(false);
+    const [isHistoryExpanded, setIsHistoryExpanded] = React.useState(true); // expanded on load so history is visible immediately; HIDE collapses it
 
     React.useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 60000);
