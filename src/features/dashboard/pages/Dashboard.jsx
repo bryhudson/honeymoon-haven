@@ -228,7 +228,7 @@ export function Dashboard() {
     const [showBookingForm, setShowBookingForm] = useState(false);
 
     // UI Layout State
-    const [activeTab, setActiveTab] = useState('schedule'); // bookings, schedule, guide
+    const [activeTab, setActiveTab] = useState('bookings'); // bookings (default), schedule, guide, events
 
     // SYSTEM SAFETY: Build v2.78.00
     // Force Regular Users to Production Mode always
@@ -640,6 +640,14 @@ export function Dashboard() {
                     <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border mt-6">
                         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
                             <button
+                                id="tour-recent"
+                                onClick={() => setActiveTab('bookings')}
+                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                            >
+                                <Calendar className="w-4 h-4" />
+                                Bookings Calendar
+                            </button>
+                            <button
                                 id="tour-schedule"
                                 data-tour="season-tab"
                                 onClick={() => setActiveTab('schedule')}
@@ -647,14 +655,6 @@ export function Dashboard() {
                             >
                                 <Clock className="w-4 h-4" />
                                 {getCurrentSeasonYear()} Season Schedule
-                            </button>
-                            <button
-                                id="tour-recent"
-                                onClick={() => setActiveTab('bookings')}
-                                className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                            >
-                                <Calendar className="w-4 h-4" />
-                                Bookings (Calendar & List)
                             </button>
                             <button
                                 id="tour-guide"
