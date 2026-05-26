@@ -17,6 +17,7 @@ import { StatusCard } from '../components/StatusCard';
 import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
 import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { IS_DEV_ENV } from '../../../lib/env';
 import { nightsOverlap } from '../../../lib/availability';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
     .then(module => ({ default: module.BookingDetailsModal })));
@@ -138,7 +139,12 @@ export function Dashboard() {
             const myRecord = shareholders.find(s => normalizeName(s.name) === normalizeName(loggedInShareholder));
             if (myRecord) {
                 setCurrentShareholderDoc(myRecord);
-                
+
+                // Welcome modal is dev-only for now: the app has run a full season, so
+                // shareholders don't need the intro. Re-enable in prod by lifting this
+                // gate when we want to announce a new feature.
+                if (!IS_DEV_ENV) return;
+
                 // Show welcome modal on every login UNLESS user has permanently dismissed it
                 if (myRecord.seenWelcome || hasDismissedLocally) return;
 
