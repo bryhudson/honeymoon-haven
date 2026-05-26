@@ -151,8 +151,43 @@ function getPickDurationMS() {
     return DRAFT_CONFIG.PICK_DURATION_DAYS * 24 * 60 * 60 * 1000;
 }
 
+// Booking closes for the season on the 3rd Monday of September. Mirrors client.
+function getBookingCloseDate(year) {
+    const sept1 = new Date(year, 8, 1);
+    const firstMonday = 1 + ((8 - sept1.getDay()) % 7);
+    return new Date(year, 8, firstMonday + 14);
+}
+
+// The season year currently in focus: Oct-Dec roll forward to the upcoming season.
+function getCurrentSeasonYear(now = new Date()) {
+    return now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+}
+
+// All season anchors derived from a season year (the basis for auto-rollover).
+function getSeasonConfig(year) {
+    return {
+        START_DATE: new Date(year, 3, 1),
+        SEASON_START: new Date(year, 4, 1),
+        SEASON_END: new Date(year, 8, 30),
+        BOOKING_CLOSE: getBookingCloseDate(year),
+    };
+}
+
+// Scope bookings to a single season by their `from` (or `createdAt`) calendar year.
+function filterBookingsToSeason(bookings, seasonYear) {
+    return bookings.filter(b => {
+        const raw = (b.from != null ? b.from : b.createdAt);
+        const d = raw instanceof Date ? raw : (raw && raw.toDate ? raw.toDate() : (raw ? new Date(raw) : null));
+        return d != null && !isNaN(d.getTime()) && d.getFullYear() === seasonYear;
+    });
+}
+
 function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), startDateOverride = null, bypassTenAM = false) {
-    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
+    // Year-aware: scope bookings to the active season and anchor the draft start
+    // on that season's April 1 so a fresh season drafts clean. Mirrors client.
+    const seasonYear = startDateOverride ? new Date(startDateOverride).getFullYear() : getCurrentSeasonYear(now);
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : getSeasonConfig(seasonYear).START_DATE;
+    const seasonBookings = filterBookingsToSeason(bookings, seasonYear);
     const PICK_DURATION_MS = getPickDurationMS();
 
     const round1Order = [...shareholders];
@@ -178,7 +213,7 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
         const bookingIndex = userTurnCounts[shareholderName];
         userTurnCounts[shareholderName]++;
 
-        const userActions = bookings
+        const userActions = seasonBookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
             .filter(b => b.isFinalized || ['pass', 'skipped', 'cancelled'].includes(b.type || b.status))
             .sort((a, b) => {
@@ -223,7 +258,7 @@ function calculateDraftSchedule(shareholders, bookings = [], now = new Date(), s
 
     if (!activePicker && now >= DRAFT_START) {
         phase = 'OPEN_SEASON';
-    } else if (now < DRAFT_START && bookings.length === 0 && !activePicker) {
+    } else if (now < DRAFT_START && seasonBookings.length === 0 && !activePicker) {
         phase = 'PRE_DRAFT';
     }
 
@@ -355,6 +390,10 @@ module.exports = {
     getShareholderOrder,
     getOfficialStart,
     getPickDurationMS,
+    getBookingCloseDate,
+    getCurrentSeasonYear,
+    getSeasonConfig,
+    filterBookingsToSeason,
     calculateDraftSchedule,
     adjustForCourtesy,
     mapOrderToSchedule

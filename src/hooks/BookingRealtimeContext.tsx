@@ -5,6 +5,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import { IS_DEV_ENV } from '../lib/env';
 import {
     getShareholderOrder,
+    getCurrentSeasonYear,
     calculateDraftSchedule,
     Shareholder,
     Booking,
@@ -16,6 +17,7 @@ export interface BookingRealtimeContextValue {
     loading: boolean;
     status: DraftStatus;
     currentOrder: Shareholder[];
+    currentSeasonYear: number;
     startDateOverride: Date | null;
     isSystemFrozen: boolean;
     bypassTenAM: boolean;
@@ -109,7 +111,10 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
         };
     }, [currentUser]); // Re-subscribe when auth state changes
 
-    const currentOrder = useMemo(() => getShareholderOrder(2026), []);
+    // Year-aware: the rotation auto-advances each season. Memoized on the year
+    // (not `now`) so the 60s tick doesn't churn the order; it only changes at rollover.
+    const currentSeasonYear = useMemo(() => getCurrentSeasonYear(now), [now]);
+    const currentOrder = useMemo(() => getShareholderOrder(currentSeasonYear), [currentSeasonYear]);
 
     const status = useMemo(
         () => calculateDraftSchedule(currentOrder, allBookings, now, startDateOverride, bypassTenAM),
@@ -121,12 +126,13 @@ export function BookingRealtimeProvider({ children }: { children: React.ReactNod
         loading,
         status,
         currentOrder,
+        currentSeasonYear,
         startDateOverride,
         isSystemFrozen,
         bypassTenAM,
         isTestMode: IS_DEV_ENV,
         fastTestingMode,
-    }), [allBookings, loading, status, currentOrder, startDateOverride, isSystemFrozen, bypassTenAM, fastTestingMode]);
+    }), [allBookings, loading, status, currentOrder, currentSeasonYear, startDateOverride, isSystemFrozen, bypassTenAM, fastTestingMode]);
 
     return (
         <BookingRealtimeContext.Provider value={value}>

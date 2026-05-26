@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'; // Assuming React and useEff
 import { format, addWeeks, addDays, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
-import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG, getSeasonState } from '../../../lib/shareholders';
+import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
 import { isHoliday, isEventDay, getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { db } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
@@ -248,17 +248,18 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
         // Season lifecycle gate: booking closes for the season as of the September cutoff.
         const seasonState = getSeasonState();
-        const seasonYear = DRAFT_CONFIG.SEASON_START.getFullYear();
+        const seasonYear = getCurrentSeasonYear();
         if (seasonState === 'CLOSED') {
             setBookingStatus({ canBook: false, message: `Booking is closed for the ${seasonYear} season.` });
             return;
         }
         if (seasonState === 'OFF_SEASON') {
-            setBookingStatus({ canBook: false, message: `The ${seasonYear} season has ended. The ${seasonYear + 1} season opens soon.` });
+            // Off-season points at the upcoming season, which opens April 1.
+            setBookingStatus({ canBook: false, message: `The ${seasonYear} season opens April 1, ${seasonYear}. We'll let you know when booking reopens.` });
             return;
         }
 
-        const targetYear = 2026;
+        const targetYear = getCurrentSeasonYear();
         const savedOrder = localStorage.getItem(`shareholderOrder_${targetYear}`);
         const currentOrder = savedOrder ? JSON.parse(savedOrder) : getShareholderOrder(targetYear);
 

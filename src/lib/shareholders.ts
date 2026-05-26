@@ -173,13 +173,13 @@ export function getBookingCloseDate(year: number): Date {
  *   OFF_SEASON  - after the season ends; the next season has not opened yet
  */
 export function getSeasonState(now: Date = new Date()): SeasonState {
-    const year = DRAFT_CONFIG.SEASON_START.getFullYear();
+    // Year-aware: getCurrentSeasonYear rolls forward on Oct 1, so "after Sep 30"
+    // naturally becomes the next season's pre-draft (OFF_SEASON) below.
+    const cfg = getSeasonConfig(getCurrentSeasonYear(now));
     const t = now.getTime();
-    if (t < getBookingCloseDate(year).getTime()) return 'OPEN';
-    const dayAfterSeasonEnd = new Date(DRAFT_CONFIG.SEASON_END);
-    dayAfterSeasonEnd.setDate(dayAfterSeasonEnd.getDate() + 1); // start of the day after the last bookable day
-    if (t < dayAfterSeasonEnd.getTime()) return 'CLOSED';
-    return 'OFF_SEASON';
+    if (t < cfg.START_DATE.getTime()) return 'OFF_SEASON'; // before the draft opens (Oct prev year through Mar)
+    if (t < cfg.BOOKING_CLOSE.getTime()) return 'OPEN';    // Apr 1 through the 3rd-Monday cutoff
+    return 'CLOSED';                                        // cutoff through Sep 30
 }
 
 /**
@@ -205,6 +205,23 @@ export function getSeasonConfig(year: number): SeasonConfig {
         SEASON_END: new Date(year, 8, 30),
         BOOKING_CLOSE: getBookingCloseDate(year),
     };
+}
+
+/**
+ * Scope bookings to a single season. Bookings carry no explicit season field,
+ * but every record (real booking, pass, auto-pass, cancellation) has a `from`
+ * date that falls within its season's calendar year. Filtering on that year
+ * cleanly separates the active season from prior seasons (which become history)
+ * with no data migration. Malformed records without a valid `from` are dropped.
+ */
+export function filterBookingsToSeason(bookings: Booking[], seasonYear: number): Booking[] {
+    return bookings.filter(b => {
+        // Prefer `from` (the booked night / pass moment); fall back to `createdAt`
+        // for records that lack a `from`. Both land in the season's calendar year.
+        const raw = b.from ?? b.createdAt;
+        const d = raw instanceof Date ? raw : (raw?.toDate ? raw.toDate() : (raw ? new Date(raw) : null));
+        return d != null && !isNaN(d.getTime()) && d.getFullYear() === seasonYear;
+    });
 }
 
 /**
@@ -270,8 +287,14 @@ export function calculateDraftSchedule(
     startDateOverride: Date | null = null,
     bypassTenAM: boolean = false
 ): DraftStatus {
-    const schedule = mapOrderToSchedule(shareholders, bookings, startDateOverride, bypassTenAM);
-    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : DRAFT_CONFIG.START_DATE;
+    // Year-aware: the active season is the override's year (dev wipe/reset) or
+    // the current season year. Scope bookings to it so prior seasons don't leak
+    // into a fresh draft, and anchor the draft start on that season's April 1.
+    const seasonYear = startDateOverride ? new Date(startDateOverride).getFullYear() : getCurrentSeasonYear(now);
+    const DRAFT_START = startDateOverride ? new Date(startDateOverride) : getSeasonConfig(seasonYear).START_DATE;
+    const seasonBookings = filterBookingsToSeason(bookings, seasonYear);
+
+    const schedule = mapOrderToSchedule(shareholders, seasonBookings, DRAFT_START, bypassTenAM);
     const PICK_DURATION_MS = getPickDurationMS();
 
     const round1Order = [...shareholders];
@@ -296,7 +319,7 @@ export function calculateDraftSchedule(
         const bookingIndex = userTurnCounts[shareholderName];
         userTurnCounts[shareholderName]++;
 
-        const userActions = bookings
+        const userActions = seasonBookings
             .filter(b => normalizeName(b.shareholderName) === normalizeName(shareholderName))
             .filter(b => b.isFinalized || ['pass', 'skipped', 'cancelled'].includes(b.type || (b as any).status)) // IGNORE DRAFTS
             .sort((a, b) => {
@@ -344,7 +367,7 @@ export function calculateDraftSchedule(
 
     if (!activePicker && now >= DRAFT_START) {
         phase = 'OPEN_SEASON';
-    } else if (now < DRAFT_START && bookings.length === 0 && !activePicker) {
+    } else if (now < DRAFT_START && seasonBookings.length === 0 && !activePicker) {
         phase = 'PRE_DRAFT';
     }
 

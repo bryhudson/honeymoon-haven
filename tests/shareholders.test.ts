@@ -11,6 +11,7 @@ import {
     getSeasonState,
     getCurrentSeasonYear,
     getSeasonConfig,
+    filterBookingsToSeason,
     SHAREHOLDERS_2025,
     DRAFT_CONFIG,
     type Booking,
@@ -57,6 +58,87 @@ describe('Season booking cutoff & lifecycle', () => {
         expect(c.SEASON_START).toEqual(new Date(2027, 4, 1));   // May 1
         expect(c.SEASON_END).toEqual(new Date(2027, 8, 30));    // Sep 30
         expect(c.BOOKING_CLOSE).toEqual(new Date(2027, 8, 20)); // 3rd Mon Sep 2027
+    });
+
+    it('getSeasonState is OFF_SEASON before the draft opens (pre-April 1)', () => {
+        expect(getSeasonState(new Date(2026, 0, 15))).toBe('OFF_SEASON'); // Jan 15
+        expect(getSeasonState(new Date(2026, 2, 31))).toBe('OFF_SEASON'); // Mar 31
+    });
+
+    it('getSeasonState rolls a whole year forward (2027 behaves like 2026 did)', () => {
+        expect(getSeasonState(new Date(2027, 1, 1))).toBe('OFF_SEASON');  // Feb 2027 (pre-draft)
+        expect(getSeasonState(new Date(2027, 4, 15))).toBe('OPEN');       // May 2027
+        expect(getSeasonState(new Date(2027, 8, 25))).toBe('CLOSED');     // Sep 25 2027 (after 3rd Mon)
+        expect(getSeasonState(new Date(2027, 9, 1))).toBe('OFF_SEASON');  // Oct 1 2027 -> 2028 pre-draft
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Auto-rollover: season-scoped draft engine
+// ---------------------------------------------------------------------------
+
+describe('filterBookingsToSeason', () => {
+    it('keeps only bookings whose `from` date is in the given season year', () => {
+        const bookings: Booking[] = [
+            makeBooking('Alice', new Date('2026-05-10T18:00:00.000Z')), // 2026
+            makeBooking('Bob',   new Date('2027-05-10T18:00:00.000Z')), // 2027
+            makeBooking('Carol', new Date('2027-08-01T18:00:00.000Z')), // 2027
+        ];
+        const out = filterBookingsToSeason(bookings, 2027);
+        expect(out.map(b => b.shareholderName)).toEqual(['Bob', 'Carol']);
+    });
+
+    it('keeps pass/cancelled records made during the season (they also carry a `from` date)', () => {
+        const bookings: Booking[] = [
+            makeBooking('Alice', new Date('2027-04-06T18:00:00.000Z'), { type: 'pass' }),
+            makeBooking('Bob',   new Date('2027-04-08T18:00:00.000Z'), { type: 'cancelled' }),
+            makeBooking('Carol', new Date('2026-04-06T18:00:00.000Z'), { type: 'pass' }), // prior season
+        ];
+        const out = filterBookingsToSeason(bookings, 2027);
+        expect(out.map(b => b.shareholderName)).toEqual(['Alice', 'Bob']);
+    });
+
+    it('falls back to createdAt when `from` is absent', () => {
+        const fromless = { id: 'x', shareholderName: 'Bob', from: null, to: null, createdAt: new Date('2027-04-13T18:00:00.000Z'), isFinalized: true } as unknown as Booking;
+        expect(filterBookingsToSeason([fromless], 2027).map(b => b.shareholderName)).toEqual(['Bob']);
+        expect(filterBookingsToSeason([fromless], 2026)).toEqual([]);
+    });
+
+    it('excludes malformed records with no usable date at all', () => {
+        const noDate = { id: 'x', shareholderName: 'Ghost', from: null, to: null, createdAt: null, isFinalized: true } as unknown as Booking;
+        expect(filterBookingsToSeason([noDate], 2027)).toEqual([]);
+    });
+});
+
+describe('calculateDraftSchedule auto-rollover', () => {
+    it('ignores prior-season bookings so a new season drafts from scratch', () => {
+        // Last season (2026) Alice & Bob both finalized picks. This season is 2027.
+        const bookings: Booking[] = [
+            makeBooking('Alice', new Date('2026-04-06T22:00:00.000Z')),
+            makeBooking('Bob',   new Date('2026-04-08T22:00:00.000Z')),
+        ];
+        // Override anchors the 2027 draft start (Mon Apr 6 2027, 10 AM PDT = 17:00 UTC).
+        const start2027 = new Date('2027-04-06T17:00:00.000Z');
+        // now: within Alice's very first 2027 window.
+        const now = new Date('2027-04-06T19:00:00.000Z');
+        const result = calculateDraftSchedule(SHAREHOLDERS_3, bookings, now, start2027);
+
+        // If 2026 bookings leaked in, Carol would be active. They must be scoped out.
+        expect(result.phase).toBe('ROUND_1');
+        expect(result.activePicker).toBe('Alice');
+        expect(result.isSeasonStart).toBe(true);
+    });
+
+    it('derives the draft start from the season year when no override is given', () => {
+        // No override: the engine must anchor on April 1 of the *current* season year.
+        // now = Apr 1 2027 noon PDT. If the start were still pinned to 2026, `now`
+        // would be ~a year past the 2026 draft -> OPEN_SEASON with no active picker.
+        const now = new Date('2027-04-01T19:00:00.000Z');
+        const result = calculateDraftSchedule(SHAREHOLDERS_3, [], now);
+
+        expect(result.phase).toBe('ROUND_1');
+        expect(result.activePicker).toBe('Alice');
+        expect(result.isSeasonStart).toBe(true);
     });
 });
 

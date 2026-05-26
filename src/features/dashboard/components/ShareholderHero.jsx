@@ -5,7 +5,7 @@ import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
     Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History, Home
 } from 'lucide-react';
-import { normalizeName, formatNameForDisplay, CABIN_OWNERS, DRAFT_CONFIG, getSeasonState } from '../../../lib/shareholders';
+import { normalizeName, formatNameForDisplay, CABIN_OWNERS, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -307,7 +307,8 @@ export function ShareholderHero({
     // ============================================
     const seasonState = getSeasonState();
     if (seasonState === 'CLOSED' || seasonState === 'OFF_SEASON') {
-        const seasonYear = DRAFT_CONFIG.SEASON_START.getFullYear();
+        // Off-season points at the upcoming season (opens April 1); CLOSED is the current season.
+        const seasonYear = getCurrentSeasonYear();
         const isOff = seasonState === 'OFF_SEASON';
         const closedHero = <ModernTrailerWidget
             shareholderName={shareholderName}
@@ -316,7 +317,7 @@ export function ShareholderHero({
             title={isOff ? 'Off-Season' : 'Season Closed'}
             subtitle={`${seasonYear} Season`}
             mainContent={isOff
-                ? `The ${seasonYear} season has ended. The ${seasonYear + 1} season opens soon - we'll let you know when booking reopens.`
+                ? `The ${seasonYear} season opens April 1, ${seasonYear}. We'll let you know when booking reopens.`
                 : `Booking is closed for the ${seasonYear} season. See you next year!`}
         />;
 
