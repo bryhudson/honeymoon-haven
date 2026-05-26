@@ -88,7 +88,7 @@ export function AdminDashboard() {
     const [editingBooking, setEditingBooking] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [payingBooking, setPayingBooking] = useState(null);
-    const [bookingViewMode, setBookingViewMode] = useState('list');
+    const [bookingViewMode, setBookingViewMode] = useState('calendar');
 
     // Editing State (Users)
     const [editingShareholder, setEditingShareholder] = useState(null);

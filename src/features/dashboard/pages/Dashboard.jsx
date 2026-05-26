@@ -16,7 +16,7 @@ import { useBookingRealtime } from '../../../hooks/useBookingRealtime';
 import { StatusCard } from '../components/StatusCard';
 import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
-import { getShareholderOrder, getOfficialStart, getPickDurationMS, getCurrentSeasonYear, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { nightsOverlap } from '../../../lib/availability';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
     .then(module => ({ default: module.BookingDetailsModal })));
@@ -645,7 +645,7 @@ export function Dashboard() {
                                 className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'bookings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                             >
                                 <Calendar className="w-4 h-4" />
-                                Bookings Calendar
+                                Bookings
                             </button>
                             <button
                                 id="tour-schedule"
@@ -654,7 +654,7 @@ export function Dashboard() {
                                 className={`py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                             >
                                 <Clock className="w-4 h-4" />
-                                {getCurrentSeasonYear()} Season Schedule
+                                Schedule
                             </button>
                             <button
                                 id="tour-guide"
