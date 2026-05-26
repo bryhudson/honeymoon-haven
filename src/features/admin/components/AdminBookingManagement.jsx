@@ -22,6 +22,28 @@ export function AdminBookingManagement({
     handleBookSkippedSlot,
     triggerAlert
 }) {
+    const [highlightedId, setHighlightedId] = React.useState(null);
+
+    // Clicking a booked day in the Calendar jumps to the List view and
+    // scrolls + briefly highlights that booking (when it has a list row).
+    const handleCalendarDaySelect = (day, booking) => {
+        setBookingViewMode('list');
+        setHighlightedId(booking?.id || null);
+    };
+
+    React.useEffect(() => {
+        if (!highlightedId || bookingViewMode !== 'list') return;
+        // Let the list (and its enter animation) render, then scroll whichever
+        // variant is visible (mobile card or desktop row) into view.
+        const scrollTimer = setTimeout(() => {
+            const els = document.querySelectorAll(`[data-bk="${highlightedId}"]`);
+            const visible = Array.from(els).find(el => el.offsetParent !== null);
+            if (visible) visible.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 350);
+        const clearTimer = setTimeout(() => setHighlightedId(null), 3200);
+        return () => { clearTimeout(scrollTimer); clearTimeout(clearTimer); };
+    }, [highlightedId, bookingViewMode]);
+
     const handleDownloadCSV = () => {
         try {
             exportBookingsToCSV(allBookings);
@@ -79,7 +101,7 @@ export function AdminBookingManagement({
         const isActive = !isSlotBooked && (slot.status === 'ACTIVE' || slot.status === 'GRACE_PERIOD');
 
         return (
-            <div key={`${slot.name}-${slot.round}`} className={`rounded-2xl border shadow-sm relative overflow-hidden transition-all ${isActive ? 'bg-emerald-50/30 ring-2 ring-emerald-500/40' : 'bg-white'}`}>
+            <div key={`${slot.name}-${slot.round}`} data-bk={booking?.id || undefined} className={`rounded-2xl border shadow-sm relative overflow-hidden transition-all ${highlightedId && highlightedId === booking?.id ? 'ring-2 ring-amber-400 bg-amber-50' : isActive ? 'bg-emerald-50/30 ring-2 ring-emerald-500/40' : 'bg-white'}`}>
                 {/* Accent bar */}
                 {accent && <div className={`absolute left-0 top-0 bottom-0 w-1 ${accent}`} />}
 
@@ -238,7 +260,7 @@ export function AdminBookingManagement({
         const mismatch = booking.isPaid && received != null && received !== expected;
 
         return (
-            <tr key={booking.id} className="hover:bg-muted/10 transition-colors bg-white">
+            <tr key={booking.id} data-bk={booking.id} className={`transition-colors ${highlightedId === booking.id ? 'bg-amber-50 ring-2 ring-inset ring-amber-400' : 'hover:bg-muted/10 bg-white'}`}>
                 <td className="px-5 py-4">
                     <div className="font-semibold text-slate-900 text-sm">{formatNameForDisplay(booking.shareholderName)}</div>
                     <div className="text-xs text-muted-foreground font-mono mt-0.5">
@@ -401,7 +423,7 @@ export function AdminBookingManagement({
 
             {bookingViewMode === 'calendar' ? (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} onSelectDay={() => setBookingViewMode('list')} />
+                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} onSelectDay={handleCalendarDaySelect} />
                 </div>
             ) : (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
