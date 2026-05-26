@@ -154,6 +154,34 @@ export const DRAFT_CONFIG: DraftConfig = {
     IS_TEST_MODE: false
 };
 
+export type SeasonState = 'OPEN' | 'CLOSED' | 'OFF_SEASON';
+
+/**
+ * Booking closes for the season on the 3rd Monday of September.
+ * Computed per year so it auto-rolls (e.g. Sep 21 in 2026, Sep 20 in 2027).
+ */
+export function getBookingCloseDate(year: number): Date {
+    const sept1 = new Date(year, 8, 1);
+    const firstMonday = 1 + ((8 - sept1.getDay()) % 7); // day-of-month of the first Monday
+    return new Date(year, 8, firstMonday + 14);          // + 2 weeks = 3rd Monday
+}
+
+/**
+ * Shareholder booking lifecycle for the configured season:
+ *   OPEN        - before the September cutoff; booking allowed
+ *   CLOSED      - from the cutoff through the season's last bookable day; no new bookings
+ *   OFF_SEASON  - after the season ends; the next season has not opened yet
+ */
+export function getSeasonState(now: Date = new Date()): SeasonState {
+    const year = DRAFT_CONFIG.SEASON_START.getFullYear();
+    const t = now.getTime();
+    if (t < getBookingCloseDate(year).getTime()) return 'OPEN';
+    const dayAfterSeasonEnd = new Date(DRAFT_CONFIG.SEASON_END);
+    dayAfterSeasonEnd.setDate(dayAfterSeasonEnd.getDate() + 1); // start of the day after the last bookable day
+    if (t < dayAfterSeasonEnd.getTime()) return 'CLOSED';
+    return 'OFF_SEASON';
+}
+
 /**
  * STRICT RULE: Every turn officially starts at 10:00 AM.
  */

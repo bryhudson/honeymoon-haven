@@ -5,7 +5,7 @@ import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
     Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History, Home
 } from 'lucide-react';
-import { normalizeName, formatNameForDisplay, CABIN_OWNERS } from '../../../lib/shareholders';
+import { normalizeName, formatNameForDisplay, CABIN_OWNERS, DRAFT_CONFIG, getSeasonState } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -300,6 +300,52 @@ export function ShareholderHero({
             subtitle="System Upgrade"
             mainContent="The system is currently undergoing maintenance."
         />;
+    }
+
+    // ============================================
+    // 1c. SEASON CLOSED / OFF-SEASON (date-driven; overrides phases)
+    // ============================================
+    const seasonState = getSeasonState();
+    if (seasonState === 'CLOSED' || seasonState === 'OFF_SEASON') {
+        const seasonYear = DRAFT_CONFIG.SEASON_START.getFullYear();
+        const isOff = seasonState === 'OFF_SEASON';
+        const closedHero = <ModernTrailerWidget
+            shareholderName={shareholderName}
+            accentColor="slate"
+            icon={Calendar}
+            title={isOff ? 'Off-Season' : 'Season Closed'}
+            subtitle={`${seasonYear} Season`}
+            mainContent={isOff
+                ? `The ${seasonYear} season has ended. The ${seasonYear + 1} season opens soon - we'll let you know when booking reopens.`
+                : `Booking is closed for the ${seasonYear} season. See you next year!`}
+        />;
+
+        return myActions.length > 0 ? (
+            <div className="flex flex-col gap-4">
+                {closedHero}
+                <div className="mt-4">
+                    <button
+                        onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                        className="w-full flex items-center justify-between pb-3 border-b border-slate-200 group focus:outline-none"
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors animate-pulse-scale group-hover:animate-none motion-reduce:animate-none">
+                                <History className="w-5 h-5 text-indigo-600 group-hover:animate-spin-slow motion-reduce:animate-none" />
+                            </div>
+                            <span className="text-sm font-bold text-slate-700">Booking History</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
+                            <span>{isHistoryExpanded ? 'HIDE' : `SHOW (${myActions.length})`}</span>
+                        </div>
+                    </button>
+                    {isHistoryExpanded && (
+                        <div className="flex flex-col mt-3">
+                            {myActions.map((action, idx) => renderPastAction(action, idx))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        ) : closedHero;
     }
 
     // ============================================

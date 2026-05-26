@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'; // Assuming React and useEff
 import { format, addWeeks, addDays, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
-import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG } from '../../../lib/shareholders';
+import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, DRAFT_CONFIG, getSeasonState } from '../../../lib/shareholders';
 import { isHoliday, isEventDay, getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { db } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
@@ -144,8 +144,9 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     // Email service initialized in services/emailService.js
 
     // --- CONFIGURATION ---
-    const SEASON_START = new Date(2026, 4, 1); // May 1, 2026
-    const SEASON_END = new Date(2026, 8, 30);  // Sept 30, 2026
+    // Single source of truth: season window lives in DRAFT_CONFIG.
+    const SEASON_START = DRAFT_CONFIG.SEASON_START;
+    const SEASON_END = DRAFT_CONFIG.SEASON_END;
 
     const isBooked = (day) => {
         try {
@@ -244,6 +245,18 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
     useEffect(() => {
         // Prevent auto-switching the user while they are in the middle of a submission or success screen
         if (isSuccess || isSubmitting) return;
+
+        // Season lifecycle gate: booking closes for the season as of the September cutoff.
+        const seasonState = getSeasonState();
+        const seasonYear = DRAFT_CONFIG.SEASON_START.getFullYear();
+        if (seasonState === 'CLOSED') {
+            setBookingStatus({ canBook: false, message: `Booking is closed for the ${seasonYear} season.` });
+            return;
+        }
+        if (seasonState === 'OFF_SEASON') {
+            setBookingStatus({ canBook: false, message: `The ${seasonYear} season has ended. The ${seasonYear + 1} season opens soon.` });
+            return;
+        }
 
         const targetYear = 2026;
         const savedOrder = localStorage.getItem(`shareholderOrder_${targetYear}`);

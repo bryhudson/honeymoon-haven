@@ -7,11 +7,36 @@ import {
     getPickDurationMS,
     calculateDraftSchedule,
     mapOrderToSchedule,
+    getBookingCloseDate,
+    getSeasonState,
     SHAREHOLDERS_2025,
     DRAFT_CONFIG,
     type Booking,
     type Shareholder,
 } from '../src/lib/shareholders';
+
+describe('Season booking cutoff & lifecycle', () => {
+    it('computes the 3rd Monday of September as the booking-close date', () => {
+        expect(getBookingCloseDate(2026)).toEqual(new Date(2026, 8, 21)); // Mon Sep 21
+        expect(getBookingCloseDate(2025)).toEqual(new Date(2025, 8, 15)); // Mon Sep 15
+        expect(getBookingCloseDate(2027)).toEqual(new Date(2027, 8, 20)); // Mon Sep 20
+    });
+
+    it('is OPEN before the September cutoff', () => {
+        expect(getSeasonState(new Date(2026, 4, 15))).toBe('OPEN');          // May 15
+        expect(getSeasonState(new Date(2026, 8, 20, 23, 0))).toBe('OPEN');   // Sun Sep 20, 11pm
+    });
+
+    it('is CLOSED from the cutoff through Sept 30', () => {
+        expect(getSeasonState(new Date(2026, 8, 21, 0, 1))).toBe('CLOSED');  // Mon Sep 21
+        expect(getSeasonState(new Date(2026, 8, 30, 23, 0))).toBe('CLOSED'); // Sep 30
+    });
+
+    it('is OFF_SEASON from Oct 1 onward', () => {
+        expect(getSeasonState(new Date(2026, 9, 1))).toBe('OFF_SEASON');     // Oct 1
+        expect(getSeasonState(new Date(2026, 11, 25))).toBe('OFF_SEASON');   // Dec 25
+    });
+});
 
 // ---------------------------------------------------------------------------
 // Fixtures
