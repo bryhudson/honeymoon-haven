@@ -401,7 +401,7 @@ export function AdminBookingManagement({
 
             {bookingViewMode === 'calendar' ? (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} />
+                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} onSelectDay={() => setBookingViewMode('list')} />
                 </div>
             ) : (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">

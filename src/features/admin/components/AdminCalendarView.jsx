@@ -8,7 +8,7 @@ import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders
 const splitBg = (depart, arrive) =>
     `linear-gradient(135deg, ${depart} 0 calc(50% - 0.5px), #ffffff calc(50% - 0.5px) calc(50% + 0.5px), ${arrive} calc(50% + 0.5px) 100%)`;
 
-export function AdminCalendarView({ bookings, onNotify }) {
+export function AdminCalendarView({ bookings, onNotify, onSelectDay }) {
     // Bookable season months (May - September), auto-rolling each year.
     const months = getSeasonMonths(getCurrentSeasonYear());
 
@@ -63,12 +63,17 @@ export function AdminCalendarView({ bookings, onNotify }) {
                             bgClass = "bg-purple-50 text-purple-700 hover:bg-purple-100 ring-1 ring-purple-200";
                         }
 
+                        const booking = occupant || departing;
+                        const isClickable = !!booking && !!onSelectDay;
+
                         return (
                             <div
                                 key={day.toString()}
                                 style={cellStyle}
+                                onClick={isClickable ? () => onSelectDay(day, booking) : undefined}
                                 className={`
-                                    aspect-square rounded-md flex items-center justify-center text-xs font-medium cursor-default transition-colors relative group
+                                    aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-colors relative group
+                                    ${isClickable ? 'cursor-pointer' : 'cursor-default'}
                                     ${bgClass}
                                 `}
                             >
