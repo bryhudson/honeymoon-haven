@@ -11,7 +11,7 @@ if (admin.apps.length === 0) {
 const db = admin.firestore();
 
 // Import shared logic
-const { calculateDraftSchedule, getShareholderOrder } = require("../helpers/shareholders");
+const { calculateDraftSchedule, getShareholderOrder, getCurrentSeasonYear } = require("../helpers/shareholders");
 
 /**
  * Auto-Sync Turn Status Scheduler
@@ -45,7 +45,7 @@ exports.autosyncTurnStatus = onSchedule(
 
             // 3. Calculate current draft status
             const calculatedStatus = calculateDraftSchedule(
-                getShareholderOrder(2026), // shareholders
+                getShareholderOrder(getCurrentSeasonYear()), // shareholders
                 bookings,
                 new Date(), // now
                 settings.draftStartDate?.toDate(),
@@ -71,7 +71,7 @@ exports.autosyncTurnStatus = onSchedule(
             // the event-driven blast in emailTriggers.js may NOT have fired.
             // This idempotent check ensures the blast always goes out.
             if (calculatedStatus.phase === 'OPEN_SEASON') {
-                const seasonLogDoc = await db.collection("notification_log").doc("open_season_blast_2026").get();
+                const seasonLogDoc = await db.collection("notification_log").doc(`open_season_blast_${getCurrentSeasonYear()}`).get();
 
                 if (!seasonLogDoc.exists) {
                     logger.info("[AutoSync] Open Season detected and blast not yet sent. Sending now...");
@@ -93,7 +93,7 @@ exports.autosyncTurnStatus = onSchedule(
 
                     await Promise.all(sendPromises);
 
-                    await db.collection("notification_log").doc("open_season_blast_2026").set({
+                    await db.collection("notification_log").doc(`open_season_blast_${getCurrentSeasonYear()}`).set({
                         sentAt: admin.firestore.Timestamp.now(),
                         recipientCount: recipients.length,
                         triggeredBy: 'autosyncTurnStatus' // Audit trail

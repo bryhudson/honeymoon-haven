@@ -9,6 +9,9 @@
 const CHECK_IN_TIME = '3:00 PM';
 const CHECK_OUT_TIME = '11:00 AM';
 
+// Season year is computed fresh per send so email copy auto-rolls each year.
+const { getCurrentSeasonYear } = require('./shareholders');
+
 // --- DESIGN SYSTEM (Apple Style) ---
 const THEME = {
   colors: {
@@ -213,7 +216,7 @@ const emailTemplates = {
       We built the <strong>HHR Trailer Booking App</strong> to make booking effortless. View the live calendar, pick your dates instantly, and confirm your spot in seconds.</p>
     </div>
 
-    <p style="${THEME.typography.body}">The draft is moving and the spotlight is on you. It's officially your turn to pick your dates for the 2026 season.</p>
+    <p style="${THEME.typography.body}">The draft is moving and the spotlight is on you. It's officially your turn to pick your dates for the ${getCurrentSeasonYear()} season.</p>
     
     <div style="margin: 32px 0;">
       ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
@@ -237,7 +240,7 @@ const emailTemplates = {
     switch (data.type) {
       case 'evening': // Day 1 Evening
         subject = `HHR Trailer Booking App [${roundLabel}]: Your Honeymoon Haven Booking Awaits 🌙`;
-        headline = `The 2026 Season is calling, ${formatName(data.name)}.`;
+        headline = `The ${getCurrentSeasonYear()} Season is calling, ${formatName(data.name)}.`;
         break;
       case 'day2': // Day 2 Morning
         subject = `HHR Trailer Booking App [${roundLabel}]: Complete Your Booking ☀️`;

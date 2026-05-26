@@ -1,6 +1,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
-const { calculateDraftSchedule, getShareholderOrder } = require("../helpers/shareholders");
+const { calculateDraftSchedule, getShareholderOrder, getCurrentSeasonYear } = require("../helpers/shareholders");
 const { sendGmail, gmailSecrets } = require("../helpers/email");
 const { emailTemplates } = require("../helpers/emailTemplates");
 
@@ -97,7 +97,7 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             log(`Bookings loaded: ${allBookings.length}`);
 
             // 2. Calc Schedule
-            const year = 2026;
+            const year = getCurrentSeasonYear();
             const shareholders = getShareholderOrder(year);
 
             const schedule = calculateDraftSchedule(
@@ -190,7 +190,7 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             const settingsDoc = await db.collection("settings").doc("general").get();
             const settings = settingsDoc.exists ? settingsDoc.data() : {};
 
-            const year = 2026;
+            const year = getCurrentSeasonYear();
             const shareholders = getShareholderOrder(year);
 
             const schedule = calculateDraftSchedule(

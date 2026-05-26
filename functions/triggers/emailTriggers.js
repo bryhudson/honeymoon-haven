@@ -14,14 +14,16 @@ if (admin.apps.length === 0) {
     admin.initializeApp();
 }
 const db = admin.firestore();
-const { calculateDraftSchedule, getShareholderOrder, normalizeName } = require("../helpers/shareholders");
+const { calculateDraftSchedule, getShareholderOrder, getCurrentSeasonYear, normalizeName } = require("../helpers/shareholders");
 
 // --- Constants ---
-const SEASON_CONFIG = {
-    season_year: "2026",
-    season_start: "April 3",
-    season_end: "Oct 12"
-};
+// Computed per-invocation so the season year auto-rolls (a warm instance must
+// not pin a stale year across the Oct 1 rollover boundary).
+const seasonConfig = () => ({
+    season_year: String(getCurrentSeasonYear()),
+    season_start: "May 1",
+    season_end: "Sep 30"
+});
 
 /**
  * 1. Database Trigger: Monitor Booking Changes
@@ -97,7 +99,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
         const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
 
         const templateData = {
-            ...SEASON_CONFIG,
+            ...seasonConfig(),
             name: afterData.shareholderName || userProfile.displayName || userProfile.name || "Shareholder",
             check_in: formatDate(afterData.from || afterData.checkInDate),
             check_out: formatDate(afterData.to || afterData.checkOutDate),
@@ -328,7 +330,7 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
         }
 
         // 2. Calculate Schedule
-        const year = 2026;
+        const year = getCurrentSeasonYear();
         const shareholders = getShareholderOrder(year);
 
         const schedule = calculateDraftSchedule(
@@ -406,7 +408,7 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
             }
         } else if (schedule.phase === 'OPEN_SEASON') {
             // DETECTED OPEN SEASON
-            const seasonLogDoc = await db.collection("notification_log").doc("open_season_blast_2026").get();
+            const seasonLogDoc = await db.collection("notification_log").doc(`open_season_blast_${getCurrentSeasonYear()}`).get();
 
             if (!seasonLogDoc.exists) {
                 logger.info("Draft Complete! Initiating Open Season Blast...");
@@ -430,7 +432,7 @@ async function notifyNextShareholder(triggerSnapshot = null, reason = 'completed
                 await Promise.all(sendPromises);
 
                 // Mark log
-                await db.collection("notification_log").doc("open_season_blast_2026").set({
+                await db.collection("notification_log").doc(`open_season_blast_${getCurrentSeasonYear()}`).set({
                     sentAt: admin.firestore.Timestamp.now(),
                     recipientCount: recipients.length
                 });
