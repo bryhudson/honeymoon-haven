@@ -147,7 +147,7 @@ export const CABIN_OWNERS = [
 
 // --- DRAFT CONFIGURATION ---
 export const DRAFT_CONFIG: DraftConfig = {
-    START_DATE: new Date(2026, 3, 14, 0, 0, 0), // April 14 (draft opens)
+    START_DATE: new Date(2026, 3, 1, 0, 0, 0), // April 1 (draft opens)
     PICK_DURATION_DAYS: 2,
     SEASON_START: new Date(2026, 4, 1),  // May 1 (bookable)
     SEASON_END: new Date(2026, 8, 30),   // Sept 30 (bookable)

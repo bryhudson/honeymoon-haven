@@ -89,7 +89,7 @@ function getShareholderOrder(year) {
 }
 
 const DRAFT_CONFIG = {
-    START_DATE: new Date(2026, 3, 14, 0, 0, 0),
+    START_DATE: new Date(2026, 3, 1, 0, 0, 0), // April 1 (draft opens)
     PICK_DURATION_DAYS: 2,
     SEASON_START: new Date(2026, 4, 1),
     SEASON_END: new Date(2026, 8, 30),
