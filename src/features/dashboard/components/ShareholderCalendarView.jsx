@@ -43,6 +43,12 @@ export function ShareholderCalendarView({ bookings }) {
                         const hasInfo = occupant || departing || holiday || hasEvent;
                         const isPast = startOfDay(day) < startOfDay(new Date());
 
+                        // Keep the hover tooltip on-screen near the grid edges (mobile):
+                        // left-column cells anchor left, right-column cells anchor right,
+                        // the middle stays centered.
+                        const dow = day.getDay(); // 0=Sun ... 6=Sat
+                        const tipAlign = dow <= 1 ? 'left-0' : dow >= 5 ? 'right-0' : 'left-1/2 -translate-x-1/2';
+
                         // Priority: past > turnover > occupied night > holiday > event > default
                         let bgClass = "bg-white hover:bg-slate-50 text-slate-700";
                         let cellStyle;
@@ -92,7 +98,7 @@ export function ShareholderCalendarView({ bookings }) {
 
                                 {/* Unified hover tooltip - renders all applicable layers */}
                                 {hasInfo && (
-                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50 w-max max-w-[200px] bg-slate-900 text-white text-[10px] p-2 rounded-lg shadow-lg pointer-events-none text-center space-y-0">
+                                    <div className={`absolute ${tipAlign} bottom-full mb-2 hidden group-hover:block z-50 w-max max-w-[200px] bg-slate-900 text-white text-[10px] p-2 rounded-lg shadow-lg pointer-events-none text-center space-y-0`}>
                                         {/* Layer 1: Occupancy (turnover shows both out + in) */}
                                         {isTurnover ? (
                                             <>

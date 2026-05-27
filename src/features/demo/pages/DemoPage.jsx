@@ -1,117 +1,14 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, Caravan, ArrowRight } from 'lucide-react';
+import { Play, Caravan, ArrowRight } from 'lucide-react';
 import '../styles/demo.css';
 
+// The walkthrough video is hosted in the GitHub repo (kept out of the Firebase
+// deploy bundle to keep hosting lightweight). The /demo page links to it rather
+// than embedding the ~80MB file.
+const DEMO_VIDEO_URL = 'https://github.com/bryhudson/honeymoon-haven/blob/main/media/hhr-demo.mp4';
+
 export function DemoPage() {
-    const videoRef = useRef(null);
-    const containerRef = useRef(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [showOverlay, setShowOverlay] = useState(true);
-    const [hasStarted, setHasStarted] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const progressRef = useRef(null);
-
-    const handlePlayPause = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (video.paused) {
-            video.play();
-            setIsPlaying(true);
-            setHasStarted(true);
-            // Hide overlay after a moment
-            setTimeout(() => setShowOverlay(false), 800);
-        } else {
-            video.pause();
-            setIsPlaying(false);
-        }
-    };
-
-    const handleVideoClick = () => {
-        if (!hasStarted) {
-            handlePlayPause();
-            return;
-        }
-        setShowOverlay(prev => !prev);
-        if (isPlaying) {
-            videoRef.current?.pause();
-            setIsPlaying(false);
-        } else {
-            videoRef.current?.play();
-            setIsPlaying(true);
-            setTimeout(() => setShowOverlay(false), 2000);
-        }
-    };
-
-    const handleTimeUpdate = () => {
-        const video = videoRef.current;
-        if (video && video.duration) {
-            setProgress((video.currentTime / video.duration) * 100);
-        }
-    };
-
-    const seekToPosition = useCallback((clientX) => {
-        const video = videoRef.current;
-        const bar = progressRef.current;
-        if (!video || !bar) return;
-        const rect = bar.getBoundingClientRect();
-        const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        video.currentTime = pos * video.duration;
-    }, []);
-
-    const handleProgressClick = (e) => {
-        seekToPosition(e.clientX);
-    };
-
-    // Touch scrubbing support for mobile
-    const handleProgressTouch = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const touch = e.touches[0];
-        if (touch) seekToPosition(touch.clientX);
-    }, [seekToPosition]);
-
-    const handleFullscreen = (e) => {
-        e.stopPropagation();
-        const video = videoRef.current;
-        const el = containerRef.current;
-        if (!video || !el) return;
-
-        // Check if currently in fullscreen
-        const inFullscreen = document.fullscreenElement || document.webkitFullscreenElement || video.webkitDisplayingFullscreen;
-
-        if (inFullscreen) {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (video.webkitExitFullscreen) {
-                // iOS Safari - video element level
-                video.webkitExitFullscreen();
-            }
-            setIsFullscreen(false);
-        } else {
-            // iOS Safari doesn't support container fullscreen - use video element
-            if (video.webkitEnterFullscreen) {
-                video.webkitEnterFullscreen();
-            } else if (el.requestFullscreen) {
-                el.requestFullscreen();
-            } else if (el.webkitRequestFullscreen) {
-                el.webkitRequestFullscreen();
-            }
-            setIsFullscreen(true);
-        }
-    };
-
-    const handleEnded = () => {
-        setIsPlaying(false);
-        setShowOverlay(true);
-        setIsFullscreen(false);
-    };
-
     return (
         <div className="demo-page">
             {/* Ambient background */}
@@ -134,67 +31,20 @@ export function DemoPage() {
                     </p>
                 </div>
 
-                {/* Video Player */}
-                <div className="demo-player-wrapper" ref={containerRef}>
-                    <div className="demo-player">
-                        <video
-                            ref={videoRef}
-                            className="demo-video"
-                            src="/media/hhr-demo.mp4"
-                            onTimeUpdate={handleTimeUpdate}
-                            onEnded={handleEnded}
-                            playsInline
-                            webkit-playsinline="true"
-                            muted={isMuted}
-                            preload="metadata"
-                            onClick={handleVideoClick}
-                        />
-
-                        {/* Play overlay (initial + paused state) */}
-                        {showOverlay && (
-                            <div className="demo-overlay" onClick={handlePlayPause}>
-                                <div className={`demo-play-btn ${hasStarted ? 'demo-play-btn--small' : ''}`}>
-                                    {isPlaying ? <Pause size={hasStarted ? 28 : 40} /> : <Play size={hasStarted ? 28 : 40} style={{ marginLeft: hasStarted ? 2 : 4 }} />}
-                                </div>
-                                {!hasStarted && (
-                                    <p className="demo-play-label">Tap to play</p>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Controls bar - stopPropagation prevents pausing video when clicking controls */}
-                        {hasStarted && (
-                            <div className={`demo-controls ${showOverlay ? 'demo-controls--visible' : ''}`} onClick={(e) => e.stopPropagation()}>
-                                {/* Progress bar */}
-                                <div
-                                    className="demo-progress"
-                                    ref={progressRef}
-                                    onClick={(e) => { e.stopPropagation(); handleProgressClick(e); }}
-                                    onTouchStart={(e) => { e.stopPropagation(); handleProgressTouch(e); }}
-                                    onTouchMove={(e) => { e.stopPropagation(); handleProgressTouch(e); }}
-                                >
-                                    <div className="demo-progress-fill" style={{ width: `${progress}%` }} />
-                                    <div className="demo-progress-thumb" style={{ left: `${progress}%` }} />
-                                </div>
-
-                                <div className="demo-controls-row">
-                                    <button className="demo-ctrl-btn" onClick={(e) => { e.stopPropagation(); handlePlayPause(); }} aria-label={isPlaying ? "Pause" : "Play"}>
-                                        {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: 2 }} />}
-                                    </button>
-
-                                    <button className="demo-ctrl-btn" onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if (videoRef.current) videoRef.current.muted = !isMuted; }} aria-label={isMuted ? "Unmute" : "Mute"}>
-                                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                                    </button>
-
-                                    <div style={{ flex: 1 }} />
-
-                                    <button className="demo-ctrl-btn" onClick={handleFullscreen} aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-                                        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                {/* Demo video - hosted on GitHub to keep the app lightweight */}
+                <div className="demo-player-wrapper">
+                    <a
+                        href={DEMO_VIDEO_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="demo-player"
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', cursor: 'pointer' }}
+                    >
+                        <div className="demo-play-btn">
+                            <Play size={40} style={{ marginLeft: 4 }} />
+                        </div>
+                        <p className="demo-play-label">Watch the demo on GitHub</p>
+                    </a>
                 </div>
 
                 {/* CTA */}
