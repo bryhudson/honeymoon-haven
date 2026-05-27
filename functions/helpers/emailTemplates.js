@@ -749,10 +749,10 @@ const emailTemplates = {
       <h1 style="${THEME.typography.h1} font-size: 20px;">From ${formatName(data.name)}</h1>
       
       <div style="background-color: #F5F5F7; border-radius: 12px; padding: 20px; margin: 32px 0;">
-        <p style="${THEME.typography.body} margin: 0; white-space: pre-wrap;">${data.message}</p>
+        <p style="${THEME.typography.body} margin: 0; white-space: pre-wrap;">${esc(data.message)}</p>
       </div>
 
-      <p style="${THEME.typography.small}">Reply to: <a href="mailto:${data.email}">${data.email}</a></p>
+      <p style="${THEME.typography.small}">Reply to: <a href="mailto:${esc(data.email)}">${esc(data.email)}</a></p>
     `;
     return { subject, htmlContent: wrapHtml(subject, body) };
   },

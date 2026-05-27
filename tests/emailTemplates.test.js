@@ -97,6 +97,20 @@ describe('Email Templates', () => {
             expect(result.htmlContent).toContain('&lt;img src=x onerror=');
         });
 
+        it('escapes HTML in the feedback message and email fields', () => {
+            const result = emailTemplates.feedback({
+                name: 'Tester',
+                type: 'bug',
+                message: '<script>steal()</script> and <b>bold</b>',
+                email: '"><img src=x onerror=alert(1)>@evil.com',
+            });
+            // Raw tags from user-typed feedback must NOT survive into the admin's email
+            expect(result.htmlContent).not.toContain('<script>steal()');
+            expect(result.htmlContent).not.toContain('onerror=alert(1)>@evil.com');
+            // Escaped forms should be present instead
+            expect(result.htmlContent).toContain('&lt;script&gt;steal()');
+        });
+
         it('paymentReminder includes price breakdown', () => {
             const data = { ...bookingData, price_breakdown: priceBreakdown };
             const result = emailTemplates.paymentReminder(data);

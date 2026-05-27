@@ -43,6 +43,27 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 
     const { to, subject, htmlContent, templateId, params } = request.data;
 
+    // 2. Authorization. Non-admins may ONLY submit the feedback template, and it is
+    // routed server-side to the super admin - they cannot supply raw HTML, other
+    // templates, or an arbitrary recipient. Admins (email-testing tools) keep full
+    // access. This stops the callable being abused as an open mail relay.
+    const callerEmail = request.auth.token.email || '';
+    let callerDoc = await admin.firestore().collection("shareholders").doc(callerEmail).get();
+    if (!callerDoc.exists && callerEmail !== callerEmail.toLowerCase()) {
+        callerDoc = await admin.firestore().collection("shareholders").doc(callerEmail.toLowerCase()).get();
+    }
+    const callerRole = callerDoc.exists ? callerDoc.data().role : null;
+    const isCallerAdmin = callerRole === 'admin' || callerRole === 'super_admin';
+
+    let effectiveTo = to;
+    if (!isCallerAdmin) {
+        if (templateId !== 'feedback') {
+            throw new HttpsError('permission-denied', 'You do not have permission to send this email.');
+        }
+        // Recipient is fixed server-side; ignore any client-supplied address.
+        effectiveTo = { name: 'Super Admin', email: superAdminEmail.value() };
+    }
+
     // Debug logging
     logger.debug("=== sendEmail RAW INPUT ===", {
         hasTo: !!to,
@@ -102,7 +123,7 @@ exports.sendEmail = onCall({ secrets: gmailSecrets }, async (request) => {
 
     try {
         const result = await sendGmail({
-            to,
+            to: effectiveTo,
             subject: finalSubject,
             htmlContent: finalHtml,
             templateId: templateId // Pass templateId for logging

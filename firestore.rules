@@ -38,6 +38,18 @@ service cloud.firestore {
       return hasCore && (isPassType || hasValidDates);
     }
 
+    // Helper: fields a non-admin owner may NOT change on their own booking.
+    // They CAN edit dates/guests and finalize (false -> true), but must not
+    // reassign ownership, mark themselves paid, or un-finalize a booking
+    // (un-finalizing would bypass the "can't delete finalized" delete guard).
+    function protectedBookingFieldsUnchanged() {
+      let incoming = request.resource.data;
+      let current = resource.data;
+      return incoming.get('uid', '') == current.get('uid', '')
+        && incoming.get('isPaid', false) == current.get('isPaid', false)
+        && (current.get('isFinalized', false) != true || incoming.get('isFinalized', false) == true);
+    }
+
     match /bookings/{bookingId} {
       // READ: Authenticated users only (calendar requires login)
       allow read: if request.auth != null;
@@ -50,12 +62,12 @@ service cloud.firestore {
         isValidBooking() &&
         (isAdmin() || (request.resource.data.uid == request.auth.uid && (request.resource.data.type == 'cancelled' || isActivePickerOrOpenSeason())));
 
-      // UPDATE: Allow if Admin OR the owner of the booking
-      // Rule: You can only edit YOUR OWN booking.
-      // Exception: Admins can edit any booking.
-      allow update: if request.auth != null && 
+      // UPDATE: Allow if Admin OR the owner of the booking.
+      // Rule: You can only edit YOUR OWN booking, and not its protected fields
+      // (ownership, payment state, or un-finalizing). Admins can edit anything.
+      allow update: if request.auth != null &&
         isValidBooking() &&
-        (isAdmin() || resource.data.uid == request.auth.uid);
+        (isAdmin() || (resource.data.uid == request.auth.uid && protectedBookingFieldsUnchanged()));
       
       // DELETE: Admins can delete any booking.
       // Users can delete their own booking ONLY if it has NOT been finalized.
