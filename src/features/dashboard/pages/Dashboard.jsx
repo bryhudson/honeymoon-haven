@@ -3,10 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 // import emailjs from '@emailjs/browser'; // REMOVED
 import confetti from 'canvas-confetti';
-import { emailService } from '../../../services/emailService';
-import { addHours } from 'date-fns';
-import { db, functions } from '../../../lib/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { db } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -16,9 +13,8 @@ import { useBookingRealtime } from '../../../hooks/useBookingRealtime';
 import { StatusCard } from '../components/StatusCard';
 import { RecentBookings } from '../components/RecentBookings';
 import { SeasonSchedule } from '../components/SeasonSchedule';
-import { getShareholderOrder, getOfficialStart, getPickDurationMS, DRAFT_CONFIG, CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { IS_DEV_ENV } from '../../../lib/env';
-import { nightsOverlap } from '../../../lib/availability';
 const BookingDetailsModal = React.lazy(() => import('../components/BookingDetailsModal')
     .then(module => ({ default: module.BookingDetailsModal })));
 const FeedbackModal = React.lazy(() => import('../../feedback/components/FeedbackModal')
@@ -28,7 +24,6 @@ import { LakeCowichanEvents } from '../components/LakeCowichanEvents';
 import { ShareholderHero } from '../components/ShareholderHero';
 import { BookingSection } from '../components/BookingSection';
 import { EmailGuestModal } from '../components/EmailGuestModal';
-import { ShareholderCalendarView } from '../components/ShareholderCalendarView';
 
 
 
@@ -81,7 +76,7 @@ class ErrorBoundary extends React.Component {
 // Status Cards and Countdowns moved to components
 
 export function Dashboard() {
-    const { currentUser, logout } = useAuth();
+    const { currentUser } = useAuth();
     const navigate = useNavigate();
 
     const [shareholders, setShareholders] = useState(CABIN_OWNERS);
@@ -188,17 +183,6 @@ export function Dashboard() {
         }
     };
 
-    // Determine if we should defer the tour
-    const isWelcomePending = React.useMemo(() => {
-        if (!loggedInShareholder) return false;
-        const storageKey = `welcome_dismissed_${normalizeName(loggedInShareholder)}`;
-        if (localStorage.getItem(storageKey)) return false;
-        
-        if (shareholders.length === 0) return false;
-        const myRecord = shareholders.find(s => normalizeName(s.name) === normalizeName(loggedInShareholder));
-        return myRecord && !myRecord.seenWelcome;
-    }, [loggedInShareholder, shareholders]);
-
     const isSuperAdmin = React.useMemo(() => {
         if (!currentUser?.email) return false;
         const match = shareholders.find(o => o.email && o.email.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
@@ -224,14 +208,10 @@ export function Dashboard() {
     const [showPreDraftModal, setShowPreDraftModal] = useState(false);
     const [passData, setPassData] = useState({ name: '' });
 
-    // Quick Book State
-    const [quickStart, setQuickStart] = useState('');
-    const [quickEnd, setQuickEnd] = useState('');
     const [editingBooking, setEditingBooking] = useState(null);
     const [viewingBooking, setViewingBooking] = useState(null);
     const [emailingBooking, setEmailingBooking] = useState(null);
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-    const [showBookingForm, setShowBookingForm] = useState(false);
 
     // UI Layout State
     const [activeTab, setActiveTab] = useState('bookings'); // bookings (default), schedule, guide, events
@@ -258,11 +238,6 @@ export function Dashboard() {
             }
         }
     }, [currentUser, masqueradeAs, loading, navigate, shareholders]);
-
-    // Reset Booking Form visibility when turn changes
-    useEffect(() => {
-        setShowBookingForm(false);
-    }, [status.activePicker]);
 
     // Global Confirmation State
     const [confirmation, setConfirmation] = useState({
@@ -449,63 +424,6 @@ export function Dashboard() {
             return;
         }
     };
-
-    const handleQuickBook = async () => {
-        if (!quickStart || !quickEnd) return triggerAlert("Missing Information", "Please select both a start date and an end date for your booking.");
-
-        const start = new Date(quickStart);
-        const end = new Date(quickEnd);
-
-        // Basic Validation
-        if (end <= start) return triggerAlert("Date Range Issue", "The end date must be after the start date. Please check your selection.");
-
-        // Duration Check (7 days max)
-        const days = (end - start) / (1000 * 60 * 60 * 24);
-        if (days > 7) return triggerAlert("Booking Limit Exceeded", "To ensure everyone has a fair chance, bookings are limited to a maximum of 7 days during the schedule.");
-
-        // Overlap Check - half-open [from, to): a stay's check-out day may be another's check-in day.
-        const isOverlap = allBookings.some(b => {
-            if (b.type === 'pass') return false;
-            const bStart = b.from?.toDate ? b.from.toDate() : new Date(b.from);
-            const bEnd = b.to?.toDate ? b.to.toDate() : new Date(b.to);
-            return nightsOverlap(start, end, bStart, bEnd);
-        });
-
-        if (isOverlap) return triggerAlert("Date Conflict", "The dates you've selected overlap with an existing booking. Please choose a different range.");
-
-        triggerConfirm(
-            "Confirm Selection",
-            `Lock in ${format(start, 'MMM d')} - ${format(end, 'MMM d')}?\n\nThis will officially finish your turn and notify the next shareholder.`,
-            async () => {
-                try {
-                    const owner = shareholders.find(o => normalizeName(o.name) === normalizeName(status.activePicker));
-                    await addDoc(collection(db, "bookings"), {
-                        shareholderName: status.activePicker,
-                        uid: currentUser.uid,
-                        cabinNumber: owner ? owner.cabin : "?",
-                        type: 'booking', // Required by Firestore security rules
-                        from: start,
-                        to: end,
-                        guests: 1, // Default
-                        email: owner ? owner.email : "",
-                        partyName: status.activePicker,
-                        createdAt: new Date(),
-                        isFinalized: true // Directly Finalizing
-                    });
-
-                    triggerAlert("Booking Confirmed", "Your selection has been saved and confirmed. To complete your turn, please send an e-transfer to honeymoonhavenresort.lc@gmail.com within 48 hours.");
-                    setQuickStart('');
-                    setQuickEnd('');
-                } catch (err) {
-                    console.error(err);
-                    triggerAlert("Error", "Error creating booking: " + err.message);
-                }
-            },
-            false,
-            "Confirm Booking"
-        );
-    };
-
 
     // --- EMAIL GUEST LOGIC ---
     const handleEmailGuest = (booking) => {

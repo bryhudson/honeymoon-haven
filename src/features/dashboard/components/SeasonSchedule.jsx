@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Clock, Calendar, AlertTriangle, CheckCircle, Info, ChevronRight, ChevronLeft, History, RotateCw, Zap, CalendarCheck, DollarSign, ChevronDown, LogIn } from 'lucide-react';
-import { format, differenceInHours, addDays, isPast } from 'date-fns';
-import { getCurrentSeasonYear, getOfficialStart, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
+import { format } from 'date-fns';
+import { getCurrentSeasonYear, mapOrderToSchedule, CABIN_OWNERS } from '../../../lib/shareholders';
 import { CHECK_IN_TIME, CHECK_OUT_TIME } from '../../../lib/bookingPolicy';
 import { HistoricalOrders } from './HistoricalOrders';
 

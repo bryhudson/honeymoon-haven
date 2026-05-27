@@ -8,7 +8,7 @@ import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders
 const splitBg = (depart, arrive) =>
     `linear-gradient(135deg, ${depart} 0 calc(50% - 0.5px), #ffffff calc(50% - 0.5px) calc(50% + 0.5px), ${arrive} calc(50% + 0.5px) 100%)`;
 
-export function AdminCalendarView({ bookings, onNotify, onSelectDay }) {
+function AdminCalendarViewImpl({ bookings, onSelectDay }) {
     // Bookable season months (May - September), auto-rolling each year.
     const months = getSeasonMonths(getCurrentSeasonYear());
 
@@ -191,3 +191,8 @@ export function AdminCalendarView({ bookings, onNotify, onSelectDay }) {
         </div>
     );
 }
+
+// Memoized: depends only on `bookings` (stable ref from the realtime hook) and
+// `onSelectDay` (kept stable via useCallback in the parent), so it skips
+// re-renders when the parent updates for unrelated reasons (e.g. the 60s tick).
+export const AdminCalendarView = React.memo(AdminCalendarViewImpl);

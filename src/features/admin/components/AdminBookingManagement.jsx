@@ -4,7 +4,6 @@ import { List, Calendar as CalendarIcon, Users, CheckCircle, XCircle, Ban, Stick
 import { ActionsDropdown } from './ActionsDropdown';
 import { AdminCalendarView } from './AdminCalendarView';
 import { CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
-import { calculateBookingCost } from '../../../lib/pricing';
 import { exportBookingsToCSV } from '../services/backupService';
 import { Download } from 'lucide-react';
 
@@ -26,10 +25,12 @@ export function AdminBookingManagement({
 
     // Clicking a booked day in the Calendar jumps to the List view and
     // scrolls + briefly highlights that booking (when it has a list row).
-    const handleCalendarDaySelect = (day, booking) => {
+    // useCallback keeps the reference stable so the memoized AdminCalendarView
+    // can skip re-renders.
+    const handleCalendarDaySelect = React.useCallback((day, booking) => {
         setBookingViewMode('list');
         setHighlightedId(booking?.id || null);
-    };
+    }, [setBookingViewMode]);
 
     React.useEffect(() => {
         if (!highlightedId || bookingViewMode !== 'list') return;
@@ -52,11 +53,6 @@ export function AdminBookingManagement({
             triggerAlert("Error", "Failed to export CSV");
         }
     };
-
-    // Helper for payment status style
-    const getPaymentClass = (isPaid) => isPaid
-        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-        : 'bg-rose-100 text-rose-800 border-rose-200';
 
     const renderMobileCard = (slot) => {
         const booking = slot.booking;
@@ -252,7 +248,6 @@ export function AdminBookingManagement({
         }
 
         const owner = CABIN_OWNERS.find(o => normalizeName(o.name) === normalizeName(booking.shareholderName));
-        const paymentClass = getPaymentClass(booking.isPaid);
         const isBookable = booking.type !== 'pass' && booking.type !== 'auto-pass' && booking.type !== 'cancelled';
         const expected = booking.totalPrice || 0;
         const pd = booking.paymentDetails;
@@ -417,7 +412,7 @@ export function AdminBookingManagement({
 
             {bookingViewMode === 'calendar' ? (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <AdminCalendarView bookings={allBookings} onNotify={triggerAlert} onSelectDay={handleCalendarDaySelect} />
+                    <AdminCalendarView bookings={allBookings} onSelectDay={handleCalendarDaySelect} />
                 </div>
             ) : (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">

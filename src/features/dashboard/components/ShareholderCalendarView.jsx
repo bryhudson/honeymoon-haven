@@ -8,7 +8,7 @@ import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders
 const splitBg = (depart, arrive) =>
     `linear-gradient(135deg, ${depart} 0 calc(50% - 0.5px), #ffffff calc(50% - 0.5px) calc(50% + 0.5px), ${arrive} calc(50% + 0.5px) 100%)`;
 
-export function ShareholderCalendarView({ bookings }) {
+function ShareholderCalendarViewImpl({ bookings }) {
     // Bookable season months (May - September), auto-rolling each year.
     const seasonYear = getCurrentSeasonYear();
     const months = getSeasonMonths(seasonYear);
@@ -186,3 +186,8 @@ export function ShareholderCalendarView({ bookings }) {
         </div>
     );
 }
+
+// Memoized: the grid only depends on `bookings` (a stable ref from the realtime
+// hook), so it skips re-renders when the parent updates for unrelated reasons
+// (e.g. the 60s draft-status tick).
+export const ShareholderCalendarView = React.memo(ShareholderCalendarViewImpl);

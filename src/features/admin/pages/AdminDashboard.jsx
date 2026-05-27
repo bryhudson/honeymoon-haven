@@ -93,12 +93,6 @@ export function AdminDashboard() {
     // Editing State (Users)
     const [editingShareholder, setEditingShareholder] = useState(null);
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
-    const [tick, setTick] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => setTick(t => t + 1), 60000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Admin-only listeners (settings + bookings come from shared context)
     useEffect(() => {
@@ -107,6 +101,8 @@ export function AdminDashboard() {
             const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             list.sort((a, b) => parseInt(a.cabin) - parseInt(b.cabin));
             setShareholders(list);
+        }, (error) => {
+            console.error("Error fetching shareholders:", error);
         });
 
         return () => unsubUsers();
@@ -515,7 +511,7 @@ export function AdminDashboard() {
         const sched = mapOrderToSchedule(order, allBookings, startDateOverride, fastTestingMode, bypassTenAM);
         const active = sched.find(s => s.status === 'ACTIVE' || s.status === 'GRACE_PERIOD') || sched.find(s => s.name === status?.activePicker && s.round == status?.round);
         return { schedule: sched, activeTurn: active };
-    }, [allBookings, status, startDateOverride, fastTestingMode, bypassTenAM, tick]);
+    }, [allBookings, status, startDateOverride, fastTestingMode, bypassTenAM]);
 
     if (contextLoading) return <div className="flex items-center justify-center min-h-screen animate-pulse">Loading...</div>;
 

@@ -19,6 +19,8 @@ export function SystemTab({
         if (!IS_DEV_ENV) return;
         const unsub = onSnapshot(doc(db, 'settings/general'), (snap) => {
             setDevEmailEnabled(snap.exists() && snap.data()?.devEmailEnabled === true);
+        }, (error) => {
+            console.error("Error fetching dev-email setting:", error);
         });
         return () => unsub();
     }, []);

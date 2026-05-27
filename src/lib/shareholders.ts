@@ -394,10 +394,6 @@ export function calculateDraftSchedule(
     };
 }
 
-export function adjustForCourtesy(date: Date): Date | null {
-    return getOfficialStart(date);
-}
-
 export interface ScheduleItem {
     name: Shareholder;
     round: number;

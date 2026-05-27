@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar, List } from 'lucide-react';
 import { ShareholderCalendarView } from './ShareholderCalendarView';
-import { normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 
-export function RecentBookings({ bookings, onViewDetails, currentShareholder, isAdmin, activePicker }) {
+export function RecentBookings({ bookings, onViewDetails, currentShareholder, isAdmin }) {
     // Filter for table display (exclude passes)
     const bookingsForTable = bookings.filter(r => r.type !== 'pass');
 

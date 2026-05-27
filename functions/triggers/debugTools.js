@@ -100,6 +100,11 @@ exports.debugShareholder = onRequest({ secrets: gmailSecrets }, async (req, res)
             const year = getCurrentSeasonYear();
             const shareholders = getShareholderOrder(year);
 
+            // Fetch settings for the draft-start override / bypass flags (this branch
+            // previously referenced an undefined `settings`, throwing a 500).
+            const settingsDoc = await db.collection("settings").doc("general").get();
+            const settings = settingsDoc.exists ? settingsDoc.data() : {};
+
             const schedule = calculateDraftSchedule(
                 shareholders,
                 allBookings,

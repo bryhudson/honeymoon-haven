@@ -1,13 +1,12 @@
-import { emailService } from '../../../services/emailService';
 import { Calendar } from 'lucide-react';
 import React, { useState, useEffect } from 'react'; // Assuming React and useEffect are needed for the change
-import { format, addWeeks, addDays, differenceInCalendarDays, startOfDay } from 'date-fns';
+import { format, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
-import { CABIN_OWNERS, getShareholderOrder, calculateDraftSchedule, getSeasonConfig, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
+import { CABIN_OWNERS, getSeasonConfig, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
 import { isHoliday, isEventDay, getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { db } from '../../../lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { calculateBookingCost } from '../../../lib/pricing';
@@ -18,7 +17,7 @@ import ErrorBoundary from '../../../components/ui/ErrorBoundary';
 // Helper removed - using direct handlers
 
 
-export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, startDateOverride, bookings, status, currentUser }) {
+export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, bookings, status, currentUser }) {
     // Parse initial booking synchronously to prevent render race conditions
     const getInitialRange = (booking) => {
         if (!booking?.from || !booking?.to) return undefined;
@@ -260,14 +259,14 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             return;
         }
 
-        const targetYear = getCurrentSeasonYear();
-        const savedOrder = localStorage.getItem(`shareholderOrder_${targetYear}`);
-        const currentOrder = savedOrder ? JSON.parse(savedOrder) : getShareholderOrder(targetYear);
+        // Source the live draft phase from the realtime context (`status`) instead of
+        // recomputing it here. The context computes status with the canonical
+        // shareholder order and the bypassTenAM flag; a local recompute read the order
+        // from localStorage and ignored bypassTenAM, so it could drift out of sync with
+        // what the rest of the app (and the saved booking payload) uses.
+        if (!status) return;
 
-        // Use Global Calculator
-        const schedule = calculateDraftSchedule(currentOrder, bookings || [], new Date(), startDateOverride);
-
-        if (schedule.phase === 'OPEN_SEASON') {
+        if (status.phase === 'OPEN_SEASON') {
             // Check Cooldown Logic
             const myBookings = (bookings || []).filter(b => b.shareholderName === formData.shareholderName && b.type !== 'pass');
 
@@ -290,31 +289,31 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
 
 
             setBookingStatus({ canBook: true, message: 'Open Season! First come, first serve.' });
-        } else if (schedule.phase === 'PRE_DRAFT') {
+        } else if (status.phase === 'PRE_DRAFT') {
 
-            setBookingStatus({ canBook: false, message: `Booking schedule begins on ${format(schedule.draftStart, 'PPP')}` });
+            setBookingStatus({ canBook: false, message: `Booking schedule begins on ${format(status.draftStart, 'PPP')}` });
         } else {
             // SCHEDULE IS ACTIVE (Round 1 or 2)
 
 
-            if (schedule.activePicker) {
-                const owner = CABIN_OWNERS.find(o => o.name === schedule.activePicker);
+            if (status.activePicker) {
+                const owner = CABIN_OWNERS.find(o => o.name === status.activePicker);
 
                 setFormData(prev => {
                     const newCabin = owner ? owner.cabin : '';
-                    if (prev.shareholderName === schedule.activePicker && prev.cabinNumber === newCabin) return prev;
+                    if (prev.shareholderName === status.activePicker && prev.cabinNumber === newCabin) return prev;
                     return {
                         ...prev,
-                        shareholderName: schedule.activePicker,
+                        shareholderName: status.activePicker,
                         cabinNumber: newCabin
                     };
                 });
 
                 setBookingStatus({
                     canBook: true,
-                    message: schedule.isGracePeriod
-                        ? `✨ Early Access: Locked to ${schedule.activePicker}`
-                        : `Schedule Round Active: Locked to ${schedule.activePicker}`
+                    message: status.isGracePeriod
+                        ? `✨ Early Access: Locked to ${status.activePicker}`
+                        : `Schedule Round Active: Locked to ${status.activePicker}`
                 });
 
             } else {
@@ -322,7 +321,7 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
                 setBookingStatus({ canBook: false, message: 'Schedule Active: transitioning...' });
             }
         }
-    }, [formData.shareholderName, bookings]); // Add dependencies to re-run on user change or new booking
+    }, [formData.shareholderName, bookings, status]); // re-run on user change, new booking, or draft-status change (e.g. turn advance / grace-period transition)
 
 
     const handleSelectRange = (range) => {
@@ -409,11 +408,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
         }
     };
 
-    const handleReset = () => {
-        setSelectedRange(undefined);
-        setIsSuccess(false);
-    };
-
     const handleContinue = () => {
         if (step === 1) {
             if (selectedRange?.from && selectedRange?.to && !isTooLong && !isTooShort && !isOverlap) {
@@ -421,15 +415,6 @@ export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, ac
             }
         } else if (step === 2) {
             setStep(3);
-        }
-    };
-
-    const handleBack = () => {
-        if (isSuccess) {
-            setIsSuccess(false);
-            setStep(1); // Reset to start if backing out of success
-        } else {
-            setStep(prev => Math.max(1, prev - 1));
         }
     };
 
