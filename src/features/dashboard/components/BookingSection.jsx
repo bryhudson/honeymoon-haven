@@ -17,7 +17,7 @@ import ErrorBoundary from '../../../components/ui/ErrorBoundary';
 // Helper removed - using direct handlers
 
 
-export function BookingSection({ onCancel, initialBooking, onPass, onDiscard, activePicker, onShowAlert, onFinalize, bookings, status, currentUser }) {
+export function BookingSection({ onCancel, initialBooking, activePicker, onShowAlert, onFinalize, bookings, status, currentUser }) {
     // Parse initial booking synchronously to prevent render race conditions
     const getInitialRange = (booking) => {
         if (!booking?.from || !booking?.to) return undefined;

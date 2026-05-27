@@ -279,27 +279,6 @@ export function Dashboard() {
     };
 
 
-    const handleDiscard = async (bookingId) => {
-        triggerConfirm(
-            "Cancel Booking?",
-            "Are you sure you want to delete this booking? This action cannot be undone and you will need to re-select your dates if you change your mind.",
-            async () => {
-                // Send Cancellation Email
-                // Cancel in DB - Backend Trigger handles email ("Booking Cancelled")
-
-
-                await deleteDoc(doc(db, "bookings", bookingId));
-                setEditingBooking(null);
-                setIsBooking(false);
-            },
-            true, // Danger
-            "Delete Booking",
-            "delete" // Require typing
-        );
-    };
-
-    // ...
-
     const handleFinalize = async (bookingId, name, skipConfirm = false, onSuccess = null, skipWrite = false) => {
         const executeFinalize = async () => {
             try {
@@ -689,12 +668,6 @@ export function Dashboard() {
                                             initialBooking={editingBooking}
                                             status={status}
                                             activePicker={status.phase === 'OPEN_SEASON' ? loggedInShareholder : status.activePicker}
-                                            onPass={() => {
-                                                setIsBooking(false);
-                                                setPassData({ name: status.activePicker });
-                                                setPassStep(1);
-                                            }}
-                                            onDiscard={handleDiscard}
                                             onShowAlert={triggerAlert}
                                             onFinalize={async (id, name, skipWrite = false) => {
                                                 await handleFinalize(id, name, true, null, skipWrite);
