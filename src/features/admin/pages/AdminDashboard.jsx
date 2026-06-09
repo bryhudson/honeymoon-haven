@@ -10,6 +10,7 @@ import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
 import { format, differenceInDays } from 'date-fns';
 import { List, Calendar, Users, CheckCircle, XCircle, Mail, Download, Settings, Bell, PlusCircle, Tent } from 'lucide-react';
 import { calculateBookingCost } from '../../../lib/pricing';
+import { deriveOpenSeasonSlots } from '../../../lib/openSeason';
 import { EditBookingModal } from '../components/EditBookingModal';
 import { PaymentConfirmModal } from '../components/PaymentConfirmModal';
 import { UserActionsDropdown } from '../../dashboard/components/UserActionsDropdown';
@@ -513,6 +514,11 @@ export function AdminDashboard() {
         return { schedule: sched, activeTurn: active };
     }, [allBookings, status, startDateOverride, fastTestingMode, bypassTenAM]);
 
+    const openSeasonSlots = React.useMemo(
+        () => deriveOpenSeasonSlots(allBookings, schedule),
+        [allBookings, schedule]
+    );
+
     if (contextLoading) return <div className="flex items-center justify-center min-h-screen animate-pulse">Loading...</div>;
 
     const myProfile = shareholders.find(s => s.email === currentUser?.email);
@@ -560,7 +566,7 @@ export function AdminDashboard() {
             {activeTab === 'bookings' && (
                 <div className="space-y-6">
                     <AdminStatsGrid analytics={analytics} />
-                    <AdminBookingManagement schedule={schedule} allBookings={allBookings} bookingViewMode={bookingViewMode} setBookingViewMode={setBookingViewMode} handleEditClick={(b) => { setEditingBooking(b); setIsEditModalOpen(true); }} handleCancelBooking={handleCancelBooking} handleToggleFinalized={handleToggleFinalized} handleTogglePaid={handleTogglePaid} handleEditPayment={handleEditPayment} handleSendPaymentReminder={handleSendPaymentReminder} handleBookSkippedSlot={handleBookSkippedSlot} triggerAlert={triggerAlert} />
+                    <AdminBookingManagement schedule={schedule} openSeasonSlots={openSeasonSlots} allBookings={allBookings} bookingViewMode={bookingViewMode} setBookingViewMode={setBookingViewMode} handleEditClick={(b) => { setEditingBooking(b); setIsEditModalOpen(true); }} handleCancelBooking={handleCancelBooking} handleToggleFinalized={handleToggleFinalized} handleTogglePaid={handleTogglePaid} handleEditPayment={handleEditPayment} handleSendPaymentReminder={handleSendPaymentReminder} handleBookSkippedSlot={handleBookSkippedSlot} triggerAlert={triggerAlert} />
                 </div>
             )}
 
