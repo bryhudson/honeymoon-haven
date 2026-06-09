@@ -350,6 +350,15 @@ export function BookingSection({ onCancel, initialBooking, activePicker, onShowA
                 createdAt: new Date() // Track when it was booked
             };
 
+            // Defense-in-depth: ensure cabinNumber is set on the payload. The form's
+            // auto-fill effect only runs during the active rotation turn, so open-season
+            // bookings could otherwise be saved without a cabinNumber. Look it up from
+            // CABIN_OWNERS by shareholderName when the form didn't populate it.
+            if (!newBooking.cabinNumber && newBooking.shareholderName) {
+                const ownerLookup = CABIN_OWNERS.find(o => o.name === newBooking.shareholderName);
+                if (ownerLookup) newBooking.cabinNumber = ownerLookup.cabin;
+            }
+
             // Sanitize Payload
             const payload = {
                 ...newBooking,

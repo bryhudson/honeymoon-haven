@@ -226,10 +226,25 @@ export function ShareholderHero({
     const renderPastAction = (action, index) => {
         const isPassed = action.type === 'pass' || action.type === 'auto-pass';
         const isSkipped = action.type === 'skipped';
-        const roundLabel = `Round ${index + 1}`;
+        // Label by the booking's actual phase/round, not the array index. Open Season
+        // is not a numbered round; rotation only has Round 1 and Round 2. Fall back to
+        // the index only when the booking has neither phase nor round (legacy data).
+        const roundLabel =
+            action.phase === 'OPEN_SEASON' ? 'Open Season' :
+            action.round === 1 ? 'Round 1' :
+            action.round === 2 ? 'Round 2' :
+            index < 2 ? `Round ${index + 1}` : 'Open Season';
         const isCancelled = action.type === 'cancelled' || action.status === 'cancelled';
         // Passed/skipped turns have no booking behind them, so there are no details to view.
         const hasDetails = !isPassed && !isSkipped;
+
+        // Cabin lookup with fallback: open-season bookings created before this fix
+        // don't always carry `cabinNumber` (BookingSection's auto-fill effect only runs
+        // during the active rotation turn), so resolve it from CABIN_OWNERS by name.
+        const ownerLookup = CABIN_OWNERS.find(o =>
+            normalizeName(o.name) === normalizeName(action.shareholderName || shareholderName || '')
+        );
+        const cabin = action.cabinNumber || ownerLookup?.cabin || '?';
 
         let badgeClass = "bg-green-50 text-green-700 border-green-200";
         let badgeLabel = "Confirmed";
@@ -249,13 +264,13 @@ export function ShareholderHero({
             const start = action.from?.toDate ? action.from.toDate() : new Date(action.from);
             const end = action.to?.toDate ? action.to.toDate() : new Date(action.to);
             const nights = differenceInDays(end, start);
-            title = `Cabin ${action.cabinNumber} - ${nights} Nights`;
+            title = `Cabin ${cabin} - ${nights} Nights`;
             dateStr = format(start, 'MMM d') + ' - ' + format(end, 'MMM d, yyyy');
         } else {
             const start = action.from?.toDate ? action.from.toDate() : new Date(action.from);
             const end = action.to?.toDate ? action.to.toDate() : new Date(action.to);
             const nights = differenceInDays(end, start);
-            title = `Cabin ${action.cabinNumber} - ${nights} Nights`;
+            title = `Cabin ${cabin} - ${nights} Nights`;
             dateStr = format(start, 'MMM d') + ' - ' + format(end, 'MMM d, yyyy');
         }
 
