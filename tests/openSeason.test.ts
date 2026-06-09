@@ -77,4 +77,42 @@ describe('deriveOpenSeasonSlots', () => {
         expect(result).toHaveLength(1);
         expect(result[0].booking).toBe(openSeason);
     });
+
+    it('sorts results ascending by stay start date (from)', () => {
+        const later = {
+            id: 'b',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'Later',
+            from: new Date(2026, 7, 5),
+            to: new Date(2026, 7, 7),
+        };
+        const earlier = {
+            id: 'a',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'Earlier',
+            from: new Date(2026, 5, 1),
+            to: new Date(2026, 5, 3),
+        };
+        const result = deriveOpenSeasonSlots([later, earlier], []);
+        expect(result.map(s => s.booking.id)).toEqual(['a', 'b']);
+    });
+
+    it('handles Firestore Timestamp-like `from` (.toDate())', () => {
+        const ts = new Date(2026, 5, 1);
+        const tsLike = { toDate: () => ts };
+        const booking = {
+            id: 'ts',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'TS',
+            from: tsLike,
+            to: tsLike,
+        };
+        const result = deriveOpenSeasonSlots([booking], []);
+        expect(result).toHaveLength(1);
+        expect(result[0].start).toBeInstanceOf(Date);
+        expect(result[0].start.getTime()).toBe(ts.getTime());
+    });
 });
