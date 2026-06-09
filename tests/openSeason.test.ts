@@ -115,4 +115,21 @@ describe('deriveOpenSeasonSlots', () => {
         expect(result[0].start).toBeInstanceOf(Date);
         expect(result[0].start.getTime()).toBe(ts.getTime());
     });
+
+    it('sets round: "OPEN" on every returned slot', () => {
+        const bookings = [
+            { id: '1', type: 'booking', isFinalized: true, shareholderName: 'A', from: new Date(2026, 5, 1), to: new Date(2026, 5, 3) },
+            { id: '2', type: 'cancelled', isFinalized: true, shareholderName: 'B', from: new Date(2026, 5, 5), to: new Date(2026, 5, 7) },
+        ];
+        const result = deriveOpenSeasonSlots(bookings, []);
+        expect(result.map(s => s.round)).toEqual(['OPEN', 'OPEN']);
+    });
+
+    it('drops malformed bookings without a parseable from date', () => {
+        const malformed = [
+            { id: 'no-from', type: 'booking', isFinalized: true, shareholderName: 'X' },
+            { id: 'bad-from', type: 'booking', isFinalized: true, shareholderName: 'Y', from: 'not-a-date' },
+        ];
+        expect(deriveOpenSeasonSlots(malformed, [])).toEqual([]);
+    });
 });
