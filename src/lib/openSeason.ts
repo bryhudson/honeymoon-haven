@@ -16,7 +16,11 @@ export function deriveOpenSeasonSlots(
     schedule: any[]
 ): OpenSeasonSlot[] {
     return allBookings
-        .filter(b => b.type !== 'pass' && b.type !== 'auto-pass')
+        .filter(b => {
+            if (b.type === 'pass' || b.type === 'auto-pass') return false;
+            if (b.isFinalized !== true) return false;
+            return true;
+        })
         .map(b => ({
             name: b.shareholderName,
             round: 'OPEN' as const,

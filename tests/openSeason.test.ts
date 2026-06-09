@@ -24,4 +24,16 @@ describe('deriveOpenSeasonSlots', () => {
         expect(result).toHaveLength(1);
         expect(result[0].booking).toBe(realBooking);
     });
+
+    it('filters out drafts (isFinalized === false)', () => {
+        const draft = {
+            id: 'draft',
+            type: 'booking',
+            isFinalized: false,
+            shareholderName: 'Draftee',
+            from: new Date(2026, 5, 1),
+            to: new Date(2026, 5, 3),
+        };
+        expect(deriveOpenSeasonSlots([draft], [])).toEqual([]);
+    });
 });
