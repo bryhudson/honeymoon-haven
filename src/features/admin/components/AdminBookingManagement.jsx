@@ -450,6 +450,20 @@ export function AdminBookingManagement({
                                     </td>
                                 </tr>
                                 {schedule.filter(s => s.round === 2).map(renderRow)}
+                                <tr className="bg-slate-100 border-b border-t border-slate-200">
+                                    <td colSpan="8" className="px-6 py-2 text-xs font-bold tracking-wider text-slate-600 uppercase">
+                                        Open Season - First Come, First Served
+                                    </td>
+                                </tr>
+                                {openSeasonSlots.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="8" className="px-6 py-6 text-center text-sm italic text-slate-400">
+                                            No open-season bookings yet.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    openSeasonSlots.map(renderRow)
+                                )}
                             </tbody>
                         </table>
                     </div>
