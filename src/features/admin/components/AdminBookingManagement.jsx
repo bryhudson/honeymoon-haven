@@ -9,6 +9,7 @@ import { Download } from 'lucide-react';
 
 export function AdminBookingManagement({
     schedule,
+    openSeasonSlots = [],
     allBookings,
     bookingViewMode,
     setBookingViewMode,
@@ -97,7 +98,7 @@ export function AdminBookingManagement({
         const isActive = !isSlotBooked && (slot.status === 'ACTIVE' || slot.status === 'GRACE_PERIOD');
 
         return (
-            <div key={`${slot.name}-${slot.round}`} data-bk={booking?.id || undefined} className={`rounded-2xl border shadow-sm relative overflow-hidden transition-all ${highlightedId && highlightedId === booking?.id ? 'ring-2 ring-amber-400 bg-amber-50' : isActive ? 'bg-emerald-50/30 ring-2 ring-emerald-500/40' : 'bg-white'}`}>
+            <div key={`${slot.name}-${slot.round}-${slot.booking?.id ?? 'empty'}`} data-bk={booking?.id || undefined} className={`rounded-2xl border shadow-sm relative overflow-hidden transition-all ${highlightedId && highlightedId === booking?.id ? 'ring-2 ring-amber-400 bg-amber-50' : isActive ? 'bg-emerald-50/30 ring-2 ring-emerald-500/40' : 'bg-white'}`}>
                 {/* Accent bar */}
                 {accent && <div className={`absolute left-0 top-0 bottom-0 w-1 ${accent}`} />}
 
@@ -116,7 +117,7 @@ export function AdminBookingManagement({
                                 </span>
                             )}
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">
-                                R{slot.round}
+                                {slot.round === 'OPEN' ? 'OPEN' : `R${slot.round}`}
                             </span>
                         </div>
                     </div>
@@ -219,7 +220,7 @@ export function AdminBookingManagement({
             const isActive = slot.status === 'ACTIVE' || slot.status === 'GRACE_PERIOD';
 
             return (
-                <tr key={`${slot.name}-${slot.round}`} className={`bg-slate-50/30 ${isActive ? 'ring-inset ring-2 ring-emerald-500/50 shadow-sm relative z-10 bg-emerald-50/30' : ''}`}>
+                <tr key={`${slot.name}-${slot.round}-${slot.booking?.id ?? 'empty'}`} className={`bg-slate-50/30 ${isActive ? 'ring-inset ring-2 ring-emerald-500/50 shadow-sm relative z-10 bg-emerald-50/30' : ''}`}>
                     <td className="px-5 py-4">
                         <div className={`font-semibold text-sm ${isActive ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>{slot.name}</div>
                         <div className={`text-xs font-mono mt-0.5 ${isActive ? 'text-emerald-700/70 font-medium' : 'text-muted-foreground opacity-50'}`}>
