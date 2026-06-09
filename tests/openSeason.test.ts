@@ -36,4 +36,19 @@ describe('deriveOpenSeasonSlots', () => {
         };
         expect(deriveOpenSeasonSlots([draft], [])).toEqual([]);
     });
+
+    it('includes cancelled bookings with status CANCELLED', () => {
+        const cancelled = {
+            id: 'c',
+            type: 'cancelled',
+            isFinalized: true,
+            shareholderName: 'Cancelled Co',
+            from: new Date(2026, 5, 1),
+            to: new Date(2026, 5, 3),
+        };
+        const result = deriveOpenSeasonSlots([cancelled], []);
+        expect(result).toHaveLength(1);
+        expect(result[0].status).toBe('CANCELLED');
+        expect(result[0].name).toBe('Cancelled Co');
+    });
 });
