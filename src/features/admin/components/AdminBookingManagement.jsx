@@ -420,6 +420,17 @@ export function AdminBookingManagement({
                     {/* Mobile View */}
                     <div className="md:hidden space-y-4">
                         {schedule.map(renderMobileCard)}
+
+                        <div className="pt-6 pb-2 text-xs font-bold tracking-wider text-slate-600 uppercase border-t border-slate-200 mt-4">
+                            Open Season - First Come, First Served
+                        </div>
+                        {openSeasonSlots.length === 0 ? (
+                            <div className="text-center text-sm italic text-slate-400 py-4">
+                                No open-season bookings yet.
+                            </div>
+                        ) : (
+                            openSeasonSlots.map(renderMobileCard)
+                        )}
                     </div>
 
                     {/* Desktop View */}
