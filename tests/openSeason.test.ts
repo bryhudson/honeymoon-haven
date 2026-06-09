@@ -51,4 +51,30 @@ describe('deriveOpenSeasonSlots', () => {
         expect(result[0].status).toBe('CANCELLED');
         expect(result[0].name).toBe('Cancelled Co');
     });
+
+    it('excludes bookings whose id is referenced by a schedule slot, includes others', () => {
+        const inSchedule = {
+            id: 'sched-1',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'Rotation Picker',
+            from: new Date(2026, 5, 1),
+            to: new Date(2026, 5, 3),
+        };
+        const openSeason = {
+            id: 'open-1',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'Open Picker',
+            from: new Date(2026, 6, 10),
+            to: new Date(2026, 6, 13),
+        };
+        const schedule = [
+            { name: 'Rotation Picker', round: 1, booking: inSchedule },
+            { name: 'Other', round: 1, booking: null },
+        ];
+        const result = deriveOpenSeasonSlots([inSchedule, openSeason], schedule);
+        expect(result).toHaveLength(1);
+        expect(result[0].booking).toBe(openSeason);
+    });
 });

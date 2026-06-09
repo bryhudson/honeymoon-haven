@@ -15,10 +15,17 @@ export function deriveOpenSeasonSlots(
     allBookings: any[],
     schedule: any[]
 ): OpenSeasonSlot[] {
+    const scheduledIds = new Set<string>();
+    for (const s of schedule) {
+        const id = s?.booking?.id;
+        if (id) scheduledIds.add(id);
+    }
+
     return allBookings
         .filter(b => {
             if (b.type === 'pass' || b.type === 'auto-pass') return false;
             if (b.isFinalized !== true) return false;
+            if (b.id != null && scheduledIds.has(b.id)) return false;
             return true;
         })
         .map(b => ({
