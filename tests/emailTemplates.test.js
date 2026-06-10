@@ -224,4 +224,34 @@ describe('Email Templates', () => {
             expect(result.subject).toMatch(/^HHR Trailer Booking App \[Open Season\]:/);
         });
     });
+
+    // Overdue admin alert: real dates in the subject, sane hour grammar.
+    describe('paymentOverdueAdmin formatting', () => {
+        it('renders "1 hour overdue" (singular) for the first alert past the deadline', () => {
+            const result = emailTemplates.paymentOverdueAdmin({
+                name: 'Lori and Jeff',
+                cabin_number: '7',
+                check_in: 'Mon, Aug 31, 2026',
+                check_out: 'Thu, Sep 3, 2026',
+                guests: 2,
+                total_price: 300,
+                created_at: 'Sun, Jun 7, 11:13 PM',
+                deadline: 'Tue, Jun 9, 11:13 PM',
+                hours_overdue: 1,
+            });
+            expect(result.htmlContent).toContain('1 hour overdue');
+            expect(result.htmlContent).not.toContain('1 hours overdue');
+        });
+
+        it('puts the check-in date in the subject', () => {
+            const result = emailTemplates.paymentOverdueAdmin({
+                name: 'Lori and Jeff',
+                check_in: 'Mon, Aug 31, 2026',
+                check_out: 'Thu, Sep 3, 2026',
+                hours_overdue: 2,
+            });
+            expect(result.subject).toContain('Mon, Aug 31, 2026');
+            expect(result.htmlContent).toContain('2 hours overdue');
+        });
+    });
 });

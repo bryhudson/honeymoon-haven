@@ -779,7 +779,7 @@ const emailTemplates = {
     const body = `
       <div style="background-color: #FFF1F2; border: 2px solid #FCA5A5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
         <p style="${THEME.typography.body} margin: 0; color: #991B1B; font-weight: 600;">
-          ⚠️ ACTION REQUIRED: A payment is now ${data.hours_overdue || 0} hours overdue.
+          ⚠️ ACTION REQUIRED: A payment is now ${data.hours_overdue || 1} hour${(data.hours_overdue || 1) === 1 ? '' : 's'} overdue.
         </p>
       </div>
 

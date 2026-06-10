@@ -157,13 +157,29 @@ exports.paymentReminderScheduler = onSchedule(
     }
 );
 
+// Some booking docs predate the client-side cabinNumber defense and carry an
+// empty cabin. Resolve it from the shareholders collection by normalized name
+// so reminder/alert emails never render a blank "Cabin #".
+async function resolveCabinNumber(booking) {
+    if (booking.cabinNumber) return booking.cabinNumber;
+    if (!booking.shareholderName) return "?";
+    try {
+        const snap = await db.collection("shareholders").get();
+        const match = snap.docs.find(d => normalizeName(d.data().name) === normalizeName(booking.shareholderName));
+        return match?.data()?.cabin || "?";
+    } catch (err) {
+        logger.warn("Cabin lookup failed for reminder email:", err);
+        return "?";
+    }
+}
+
 async function sendFundingReminder(booking, type) {
     const isUrgent = type === 'final';
     const emailFunction = isUrgent ? emailTemplates.paymentUrgent : emailTemplates.paymentReminder;
 
     const templateData = {
         name: booking.shareholderName,
-        cabin_number: booking.cabinNumber,
+        cabin_number: await resolveCabinNumber(booking),
         total_price: booking.totalPrice,
         price_breakdown: booking.priceBreakdown || null, // FIX: was 'priceDetails', field is 'priceBreakdown'
         deadline_date: "Action Required",
@@ -229,17 +245,28 @@ async function sendOverdueAdminAlert(booking, bookingId, hoursSinceCreation) {
         timeZone
     });
 
+    // Booking stay dates live on `from`/`to` (Firestore Timestamps). This used to
+    // read non-existent `startDate`/`endDate` fields, so every alert rendered
+    // "Not specified" in the subject and body.
+    const formatStayDay = (raw) => {
+        const d = raw?.toDate ? raw.toDate() : (raw instanceof Date ? raw : (raw ? new Date(raw) : null));
+        if (!d || isNaN(d.getTime())) return 'Not specified';
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone });
+    };
+
     const templateData = {
         name: booking.shareholderName,
-        cabin_number: booking.cabinNumber,
-        check_in: booking.startDate || 'Not specified',
-        check_out: booking.endDate || 'Not specified',
+        cabin_number: await resolveCabinNumber(booking),
+        check_in: formatStayDay(booking.from),
+        check_out: formatStayDay(booking.to),
         guests: booking.guestCount || booking.guests || 'Not specified',
         total_price: booking.totalPrice || 0,
         price_breakdown: booking.priceBreakdown || null, // FIX: was 'priceDetails'
         created_at: formatDate(createdAt),
         deadline: formatDate(deadline),
-        hours_overdue: Math.floor(hoursSinceCreation - 48)
+        // First alert fires on the first hourly tick past the 48h mark; floor()
+        // rendered that as "0 hours overdue", which read like a glitch.
+        hours_overdue: Math.max(1, Math.floor(hoursSinceCreation - 48))
     };
 
     const { subject, htmlContent } = emailTemplates.paymentOverdueAdmin(templateData);
