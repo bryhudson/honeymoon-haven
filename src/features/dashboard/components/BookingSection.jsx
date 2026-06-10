@@ -4,6 +4,7 @@ import { format, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { CABIN_OWNERS, getSeasonConfig, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
+import { getOpenSeasonCooldown } from '../../../lib/openSeasonCooldown';
 import { isHoliday, isEventDay, getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { db } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
@@ -267,26 +268,21 @@ export function BookingSection({ onCancel, initialBooking, activePicker, onShowA
         if (!status) return;
 
         if (status.phase === 'OPEN_SEASON') {
-            // Check Cooldown Logic
-            const myBookings = (bookings || []).filter(b => b.shareholderName === formData.shareholderName && b.type !== 'pass');
-
-            if (myBookings.length > 0 && formData.shareholderName) {
-                // Sort by creation time (descending)
-                const lastBooking = myBookings.sort((a, b) => b.createdAt - a.createdAt)[0];
-
-                // If booked within last 48 hours
-                const hoursSinceBooking = (new Date() - lastBooking.createdAt) / (1000 * 60 * 60);
-
-                if (hoursSinceBooking < 48) {
-
+            // 48h fairness cooldown after the shareholder's last finalized
+            // open-season booking. The helper handles what the old inline check
+            // got wrong: cancelled bookings don't block (cancel-and-rebook is
+            // fine), rotation bookings don't block, and legacy name variants
+            // ("Mike & Janelle" vs "Janelle and Mike") match via normalizeName.
+            if (formData.shareholderName) {
+                const cooldown = getOpenSeasonCooldown(bookings || [], formData.shareholderName);
+                if (cooldown.blocked) {
                     setBookingStatus({
                         canBook: false,
-                        message: `Cooldown Active: You must wait 48 hours after your last booking. (${Math.round(48 - hoursSinceBooking)}h remaining)`
+                        message: `Cooldown Active: You must wait 48 hours after your last booking. (${Math.round(cooldown.hoursRemaining)}h remaining)`
                     });
                     return;
                 }
             }
-
 
             setBookingStatus({ canBook: true, message: 'Open Season! First come, first serve.' });
         } else if (status.phase === 'PRE_DRAFT') {
@@ -368,7 +364,7 @@ export function BookingSection({ onCancel, initialBooking, activePicker, onShowA
                 priceBreakdown: priceDetails?.breakdown || null, // Save detailed breakdown
                 guests: parseInt(formData.guests) || 1, // Ensure number
                 updatedAt: new Date(),
-                round: status?.phase === 'ROUND_1' ? 1 : 2,
+                round: status?.phase === 'ROUND_1' ? 1 : status?.phase === 'ROUND_2' ? 2 : 3,
                 phase: status?.phase || 'OPEN_SEASON',
                 ...(finalize ? { celebrated: false } : {}) // Include celebrated when finalizing
             };

@@ -179,4 +179,49 @@ describe('Email Templates', () => {
             expect(result.htmlContent).toContain('12');
         });
     });
+
+    // Open-season audit regression locks: round/phase labelling in subjects.
+    describe('open-season round labelling', () => {
+        it('bookingConfirmed subject shows [Open Season] when phase is OPEN_SEASON', () => {
+            const result = emailTemplates.bookingConfirmed({ ...baseData, phase: 'OPEN_SEASON', round: 3 });
+            expect(result.subject).toContain('[Open Season]');
+        });
+
+        it('bookingConfirmed subject shows [Round 2] for ROUND_2 phase', () => {
+            const result = emailTemplates.bookingConfirmed({ ...baseData, phase: 'ROUND_2', round: 2 });
+            expect(result.subject).toContain('[Round 2]');
+        });
+
+        it('round 3 WITHOUT a phase still labels as Open Season (autosync writes round: 3)', () => {
+            const result = emailTemplates.bookingConfirmed({ ...baseData, round: 3 });
+            expect(result.subject).toContain('[Open Season]');
+        });
+
+        it('bookingCancelled subject shows [Open Season] when phase is OPEN_SEASON', () => {
+            const result = emailTemplates.bookingCancelled({ ...baseData, phase: 'OPEN_SEASON' });
+            expect(result.subject).toContain('[Open Season]');
+        });
+
+        it('turnPassedCurrent subject bracket follows the actual round/phase', () => {
+            const result = emailTemplates.turnPassedCurrent({
+                name: 'Test Shareholder',
+                phase: 'ROUND_2',
+                round: 2,
+                next_opportunity_title: 'OPEN SEASON BOOKING',
+                next_opportunity_text: 'First come, first served.',
+            });
+            expect(result.subject).toContain('[Round 2]');
+            expect(result.subject).not.toContain('[Round 1]');
+        });
+
+        it('paymentReceived subject uses the standard "App [Label]:" format', () => {
+            const result = emailTemplates.paymentReceived({ ...baseData, phase: 'OPEN_SEASON', amount: 450, expected_amount: 450 });
+            expect(result.subject).toMatch(/^HHR Trailer Booking App \[Open Season\]:/);
+        });
+
+        it('paymentReminder subject uses the standard "App [Label]:" format', () => {
+            const result = emailTemplates.paymentReminder({ ...baseData, phase: 'OPEN_SEASON', total_price: 450 });
+            expect(result.subject).toMatch(/^HHR Trailer Booking App \[Open Season\]:/);
+        });
+    });
 });

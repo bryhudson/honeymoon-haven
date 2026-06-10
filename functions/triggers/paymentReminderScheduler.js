@@ -131,7 +131,9 @@ exports.paymentReminderScheduler = onSchedule(
                 }
 
                 // --- REMINDER 2: Day 2 @ 9 AM PT ---
-                if (now >= day2At9am && !remindersSent.day2) {
+                // Upper-bounded at 48h like the final reminder: once a booking is
+                // overdue, only the admin alert fires - no stale user-facing nags.
+                if (now >= day2At9am && now < overdue48h && !remindersSent.day2) {
                     await sendFundingReminder(booking, "day2");
                     await doc.ref.update({ "remindersSent.day2": admin.firestore.Timestamp.now() });
                     logger.info(`Sent Day 2 Reminder for booking ${bookingId}`);
@@ -139,7 +141,7 @@ exports.paymentReminderScheduler = onSchedule(
                 }
 
                 // --- REMINDER 1: Day 1 @ 9 AM PT ---
-                if (now >= day1At9am && !remindersSent.day1) {
+                if (now >= day1At9am && now < overdue48h && !remindersSent.day1) {
                     await sendFundingReminder(booking, "day1");
                     await doc.ref.update({ "remindersSent.day1": admin.firestore.Timestamp.now() });
                     logger.info(`Sent Day 1 Reminder for booking ${bookingId}`);

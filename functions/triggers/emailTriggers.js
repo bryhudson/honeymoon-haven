@@ -90,10 +90,14 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const wasPassType = beforeData?.type === 'pass';
     const isNewPass = !wasPassType && isPassType;
 
-    // Fetch Current Draft Status once for all emails
+    // Fetch Current Draft Status once for all emails.
+    // Prefer the booking doc's OWN phase/round when present: status/draftStatus is
+    // synced by a 1-minute cron, so the very first open-season booking can fire this
+    // trigger while the doc still says ROUND_2, mislabelling the email subject.
     const statusDoc = await db.collection("status").doc("draftStatus").get();
     const statusData = statusDoc.exists ? statusDoc.data() : { round: 1, phase: 'ROUND_1' };
-    const currentRound = statusData.round || 1;
+    const currentRound = afterData?.round || statusData.round || 1;
+    const currentPhase = afterData?.phase || statusData.phase || 'ROUND_1';
 
     // 1. Booking Confirmation Email (To Current User)
     if (!wasConfirmed && isConfirmed) {
@@ -111,7 +115,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             total_price: afterData.totalPrice,
             price_breakdown: afterData.priceBreakdown, // New field
             round: currentRound,
-            phase: statusData.phase || 'ROUND_1',
+            phase: currentPhase,
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 
@@ -150,9 +154,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
             cancelled_date: formatDate(new Date().toISOString()),
             round: currentRound,
-            phase: statusData.phase || 'ROUND_1',
-            within_turn_window: false,
-            next_shareholder: "Next Shareholder",
+            phase: currentPhase,
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 
@@ -184,10 +186,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
         logger.info(`Sending Pass Confirmation for ${bookingId}`);
         const userProfile = await getUserProfile(afterData.uid, afterData.shareholderName);
 
-        // Logic for Next Opportunity Message
-        const statusDoc = await db.collection("status").doc("draftStatus").get();
-        const statusData = statusDoc.exists ? statusDoc.data() : { phase: 'ROUND_1', round: 1 };
-
+        // Logic for Next Opportunity Message (statusData fetched once above;
+        // a pass record carries no phase of its own, so the synced doc is the source)
         const isRound1 = statusData.phase === 'ROUND_1' || statusData.round === 1;
         const nextTitle = isRound1 ? "ROUND 2 (SNAKE DRAFT)" : "OPEN SEASON BOOKING";
         const nextText = isRound1
@@ -196,6 +196,8 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
 
         const { subject, htmlContent } = emailTemplates.turnPassedCurrent({
             name: afterData.shareholderName || userProfile.displayName || "Shareholder",
+            round: statusData.round,
+            phase: statusData.phase,
             next_opportunity_title: nextTitle,
             next_opportunity_text: nextText
         });
@@ -244,7 +246,7 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
             check_out: formatDate(afterData.to || afterData.checkOutDate),
             cabin_number: afterData.cabinNumber || afterData.cabinId || "TBD",
             round: currentRound,
-            phase: statusData.phase || 'ROUND_1',
+            phase: currentPhase,
             dashboard_url: "https://honeymoon-haven.web.app/dashboard"
         };
 

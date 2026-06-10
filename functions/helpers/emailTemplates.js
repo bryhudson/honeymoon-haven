@@ -145,7 +145,9 @@ function formatName(name) {
  * Returns: "Round 1", "Round 2", or "Open Season"
  */
 function getRoundLabel(data) {
-  if (data.phase === 'OPEN_SEASON') return 'Open Season';
+  // round 3 is what calculateDraftSchedule/autosync write for open season,
+  // so honor it even when the caller didn't pass a phase.
+  if (data.phase === 'OPEN_SEASON' || data.round === 3) return 'Open Season';
   if (data.phase === 'ROUND_2' || data.round === 2) return 'Round 2';
   return 'Round 1';
 }
@@ -289,8 +291,8 @@ const emailTemplates = {
 
   // New Template: Payment Urgent (T-6h) - Fixes the "Turn Skip" confusion
   paymentUrgent: (data) => {
-    const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
-    const subject = `HHR Trailer Booking App: URGENT: ${roundLabel}Maintenance Fee Deadline 💸`;
+    const roundLabel = data.round || data.phase ? ` [${getRoundLabel(data)}]` : '';
+    const subject = `HHR Trailer Booking App${roundLabel}: URGENT: Maintenance Fee Deadline 💸`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -514,8 +516,8 @@ const emailTemplates = {
 
   // 10. Payment Reminder
   paymentReminder: (data) => {
-    const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
-    const subject = `HHR Trailer Booking App: ${roundLabel}Let's make it official 💸`;
+    const roundLabel = data.round || data.phase ? ` [${getRoundLabel(data)}]` : '';
+    const subject = `HHR Trailer Booking App${roundLabel}: Let's make it official 💸`;
 
     // Breakdown HTML
     let breakdownHtml = '';
@@ -561,8 +563,8 @@ const emailTemplates = {
 
   // 11. Payment Received
   paymentReceived: (data) => {
-    const roundLabel = data.round || data.phase ? `[${getRoundLabel(data)}] ` : '';
-    const subject = `HHR Trailer Booking App: ${roundLabel}Maintenance Fee Received! ✅`;
+    const roundLabel = data.round || data.phase ? ` [${getRoundLabel(data)}]` : '';
+    const subject = `HHR Trailer Booking App${roundLabel}: Maintenance Fee Received! ✅`;
 
     // Breakdown HTML (Consistent with bookingConfirmed)
     let breakdownHtml = '';
@@ -709,7 +711,7 @@ const emailTemplates = {
 
       <div style="margin: 32px 0;">
         ${dataItem('Deadline', `${data.deadline_date} at ${data.deadline_time} PT`)}
-        ${dataItem('Round', data.round, true)}
+        ${dataItem('Round', getRoundLabel(data), true)}
       </div>
 
       <div style="text-align: center; margin-top: 32px;">
