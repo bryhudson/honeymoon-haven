@@ -15,6 +15,7 @@ if (admin.apps.length === 0) {
 }
 const db = admin.firestore();
 const { calculateDraftSchedule, getShareholderOrder, getCurrentSeasonYear, normalizeName } = require("../helpers/shareholders");
+const { nightsOverlap } = require("../helpers/availability");
 
 // --- Constants ---
 // Computed per-invocation so the season year auto-rolls (a warm instance must
@@ -40,34 +41,35 @@ exports.onBookingChangeTrigger = onDocumentWritten({ document: "bookings/{bookin
     const afterData = snapshot.after.data();
     const bookingId = event.params.bookingId;
 
-    // --- SERVER-SIDE OVERLAP DETECTION ---
-    // Prevent double-bookings by checking if a new/updated booking overlaps existing ones
+    // --- SERVER-SIDE OVERLAP DETECTION (log-only) ---
+    // The client (BookingSection / availability.ts) is the enforcement layer for
+    // double-bookings. This server check is observability only: it logs a warning
+    // for admins when a new booking shares a night with an existing one.
+    //
+    // It used to auto-cancel (write type:'cancelled' + email the shareholder), but
+    // it compared raw timestamps: a record whose checkout carried a time-of-day
+    // (e.g. 2026-08-26T19:00Z, noon PDT) falsely "overlapped" the next guest's
+    // midnight check-in on the same calendar day, silently destroying legitimate
+    // bookings. Overlap math now lives in helpers/availability.js (Pacific-day
+    // normalized, half-open [from, to)), and a suspected conflict is logged for
+    // an admin to resolve manually instead of auto-cancelled.
     const isNewBooking = !beforeData && afterData;
     const isNewlyFinalized = !beforeData?.isFinalized && afterData?.isFinalized;
     if ((isNewBooking || isNewlyFinalized) && afterData?.from && afterData?.to && afterData?.type !== 'pass' && afterData?.type !== 'cancelled' && afterData?.type !== 'auto-pass') {
         try {
-            const newFrom = toDate(afterData.from);
-            const newTo = toDate(afterData.to);
-            if (newFrom && newTo) {
-                const allBookingsSnap = await db.collection("bookings").get();
-                const overlap = allBookingsSnap.docs.find(d => {
-                    if (d.id === bookingId) return false;
-                    const b = d.data();
-                    if (b.type === 'pass' || b.type === 'cancelled' || b.type === 'auto-pass') return false;
-                    const bFrom = toDate(b.from);
-                    const bTo = toDate(b.to);
-                    if (!bFrom || !bTo) return false;
-                    return newFrom < bTo && newTo > bFrom;
-                });
-                if (overlap) {
-                    logger.warn(`OVERLAP DETECTED: Booking ${bookingId} overlaps with ${overlap.id}. Auto-cancelling.`);
-                    await db.collection("bookings").doc(bookingId).update({
-                        type: 'cancelled',
-                        cancelledAt: admin.firestore.Timestamp.now(),
-                        cancelReason: `Auto-cancelled: overlaps with booking ${overlap.id}`
-                    });
-                    return; // Stop processing - booking is cancelled
-                }
+            const allBookingsSnap = await db.collection("bookings").get();
+            const overlap = allBookingsSnap.docs.find(d => {
+                if (d.id === bookingId) return false;
+                const b = d.data();
+                if (b.type === 'pass' || b.type === 'cancelled' || b.type === 'auto-pass') return false;
+                return nightsOverlap(afterData.from, afterData.to, b.from, b.to);
+            });
+            if (overlap) {
+                const o = overlap.data();
+                logger.warn(`OVERLAP SUSPECTED (no action taken): booking ${bookingId} ` +
+                    `(${afterData.shareholderName}, ${formatDate(afterData.from)} - ${formatDate(afterData.to)}) ` +
+                    `shares a night with ${overlap.id} (${o.shareholderName}, ${formatDate(o.from)} - ${formatDate(o.to)}). ` +
+                    `Review in the admin Bookings list.`);
             }
         } catch (overlapErr) {
             logger.error("Overlap check failed (non-blocking):", overlapErr);
