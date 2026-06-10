@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useBookingRealtimeContext } from '../../../hooks/BookingRealtimeContext';
-import { CABIN_OWNERS, getShareholderOrder, getCurrentSeasonYear, mapOrderToSchedule, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
+import { CABIN_OWNERS, getShareholderOrder, getCurrentSeasonYear, mapOrderToSchedule, normalizeName, formatNameForDisplay, filterBookingsToSeason } from '../../../lib/shareholders';
 import { emailService } from '../../../services/emailService';
 import { db, functions } from '../../../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -42,7 +42,8 @@ export function AdminDashboard() {
         bypassTenAM,
         isTestMode,
         fastTestingMode,
-        status
+        status,
+        currentSeasonYear
     } = useBookingRealtimeContext();
 
     // Admin needs bookings sorted by createdAt desc (context sorts by from asc)
@@ -488,9 +489,12 @@ export function AdminDashboard() {
     };
 
     // Derived Logic
+    // Stats are scoped to the active season: after the Oct 1 rollover the season
+    // year advances, and the cards must not blend last season's revenue into the
+    // new season (last season remains in backups/exports).
     const analytics = React.useMemo(() => {
         const stats = { totalRevenue: 0, outstandingFees: 0, totalBookings: 0, unpaidCount: 0, totalNights: 0 };
-        allBookings.forEach(b => {
+        filterBookingsToSeason(allBookings, currentSeasonYear).forEach(b => {
             if (b.type !== 'cancelled' && b.type !== 'pass' && b.type !== 'auto-pass') {
                 const nights = (b.from && b.to) ? differenceInDays(b.to, b.from) : 0;
                 const cost = calculateBookingCost(b.from, b.to);
@@ -505,7 +509,7 @@ export function AdminDashboard() {
             }
         });
         return stats;
-    }, [allBookings]);
+    }, [allBookings, currentSeasonYear]);
 
     const { schedule, activeTurn } = React.useMemo(() => {
         const order = getShareholderOrder(getCurrentSeasonYear());
@@ -515,8 +519,8 @@ export function AdminDashboard() {
     }, [allBookings, status, startDateOverride, fastTestingMode, bypassTenAM]);
 
     const openSeasonSlots = React.useMemo(
-        () => deriveOpenSeasonSlots(allBookings, schedule),
-        [allBookings, schedule]
+        () => deriveOpenSeasonSlots(allBookings, schedule, currentSeasonYear),
+        [allBookings, schedule, currentSeasonYear]
     );
 
     if (contextLoading) return <div className="flex items-center justify-center min-h-screen animate-pulse">Loading...</div>;

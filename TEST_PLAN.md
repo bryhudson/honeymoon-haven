@@ -114,12 +114,21 @@ The `calculateDraftSchedule` function is the core state machine driving the enti
 | File | Functions Covered | Tests |
 |---|---|---|
 | `tests/pricing.test.ts` | `calculateBookingCost` | 18 ✅ |
-| `tests/emailTemplates.test.js` | All 16 email templates | 26 ✅ |
-| `tests/shareholders.test.ts` | `normalizeName`, `formatNameForDisplay`, `getShareholderOrder`, `getOfficialStart`, `getPickDurationMS`, `calculateDraftSchedule`, `mapOrderToSchedule` | 51 ✅ |
+| `tests/emailTemplates.test.js` | All 16 email templates + open-season round labelling | 35 ✅ |
+| `tests/shareholders.test.ts` | `normalizeName`, `formatNameForDisplay`, `getShareholderOrder`, `getOfficialStart`, `getPickDurationMS`, `calculateDraftSchedule`, `mapOrderToSchedule`, season cutoff/rollover helpers | 69 ✅ |
 | `tests/utils.test.ts` | `cn` | 24 ✅ |
 | `tests/auth.test.ts` | `validatePasswordReset`, `mapForgotPasswordError`, `validateAuthActionParams` | 24 ✅ |
+| `tests/temporal.test.ts` | DST-aware time helpers | 6 ✅ |
+| `tests/availability.test.ts` | `nightsOverlap`, `isNightBooked`, `getDayOccupancy` (client) | 17 ✅ |
+| `tests/cloudParity.test.js` | Client/cloud parity: draft schedule + season helpers incl. Oct 1 boundary | 13 ✅ |
+| `tests/cloudAvailability.test.js` | `nightsOverlap`, `pacificDayKey` (cloud, Pacific-day normalized) | 11 ✅ |
+| `tests/hibernation.test.js` | `decideWeeklyBackup` off-season hibernation | 5 ✅ |
+| `tests/openSeason.test.ts` | `deriveOpenSeasonSlots` (admin open-season list, incl. season-year scoping) | 11 ✅ |
+| `tests/openSeasonCooldown.test.ts` | `getOpenSeasonCooldown` 48h rule | 11 ✅ |
+| `tests/seasonLifecycle.test.ts` | Season timeline: cutoff -> CLOSED -> Oct 1 read-only -> Apr reopen (client + cloud) | 14 ✅ |
+| `tests/rules.test.ts` | Firestore booking-update protection (needs emulator; skips locally, runs in CI) | 12 ✅ |
 
-**Total: 143 tests — all passing**
+**Total: 270 tests — all passing**
 
 ---
 

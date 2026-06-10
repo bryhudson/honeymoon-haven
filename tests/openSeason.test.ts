@@ -133,3 +133,40 @@ describe('deriveOpenSeasonSlots', () => {
         expect(deriveOpenSeasonSlots(malformed, [])).toEqual([]);
     });
 });
+
+    // Season scoping: without this, the Oct 1 rollover (season year -> 2027)
+    // would list EVERY prior-season booking under OPEN SEASON, because none of
+    // their ids appear in the fresh 2027 rotation schedule.
+    it('excludes bookings from other season years when seasonYear is provided', () => {
+        const b2026 = {
+            id: 'last-season',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'A',
+            from: new Date(2026, 6, 10),
+            to: new Date(2026, 6, 13),
+        };
+        const b2027 = {
+            id: 'this-season',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'B',
+            from: new Date(2027, 6, 10),
+            to: new Date(2027, 6, 13),
+        };
+        const result = deriveOpenSeasonSlots([b2026, b2027], [], 2027);
+        expect(result).toHaveLength(1);
+        expect(result[0].booking).toBe(b2027);
+    });
+
+    it('omitting seasonYear keeps the unscoped behavior (back-compat)', () => {
+        const b2026 = {
+            id: 'x',
+            type: 'booking',
+            isFinalized: true,
+            shareholderName: 'A',
+            from: new Date(2026, 6, 10),
+            to: new Date(2026, 6, 13),
+        };
+        expect(deriveOpenSeasonSlots([b2026], [])).toHaveLength(1);
+    });

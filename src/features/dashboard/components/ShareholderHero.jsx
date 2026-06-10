@@ -5,7 +5,7 @@ import {
     AlertTriangle, Clock, Calendar, CheckCircle, XCircle, Info, Mail,
     Tent, Map, Caravan, Compass, ArrowRight, User, ChevronDown, ChevronUp, ChevronRight, Coffee, History, Home
 } from 'lucide-react';
-import { normalizeName, formatNameForDisplay, CABIN_OWNERS, getSeasonState, getCurrentSeasonYear } from '../../../lib/shareholders';
+import { normalizeName, formatNameForDisplay, CABIN_OWNERS, getSeasonState, getCurrentSeasonYear, filterBookingsToSeason } from '../../../lib/shareholders';
 import confetti from 'canvas-confetti';
 
 export function ShareholderHero({
@@ -33,9 +33,18 @@ export function ShareholderHero({
         return () => clearInterval(timer);
     }, []);
 
+    // Scope everything the hero shows (turn state, Booking History, celebration)
+    // to the active season: after the Oct 1 rollover, last season's bookings
+    // belong to HistoricalOrders, not this season's hero. Memoized so the
+    // confetti effect below doesn't re-run on every render.
+    const seasonBookings = React.useMemo(
+        () => filterBookingsToSeason(bookings || [], getCurrentSeasonYear()),
+        [bookings]
+    );
+
     // --- CONFETTI ---
     React.useEffect(() => {
-        const paidBooking = bookings?.find(b =>
+        const paidBooking = seasonBookings.find(b =>
             normalizeName(b.shareholderName) === normalizeName(shareholderName) &&
             b.isFinalized && b.isPaid && !b.celebrated &&
             b.type !== 'cancelled' && b.type !== 'pass'
@@ -54,7 +63,7 @@ export function ShareholderHero({
             }, 250);
             onCelebrated(paidBooking.id);
         }
-    }, [bookings, shareholderName, onCelebrated]);
+    }, [seasonBookings, shareholderName, onCelebrated]);
 
     if (!shareholderName) return null;
 
@@ -97,7 +106,7 @@ export function ShareholderHero({
     const isYourTurn = status.activePicker && normalizeName(status.activePicker) === normalizedMe;
     let roundTarget = 1;
     if (status.phase === 'ROUND_2') roundTarget = 2;
-    let myActions = bookings.filter(b =>
+    let myActions = seasonBookings.filter(b =>
         normalizeName(b.shareholderName) === normalizedMe &&
         (b.isFinalized || b.type === 'pass' || b.type === 'skipped' || b.type === 'cancelled' || b.status === 'cancelled')
     ).sort((a, b) => {
@@ -145,7 +154,7 @@ export function ShareholderHero({
     const isDoneForRound = myScheduleCurrentRound ? (myScheduleCurrentRound.isCompleted || myScheduleCurrentRound.status === 'SKIPPED') : (effectiveActions.length >= roundTarget);
 
     const lastAction = myActions[myActions.length - 1];
-    const latestAction = bookings
+    const latestAction = seasonBookings
         .filter(b => normalizeName(b.shareholderName) === normalizedMe && (b.isFinalized || b.type === 'pass' || b.type === 'cancelled' || b.type === 'skipped' || b.status === 'cancelled'))
         .sort((a, b) => {
             const aRaw = a.createdAt instanceof Date ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0));

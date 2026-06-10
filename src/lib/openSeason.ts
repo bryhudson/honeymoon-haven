@@ -1,6 +1,13 @@
+import { filterBookingsToSeason } from './shareholders';
+
 // Derive the list of "open season" bookings from the raw bookings collection
 // and the rotation schedule. The rule is "any real booking that isn't already
 // represented by a Round 1 / Round 2 schedule slot."
+//
+// Pass `seasonYear` to scope the input to one season: after the Oct 1 rollover
+// the fresh season's schedule contains no booking ids, so without scoping every
+// prior-season booking would qualify as "not in a rotation slot" and flood the
+// OPEN SEASON list.
 
 export interface OpenSeasonSlot {
     name: string;
@@ -26,7 +33,8 @@ function toDate(raw: unknown): Date | null {
 
 export function deriveOpenSeasonSlots(
     allBookings: any[],
-    schedule: any[]
+    schedule: any[],
+    seasonYear?: number
 ): OpenSeasonSlot[] {
     const scheduledIds = new Set<string>();
     for (const s of schedule) {
@@ -34,8 +42,12 @@ export function deriveOpenSeasonSlots(
         if (id) scheduledIds.add(id);
     }
 
+    const seasonBookings = seasonYear != null
+        ? filterBookingsToSeason(allBookings, seasonYear)
+        : allBookings;
+
     const result: OpenSeasonSlot[] = [];
-    for (const b of allBookings) {
+    for (const b of seasonBookings) {
         if (b.type === 'pass' || b.type === 'auto-pass') continue;
         if (b.isFinalized !== true) continue;
         if (b.id != null && scheduledIds.has(b.id)) continue;
