@@ -152,19 +152,25 @@ export function AdminBookingManagement({
                             </div>
                         )}
 
-                        {/* Fee details row (only for paid bookings with details) */}
-                        {isBookable && booking.isPaid && (pd?.reference || pd?.notes) && (
+                        {/* Fee details + admin note row (payment details only when paid; admin note always) */}
+                        {isBookable && (booking.adminNote || (booking.isPaid && (pd?.reference || pd?.notes))) && (
                             <div className="border-t border-slate-100 px-3 py-2.5 space-y-1">
-                                {pd.reference && (
+                                {booking.isPaid && pd?.reference && (
                                     <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
                                         <span className="text-slate-400 font-medium">Ref:</span>
                                         <span className="font-mono truncate">{pd.reference}</span>
                                     </div>
                                 )}
-                                {pd.notes && (
+                                {booking.isPaid && pd?.notes && (
                                     <div className="flex items-start gap-1.5 text-[11px] text-slate-500">
                                         <StickyNote className="w-3 h-3 mt-0.5 flex-shrink-0 text-slate-400" />
                                         <span className="italic line-clamp-2">{pd.notes}</span>
+                                    </div>
+                                )}
+                                {booking.adminNote && (
+                                    <div className="flex items-start gap-1.5 text-[11px] text-amber-700">
+                                        <StickyNote className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
+                                        <span className="italic line-clamp-2">{booking.adminNote}</span>
                                     </div>
                                 )}
                             </div>
@@ -339,6 +345,11 @@ export function AdminBookingManagement({
                 <td className="px-5 py-4">
                     {!isBookable ? (
                         <span className="text-slate-400">—</span>
+                    ) : booking.adminNote ? (
+                        <div className="flex items-center gap-1 text-xs text-amber-700 max-w-[160px]" title={booking.adminNote}>
+                            <StickyNote className="w-3 h-3 flex-shrink-0 text-amber-500" />
+                            <span className="italic truncate">{booking.adminNote}</span>
+                        </div>
                     ) : booking.isPaid && pd?.notes ? (
                         <div className="flex items-center gap-1 text-xs text-slate-500 max-w-[160px]" title={pd.notes}>
                             <StickyNote className="w-3 h-3 flex-shrink-0" />

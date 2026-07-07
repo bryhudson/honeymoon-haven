@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BaseModal } from '../../../components/ui/BaseModal';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
-import { Calendar, User, Users, Home, Clock, ShieldCheck, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
+import { Calendar, User, Users, Home, Clock, ShieldCheck, AlertCircle, Trash2, ArrowRight, StickyNote } from 'lucide-react';
 import { CABIN_OWNERS } from '../../../lib/shareholders';
 import { calculateBookingCost } from '../../../lib/pricing';
 import { nightsOverlap } from '../../../lib/availability';
@@ -14,7 +14,8 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         cabinNumber: '',
         from: '',
         to: '',
-        guests: 1
+        guests: 1,
+        adminNote: ''
     });
 
     // Validation Effect
@@ -75,7 +76,8 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                 cabinNumber: booking.cabinNumber || '',
                 from: booking.from ? format(booking.from, 'yyyy-MM-dd') : '',
                 to: booking.to ? format(booking.to, 'yyyy-MM-dd') : '',
-                guests: booking.guests || 1
+                guests: booking.guests || 1,
+                adminNote: booking.adminNote || ''
             });
         }
     }, [booking]);
@@ -112,15 +114,24 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
         // Recalculate fees from the (possibly adjusted) date range
         const cost = calculateBookingCost(newFrom, newTo);
 
+        const adminNote = (formData.adminNote || '').trim();
+
         const updated = {
             ...booking,
             ...formData,
+            adminNote,
             from: newFrom,
             to: newTo,
             totalPrice: cost.total,
             priceBreakdown: cost.breakdown,
             updatedAt: new Date()
         };
+
+        // Stamp who last edited the note and when, but only when the text
+        // actually changed - avoids churning the stamp on unrelated date/guest edits.
+        if (adminNote !== (booking?.adminNote || '')) {
+            updated.adminNoteUpdatedAt = new Date();
+        }
 
         if (updated.type === 'pass' || updated.type === 'auto-pass' || updated.type === 'cancelled') {
             updated.type = null;
@@ -281,6 +292,23 @@ export function EditBookingModal({ isOpen, onClose, onSave, booking, allBookings
                         </div>
                     );
                 })()}
+                {/* Admin Note - internal record of why this booking was adjusted */}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                        <StickyNote className="w-3 h-3" /> Reason / Notes
+                        <span className="normal-case tracking-normal text-slate-300 font-medium">(admin only)</span>
+                    </label>
+                    <textarea
+                        name="adminNote"
+                        value={formData.adminNote}
+                        onChange={handleChange}
+                        rows={2}
+                        maxLength={500}
+                        placeholder="e.g. Credited 1 night, applied to a future booking"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all resize-none leading-relaxed"
+                    />
+                </div>
+
                 {/* Error Message */}
                 {error && (
                     <div className="flex items-start gap-3 p-4 bg-rose-50 text-rose-600 rounded-2xl text-xs font-bold border border-rose-100 animate-in fade-in slide-in-from-top-2 duration-300">
