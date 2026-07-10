@@ -4,7 +4,6 @@ import { getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { getDayOccupancy } from '../../../lib/availability';
 import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders';
 import { getPacificToday, TODAY_CELL_RING } from '../../../lib/calendarToday';
-import { CalendarTodayBanner } from '../../../components/ui/CalendarTodayBanner';
 
 // Diagonal split (top-left = departing, bottom-right = arriving) for turnover days.
 const splitBg = (depart, arrive) =>
@@ -160,39 +159,7 @@ function ShareholderCalendarViewImpl({ bookings }) {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-slate-800">{seasonYear} Season Calendar</h2>
-                    <p className="text-sm text-muted-foreground">Visual snapshot of any claimed dates for the season.</p>
-                    <div className="mt-3">
-                        <CalendarTodayBanner />
-                    </div>
-                </div>
-                <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-green-500"></div>
-                        <span>Confirmed Booking</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded" style={{ background: splitBg('#4ade80', '#16a34a') }}></div>
-                        <span>Turnover (out / in)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-red-50 ring-1 ring-red-200 relative">
-                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-red-500" />
-                        </div>
-                        <span>Holiday</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-purple-50 ring-1 ring-purple-200 relative">
-                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-purple-500" />
-                        </div>
-                        <span>Festival / Event</span>
-                    </div>
-                </div>
-            </div>
-
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {months.map(m => renderMonth(m))}
             </div>

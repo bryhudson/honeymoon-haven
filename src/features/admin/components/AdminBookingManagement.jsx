@@ -1,11 +1,19 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { List, Calendar as CalendarIcon, Users, CheckCircle, XCircle, Ban, StickyNote } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Ban, StickyNote } from 'lucide-react';
 import { ActionsDropdown } from './ActionsDropdown';
 import { AdminCalendarView } from './AdminCalendarView';
+import { CalendarHeader } from '../../../components/ui/CalendarHeader';
 import { CABIN_OWNERS, normalizeName, formatNameForDisplay } from '../../../lib/shareholders';
 import { exportBookingsToCSV } from '../services/backupService';
-import { Download } from 'lucide-react';
+
+const ADMIN_LEGEND = [
+    { label: 'Paid', color: '#22c55e' },
+    { label: 'Unpaid', color: '#f43f5e' },
+    { label: 'Turnover', split: ['#22c55e', '#16a34a'] },
+    { label: 'Holiday', color: '#f87171' },
+    { label: 'Event', color: '#c084fc' },
+];
 
 export function AdminBookingManagement({
     schedule,
@@ -378,49 +386,13 @@ export function AdminBookingManagement({
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-3">
-                    <CalendarIcon className="w-8 h-8 text-slate-800" />
-                    <div>
-                        <h2 className="text-2xl font-bold text-slate-900">
-                            {bookingViewMode === 'list' ? 'Booking Management' : 'Calendar View'}
-                        </h2>
-                        <p className="text-sm text-slate-500">View, edit, and manage shareholder reservations</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                        <button
-                            onClick={handleDownloadCSV}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/50`}
-                            title="Download CSV"
-                        >
-                            <Download className="w-4 h-4" />
-                            <span>Export</span>
-                        </button>
-                    </div>
-
-                    <div className="h-6 w-px bg-slate-200 hidden sm:block mx-1"></div>
-
-                    <div className="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                        <button
-                            onClick={() => setBookingViewMode('calendar')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${bookingViewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                        >
-                            <CalendarIcon className="w-4 h-4" />
-                            Calendar
-                        </button>
-                        <button
-                            onClick={() => setBookingViewMode('list')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${bookingViewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                        >
-                            <List className="w-4 h-4" />
-                            List
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <CalendarHeader
+                title="Bookings"
+                viewMode={bookingViewMode}
+                onViewModeChange={setBookingViewMode}
+                onExport={handleDownloadCSV}
+                legendItems={ADMIN_LEGEND}
+            />
 
             {bookingViewMode === 'calendar' ? (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">

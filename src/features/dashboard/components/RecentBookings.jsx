@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, List } from 'lucide-react';
 import { ShareholderCalendarView } from './ShareholderCalendarView';
+import { CalendarHeader } from '../../../components/ui/CalendarHeader';
+
+const SHAREHOLDER_LEGEND = [
+    { label: 'Confirmed', color: '#22c55e' },
+    { label: 'Turnover', split: ['#4ade80', '#16a34a'] },
+    { label: 'Holiday', color: '#f87171' },
+    { label: 'Event', color: '#c084fc' },
+];
 
 export function RecentBookings({ bookings, onViewDetails, currentShareholder, isAdmin }) {
     // Filter for table display (exclude passes)
@@ -22,44 +29,16 @@ export function RecentBookings({ bookings, onViewDetails, currentShareholder, is
         );
     };
 
-    const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'table'
+    const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'list'
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Header + Toggle */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <Calendar className="w-8 h-8 text-slate-800" />
-                    <div>
-                        <h2 className="text-2xl font-bold text-slate-900">Bookings</h2>
-                        <p className="text-sm text-slate-500">View all confirmed bookings for the season.</p>
-                    </div>
-                </div>
-
-                {/* View Toggle */}
-                <div className="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner self-start sm:self-auto">
-                    <button
-                        onClick={() => setViewMode('calendar')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${viewMode === 'calendar'
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-900'
-                            }`}
-                    >
-                        <Calendar className="w-4 h-4" />
-                        Calendar
-                    </button>
-                    <button
-                        onClick={() => setViewMode('table')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${viewMode === 'table'
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-900'
-                            }`}
-                    >
-                        <List className="w-4 h-4" />
-                        List
-                    </button>
-                </div>
-            </div>
+            <CalendarHeader
+                title="Bookings"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                legendItems={SHAREHOLDER_LEGEND}
+            />
 
             {/* Content Switcher */}
             {viewMode === 'calendar' ? (
