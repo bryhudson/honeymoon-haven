@@ -3,6 +3,8 @@ import { format, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay } from 
 import { getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { getDayOccupancy } from '../../../lib/availability';
 import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders';
+import { getPacificToday, TODAY_CELL_RING } from '../../../lib/calendarToday';
+import { CalendarTodayBanner } from '../../../components/ui/CalendarTodayBanner';
 
 // Diagonal split (top-left = departing, bottom-right = arriving) for turnover days.
 const splitBg = (depart, arrive) =>
@@ -12,6 +14,9 @@ function ShareholderCalendarViewImpl({ bookings }) {
     // Bookable season months (May - September), auto-rolling each year.
     const seasonYear = getCurrentSeasonYear();
     const months = getSeasonMonths(seasonYear);
+    // Resolve "today" once, in Pacific, so both the highlight and the past-day
+    // fade derive from the same reference (a cell is never both today and past).
+    const today = getPacificToday();
 
     const renderMonth = (monthDate) => {
         const start = startOfMonth(monthDate);
@@ -41,7 +46,8 @@ function ShareholderCalendarViewImpl({ bookings }) {
                         const events = getEventsForDate(day);
                         const hasEvent = events.length > 0;
                         const hasInfo = occupant || departing || holiday || hasEvent;
-                        const isPast = startOfDay(day) < startOfDay(new Date());
+                        const isPast = startOfDay(day) < today;
+                        const isToday = startOfDay(day).getTime() === today.getTime();
 
                         // Keep the hover tooltip on-screen near the grid edges (mobile):
                         // left-column cells anchor left, right-column cells anchor right,
@@ -76,9 +82,13 @@ function ShareholderCalendarViewImpl({ bookings }) {
                                 className={`
                                     aspect-square rounded-md flex items-center justify-center text-xs font-medium cursor-default transition-colors relative group
                                     ${bgClass}
+                                    ${isToday ? TODAY_CELL_RING : ''}
                                 `}
                             >
-                                <span style={isTurnover ? { textShadow: '0 1px 2px rgba(0,0,0,0.55)' } : undefined}>
+                                <span
+                                    className={isToday && !occupant && !isTurnover ? 'text-blue-700' : undefined}
+                                    style={isTurnover ? { textShadow: '0 1px 2px rgba(0,0,0,0.55)' } : undefined}
+                                >
                                     {format(day, 'd')}
                                 </span>
 
@@ -155,6 +165,9 @@ function ShareholderCalendarViewImpl({ bookings }) {
                 <div>
                     <h2 className="text-xl font-bold text-slate-800">{seasonYear} Season Calendar</h2>
                     <p className="text-sm text-muted-foreground">Visual snapshot of any claimed dates for the season.</p>
+                    <div className="mt-3">
+                        <CalendarTodayBanner />
+                    </div>
                 </div>
                 <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">
                     <div className="flex items-center gap-2">

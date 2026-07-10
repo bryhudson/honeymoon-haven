@@ -3,6 +3,8 @@ import { format, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay } from 
 import { getHolidayForDate, getEventsForDate } from '../../../lib/seasonEvents';
 import { getDayOccupancy } from '../../../lib/availability';
 import { getSeasonMonths, getCurrentSeasonYear } from '../../../lib/shareholders';
+import { getPacificToday, TODAY_CELL_RING } from '../../../lib/calendarToday';
+import { CalendarTodayBanner } from '../../../components/ui/CalendarTodayBanner';
 
 // Diagonal split (top-left = departing, bottom-right = arriving) for turnover days.
 const splitBg = (depart, arrive) =>
@@ -11,6 +13,9 @@ const splitBg = (depart, arrive) =>
 function AdminCalendarViewImpl({ bookings, onSelectDay }) {
     // Bookable season months (May - September), auto-rolling each year.
     const months = getSeasonMonths(getCurrentSeasonYear());
+    // Resolve "today" once, in Pacific, so both the highlight and the past-day
+    // fade derive from the same reference (a cell is never both today and past).
+    const today = getPacificToday();
 
     const renderMonth = (monthDate) => {
         const start = startOfMonth(monthDate);
@@ -40,7 +45,8 @@ function AdminCalendarViewImpl({ bookings, onSelectDay }) {
                         const events = getEventsForDate(day);
                         const hasEvent = events.length > 0;
                         const hasInfo = occupant || departing || holiday || hasEvent;
-                        const isPast = startOfDay(day) < startOfDay(new Date());
+                        const isPast = startOfDay(day) < today;
+                        const isToday = startOfDay(day).getTime() === today.getTime();
                         const paidColor = (b) => (b && b.isPaid ? '#22c55e' : '#f43f5e');
 
                         // Keep the hover tooltip on-screen near the grid edges (mobile):
@@ -80,9 +86,13 @@ function AdminCalendarViewImpl({ bookings, onSelectDay }) {
                                     aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-colors relative group
                                     ${isClickable ? 'cursor-pointer' : 'cursor-default'}
                                     ${bgClass}
+                                    ${isToday ? TODAY_CELL_RING : ''}
                                 `}
                             >
-                                <span style={isTurnover ? { textShadow: '0 1px 2px rgba(0,0,0,0.55)' } : undefined}>
+                                <span
+                                    className={isToday && !occupant && !isTurnover ? 'text-blue-700' : undefined}
+                                    style={isTurnover ? { textShadow: '0 1px 2px rgba(0,0,0,0.55)' } : undefined}
+                                >
                                     {format(day, 'd')}
                                 </span>
 
@@ -156,7 +166,8 @@ function AdminCalendarViewImpl({ bookings, onSelectDay }) {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col sm:flex-row justify-end items-end sm:items-center gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <CalendarTodayBanner />
                 <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-600 bg-white p-2 rounded-lg border shadow-sm h-fit">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-green-500"></div>
